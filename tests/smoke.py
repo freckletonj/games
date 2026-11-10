@@ -72,6 +72,16 @@ with sync_playwright() as playwright:
     }""")
     assert len(set(idle for idle, running in wildlife)) == 4, wildlife
     assert all(idle != running for idle, running in wildlife), wildlife
+    portraits = page.evaluate("""async () => {
+        const names = ['mossback','prismtail','glimmermoth','cloudwhisp'];
+        return Promise.all(names.map(async name => {
+            const image = new Image();
+            image.src = WW.art.portrait(name);
+            await image.decode();
+            return [image.naturalWidth, image.naturalHeight];
+        }));
+    }""")
+    assert portraits == [[96, 96]] * 4, portraits
     # No alpha gaps at the boundaries of the world-anchored painted texture.
     # Neighboring pixels may differ naturally because texture detail is continuous,
     # rather than repeated identically on each side of every 16-unit seam.
