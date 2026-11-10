@@ -526,10 +526,10 @@ WW.games.animals = (() => {
       }
     }
     function sceneryBack(ctx,time){
-      const l=Math.floor((cameraX-120)/110),r=Math.ceil((cameraX+W+120)/110);
+      const l=Math.floor((cameraX-180)/172),r=Math.ceil((cameraX+W+180)/172);
       const base=spawn.y+28;
       for(let i=l;i<=r;i++){
-        const x=i*110+(hash(i,29)%23),wind=Math.sin(time*.66+i)*2;
+        const x=i*172+(hash(i,29)%23),wind=Math.sin(time*.66+i)*2;
         const high=base-130-(i%3)*8;
         if(chapter.biome==='coast'){
           // Glassy mineral spires with sharp colored facets and teal reef anemones.
@@ -575,6 +575,82 @@ WW.games.animals = (() => {
           box(ctx,x-26,base-10,18,7,'#cc8ecb');box(ctx,x-23,base-17,12,9,'#f8b6e3');
           box(ctx,x+20,base-13,15,8,'#86d8d1');box(ctx,x+22,base-22,11,12,'#9dffda');
         }
+      }
+    }
+    function drawLandmarks(ctx,time){
+      for(const place of level.landmarks||[]){
+        const x=place.x*TILE;
+        if(x<cameraX-130||x>cameraX+W+130)continue;
+        const row=map.findIndex(line=>line[place.x]==='ground'||line[place.x]==='water');
+        if(row<0)continue;
+        const y=row*TILE,wind=Math.sin(time*.9+x*.013)*3;
+        ctx.save();ctx.translate(x,y);
+        if(place.type==='tree'){
+          // Giant hollow trees and lantern boughs become recognizable places, not tiled noise.
+          box(ctx,-13,-113,26,116,'#244d59');
+          box(ctx,-7,-111,7,108,'#3d857b');
+          box(ctx,5,-95,3,93,'#73b18d');
+          ctx.strokeStyle='#3a7471';ctx.lineWidth=10;ctx.beginPath();
+          ctx.moveTo(-6,-77);ctx.lineTo(-44,-115);ctx.moveTo(7,-89);ctx.lineTo(47,-130);ctx.stroke();
+          for(const [dx,dy,r,c] of [[-31,-135,35,'#357e74'],[32,-150,36,'#448e80'],[1,-160,44,'#5dab87'],[-14,-180,24,'#89cc9a']]){
+            ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(dx+wind,dy,r,r*.62,0,0,Math.PI*2);ctx.fill();
+          }
+          box(ctx,-18,-58,36,5,'#ae8c74');box(ctx,-12,-62,24,5,'#d1bc88');
+          box(ctx,-7,-46,14,23,'#1a3c49');box(ctx,-4,-42,8,15,'#a0c5a4');
+          for(let j=0;j<7;j++){
+            const rx=-47+hash(place.x,j)%97,ry=-178+hash(j,place.x)%69;
+            box(ctx,rx+wind,ry,2,3,j%2?'#f4dba0':'#c3f2c5');
+          }
+        }else if(place.type==='crystal'){
+          for(const [dx,h,w,color] of [[-37,76,23,'#27587f'],[-11,117,30,'#58a6b9'],[20,90,27,'#397ca6'],[47,61,18,'#83d9cf']]){
+            ctx.fillStyle=color;ctx.beginPath();
+            ctx.moveTo(dx,-h);ctx.lineTo(dx+w*.6,-h*.67);ctx.lineTo(dx+w,0);
+            ctx.lineTo(dx-w*.5,0);ctx.closePath();ctx.fill();
+            ctx.fillStyle='#baf6eb7a';ctx.beginPath();ctx.moveTo(dx,-h);ctx.lineTo(dx+w*.6,-h*.67);
+            ctx.lineTo(dx+w*.2,-18);ctx.closePath();ctx.fill();
+            box(ctx,dx+2,-h*.6,2,18,'#e6fff2');
+          }
+        }else if(place.type==='reef'||place.type==='pond'){
+          for(let j=0;j<10;j++){
+            const dx=-45+hash(place.x,j)%90,depth=14+hash(j,place.x)%28;
+            ctx.strokeStyle=j%3===0?'#e6a6d2':j%2?'#7be8c1':'#83bff4';
+            ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(dx,0);
+            ctx.quadraticCurveTo(dx+wind*2,-depth*.6,dx+wind-5,-depth);ctx.stroke();
+            box(ctx,dx+wind-8,-depth,7,4,'#b8f4d9');
+          }
+        }else if(place.type==='observatory'){
+          ctx.lineWidth=12;ctx.strokeStyle='#5a648d';ctx.beginPath();
+          ctx.arc(0,-75,53,Math.PI,Math.PI*2);ctx.stroke();
+          ctx.strokeStyle='#b0b2dc';ctx.lineWidth=3;ctx.beginPath();
+          ctx.arc(0,-75,43,Math.PI,Math.PI*2);ctx.stroke();
+          box(ctx,-56,-72,12,74,'#4c5379');box(ctx,44,-72,12,74,'#4c5379');
+          box(ctx,-62,-7,124,11,'#8085b3');box(ctx,-47,-12,94,5,'#b8bce1');
+          for(let j=0;j<9;j++){
+            const theta=Math.PI+j*Math.PI/8;
+            const rx=50*Math.cos(theta),ry=-75+50*Math.sin(theta);
+            box(ctx,rx-2,ry-2,4,4,'#e8dcb5');
+          }
+        }else if(place.type==='island'){
+          ctx.fillStyle='#536090';ctx.beginPath();
+          ctx.moveTo(-48,-70);ctx.lineTo(44,-70);ctx.lineTo(27,-41);
+          ctx.lineTo(4,-22);ctx.lineTo(-18,-49);ctx.closePath();ctx.fill();
+          box(ctx,-48,-76,92,8,'#b7c8ab');
+          for(let j=0;j<6;j++){
+            const xx=-36+j*14;
+            box(ctx,xx,-83,3,7,'#91d0ae');
+            box(ctx,xx-4,-88,10,5,j%2?'#dfb4e4':'#b0e9cc');
+          }
+          ctx.strokeStyle='#a5c8c2';ctx.lineWidth=2;
+          for(let j=0;j<4;j++){const xx=-27+j*15;ctx.beginPath();ctx.moveTo(xx,-42);ctx.quadraticCurveTo(xx+wind*2,-22,xx-3,-10);ctx.stroke();}
+        }else if(place.type==='lantern'){
+          box(ctx,-4,-68,7,69,'#526b69');
+          box(ctx,-12,-74,23,8,'#bfa27a');
+          box(ctx,-8,-89,15,18,'#f2dca4');
+          ctx.globalAlpha=.2+.07*Math.sin(time*3);
+          ctx.fillStyle='#f9e3a4';ctx.beginPath();ctx.arc(0,-81,35,0,Math.PI*2);ctx.fill();
+          ctx.globalAlpha=1;
+        }
+        ctx.restore();
       }
     }
     function groundDetails(ctx,time){
@@ -702,7 +778,7 @@ WW.games.animals = (() => {
       ctx.setTransform(3,0,0,3,0,0);
       background(ctx,now);
       ctx.save();ctx.translate(Math.round((Math.random()-.5)*shake),Math.round((Math.random()-.5)*shake));ctx.translate(-Math.round(cameraX),-Math.round(cameraY));
-      sceneryBack(ctx,now);terrain(ctx,now);groundDetails(ctx,now);
+      sceneryBack(ctx,now);drawLandmarks(ctx,now);terrain(ctx,now);groundDetails(ctx,now);
       for(const sign of chapter.signs||[]){
         const x=sign.x*TILE;if(x<cameraX-65||x>cameraX+W+65)continue;
         const ground=Array.from({length:level.height},(_,y)=>y).find(y=>map[y]?.[sign.x]==='ground');
