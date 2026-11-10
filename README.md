@@ -2,7 +2,7 @@
 
 A dependency-free, offline 2D creature adventure for one or two players. Three chapters, three distinct traversal companions, one hidden light to recover per chapter, and animals with different motives.
 
-**Play:** Open [dist/wonderwood.html](dist/wonderwood.html) in Firefox or Chromium. No server, npm packages, or internet connection needed.
+**Play:** Run `node scripts/build.mjs` from the repository root, then open `dist/wonderwood.html` in Firefox or Chromium. No server, npm packages, or internet connection are needed. Pull request builds also publish a **wonderwood-playable-preview** artifact in GitHub Actions containing the complete standalone HTML.
 
 ## The loop
 
@@ -46,13 +46,14 @@ Movement uses acceleration, braking, buffered jumps, coyote time, variable jump 
 - **src/games/animal-adventure/chapters.js** — story, objectives and environmental hints.
 - **src/games/animal-adventure/catalog.js** — companions, wildlife, and foods.
 - **src/games/animal-adventure/game.js** — physics, creature AI, edible lures, capture states, collectibles, camera, rendering and HUD.
-- **src/platform/** — generated sprite art, audio, input, persistence, and custom PNG map importing.
+- **src/assets/** — painted sprite sheets, Meadow scenery and landscape tiles (embedded into the offline build).
+- **src/platform/** — sprite and landscape drawing, audio, input, persistence, and custom map importing.
 - **src/main.js** and **src/style.css** — menu, chapter flow and interface.
 - **scripts/build.mjs** — builds the single-file offline game.
 
 Existing bitmap examples in **src/games/animal-adventure/levels/** remain available for users of the custom Load PNG Map feature, but they are no longer the built-in chapter maps.
 
-Build with Node.js 20+: **node scripts/build.mjs**
+Build with Node.js 20+: **node scripts/build.mjs**. The standalone file is generated rather than version-controlled, because the full-resolution artwork makes the compiled HTML large.
 
 Run browser regression tests after installing Python Playwright and its Chromium browser:
 
