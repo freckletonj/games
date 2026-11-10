@@ -156,6 +156,21 @@ WW.scenery = (() => {
       if (n && e && !neighbors.ne) {
         ctx.beginPath(); ctx.arc(x + 16, y, 5, Math.PI / 2, Math.PI); ctx.stroke();
       }
+      if (s && w && !neighbors.sw) {
+        ctx.beginPath(); ctx.arc(x, y + 16, 5, -Math.PI / 2, 0); ctx.stroke();
+      }
+      if (s && e && !neighbors.se) {
+        ctx.beginPath(); ctx.arc(x + 16, y + 16, 5, Math.PI, 3 * Math.PI / 2); ctx.stroke();
+      }
+      // Bottom convex cliff shoulders are rock, never painted grass.
+      if (!s && !w) {
+        ctx.beginPath(); ctx.moveTo(x, y + 10);
+        ctx.quadraticCurveTo(x, y + 16, x + 6, y + 16); ctx.stroke();
+      }
+      if (!s && !e) {
+        ctx.beginPath(); ctx.moveTo(x + 10, y + 16);
+        ctx.quadraticCurveTo(x + 16, y + 16, x + 16, y + 10); ctx.stroke();
+      }
     } else if (kind === 'platform') {
       if (!n) {ctx.fillStyle = p.platformTop; ctx.fillRect(x, y, 16, 7);}
       ctx.fillStyle = '#213c5473';
@@ -192,6 +207,10 @@ WW.scenery = (() => {
       ctx.strokeStyle = '#a2e9dd8c';
       if (n && w && !neighbors.nw) {ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI / 2); ctx.stroke();}
       if (n && e && !neighbors.ne) {ctx.beginPath(); ctx.arc(x + 16, y, 4, Math.PI / 2, Math.PI); ctx.stroke();}
+      if (s && w && !neighbors.sw) {ctx.beginPath(); ctx.arc(x, y + 16, 4, -Math.PI / 2, 0); ctx.stroke();}
+      if (s && e && !neighbors.se) {ctx.beginPath(); ctx.arc(x + 16, y + 16, 4, Math.PI, 3 * Math.PI / 2); ctx.stroke();}
+      if (!s && !w) {ctx.beginPath(); ctx.arc(x, y + 16, 3, -Math.PI / 2, 0); ctx.stroke();}
+      if (!s && !e) {ctx.beginPath(); ctx.arc(x + 16, y + 16, 3, Math.PI, 3 * Math.PI / 2); ctx.stroke();}
     }
     ctx.restore();
     return true;

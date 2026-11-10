@@ -137,3 +137,9 @@ A compiled JSON can declare `"biome": "meadow" | "coast" | "summit"`; the
 in-game PNG import form has the matching scenery selector. This lets the same
 proxy collision layout be visualized with different painted backdrops and
 terrain color treatments, without changing its gameplay cells.
+
+The eight-neighbor renderer now handles the bottom-left and bottom-right
+concave/convex shoreline and rock shoulders as well as the upper corners.
+Browser tests compare each missing diagonal against an interior tile for
+both water and ground, in addition to testing visible alpha continuity
+across terrain cell boundaries.

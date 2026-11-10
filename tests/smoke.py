@@ -84,6 +84,28 @@ with sync_playwright() as playwright:
             WW.scenery.tile(ctx, 'meadow', kind, 0, 0, 0,
                 {n:false,e:false,s:false,w:false,nw:false,ne:false}));
     }""")
+    # Each missing diagonal exposes a distinct concave corner on a ground or
+    # water tile. Test all four quadrants, not just the upper shoreline.
+    diagonal_corners = page.evaluate("""() => {
+        const corners = ['nw', 'ne', 'sw', 'se'];
+        const changes = [];
+        for (const kind of ['ground', 'water']) {
+            const render = neighbors => {
+                const canvas = document.createElement('canvas');
+                canvas.width = canvas.height = 16;
+                WW.scenery.tile(canvas.getContext('2d'), 'meadow', kind, 0, 0, 0, neighbors);
+                return canvas.getContext('2d').getImageData(0, 0, 16, 16).data;
+            };
+            const all = {n:true,e:true,s:true,w:true,nw:true,ne:true,sw:true,se:true};
+            const reference = render(all);
+            for (const corner of corners) {
+                const altered = render({...all, [corner]:false});
+                changes.push(altered.some((value, i) => value !== reference[i]));
+            }
+        }
+        return changes;
+    }""")
+    assert all(diagonal_corners), diagonal_corners
     # A semantic proxy PNG creates gameplay cells; shoreline shape is derived later.
     parsed = page.evaluate("""() => {
         const tile = 4, w = 24, h = 12;
