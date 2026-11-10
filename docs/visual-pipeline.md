@@ -41,9 +41,9 @@ Initial semantic compiler implementation is intentionally conservative: determin
 
 ## First-slice review checklist
 
-- [ ] External character sprite atlas and manifest in the running game
+- [x] External character sprite atlas and manifest in the running game
 - [ ] High-resolution scene/tiles with foot-anchor and tile-edge alignment tests
-- [ ] Deterministic semantic PNG compiler and tests
+- [x] Deterministic semantic PNG compiler and tests
 - [ ] Repair/validation report; unreachable or invalid objectives fail loudly
 - [ ] Single-file offline build embeds assets
 - [ ] Browser smoke/playability/route tests pass
@@ -58,3 +58,18 @@ Initial semantic compiler implementation is intentionally conservative: determin
 **Meadow environment plate:** “Side-scrolling enchanted meadow with colossal lantern trees, amber bioluminescence, moss terraces, mushrooms and layered teal forest mist, readable separated background/foreground planes, deliberately clear playable surfaces, no characters, no UI or text.”
 
 Make pose images individually when atlas generation is inconsistent. Normalize alpha, pivot and silhouette scale before packing. Treat generative imagery as artwork, **not** authoritative geometry.
+
+## Try the first pipeline slice
+
+Install Pillow (the dependency already used by `scripts/make-levels.py`), then run:
+
+```bash
+python -m pip install pillow
+python scripts/compile-semantic-level.py path/to/mosslight-semantic.png --pixels-per-tile 4 --out generated/meadow-01.level.json
+python tests/semantic_pipeline.py
+node scripts/build.mjs
+```
+
+The compiler writes the gameplay JSON, `generated/meadow-01.level.semantic.png` (grid-snapped, one pixel per tile), and a `generated/meadow-01.level.report.json` diagnostics file. A missing/unsafe start or exit fails export. A passing static report is **not** proof of reachability or ability gating; those require physics-based tests. In the game, use **Load PNG map** and select the compiled `.json` file to try it. The existing built-in chapters are unchanged.
+
+The first integrated atlas is `src/assets/characters/springaroo/sheet.svg` with an eight-frame manifest. It is an original scalable **starter atlas**, not a final diffusion-generated animation pack. It exercises the embedding, animation-state selection, pivot handling, and offline render path before production art is substituted.
