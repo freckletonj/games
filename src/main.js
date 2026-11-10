@@ -24,7 +24,7 @@ WW.main = (() => {
         <div class="buttons">${button('play',playLabel,'primary')}${button('chapters','✦ CHOOSE A LEVEL')}</div>
         <div class="home-note">3 unique powers &nbsp; · &nbsp; 8 living creatures &nbsp; · &nbsp; ${completed}/3 completed</div>
       </div>
-      <div class="home-art" aria-label="Four magical creatures beneath a glowing moon" role="img">
+      <div class="home-art storybook" aria-label="Four magical creatures beneath a glowing moon" role="img">
         <div class="art-stars"></div><div class="art-orbit"></div>
         ${['springaroo','skyling','tideling','emberkit'].map(t=>'<div class="art-portrait">'+portrait(t)+'</div>').join('')}
         <div class="art-caption">THE WOODS ARE WAKING</div>
@@ -38,6 +38,8 @@ WW.main = (() => {
       <b>Player 2:</b> J / L move · I jump · O food · M change food · P catch orb · H choose form · U transform · Y revive · N camp<br>
       <b>Menus:</b> Arrow keys + Enter · Escape pauses · Gems collect on contact</div>
     </details>`);
+    const art=menu.querySelector('.home-art');
+    if(art)art.style.backgroundImage=`url("${WW.scenery.url('backdrop')}")`;
   }
   function chapters(){
     screen='chapters';
@@ -174,6 +176,12 @@ WW.main = (() => {
   }
   function idle(now){
     ctx.setTransform(3,0,0,3,0,0);
+    if(WW.scenery.background(ctx,'meadow',0)){
+      for(let x=0;x<480;x+=16)WW.scenery.tile(ctx,'meadow','ground',x,244,x, true);
+      WW.art.draw(ctx,'springaroo',85,244,Math.floor(now/300)%4,false,null,{action:'run',time:now*.001});
+      WW.art.draw(ctx,'hero',235,244,Math.floor(now/300)%4,false,null,{action:'idle',time:now*.001});
+      return;
+    }
     const t=now*.001;const sky=ctx.createLinearGradient(0,0,0,270);sky.addColorStop(0,'#73b6cf');sky.addColorStop(1,'#dbedcf');ctx.fillStyle=sky;ctx.fillRect(0,0,480,270);
     for(let layer=0;layer<3;layer++){
       const h=135+layer*38;ctx.fillStyle=['#aacfc1','#77b0a9','#427e7a'][layer];ctx.beginPath();ctx.moveTo(0,270);
