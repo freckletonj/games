@@ -1,16 +1,16 @@
 # Wonderwood — a little world worth exploring
 
-A dependency-free, offline 2D creature adventure for one or two players. Three chapters, three distinct traversal companions, one hidden light to recover per chapter, and animals with different motives.
+A dependency-free, offline 2D creature adventure for one or two players. Three chapters, eight catchable creatures with distinct behaviors, three essential traversal transformations, and one hidden light to recover per chapter.
 
 **Play:** Run `node scripts/build.mjs` from the repository root, then open `dist/wonderwood.html` in Firefox or Chromium. No server, npm packages, or internet connection are needed. Pull request builds also publish a **wonderwood-playable-preview** artifact in GitHub Actions containing the complete standalone HTML.
 
 ## The loop
 
-**Explore → leave food → watch an animal approach and eat → catch a distracted companion → unlock a traversal power → retrieve one light → return to the gate.**
+**Explore → leave food as an explorer → catch a distracted creature → transform into your latest friend → use its power to outwit wildlife → retrieve the light → return to the gate.**
 
-Food is not a weapon. Press F to toss selected fruit. It arcs, settles on terrain, and remains for up to 24 seconds. Nearby creatures smell food and approach to eat it. Favorites add 60 trust; other food adds 36. At 100 trust (two favorites or three other treats), a capturable creature becomes DISTRACTED for 12 seconds. An accurately aimed G orb succeeds without randomness. Feed a creature enough, then throw an orb while it is distracted.
+Food is not a weapon. While in **explorer form**, press F to toss selected fruit. It arcs, settles on terrain, and remains for up to 24 seconds. Creatures smell food and approach to eat it. Favorites add 60 trust; other food adds 36. At 100 trust (two favorites or three other treats), **any species** becomes DISTRACTED for 12 seconds. An accurately aimed G orb captures it without randomness. Press T to transform into the **last creature you caught**, or revert. Catching a different species replaces the previous form (including an active transformation). While transformed, **F uses that creature's power instead of throwing food**; revert with T to feed again.
 
-Only three species unlock transformations. Their abilities remain available for the **entire chapter**, without time limits:
+All eight species can be transformed into. Only three are required to reach their chapter's light; unlike the smaller encounter powers, they change major traversal physics:
 
 | Companion | Power | Chapter |
 | --- | --- | --- |
@@ -18,7 +18,17 @@ Only three species unlock transformations. Their abilities remain available for 
 | Tidefox | Swim and dive | Crystal Coast: the Pearl Light |
 | Moonwing | Hold Jump to fly | Starfall Summit: the Aurora Light |
 
-Other animals are wildlife, not inventory. Mossbacks wander, Prismtails sprint away, Glimmermoths flee, Cloudwhisps drift, and Emberkits chase intruders inside their territory. Wild animals can eat, but cannot be captured. None indiscriminately fire projectiles.
+The other five transformations provide situational, cooldown-limited abilities:
+
+| Creature | F ability | Encounter role / strategy |
+| --- | --- | --- |
+| Mossback | Honey glob: briefly immobilizes wildlife | Slow, predictable wanderer. Run around or hop over. |
+| Prismtail | Bubble trap: briefly lifts an animal | Runs away, then telegraphs a straight dash. Jump or step aside. |
+| Glimmermoth | Short hover: slows falling briefly, never lifts | Flees nearby explorers. Lure it, then give it room. |
+| Cloudwhisp | Wind blast: pushes and stuns an animal | Winds up a gust along a marked line. Get behind it or move out of the lane. |
+| Emberkit | Short stunning spark | Chases and telegraphs a damaging dash. Leap over it, stomp its head, or distract it. |
+
+All creatures have recognizable patrols and non-random attack tells. Head-stomping from above gives the explorer a bounce and temporarily knocks the animal out; it returns after a short rest. Bubbles carry an animal upward briefly; honey holds it still; wind knocks it back and stuns it. These are friendly, temporary setbacks, not lethal attacks. You can also run past or use food to avoid confrontations. Captured animals return to their habitats later.
 
 The new authored 2D levels include changing terrain elevation, floating paths, shallow crossings, large illustrated landmarks, treasure, repeatable picnic baskets, and healing checkpoints. An objective guide points to a companion first, then to the chapter light, then home. Completed chapters are saved in this browser.
 
@@ -29,16 +39,15 @@ The new authored 2D levels include changing terrain elevation, floating paths, s
 | Move | A / D, arrows | J / L | Stick / D-pad |
 | Jump / fly / swim up | W / Space | I | South / A |
 | Swim down | S | K | Stick down |
-| Leave fruit | F | O | East / B |
+| Leave fruit (explorer) / use creature power (transformed) | F | O | East / B |
 | Change fruit | E | M | Trigger |
 | Throw capture orb | G | P | West / X |
-| Choose companion | Q | H | Right shoulder |
 | Transform / revert | T | U | North / Y |
 | Revive | R | Y | Left shoulder |
 | Recall to camp | C | N | Back / Select |
 | Pause | Escape | Escape | Escape |
 
-Movement uses acceleration, braking, buffered jumps, coyote time, variable jump heights, and camera anticipation. Contact with territorial Emberkits can cause damage even midair, with visible knockback and brief invulnerability. Controller vibration is optional.
+Movement uses acceleration, braking, buffered jumps, coyote time, variable jump heights, and camera anticipation. Emberkit contact and Prismtail's active dash can cost hearts, with brief invulnerability; Cloudwhisp gusts cause knockback rather than heart loss. Enemies visibly wind up before their attacks. Controller vibration is optional.
 
 ## Developer guide
 
@@ -87,7 +96,7 @@ Run browser regression tests after installing Python Playwright and its Chromium
     python tests/routes.py
     python tests/game_feel.py
 
-GitHub Actions runs the same suite on pull requests. The traversal suite checks that the three chapter lights require their intended power using actual player physics.
+GitHub Actions runs the same suite on pull requests. The traversal suite checks that the three chapter lights require their intended power using actual player physics. `tests/creature_mechanics.py` additionally checks every capturable form, latest-catch replacement, spell consequences, safe head-stomps and hazard windup.
 
 **Status:** This is a playable iteration, not a finished commercial release. Dedicated animation art, encounter pacing and real-device playtesting remain important. The standalone HTML, browser storage and vibration should be tested on actual browsers and controllers before a public release.
 
