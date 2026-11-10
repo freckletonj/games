@@ -1,13 +1,14 @@
 {
   "name": "hero",
-  "image": "sheet.svg",
-  "frameWidth": 96,
-  "frameHeight": 96,
+  "image": "sheet.png",
+  "frameWidth": 444,
+  "frameHeight": 444,
+  "columns": 4,
   "origin": {
-    "x": 50,
-    "y": 85
+    "x": 220,
+    "y": 398
   },
-  "worldScale": 0.45,
+  "worldScale": 0.11,
   "animations": {
     "idle": {
       "frames": [
@@ -19,37 +20,39 @@
     "run": {
       "frames": [
         2,
-        3
+        3,
+        4,
+        5
       ],
       "fps": 10
     },
     "jump": {
       "frames": [
-        4
+        6
       ],
       "fps": 1
     },
     "fall": {
       "frames": [
-        5
+        6
       ],
       "fps": 1
     },
     "eat": {
       "frames": [
-        6
+        1
       ],
       "fps": 1
     },
     "happy": {
       "frames": [
-        7
+        1
       ],
       "fps": 1
     },
     "hurt": {
       "frames": [
-        5
+        7
       ],
       "fps": 1
     },
@@ -61,7 +64,7 @@
     },
     "alert": {
       "frames": [
-        7
+        2
       ],
       "fps": 1
     }
