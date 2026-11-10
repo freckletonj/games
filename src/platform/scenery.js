@@ -23,13 +23,23 @@ WW.scenery = (() => {
   }
 
   function landmark(ctx, biome, type, time) {
-    if (biome !== 'meadow' || type !== 'tree' || !ready('lanternTree')) return false;
+    const types = {
+      tree:['lanternTree',154,198],
+      crystal:['crystal',108,126],
+      reef:['reef',115,100],
+      observatory:['observatory',117,145],
+      island:['island',129,116],
+      pond:['pond',118,71],
+      lantern:['lantern',62,91],
+      shells:['shells',110,78]
+    };
+    const asset=types[type];
+    if(!asset)return false;
     ctx.save();
-    ctx.rotate(Math.sin(time * .55) * .004);
-    ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(images.lanternTree, -91, -238, 182, 239);
+    ctx.translate(0,Math.sin(time*.8)*.65);
+    const drawn=WW.illustrations.draw(ctx,asset[0],0,1,asset[1],asset[2],.97);
     ctx.restore();
-    return true;
+    return drawn;
   }
 
   // Assemble mirrored, 128-world-unit swatches from the interior of the
