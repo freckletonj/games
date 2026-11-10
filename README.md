@@ -46,10 +46,11 @@ Movement uses acceleration, braking, buffered jumps, coyote time, variable jump 
 - **src/games/animal-adventure/chapters.js** — story, objectives and environmental hints.
 - **src/games/animal-adventure/catalog.js** — companions, wildlife, and foods.
 - **src/games/animal-adventure/game.js** — physics, creature AI, edible lures, capture states, collectibles, camera, rendering and HUD.
-- **src/assets/** — painted sprite sheets, Meadow scenery and landscape tiles (embedded into the offline build).
+- **src/assets/** — painted hero, Springaroo, Tidefox, Moonwing, and Emberkit atlases, Meadow scenery and landscape tiles (embedded into the offline build). Other wildlife still uses procedural fallback until new art is accepted.
 - **src/platform/** — sprite and landscape drawing, audio, input, persistence, and custom map importing.
 - **src/main.js** and **src/style.css** — menu, chapter flow and interface.
 - **scripts/build.mjs** — builds the single-file offline game.
+- **scripts/pack-character.py** — aligns eight independently painted PNG poses to one foot pivot and exports a character atlas/manifest.
 
 Existing bitmap examples in **src/games/animal-adventure/levels/** remain available for users of the custom Load PNG Map feature, but they are no longer the built-in chapter maps.
 

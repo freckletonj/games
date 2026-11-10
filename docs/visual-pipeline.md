@@ -59,6 +59,22 @@ Initial semantic compiler implementation is intentionally conservative: determin
 
 Make pose images individually when atlas generation is inconsistent. Normalize alpha, pivot and silhouette scale before packing. Treat generative imagery as artwork, **not** authoritative geometry.
 
+## Second character-art pass
+
+Tidefox (`tideling`), Moonwing (`skyling`), and Emberkit now have small, transparent **WebP** atlases under `src/assets/characters/<kind>/sheet.webp`. These are new painted images assembled from original AI-rendered Wonderwood illustrations, with eight animation-state variations on the same foot line. They replace in-world procedural drawing and are embedded by the offline builder; the build validates WebP's VP8X image dimensions just as it validates PNG sheets.
+
+**Art-quality caveat:** the eight frames currently use pose transforms around one source illustration, not independently hand-illustrated walk/jump/flight cycles. The remaining Mossback, Prismtail, Glimmermoth, and Cloudwhisp still use the procedural fallback. Full pose art, more detailed background layers, and tile-seam cleanup are separate follow-ups; no geometry or AI logic changed.
+
+To replace a creature with polished, independently painted frames, supply eight RGBA PNGs in `src/assets/characters/<kind>/poses/`: `idle-0.png`, `idle-1.png`, `run-0.png` through `run-3.png`, `jump.png`, and `hurt.png`. Then run:
+
+```bash
+python scripts/pack-character.py src/assets/characters/<kind>
+node scripts/build.mjs
+python tests/character_packer.py
+```
+
+The packer trims transparent margins and applies **one shared scale** to all eight poses, aligns feet to the same origin, and writes an RGBA `sheet.png` plus compatible `manifest.json`. The source PNGs must already have transparency and a clean isolated character; it deliberately does not attempt automatic background removal. Additional actions may reuse painted frames until bespoke poses exist.
+
 ## Try the first pipeline slice
 
 Install Pillow (the dependency already used by `scripts/make-levels.py`), then run:

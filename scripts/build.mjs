@@ -6,25 +6,31 @@ const dataUrl=async (name,mime)=>`data:${mime};base64,${(await readFile(resolve(
 const scripts=['src/platform/storage.js','src/platform/input.js','src/platform/levels.js','src/platform/scenery.js','src/platform/sprite-atlas.js','src/platform/art.js','src/platform/audio.js','src/games/animal-adventure/catalog.js','src/games/animal-adventure/chapters.js','src/games/animal-adventure/worlds.js','src/games/animal-adventure/game.js','src/main.js'];
 const source=await read('index.html');
 const css=await read('src/style.css');
-// Every character with a manifest and PNG sheet is embedded automatically.
+// Every character with a manifest and painted PNG or WebP atlas is embedded automatically.
 const characterDirs = (await readdir(resolve(root, 'src/assets/characters'), {withFileTypes: true}))
   .filter(entry => entry.isDirectory()).map(entry => entry.name).sort();
 const atlases = Object.fromEntries(await Promise.all(characterDirs.map(async name => {
   const directory = `src/assets/characters/${name}`;
   const manifest = JSON.parse(await read(`${directory}/manifest.json`));
   const image = await readFile(resolve(root, directory, manifest.image));
-  const width = image.readUInt32BE(16), height = image.readUInt32BE(20);
+  const format = manifest.image.endsWith('.png') ? 'png' : 'webp';
+  // PNG dimensions are big-endian in IHDR; transparent WebP uses the VP8X header.
+  const validHeader = format === 'png'
+    ? image.subarray(1, 4).toString('ascii') === 'PNG'
+    : image.toString('ascii', 0, 4) === 'RIFF' &&
+      image.toString('ascii', 8, 16) === 'WEBPVP8X';
+  const width = format === 'png' ? image.readUInt32BE(16) : 1 + image.readUIntLE(24, 3);
+  const height = format === 'png' ? image.readUInt32BE(20) : 1 + image.readUIntLE(27, 3);
   const rows = height / manifest.frameHeight;
   const cellCount = rows * manifest.columns;
-  if (!manifest.image.endsWith('.png') ||
-      width !== manifest.columns * manifest.frameWidth ||
+  if (!validHeader || width !== manifest.columns * manifest.frameWidth ||
       !Number.isInteger(rows) || rows < 1 ||
       Object.values(manifest.animations).some(animation =>
         !animation.frames.length || animation.fps <= 0 ||
         animation.frames.some(frame => !Number.isInteger(frame) || frame < 0 || frame >= cellCount))) {
     throw Error(`Invalid sprite grid or animation frames: ${name}`);
   }
-  return [name, {manifest, image: `data:image/png;base64,${image.toString('base64')}`}];
+  return [name, {manifest, image: `data:image/${format};base64,${image.toString('base64')}`}];
 })));
 const scenes = {
   backdrop: await dataUrl('src/assets/scenes/meadow/backdrop.webp','image/webp'),

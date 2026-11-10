@@ -20,6 +20,11 @@ with sync_playwright() as playwright:
     assert page.evaluate("Boolean(window.WW_EMBEDDED_ATLASES?.springaroo)")
     assert page.evaluate("Boolean(window.WW_EMBEDDED_ATLASES?.hero)")
     assert page.evaluate("Boolean(window.WW_EMBEDDED_SCENES?.backdrop)")
+    # Companions and the Emberkit wildlife now load from painted WebP atlases.
+    for kind in ('tideling', 'skyling', 'emberkit'):
+        assert page.evaluate(
+            "(kind) => WW_EMBEDDED_ATLASES[kind].image.startsWith('data:image/webp;base64,')", kind
+        )
     page.wait_for_function("() => ['backdrop','lanternTree','tiles'].every(WW.scenery.ready)")
     assert page.evaluate("WW.scenery.url('backdrop').startsWith('data:image/webp;base64,')")
     assert page.evaluate("document.querySelector('.home-art').style.backgroundImage.includes('data:image/webp;base64,')")
@@ -44,6 +49,10 @@ with sync_playwright() as playwright:
             running.some((pixel, index) => pixel !== falling[index]);
     }""")
     assert animated, 'Painted sprite animation states must render differently'
+    page.wait_for_function("""() => ['tideling', 'skyling', 'emberkit'].every(name =>
+        WW.spriteAtlas.draw(document.querySelector('#game').getContext('2d'),
+            name, 90, 120, 0, false, null, {action:'run', time:.13})
+    )""")
     assert page.evaluate("WW.spriteAtlas.portrait('hero').startsWith('data:image/png;base64,')")
     assert page.evaluate("WW.spriteAtlas.portrait('springaroo').startsWith('data:image/png;base64,')")
     # A compiled level JSON bundle must be loadable without any network access.
