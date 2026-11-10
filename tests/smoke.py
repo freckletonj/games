@@ -106,6 +106,24 @@ with sync_playwright() as playwright:
         return changes;
     }""")
     assert all(diagonal_corners), diagonal_corners
+    # Distinct visuals for locked and unlocked gates; readable illustrated signs.
+    props = page.evaluate("""() => {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 100;
+        const ctx = canvas.getContext('2d');
+        const pixels = () => [...ctx.getImageData(0, 0, 100, 100).data];
+        WW.props.gate(ctx, 50, 80, false, 'meadow', 0);
+        const closed = pixels();
+        ctx.clearRect(0, 0, 100, 100);
+        WW.props.gate(ctx, 50, 80, true, 'meadow', 0);
+        const open = pixels();
+        ctx.clearRect(0, 0, 100, 100);
+        WW.props.sign(ctx, 50, 80, 'THE PICNIC', 'meadow', 0);
+        const sign = pixels();
+        return {gateChanged: closed.some((v,i) => v !== open[i]),
+                signVisible: sign.some((v,i) => i % 4 === 3 && v > 0)};
+    }""")
+    assert props == {'gateChanged': True, 'signVisible': True}, props
     # A semantic proxy PNG creates gameplay cells; shoreline shape is derived later.
     parsed = page.evaluate("""() => {
         const tile = 4, w = 24, h = 12;
