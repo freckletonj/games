@@ -12,7 +12,7 @@ WW.main = (() => {
     currentChapterIndex=nextUnfinished<0?0:nextUnfinished;
     const completed=WW.chapters.filter(chapter=>Object.hasOwn(finished,chapter.id)).length;
     const playLabel=currentChapterIndex?'▶ CONTINUE: '+WW.chapters[currentChapterIndex].name:'▶ PLAY FIRST FOREST';
-    const portrait=type=>'<img src="'+WW.art.portrait(type)+'" alt="'+WW.catalog.forms[type].name+'">';
+    const portrait=type=>'<img src="'+WW.art.portrait(type)+'" alt="'+WW.catalog.creatures[type].name+'">';
     panel(`
     <div class="home-layout">
       <div class="home-copy">
