@@ -18,9 +18,14 @@ with sync_playwright() as playwright:
     page.on('pageerror', lambda error: errors.append(str(error)))
     page.set_content(source, wait_until='domcontentloaded')
     assert page.evaluate("Boolean(window.WW_EMBEDDED_ATLASES?.springaroo)")
-    page.wait_for_function("""() => WW.spriteAtlas.draw(
-        document.querySelector('#game').getContext('2d'), 'springaroo', 40, 80, 0
-    )""")
+    assert page.evaluate("Boolean(window.WW_EMBEDDED_ATLASES?.hero)")
+    assert page.evaluate("Boolean(window.WW_EMBEDDED_SCENES?.backdrop)")
+    page.wait_for_function("() => ['backdrop','lanternTree','tiles'].every(WW.scenery.ready)")
+    assert page.evaluate("WW.scenery.url('backdrop').startsWith('data:image/svg+xml')")
+    assert page.evaluate("document.querySelector('.home-art').style.backgroundImage.includes('data:image/svg+xml')")
+    page.wait_for_function("""() => ['springaroo','hero'].every(name => WW.spriteAtlas.draw(
+        document.querySelector('#game').getContext('2d'), name, 40, 80, 0
+    ))""")
     # A compiled level JSON bundle must be loadable without any network access.
     imported = page.evaluate("""async () => {
         const original = WW.worlds.create(WW.chapters[0]);
