@@ -8,6 +8,11 @@ WW.main = (() => {
   const button=(id,label,kind='secondary')=>`<button class="${kind}" data-action="${id}">${label}</button>`;
   function home(){
     if(game){game.stop();game=null;}paused=true;screen='home';cancelCalibration?.();cancelCalibration=null;
+    const finished=WW.storage.data.progress.chapters||{};
+    const nextUnfinished=WW.chapters.findIndex(chapter=>!Object.hasOwn(finished,chapter.id));
+    currentChapterIndex=nextUnfinished<0?0:nextUnfinished;
+    const completed=WW.chapters.length-(nextUnfinished<0?0:WW.chapters.filter(chapter=>!Object.hasOwn(finished,chapter.id)).length);
+    const playLabel=currentChapterIndex?'▶ CONTINUE: '+WW.chapters[currentChapterIndex].name:'▶ PLAY FIRST FOREST';
     const portrait=type=>'<img src="'+WW.art.portrait(type)+'" alt="'+WW.catalog.forms[type].name+'">';
     panel(`
     <div class="home-layout">
@@ -17,8 +22,8 @@ WW.main = (() => {
         <div class="home-rule">A LITTLE MAGIC GOES A LONG WAY</div>
         <h2>Every creature has a story.<br>Every forest has a secret.</h2>
         <p>Wander through moonlit meadows, luminous reefs and starlit peaks. Make friends with magical creatures, borrow their extraordinary powers, and find the lost gems together.</p>
-        <div class="buttons">${button('play','▶ PLAY FIRST FOREST','primary')}${button('chapters','✦ CHOOSE A LEVEL')}</div>
-        <div class="home-note">3 enchanted chapters &nbsp; · &nbsp; 8 curious companions &nbsp; · &nbsp; 1–2 explorers</div>
+        <div class="buttons">${button('play',playLabel,'primary')}${button('chapters','✦ CHOOSE A LEVEL')}</div>
+        <div class="home-note">3 enchanted chapters &nbsp; · &nbsp; 8 curious companions &nbsp; · &nbsp; ${completed}/3 completed</div>
       </div>
       <div class="home-art" aria-label="Four magical creatures beneath a glowing moon" role="img">
         <div class="art-stars"></div><div class="art-orbit"></div>
