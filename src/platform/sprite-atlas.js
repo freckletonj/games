@@ -31,5 +31,13 @@ WW.spriteAtlas = (() => {
     return true;
   }
 
-  return {draw};
+  function portrait(name) {
+    const source = window.WW_EMBEDDED_ATLASES?.[name]?.source;
+    if(!source)return null;
+    const {frameWidth:w,frameHeight:h}=atlases[name].manifest;
+    const crop=source.replace(/width="\d+" height="\d+" viewBox="[^"]+"/,
+      `width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"`);
+    return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(crop);
+  }
+  return {draw,portrait};
 })();
