@@ -4,6 +4,12 @@ WW.spriteAtlas = (() => {
   const portraits = {};
   const atlases = Object.fromEntries(Object.entries(window.WW_EMBEDDED_ATLASES || {}).map(([name, entry]) => {
     const image = new Image();
+    image.addEventListener('load', () => {
+      const src = portrait(name);
+      for (const element of document.querySelectorAll(`img[data-sprite="${name}"]`)) {
+        element.src = src;
+      }
+    });
     image.src = entry.image;
     return [name, {image, manifest: entry.manifest}];
   }));
