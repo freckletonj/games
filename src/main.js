@@ -22,7 +22,7 @@ WW.main = (() => {
         <h2>Every creature has a story.<br>Every forest has a secret.</h2>
         <p>Wander through moonlit meadows, luminous reefs and starlit peaks. Make friends with magical creatures, borrow their extraordinary powers, and find the lost gems together.</p>
         <div class="buttons">${button('play',playLabel,'primary')}${button('chapters','✦ CHOOSE A LEVEL')}</div>
-        <div class="home-note">3 unique powers &nbsp; · &nbsp; 8 living creatures &nbsp; · &nbsp; ${completed}/3 completed</div>
+        <div class="home-note">8 transformations &nbsp; · &nbsp; 3 key traversal powers &nbsp; · &nbsp; ${completed}/3 completed</div>
       </div>
       <div class="home-art storybook" aria-label="Four magical creatures beneath a glowing moon" role="img">
         <div class="art-stars"></div><div class="art-orbit"></div>
@@ -34,8 +34,8 @@ WW.main = (() => {
       <div class="buttons">${button('journal','Creature journal')}${button('settings','Settings')}${button('calibrate','Controller setup')}${button('level','Load PNG map')}</div>
     </div>
     <details class="control-guide"><summary>View keyboard controls</summary>
-      <div class="instructions"><b>Player 1:</b> A / D move · W jump · F food · E change food · G catch orb · Q choose form · T transform · R revive · C camp<br>
-      <b>Player 2:</b> J / L move · I jump · O food · M change food · P catch orb · H choose form · U transform · Y revive · N camp<br>
+      <div class="instructions"><b>Player 1:</b> A / D move · W jump · F food / creature power · E change food · G catch orb · T transform · R revive · C camp<br>
+      <b>Player 2:</b> J / L move · I jump · O food / creature power · M change food · P catch orb · U transform · Y revive · N camp<br>
       <b>Menus:</b> Arrow keys + Enter · Escape pauses · Gems collect on contact</div>
     </details>`);
     const art=menu.querySelector('.home-art');
@@ -81,7 +81,7 @@ WW.main = (() => {
     screen='calibration';const pads=WW.input.pads();if(!pads.length){panel(`<div class="kicker">Controller setup</div><h2>No gamepad detected</h2><p>Connect a USB controller, then press any button on it while Firefox is focused. The browser only exposes gamepads after interaction.</p><div class="buttons">${button('calibrate','Try again','primary')}${button('home','Back')}</div>`);return;}
     const p=pads[0];
     panel(`<div class="kicker">Controller setup · ${p.index+1}</div><h2>Press the requested control</h2><p id="calibration-step"></p><p class="hint">Release each control before the next step. Saves automatically by controller name.</p><div class="buttons">${button('home','Cancel')}</div>`);
-    const display={left:'MOVE LEFT',right:'MOVE RIGHT',down:'DIVE DOWN',jump:'JUMP / FLY',snack:'THROW SELECTED FOOD',orb:'MAGIC CATCH ORB',cycle:'CHOOSE ANIMAL',transform:'SWITCH FORM',revive:'WAKE / REVIVE',foodCycle:'CHANGE FOOD',recall:'RETURN TO CAMP'};
+    const display={left:'MOVE LEFT',right:'MOVE RIGHT',down:'DIVE DOWN',jump:'JUMP / FLY',snack:'FOOD / CREATURE POWER',orb:'MAGIC CATCH ORB',transform:'SWITCH FORM',revive:'WAKE / REVIVE',foodCycle:'CHANGE FOOD',recall:'RETURN TO CAMP'};
     cancelCalibration=WW.input.calibrate(p.index,(step,actions)=>{
       const element=document.getElementById('calibration-step');
       if(element)element.textContent=`${step+1} / ${actions.length} — ${display[actions[step]]}`;
@@ -98,17 +98,17 @@ WW.main = (() => {
     screen='journal';
     const species=Object.entries(WW.catalog.creatures).map(([kind,c])=> {
       const form=WW.catalog.forms[kind];
-      const role=form?'Companion · '+form.power:'Wildlife · '+c.role;
+      const role=c.role+' · '+form.power;
       return '<div class="journal-card"><img src="'+WW.art.portrait(kind)+'" alt=""><div><b>'+c.name+
         '</b><small>'+role+'<br>Favorite: '+WW.catalog.foods[c.favorite].name+
-        (form?' · Befriend to unlock its power':' · Cannot transform')+'</small></div></div>';
+        ' · Counterplay: '+c.tactic+'</small></div></div>';
     }).join('');
     const foods=Object.entries(WW.catalog.foods).map(([kind,c])=>
       '<span class="food-guide"><img src="'+WW.art.foodIcon(kind)+'" alt="">'+c.name+'</span>').join('');
     panel('<div class="kicker">Wonderwood field notes</div><h2>Creatures have lives of their own</h2>'+
-      '<p>Leave fruit on the ground. Watch creatures approach and eat. Two favorite treats (or three others) will distract a companion for 12 seconds; while it is distracted, throw an orb to befriend it. That power remains yours for the chapter.</p>'+
+      '<p>Leave fruit on the ground. Watch creatures approach and eat. Two favorite treats (or three others) distract any creature for 12 seconds. Throw a G orb to befriend it. Only your latest captured species remains available to transform into; T toggles explorer / creature. F throws food as an explorer but casts your creature power while transformed.</p>'+
       '<div class="journal-grid">'+species+'</div><h3>Picnic basket</h3><div class="guide-foods">'+foods+'</div>'+
-      '<p>Not every animal is a transformation. Some run away, some wander, some guard their territory. Only Springaroo, Tidefox and Moonwing share movement powers.</p>'+
+      '<p>All eight animals can befriend you. Springaroo, Tidefox and Moonwing are essential for the three lights; other powers offer smaller tactical advantages. Run past, time a head stomp for a brief knockout, lure a creature with fruit, or use a borrowed spell. Watch the warning line before a dash or gust.</p>'+
       '<div class="buttons">'+button('home','Back to menu','primary')+'</div>');
   }
   function pause(){if(!game||screen!=='playing')return;paused=true;screen='paused';panel(`<div class="kicker">Adventure on hold</div><h2>Paused</h2><p>Snack time? Your forest friends will still be here.</p><div class="buttons">${button('resume','Resume','primary')}${button('camp','Return everyone to camp')}${button('checkpoint','Warp to last checkpoint')}${button('restart','Restart level')}${button('home','Main menu')}</div>`);}
