@@ -4,24 +4,40 @@ WW.main = (() => {
   const menu=document.getElementById('menu');const hud=document.getElementById('hud');
   let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,pixelsPerTile=1,menuPadLatch='',currentChapterIndex=0;
   const builtinMaps=window.WONDERWOOD_LEVELS;
-  const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel">${content}</section>`;menu.querySelector('button')?.focus({preventScroll:true});};
+  const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel ${screen==='home'?'panel-home':''}">${content}</section>`;menu.querySelector('button')?.focus({preventScroll:true});};
   const button=(id,label,kind='secondary')=>`<button class="${kind}" data-action="${id}">${label}</button>`;
   function home(){
     if(game){game.stop();game=null;}paused=true;screen='home';cancelCalibration?.();cancelCalibration=null;
-    const portraits=Object.keys(WW.catalog.forms).map(t=>`<span class="menu-creature" title="${WW.catalog.forms[t].name} · ${WW.catalog.forms[t].power}"><img src="${WW.art.portrait(t)}" alt="${WW.catalog.forms[t].name}"></span>`).join('');
-    panel(`<div class="kicker">The enchanted forest is calling</div><h1>WONDERWOOD</h1>
-      <h2>Be kind. Be brave. Become magical.</h2>
-      <div class="menu-portraits">${portraits}</div>
-      <p>Three enormous regions, eight magical creatures, five snacks and secret trails. Win creatures over, catch them, transform into them and use their powers to solve the forest's secrets. You can switch forms and save their remaining time!</p>
-      <div class="buttons">${button('play','▶ PLAY FIRST FOREST','primary')}${button('chapters','✦ CHOOSE A LEVEL')}${button('journal','✦ Creature guide')}${button('settings','⚙ Settings')}${button('calibrate','🎮 Controller setup')}${button('level','▧ Load PNG map')}</div>
-      <div class="instructions"><b>Keyboard P1:</b> A / D move · W jump · F food · E change food · G catch orb · Q choose form · T transform · R wake · C back to camp<br>
-      <b>Keyboard P2:</b> J / L move · I jump · O food · M change food · P catch orb · H choose form · U transform · Y wake · N back to camp<br>
-      <b>Menu:</b> Arrow keys + Enter, or Tab + Enter · Escape pauses · All gems auto-collect on contact</div>
-      <div class="hint">${customMap?'Custom map selected.':'3 chapters · independent quests · unlimited homeward spell'} &nbsp; · &nbsp; ${WW.input.pads().length} controller(s) detected</div>`);
+    const portrait=type=>'<img src="'+WW.art.portrait(type)+'" alt="'+WW.catalog.forms[type].name+'">';
+    panel(`
+    <div class="home-layout">
+      <div class="home-copy">
+        <div class="kicker">✦ &nbsp; An enchanted world awaits &nbsp; ✦</div>
+        <h1>WONDER<span>WOOD</span></h1>
+        <div class="home-rule">A LITTLE MAGIC GOES A LONG WAY</div>
+        <h2>Every creature has a story.<br>Every forest has a secret.</h2>
+        <p>Wander through moonlit meadows, luminous reefs and starlit peaks. Make friends with magical creatures, borrow their extraordinary powers, and find the lost gems together.</p>
+        <div class="buttons">${button('play','▶ BEGIN ADVENTURE','primary')}${button('chapters','✦ CHOOSE A LEVEL')}</div>
+        <div class="home-note">3 enchanted chapters &nbsp; · &nbsp; 8 curious companions &nbsp; · &nbsp; 1–2 explorers</div>
+      </div>
+      <div class="home-art" aria-label="Four magical creatures beneath a glowing moon" role="img">
+        <div class="art-stars"></div><div class="art-orbit"></div>
+        ${['springaroo','skyling','tideling','emberkit'].map(t=>'<div class="art-portrait">'+portrait(t)+'</div>').join('')}
+        <div class="art-caption">THE WOODS ARE WAKING</div>
+      </div>
+    </div>
+    <div class="home-bottom"><span class="hint">${customMap?'Custom map ready.':'Your next adventure begins here.'} &nbsp; · &nbsp; ${WW.input.pads().length} controller(s) connected</span>
+      <div class="buttons">${button('journal','Creature journal')}${button('settings','Settings')}${button('calibrate','Controller setup')}${button('level','Load PNG map')}</div>
+    </div>
+    <details class="control-guide"><summary>View keyboard controls</summary>
+      <div class="instructions"><b>Player 1:</b> A / D move · W jump · F food · E change food · G catch orb · Q choose form · T transform · R revive · C camp<br>
+      <b>Player 2:</b> J / L move · I jump · O food · M change food · P catch orb · H choose form · U transform · Y revive · N camp<br>
+      <b>Menus:</b> Arrow keys + Enter · Escape pauses · Gems collect on contact</div>
+    </details>`);
   }
   function chapters(){
     screen='chapters';
-    const cards=WW.chapters.map((c,i)=>`<div class="chapter-card ${c.biome}"><div class="chapter-number">CHAPTER ${i+1} · ${c.difficulty}</div><h2>${c.name}</h2><p>${c.tagline}</p><div class="chapter-stats">${c.goals.length} relics · ${[260,296,320][i]} tiles · ${Object.hasOwn(WW.storage.data.progress.chapters||{},c.id)?'✓ Completed':'New adventure'}</div>${button('stage-'+i,'Explore '+c.name,i===currentChapterIndex?'primary':'secondary')}</div>`).join('');
+    const cards=WW.chapters.map((c,i)=>`<div class="chapter-card ${c.biome}"><div class="chapter-number">CHAPTER ${i+1} · ${c.difficulty}</div><div class="chapter-illustration"><img src="${WW.art.portrait(['springaroo','tideling','cloudwhisp'][i])}" alt=""></div><h2>${c.name}</h2><p>${c.tagline}</p><div class="chapter-stats">${c.goals.length} relics · ${[260,296,320][i]} tiles · ${Object.hasOwn(WW.storage.data.progress.chapters||{},c.id)?'✓ Completed':'New adventure'}</div>${button('stage-'+i,'Explore '+c.name,i===currentChapterIndex?'primary':'secondary')}</div>`).join('');
     panel(`<div class="kicker">The Wonderwood Atlas</div><h1>CHOOSE YOUR TRAIL</h1><p>Every chapter has a new landscape, different puzzles and magical neighbors. Play in any order.</p><div class="chapter-grid">${cards}</div><div class="buttons">${button('home','Back')}</div>`);
   }
   async function play(index=currentChapterIndex) {
