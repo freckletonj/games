@@ -45,9 +45,9 @@ Initial semantic compiler implementation is intentionally conservative: determin
 - [ ] High-resolution scene/tiles with foot-anchor and tile-edge alignment tests
 - [x] Deterministic semantic PNG compiler and tests
 - [ ] Repair/validation report; unreachable or invalid objectives fail loudly
-- [ ] Single-file offline build embeds assets
-- [ ] Browser smoke/playability/route tests pass
-- [ ] Screenshots comparing the current meadow and the new scene
+- [x] Single-file offline build embeds assets
+- [x] Browser smoke/playability/route tests pass
+- [x] Chromium-generated screenshots of the painted Meadow pass
 
 ## Generation prompt guardrails
 
@@ -72,4 +72,6 @@ node scripts/build.mjs
 
 The compiler writes the gameplay JSON, `generated/meadow-01.level.semantic.png` (grid-snapped, one pixel per tile), and a `generated/meadow-01.level.report.json` diagnostics file. A missing/unsafe start or exit fails export. A passing static report is **not** proof of reachability or ability gating; those require physics-based tests. In the game, use **Load PNG map** and select the compiled `.json` file to try it. The existing built-in chapters are unchanged.
 
-The first integrated atlas is `src/assets/characters/springaroo/sheet.svg` with an eight-frame manifest. It is an original scalable **starter atlas**, not a final diffusion-generated animation pack. It exercises the embedding, animation-state selection, pivot handling, and offline render path before production art is substituted.
+Generated painted sheets are now committed as `src/assets/characters/hero/sheet.png` and `src/assets/characters/springaroo/sheet.png`, each in a 4×2 grid with eight animation frames and explicit foot anchors. Painted terrain is in `src/assets/tiles/meadow/tiles.png` and the background is `src/assets/scenes/meadow/backdrop.webp`. The renderer and `scripts/build.mjs` use these image files directly; the earlier vector sheets remain in the repository as unused prototypes. This is a first art integration, not a guarantee of perfectly seamless tiles or frame registration.
+
+The compiled `dist/wonderwood.html` is generated instead of tracked: full-resolution embedded images make it large. Run `node scripts/build.mjs` locally or download the **wonderwood-playable-preview** artifact from the PR's passing GitHub Actions run.
