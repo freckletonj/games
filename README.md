@@ -90,3 +90,15 @@ Run browser regression tests after installing Python Playwright and its Chromium
 GitHub Actions runs the same suite on pull requests. The traversal suite checks that the three chapter lights require their intended power using actual player physics.
 
 **Status:** This is a playable iteration, not a finished commercial release. Dedicated animation art, encounter pacing and real-device playtesting remain important. The standalone HTML, browser storage and vibration should be tested on actual browsers and controllers before a public release.
+
+### Painted visual assets
+
+Mossback, Prismtail, Glimmermoth and Cloudwhisp now have transparent painted
+8-pose WebP atlases. The lantern tree is painted WebP instead of SVG, and Coast
+and Summit have original illustrated backgrounds rather than color-shifted
+Meadow crops. `node scripts/build.mjs` embeds every asset in the offline HTML.
+
+Flying and hovering creatures have no baked drop shadows. Ground wildlife
+shadows are projected onto the supporting terrain surface instead of following
+an airborne body's position. Gameplay collision and object placements are
+still determined by semantic level data.
