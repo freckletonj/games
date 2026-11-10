@@ -239,3 +239,16 @@ input[type=file] { max-width: 220px; font-size: 12px; }
   .compact-quest { min-height: 31px; }
   #ability-callout { top: 18%; width: min(290px,68%); padding: 8px; }
 }
+
+/* The first illustrated biome is presented in the main menu as well as the game. */
+.home-art.storybook {
+  background-color:#24485e;
+  background-position:center;
+  background-size:cover;
+  border-color:#f2d59e99;
+  box-shadow:inset 0 0 30px #152d3a77,0 0 38px #f7d8a326,0 0 0 6px #afc6a10c;
+}
+.home-art.storybook::before { opacity:.08; }
+.home-art.storybook::after { opacity:.10; }
+.home-art.storybook .art-stars { opacity:.35; }
+.home-art.storybook .art-portrait img { image-rendering:auto; }
