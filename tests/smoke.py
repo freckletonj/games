@@ -26,6 +26,24 @@ with sync_playwright() as playwright:
     page.wait_for_function("""() => ['springaroo','hero'].every(name => WW.spriteAtlas.draw(
         document.querySelector('#game').getContext('2d'), name, 40, 80, 0
     ))""")
+    # Painted frames and secondary animation should change actual canvas pixels by state.
+    animated = page.evaluate("""() => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 128; canvas.height = 140;
+        const context = canvas.getContext('2d');
+        const render = (action, time) => {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            WW.spriteAtlas.draw(context, 'hero', 64, 95, 0, false, 0,
+                {action, time, grounded: true});
+            return context.getImageData(0, 0, canvas.width, canvas.height).data;
+        };
+        const idle = render('idle', 0);
+        const running = render('run', .14);
+        const falling = render('fall', .14);
+        return idle.some((pixel, index) => pixel !== running[index]) &&
+            running.some((pixel, index) => pixel !== falling[index]);
+    }""")
+    assert animated, 'Painted sprite animation states must render differently'
     assert page.evaluate("WW.spriteAtlas.portrait('hero').startsWith('data:image/png;base64,')")
     assert page.evaluate("WW.spriteAtlas.portrait('springaroo').startsWith('data:image/png;base64,')")
     # A compiled level JSON bundle must be loadable without any network access.

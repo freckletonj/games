@@ -281,6 +281,7 @@ WW.games.animals = (() => {
         if(a.kind==='skyling'||a.kind==='cloudwhisp')speed=.8;
         if(food){desiredX=food.x;speed=a.kind==='mossback'?.72:a.kind==='glimmermoth'?.95:1.22;}
         if(feeding||distract){desiredX=a.x;speed=0;}
+        const beforeX=a.x;
         const dx=clamp(desiredX-a.x,-speed*step,speed*step);
         const candidate=clamp(a.x+dx,a.homeX-125,a.homeX+125);
         // Ground walkers turn away from pools and ledges. Flyers can approach their snacks.
@@ -290,6 +291,7 @@ WW.games.animals = (() => {
           a.x=candidate;
           if(dx)a.dir=dx>0?1:-1;
         }else a.dir*=-1;
+        a.moving=Math.abs(a.x-beforeX)>.1;
         if(flying){
           const floatY=a.homeY+Math.sin(a.phase*(a.kind==='skyling'?2.4:1.6))*8;
           const wanted=food?food.y-16:floatY;
@@ -891,7 +893,7 @@ WW.games.animals = (() => {
         ctx.beginPath();ctx.ellipse(a.x,a.y+1,11,3,0,0,Math.PI*2);ctx.fill();
         ctx.globalAlpha=1;
         WW.art.draw(ctx,a.kind,a.x,a.y,Math.floor(a.frame)%6,a.dir<0,null,{
-          action:a.eating>0?'eat':ready?'happy':a.windup?'alert':'idle',time:a.phase
+          action:a.eating>0?'eat':ready?'happy':a.windup?'alert':a.moving?'run':'idle',time:a.phase
         });
         if(a.eating>0||ready){
           ctx.fillStyle='#ffeab9';ctx.font='bold 9px sans-serif';
@@ -948,7 +950,8 @@ WW.games.animals = (() => {
           if(p.form){ctx.save();ctx.globalAlpha=.19+.09*Math.sin(now*5);ctx.fillStyle=FORM[p.form].color;ctx.beginPath();ctx.ellipse(p.x,p.y-13,18,23,0,0,Math.PI*2);ctx.fill();ctx.restore();}
           if(p.invincible<=0||Math.floor(now*15)%2===0)
             WW.art.draw(ctx,p.form||'hero',p.x,p.y,Math.floor(p.frame)%6,p.face<0,p.id,{
-              action:p.hurt>0?'hurt':!p.grounded?'jump':Math.abs(p.vx)>0.25?'run':'idle',time:now
+              action:p.hurt>0?'hurt':!p.grounded?(p.vy<0?'jump':'fall'):Math.abs(p.vx)>0.25?'run':'idle',
+              time:now,grounded:p.grounded
             });
         }
         // Colored player markers remain clear even while transformed.
