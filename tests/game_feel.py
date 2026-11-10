@@ -12,7 +12,7 @@ source = source.replace(
 
 with sync_playwright() as playwright:
     browser = playwright.chromium.launch(
-        headless=True, executable_path='/usr/bin/chromium', args=['--no-sandbox']
+        headless=True, args=['--no-sandbox']
     )
     page = browser.new_page(viewport={'width': 1440, 'height': 810})
     errors = []
