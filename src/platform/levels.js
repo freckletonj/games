@@ -55,5 +55,26 @@ WW.levels = (() => {
       image.src=url;
     });
   }
-  return {colors,classify,parseCanvas,load};
+  async function loadJSON(url) {
+    const response = await fetch(url);
+    const level = await response.json();
+    const {width, height, grid, objects} = level;
+    if (!Number.isInteger(width) || !Number.isInteger(height) ||
+        width < 8 || width > 400 || height < 6 || height > 80 ||
+        !Array.isArray(grid) || grid.length !== height ||
+        grid.some(row => !Array.isArray(row) || row.length !== width ||
+          row.some(tile => !kinds.has(tile) && tile !== 'empty')) ||
+        !Array.isArray(objects) ||
+        objects.some(obj => !markers.has(obj.kind) ||
+          !Number.isInteger(obj.x) || !Number.isInteger(obj.y) ||
+          obj.x < 0 || obj.x >= width || obj.y < 0 || obj.y >= height)) {
+      throw Error('Invalid compiled level JSON');
+    }
+    if (objects.filter(obj => obj.kind === 'p1').length !== 1 ||
+        objects.filter(obj => obj.kind === 'exit').length !== 1) {
+      throw Error('Compiled level requires one p1 start and one exit marker');
+    }
+    return {...level, warnings: level.warnings || []};
+  }
+  return {colors,classify,parseCanvas,load,loadJSON};
 })();
