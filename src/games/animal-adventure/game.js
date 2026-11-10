@@ -826,11 +826,7 @@ WW.games.animals = (() => {
         const ground=Array.from({length:level.height},(_,y)=>y).find(y=>map[y]?.[sign.x]==='ground');
         if(ground===undefined)continue;
         const y=ground*TILE;
-        box(ctx,x-1,y-57,4,59,'#57476f');box(ctx,x-23,y-59,48,17,chapter.biome==='coast'?'#2a82a0':'#654a90');
-        box(ctx,x-19,y-56,40,3,'#d4f5dd');
-        ctx.font='bold 6px sans-serif';ctx.fillStyle='#fff4d1';ctx.textAlign='center';
-        ctx.fillText(sign.title.slice(0,16),x,y-48);ctx.textAlign='left';
-        box(ctx,x-2,y-37,8,6,'#ffd6a8');
+        WW.props.sign(ctx,x,y,sign.title,chapter.biome,now);
       }
       for(const c of challenges){
         if(c.type!=='sprint')continue;
