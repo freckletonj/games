@@ -117,10 +117,10 @@ input[type=file] { max-width: 220px; font-size: 12px; }
 .art-orbit::after { content: ""; position: absolute; inset: 12%; border: 1px dashed #c6ebdd55; border-radius: 50%; }
 .art-portrait { position: absolute; width: 29%; aspect-ratio: 1; border: 3px solid #ecdcad; border-radius: 16px; padding: 5px; background: #1d3b4a; box-shadow: 0 12px 22px #091c29aa, 0 0 0 5px #a8cead3b; transform: rotate(var(--tilt)); animation: portrait-float 4.8s ease-in-out infinite alternate; }
 .art-portrait img { width: 100%; height: 100%; object-fit: cover; border-radius: 9px; image-rendering: pixelated; }
-.art-portrait:nth-of-type(5) { left: 10%; top: 19%; --tilt: -12deg; }
-.art-portrait:nth-of-type(6) { right: 10%; top: 24%; --tilt: 11deg; animation-delay: -1.5s; }
-.art-portrait:nth-of-type(3) { left: 20%; bottom: 15%; --tilt: 7deg; animation-delay: -2.2s; }
-.art-portrait:nth-of-type(4) { right: 15%; bottom: 14%; --tilt: -9deg; animation-delay: -.8s; }
+.art-portrait:nth-of-type(3) { left: 10%; top: 19%; --tilt: -12deg; }
+.art-portrait:nth-of-type(4) { right: 10%; top: 24%; --tilt: 11deg; animation-delay: -1.5s; }
+.art-portrait:nth-of-type(5) { left: 20%; bottom: 15%; --tilt: 7deg; animation-delay: -2.2s; }
+.art-portrait:nth-of-type(6) { right: 15%; bottom: 14%; --tilt: -9deg; animation-delay: -.8s; }
 @keyframes portrait-float { to { transform: translateY(-9px) rotate(var(--tilt)); } }
 .art-caption { position: absolute; bottom: 6%; left: 0; right: 0; text-align: center; color: #fae6b7; font-size: 10px; font-weight: 900; letter-spacing: .27em; text-shadow: 0 2px 6px #0d2835; }
 .home-bottom { border-top: 1px solid #93b5a65c; margin-top: 21px; padding-top: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
@@ -222,6 +222,30 @@ input[type=file] { max-width: 220px; font-size: 12px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* Gameplay: information lives at the edges, leaving the center of the world clear. */
+.compact-player { height: 36px; padding: 3px 8px; border-color: #a0d8c680; background: #102b3ce8; }
+.compact-player .mini-form { background: #174d56; }
+.compact-player .mini-form.morphed { background: #72576d; }
+.compact-player .mini-food { padding-left: 6px; border-left: 1px solid #739e8f66; color: #f6e1b3; font-weight: 800; }
+.compact-player .mini-label { font-size: 10px; }
+.compact-quest { min-height: 36px; background: #102b3ce5; }
+.compact-quest .quest-gem { color: #86a39d; font-size: 16px; }
+.compact-quest .quest-gem.found { color: #ffdfa2; }
+#ability-callout {
+  top: 14%; left: 14px; transform: none; width: min(340px,56%);
+  padding: 10px 12px; gap: 9px;
+  background: #102e40ef; border-color: #a5d6b8;
+}
+#ability-callout strong { font-size: 16px; }
+#ability-callout small { font-size: 11px; }
+#ability-callout img { width: 46px; height: 46px; }
+@media (max-width: 700px), (max-height: 520px) {
+  .compact-player { height: 31px; padding: 2px 4px; }
+  .compact-player .mini-food { padding-left: 3px; }
+  .compact-quest { min-height: 31px; }
+  #ability-callout { top: 18%; width: min(290px,68%); padding: 8px; }
+}
 </style>
 </head>
 <body>
@@ -232,7 +256,6 @@ input[type=file] { max-width: 220px; font-size: 12px; }
     <div id="ability-callout" hidden aria-live="polite"></div>
     <div id="menu" class="menu"></div>
   </main>
-  <script>window.WONDERWOOD_LEVELS = {"first-forest":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAAqCAIAAADau7KvAAABwUlEQVR42u3aP0vDQBzG8TsRnAptQRAnd6e+AB3cHP0zWnBwK7i5uIiDFumk4Obg4HSD4uTgi/AN+AYcNEImQf11qNCa1lPTS5O7fD+b0bP6JE/uLkSLiAKg1BQRAJQBoAwAZQAoA7653fgghGGap0llE8edSmWPHCgDwDIJoAwAZQAoAxBAGZ6W2pwS5IWnScCXaSIoj+2t48EvL6/2yYSZAWADDRS2DHHc4RyAZRImukNgk+BNGdjbpZ5aeeuOmYHrA47PePjLJLdzDjNYwLeefMrgy3LWlzPN9oBlEuDyduC+DDneTblBTjjewBLOcGYI7NKkacGn5P0y6fzwpXVQ566so1epVUef45+/ZfewqxpnHuTgqnK+liGjKTvTrL3OtgwhuClDya+hkc9bxzxIVjnEIgPUc0NETj83+4d27iXhsS52w0Mser/tX0NSfIqIMSY55KSZ7lOio3mHf5hlSOti5S9DjDFZJDb+kPfmsuUH+zGmPpW/Xor2/2V2MXFAV+cW2Pa5MrN+l2LU2/UqWRUhGV7hBigDQBkAygBQhmKQ2g0hUAYopZSO1giBMgCUAaAMAGUAvN3U8ToG0NMF7Z6X3j3KGJ8AAAAASUVORK5CYII=","crystal-coast":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASgAAAAsCAIAAABZg7LsAAAB2klEQVR42u3bP0sbYRwH8OdKwEkwgiCdunfyDVjo5qh0VJTSLdCti4tIaUGdLHRzsOCUoR07dPIV9A107tamxKkgPg6hrSYm3tXceX8+n0mPe3L3/PJ8n/tFTBJjDECxHigBCB4IHiB4IHiA4IHgAYIHggcIHggeCB4geCB4gOBxr87ODhShqsGr7ptn2c3Ovhr88Pr7c4lKKfFFWNBqQiO0Cu7K/rYlA1vrb0dPOz7ZLn/hqnvn+VWgUdPXaiLhggf5NEc1u/OCglfmTWtcpbRSmmpPPKiVlhLgg1zxfcE0n3gV6km0kdpIraY13SBfX4ald1aH4GX0fvdnZ2c+7dkfnoTN0xBC0vsV23N2n0pvQNOdy38Gr/wFrdNbPsGEP143pAKeeDnGZrBW7niwCXOsxMQtmBBCiFeEH0sxxsOLZ/8OvfgSb7W3ce3XNENueoXem4cZhmS9yrf50SHdbnfKVyn3kM7R08mnDBdk4lVufrV85nK+sTxuSNpl82dIv7+f6cau1WRoqaefy8LjoQPJ3OKjMu9kM2ufM53/++NK5XbrrHOsZRHKUMwi6+bbCXAPBA8EDwQPEDwQPKiU2P4keFC0pLcqeKDVBAQPBA/I5zNnyf9XE2rpEpj1/+j4ayPaAAAAAElFTkSuQmCC","starfall-summit":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAAuCAIAAADWe1djAAACbElEQVR42u3cP0vDQBjH8WspCkKlFgRxcu/UN6AgLl3VsYUOnSzooouLOChIXRR0cnBw6iA4daiLr8DJzbegLQYERXsOBRsj/ZNL0txdv59Jg9Xk8vz63F3UhJRSADBTkiEABrvb+Nb23BJ0YIAODIAAAzFOR1tt96eOUzPgnJlCY5LV3j5H+bK92Sk6MAACDIAAAxZIMQRAP09bp90PykIIIa5v9nU7Qzax7Oc4tXR6z33kvVCYaTQYGcEm1pgLkYJT4EmvEIL0MoWO5Q1yR7g+1fZNESDAg6zcJx/WOtw8RLHcdctd7hLg8JFeBeXiseeIhlsyMdI/q/YEGAqIq5V4DgywBo5liUJLGTZJpvEOHSJDZ86/dH8OPOAxHbvQ8Pj/xDtIgRlRbEyhtStBBkGZ3/QyhcaYSpA9ZGgX4H4THvsWKsERV/YCWAMDtq2BmULTLqARv/twKUqWuXGkFQZf/I5takJKlk2guCqMNsAaWGVZQqMgOSaugf0Ob4QBDuVOW7OJRccgwHRggwMMAtzPxeFr9SCr9tpxrIHVzk/hVVZ2ucdtkT9nuq54TxOttpzL6H9p5aJirYbQgYOPsk0d2PQ3kUjvJh2YKXRUY+op3G69BjxI29R/JJUDrMsVSRfxkpdSnnU2e4cqTemXCS+pXq1KKev1emg/5aSkcGJfpWXFa3nODvmeAa6lNywjvKR1tBjJrex/gbrV2J8qqjQH3YLgJzaf8xxIZBaW2Mlwm173/R8bP24LjFsoI2nikA69zEivhT8nBAxGgAECDIAAAyDAAAEGQIABEGAABBggwAAIMICg+F1owGA/yquhv5GUYDUAAAAASUVORK5CYII="};</script>
   <script>
 window.WW = window.WW || {};
 WW.storage = (() => {
@@ -395,7 +418,7 @@ WW.art = (() => {
   // 64×80 pixel-art sprite frames, with detailed magical silhouettes and micro-highlights.
   // All frames and HUD portraits are drawn locally; no fetched textures.
   const kinds=['hero','springaroo','skyling','tideling','cloudwhisp','prismtail','mossback','glimmermoth','emberkit','snack'];
-  const sw=64,sh=80,frames=4;
+  const sw=64,sh=80,frames=6;
   const sheet=document.createElement('canvas');sheet.width=sw*frames*kinds.length;sheet.height=sh;
   const g=sheet.getContext('2d');g.imageSmoothingEnabled=false;
   function oval(x,y,rx,ry,color){g.fillStyle=color;g.beginPath();g.ellipse(x,y,rx,ry,0,0,Math.PI*2);g.fill();}
@@ -408,7 +431,7 @@ WW.art = (() => {
     oval(11,36+(phase?1:0),2,1,'#fff3dc');oval(21,36+(phase?-1:0),2,1,'#fff3dc');
   }
   function hero(f){
-    const bounce=f===1?-1:f===3?1:0;
+    const bounce=f===1||f===4?-2:f===3||f===5?1:0;
     feet('#354d79',f%2);
     shape([[8,24+bounce],[24,24+bounce],[27,34+bounce],[5,34+bounce]],'#2d547f');
     oval(16,28+bounce,10,7,'#597ead');
@@ -425,7 +448,7 @@ WW.art = (() => {
     shine(12,12,1.2);
   }
   function springaroo(f){
-    const bounce=f===1?-2:f===3?1:0;
+    const bounce=f===1||f===4?-3:f===3||f===5?1:0;
     shape([[21,29+bounce],[28,25+bounce],[30,28+bounce],[29,33+bounce],[22,35+bounce]],'#8e4979');
     line([[23,28+bounce],[27,31+bounce],[29,30+bounce]],'#ffca8a',2);
     feet('#8a4875',f%2);
@@ -565,14 +588,45 @@ WW.art = (() => {
     }
   }
   g.putImageData(pixels,0,0);
-  function draw(ctx,name,x,y,frame=0,flip=false,playerId=null) {
+  function draw(ctx,name,x,y,frame=0,flip=false,playerId=null,pose={}) {
     const index=Math.max(0,kinds.indexOf(name));
-    ctx.save();ctx.translate(Math.round(x),Math.round(y));
-    if(flip)ctx.scale(-1,1);
-    ctx.imageSmoothingEnabled=false;
+    const action=pose.action||'idle',time=pose.time||0;
     const snack=name==='snack';
-    ctx.drawImage(sheet,index*sw*frames+(Math.floor(frame)%frames)*sw,0,sw,sh,snack?-13:-18,snack?-25:-40,snack?26:36,snack?28:43);
-    // A distinct scarf/crest for each child, even when they wear animal forms.
+    const explorer=playerId!==null;
+    const sizes={
+      hero:[30,36],springaroo:[29,32],skyling:[31,32],tideling:[30,30],
+      cloudwhisp:[28,27],prismtail:[28,30],mossback:[29,27],
+      glimmermoth:[26,28],emberkit:[30,31],snack:[23,25]
+    };
+    const [w,h]=sizes[name]||sizes.hero;
+    const running=action==='run',jumping=action==='jump',eating=action==='eat';
+    const bounce=running?Math.abs(Math.sin(time*15))*3:
+      jumping?-4:eating?2:Math.sin(time*2.8+index)*.9;
+    const stretch=jumping?1.12:action==='hurt'?.85:running?1+.055*Math.sin(time*15):1;
+    const squash=eating?.9:jumping?.91:running?1-.025*Math.sin(time*15):1;
+    const lean=running?Math.sin(time*15)*.08:action==='hurt'?.22:0;
+    ctx.save();ctx.translate(Math.round(x),Math.round(y+bounce));
+    if(flip)ctx.scale(-1,1);
+    ctx.transform(squash,0,lean,stretch,0,0);
+    ctx.imageSmoothingEnabled=false;
+    const spriteFrame=(Math.floor(frame)%frames+frames)%frames;
+    ctx.drawImage(sheet,index*sw*frames+spriteFrame*sw,0,sw,sh,-w/2,-h,w,h);
+    // Character-specific secondary animation makes motion readable at small scale.
+    if(name==='skyling'&&action!=='eat'){
+      const flap=Math.sin(time*12)*4;
+      ctx.fillStyle='#a7f4e4';
+      ctx.fillRect(-w/2-2,-19-flap/2,5,3);
+      ctx.fillRect(w/2-3,-17+flap/2,5,3);
+    }
+    if(name==='glimmermoth'){
+      ctx.fillStyle='#fff4be';
+      ctx.globalAlpha=.45+.4*Math.abs(Math.sin(time*7));
+      ctx.fillRect(-w/2-2,-h+9,3,3);ctx.fillRect(w/2,-h+5,3,3);
+      ctx.globalAlpha=1;
+    }
+    if(name==='springaroo'&&jumping){
+      ctx.fillStyle='#fce4aa';ctx.fillRect(-13,-5,5,2);ctx.fillRect(9,-7,4,2);
+    }
     if(playerId!==null){
       ctx.fillStyle=playerId===0?'#ffd57f':'#b4a0ff';ctx.fillRect(-5,-8,10,2);
       ctx.fillStyle=playerId===0?'#fff0ba':'#e5ddff';ctx.fillRect(-2,-8,3,2);
@@ -611,6 +665,7 @@ window.WW = window.WW || {};
 WW.audio = (() => {
   let context;
   const tunes = {
+    munch:[[260,340,.08,'sine'],[360,430,.09,'sine']],
     jump:[[420,550,.09,'triangle']], double:[[490,740,.17,'triangle']],
     land:[[160,92,.07,'triangle']], ready:[[510,680,.1,'sine'],[680,930,.18,'sine']],
     checkpoint:[[320,510,.13,'triangle'],[510,760,.22,'sine'],[760,1010,.29,'sine']],
@@ -647,91 +702,181 @@ WW.audio = (() => {
 </script>
 <script>
 window.WW = window.WW || {};
+// Three companions have distinct traversal powers. Other creatures belong to the world.
 WW.catalog = {
   forms: {
-    springaroo: {name:'Springaroo',power:'Double jump',seconds:36,color:'#ff8fc6',favorite:'berry'},
-    skyling: {name:'Moonwing',power:'Hold jump to fly',seconds:30,color:'#a4e9ff',favorite:'star'},
-    tideling: {name:'Tidefox',power:'Swim & dive',seconds:42,color:'#75eddf',favorite:'nectar'},
-    cloudwhisp: {name:'Cloudwhisp',power:'Float & glide',seconds:34,color:'#d5c7ff',favorite:'marshmallow'},
-    prismtail: {name:'Prismtail',power:'Super sprint',seconds:32,color:'#ffc18b',favorite:'star'},
-    mossback: {name:'Mossback',power:'Thorn-proof armor',seconds:45,color:'#b0f084',favorite:'honey'},
-    glimmermoth: {name:'Glimmermoth',power:'Friendship aura',seconds:32,color:'#f9adfa',favorite:'nectar'},
-    emberkit: {name:'Emberkit',power:'Warmth burst',seconds:30,color:'#ffad79',favorite:'honey'}
+    springaroo: {name:'Springaroo',power:'Double jump',color:'#ff98bc',favorite:'berry'},
+    tideling: {name:'Tidefox',power:'Dive and swim',color:'#75eddf',favorite:'nectar'},
+    skyling: {name:'Moonwing',power:'Fly upward',color:'#a4e9ff',favorite:'star'}
+  },
+  creatures: {
+    springaroo: {name:'Springaroo',role:'gentle hopper',favorite:'berry',color:'#ff98bc',capturable:true},
+    tideling: {name:'Tidefox',role:'curious swimmer',favorite:'nectar',color:'#75eddf',capturable:true},
+    skyling: {name:'Moonwing',role:'moonlit flier',favorite:'star',color:'#a4e9ff',capturable:true},
+    mossback: {name:'Mossback',role:'slow wanderer',favorite:'berry',color:'#b0e18b',capturable:false},
+    glimmermoth: {name:'Glimmermoth',role:'skittish flutterer',favorite:'star',color:'#f9adfa',capturable:false},
+    prismtail: {name:'Prismtail',role:'swift runner',favorite:'berry',color:'#ffc18b',capturable:false},
+    cloudwhisp: {name:'Cloudwhisp',role:'gentle drifter',favorite:'nectar',color:'#d5c7ff',capturable:false},
+    emberkit: {name:'Emberkit',role:'territorial chaser',favorite:'berry',color:'#ffad79',capturable:false}
   },
   foods: {
-    berry: {name:'Blushberry',method:'lob',affection:34,speed:4.2,color:'#fa73aa'},
-    star: {name:'Stardrop',method:'straight',affection:26,speed:6.2,color:'#fff0a1'},
-    nectar: {name:'Nectar mist',method:'spray',affection:18,speed:0,color:'#82f9e5'},
-    honey: {name:'Honeybomb',method:'splash',affection:27,speed:3.6,color:'#ffc15a'},
-    marshmallow: {name:'Cloudmallow',method:'float',affection:30,speed:2.9,color:'#e7d7ff'}
+    berry: {name:'Blushberry',method:'lob',affection:1,color:'#fa73aa',speed:4.1},
+    nectar: {name:'Nectar fruit',method:'lob',affection:1,color:'#82f9e5',speed:3.8},
+    star: {name:'Stardrop',method:'float',affection:1,color:'#fff0a1',speed:3.5}
   }
 };
-
 </script>
 <script>
 window.WW = window.WW || {};
 WW.chapters = [
   {
-    id:'first-forest', name:'Mosslight Meadow', biome:'meadow', difficulty:'Gentle',
-    events:[],
-    tagline:'The ancient tree, the moonlit flight and the hidden river',
-    intro:'Three trails wind through the glade. Meet a Springaroo, soar with a Moonwing and dive with a Tidefox.',
-    goals:[
-      {kind:'springKey',name:'Canopy Gem',form:'springaroo',hint:'Springaroo: jump again in midair to reach the old tree.'},
-      {kind:'skyKey',name:'Moon Gem',form:'skyling',hint:'Moonwing: hold Jump to fly into the high branches.'},
-      {kind:'diveKey',name:'River Gem',form:'tideling',hint:'Tidefox: enter water, then hold Down to dive.'},
-    ],
-    signs:[{x:16,title:'BOUNCING GLADE',hint:'Befriend a Springaroo for a second jump.'},
-      {x:100,title:'THE MYSTIC RIVER',hint:'Tidefox swims. Everyone else can use the stepping stones.'},
-      {x:145,title:'MOONLIGHT GROVE',hint:'Moonwing can fly higher than any jump.'},
-      {x:225,title:'THE LAST PATH',hint:'All three gems open the mossy gate.'}],
+    id:'first-forest', name:'Mosslight Meadow', biome:'meadow', difficulty:'Discover',
+    tagline:'Follow the lanterns. Win a Springaroo’s trust. Reach the canopy.',
+    intro:'The old tree keeps one light. Leave berries for Springaroo, then jump to the highest branch.',
+    events:[], key:'springKey',
+    goals:[{kind:'springKey',name:'Canopy Light',form:'springaroo',
+      hint:'Set out Blushberries. Catch a distracted Springaroo, then double-jump to the tree top.'}],
+    signs:[{x:12,title:'THE PICNIC',hint:'Throw food and leave it on the ground. Creatures approach when they feel safe.'},
+      {x:42,title:'THE HIGH PATH',hint:'Springaroo can jump a second time while airborne.'},
+      {x:69,title:'THE CANOPY',hint:'The Canopy Light waits above. You need a second jump.'},
+      {x:122,title:'THE HOMEWARD GATE',hint:'Bring back the Canopy Light to awaken the gate.'}]
   },
   {
-    id:'crystal-coast', name:'Crystal Coast', biome:'coast', difficulty:'Brisk',
-    events:[{type:'sprint',start:88,finish:112,seconds:2.6,goal:'prismKey'}],
-    tagline:'Luminous reefs, rushing runs and the crystal guardians',
-    intro:'Dash across the tidal stones, befriend the moss guardian, then explore the submerged crystal vault.',
-    goals:[
-      {kind:'prismKey',name:'Prism Gem',form:'prismtail',hint:'Run the Crystal Coast speed trial from the starting arch to the finish in 2.6 seconds. Prismtail helps!'},
-      {kind:'mossKey',name:'Guardian Gem',form:'mossback',hint:'Mossback armor blocks hostile magic near the crystal perch.'},
-      {kind:'diveKey',name:'Pearl Gem',form:'tideling',hint:'Tidefox can swim to the deep reef vault.'},
-    ],
-    signs:[{x:23,title:'THE TIDEWAY',hint:'Prismtail can sprint. You can also use the floating stepping stones.'},
-      {x:88,title:'THE SPEED TRIAL',hint:'Dash from this arch to the finish before the clock runs out!'},
-      {x:126,title:'THE BLUE REEF',hint:'Secrets are below the ripples. Catch a Tidefox.'},
-      {x:180,title:'CRYSTAL SENTINELS',hint:'A Mossback can absorb enemy spells.'},
-      {x:233,title:'THE SUNKEN VAULT',hint:'Dive below the waves for the Pearl Gem.'}],
+    id:'crystal-coast', name:'Crystal Coast', biome:'coast', difficulty:'Explore',
+    tagline:'Walk the shell bridges and dive beneath the shining reef.',
+    intro:'Tidefox loves Nectar fruit. Lure one to the bank, make friends, and find the light underwater.',
+    events:[],key:'diveKey',
+    goals:[{kind:'diveKey',name:'Pearl Light',form:'tideling',
+      hint:'Leave Nectar fruit for Tidefox. Transform to dive through the second lagoon.'}],
+    signs:[{x:21,title:'THE TIDELINE',hint:'Tidefox follows fruit along the shore. Give it room to eat.'},
+      {x:48,title:'SHELL BRIDGES',hint:'Walk on the bridge or transform into Tidefox to swim beneath.'},
+      {x:113,title:'THE BLUE DEEP',hint:'The Pearl Light rests beneath the reef. Dive down to collect it.'}]
   },
   {
-    id:'starfall-summit', name:'Starfall Summit', biome:'summit', difficulty:'Wondrous',
-    events:[{type:'befriend',kind:'emberkit',count:2,goal:'emberKey'}],
-    tagline:'Floating islands, warmhearted guardians and the aurora',
-    intro:'Glide on the mountain breeze, calm Emberkits at the observatory and soar into the stars.',
-    goals:[
-      {kind:'cloudKey',name:'Zephyr Gem',form:'cloudwhisp',hint:'Cloudwhisp glides when you hold Jump while falling.'},
-      {kind:'emberKey',name:'Hearth Gem',form:'emberkit',hint:'Befriend two Emberkits to awaken the hearth. Press Down as Emberkit to release a calming burst.'},
-      {kind:'skyKey',name:'Aurora Gem',form:'skyling',hint:'Moonwing: fly up through the drifting sky gardens.'},
-    ],
-    signs:[{x:23,title:'THE WIND STAIRS',hint:'Cloudwhisp floats gently. Hold Jump while falling.'},
-      {x:133,title:'THE STAR OBSERVATORY',hint:'Emberkit can calm a whole group with Down.'},
-      {x:229,title:'ABOVE THE CLOUDS',hint:'Catch a Moonwing to reach the aurora.'},
-      {x:295,title:'THE COSMIC GATE',hint:'Every gem found? The final star gate is ahead.'}],
-  },
+    id:'starfall-summit', name:'Starfall Summit', biome:'summit', difficulty:'Soar',
+    tagline:'Climb the floating gardens and borrow a Moonwing’s flight.',
+    intro:'Leave Stardrops near the mountain roost. A friendly Moonwing can carry you into the stars.',
+    events:[],key:'skyKey',
+    goals:[{kind:'skyKey',name:'Aurora Light',form:'skyling',
+      hint:'Distract a Moonwing with Stardrops. Hold Jump while transformed to fly.'}],
+    signs:[{x:19,title:'THE ROOST',hint:'Moonwings follow Stardrops. Keep some distance and let them eat.'},
+      {x:76,title:'THE SKY PATH',hint:'Cloudwhisps are harmless. Look for the stepping stones and warm lights.'},
+      {x:122,title:'THE AURORA',hint:'Keep holding Jump as Moonwing to rise through the upper gardens.'}]
+  }
 ];
+</script>
+<script>
+window.WW = window.WW || {};
+// Three authored adventures: geometry and encounter placement are data, not random noise.
+// 1 tile = 16 world units. Separate foreground stages create meaningful vertical routes.
+WW.worlds = (() => {
+  const layouts = {
+    'first-forest': {
+      width: 144, height: 42, floor: 31,
+      heights: [[24,46,30],[46,84,29],[84,112,31],[112,144,30]],
+      water: [[98,109]], bridges: [[97,29,7],[105,29,7]],
+      ledges: [[21,27,8],[32,26,9],[42,25,8],[52,26,8],[62,24,8],
+        [69,21,7],[74,26,8],[83,27,8],[117,26,9]],
+      relic: ['springKey',72,12],
+      creatures: [
+        ['springaroo',17],['glimmermoth',31],['prismtail',46],['springaroo',57],
+        ['mossback',85],['emberkit',115],['glimmermoth',130]
+      ],
+      checkpoints: [48,110],
+      snacks: [10,37,65,92,120],
+      stars: [[27,24],[44,22],[69,18],[84,24],[124,23]],
+      landmarks: [{x:34,type:'tree'}, {x:69,type:'tree'}, {x:103,type:'pond'}, {x:130,type:'lantern'}]
+    },
+    'crystal-coast': {
+      width: 157, height: 44, floor: 32,
+      heights: [[19,42,31],[42,83,32],[83,116,30],[116,157,31]],
+      water: [[48,72],[116,139]],
+      bridges: [[46,29,8],[54,29,7],[62,29,8],[70,29,6],[114,28,8],[122,28,8],[130,28,8],[138,28,7]],
+      ledges: [[24,27,9],[35,25,7],[80,26,9],[91,23,8],[101,26,9],[143,26,9]],
+      relic: ['diveKey',129,37],
+      creatures: [
+        ['tideling',26],['prismtail',39],['glimmermoth',77],['tideling',96],
+        ['mossback',106],['emberkit',145]
+      ],
+      checkpoints: [81,113],
+      snacks: [10,33,80,104,141],
+      stars: [[27,24],[61,33],[94,20],[123,34],[148,22]],
+      landmarks: [{x:35,type:'crystal'}, {x:59,type:'reef'}, {x:97,type:'crystal'}, {x:128,type:'reef'}]
+    },
+    'starfall-summit': {
+      width: 166, height: 46, floor: 36,
+      heights: [[28,57,34],[57,92,33],[92,121,35],[121,166,34]],
+      water: [[71,83]],
+      bridges: [[69,30,8],[77,30,8]],
+      ledges: [[17,31,8],[28,28,8],[38,25,8],[50,24,8],
+        [64,29,7],[87,29,9],[96,26,8],[106,23,8],
+        [113,20,8],[122,17,8],[130,14,8],[139,11,7],[147,26,8]],
+      relic: ['skyKey',143,2],
+      creatures: [
+        ['skyling',23],['cloudwhisp',42],['glimmermoth',53],['emberkit',64],
+        ['skyling',102],['prismtail',116],['cloudwhisp',133],['mossback',154]
+      ],
+      checkpoints: [60,118],
+      snacks: [10,32,54,92,121,150],
+      stars: [[34,23],[55,19],[79,27],[112,20],[137,10]],
+      landmarks: [{x:35,type:'observatory'}, {x:75,type:'island'}, {x:114,type:'observatory'}, {x:144,type:'island'}]
+    }
+  };
 
+  function create(chapter) {
+    const data=layouts[chapter.id],width=data.width,height=data.height;
+    const floor=Array.from({length:width},(_,x)=>{
+      const section=data.heights.find(([from,to])=>x>=from&&x<to);
+      return section?section[2]:data.floor;
+    });
+    const grid=Array.from({length:height},()=>Array(width).fill('empty'));
+    const objects=[];
+    function stamp(kind,x,y){objects.push({kind,x,y});}
+    function platform(x,y,length){
+      for(let i=x;i<Math.min(width,x+length);i++)grid[y][i]='platform';
+    }
+    for(let x=0;x<width;x++){
+      const submerged=data.water.some(([a,b])=>x>=a&&x<b);
+      for(let y=submerged?floor[x]-2:floor[x];y<height;y++){
+        grid[y][x]=submerged&&y<height-1?'water':'ground';
+      }
+    }
+    for(const [x,y,length] of data.bridges)platform(x,y,length);
+    for(const [x,y,length] of data.ledges)platform(x,y,length);
+    for(const [from,to] of data.water)for(let x=from;x<to;x++){
+      // Broken shell shelves provide platforms for passing through the pool.
+      if(x%9===0)platform(x,floor[x]-4,3);
+    }
+    stamp('p1',4,floor[4]-1);
+    stamp('p2',6,floor[6]-1);
+    stamp('exit',width-5,floor[width-5]-1);
+    stamp(...data.relic);
+    for(const [kind,x] of data.creatures){
+      const aerial=kind==='skyling'||kind==='cloudwhisp'||kind==='glimmermoth';
+      stamp(kind,x,floor[x]-(aerial?4:1));
+    }
+    for(const x of data.checkpoints)stamp('checkpoint',x,floor[x]-1);
+    for(const x of data.snacks)stamp('snack',x,floor[x]-1);
+    for(const [x,y] of data.stars)stamp('starShard',x,y);
+    return {width,height,grid,objects,chapter,landmarks:data.landmarks,decorSeed:chapter.id,warnings:[]};
+  }
+  const summary=Object.fromEntries(Object.entries(layouts).map(([id,data])=>
+    [id,{width:data.width,height:data.height,relic:data.relic[0],creatures:data.creatures.length}]));
+  return {create,summary};
+})();
 </script>
 <script>
 window.WW = window.WW || {}; WW.games = WW.games || {};
 WW.games.animals = (() => {
-  const TILE=16,W=480,H=270, FORM=WW.catalog.forms,FOOD=WW.catalog.foods;
+  const TILE=16,W=480,H=270, FORM=WW.catalog.forms, CREATURE=WW.catalog.creatures, FOOD=WW.catalog.foods;
   const TYPES=Object.keys(FORM),FOODS=Object.keys(FOOD);
-  const titles=Object.fromEntries(TYPES.map(t=>[t,FORM[t].name]));
+  const titles=Object.fromEntries(Object.entries(CREATURE).map(([kind,info])=>[kind,info.name]));
   // One world unit is one source-pixel; frames run at 60 Hz. All map jumps obey these rules.
   const PHYSICS={run:2.25,jump:5.7,doubleJump:5.5,gravity:.27,maxFall:5.7,
     bodyHalf:9,bodyHeight:25,waterExposure:.8,leash:W-75};
   const jumpHeight=PHYSICS.jump**2/(2*PHYSICS.gravity);
-  // Creatures are caught through preparation and accurate throws, never a dice roll.
-  const BOND_THRESHOLD=30;
+  // Two favorite treats (or three other treats) distract an animal long enough for an orb.
+  const TRUST_TARGET=100, DISTRACTION_SECONDS=12;
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
   const hash=(a,b)=>((a*137+b*991)*(a*17+b*23))>>>0;
@@ -742,10 +887,11 @@ WW.games.animals = (() => {
       goals:level.objects.filter(o=>o.kind.endsWith('Key')).map(o=>({kind:o.kind,name:o.kind.replace('Key',' Gem'),hint:'Find the glowing gem.'})),signs:[]
     };
     const goals=chapter.goals,goalKinds=new Set(goals.map(g=>g.kind));
-    const abilityHelp={springaroo:'Press Jump again while airborne · Double jump',skyling:'Hold Jump to fly upward',
-      tideling:'In water: Jump swims up · Down dives',cloudwhisp:'Hold Jump while falling to glide',
-      prismtail:'Run to sprint through long crossings',mossback:'Your armor blocks incoming magic',
-      glimmermoth:'Stand near wary creatures to calm them',emberkit:'Press Down on the ground for a warmth burst'};
+    const abilityHelp={
+      springaroo:'Press Jump again in midair for a second jump',
+      tideling:'In water, hold Jump to rise or Down to dive',
+      skyling:'Hold Jump to fly upward; release to glide down'
+    };
     const callout=document.getElementById('ability-callout');let abilityUntil=0;
     const terrainTint={meadow:{sky:['#5e4fa8','#a078da','#7cdbd5','#fff0a9'],mountains:['#a69eda','#6bb0cb','#368a93'],tree:['#2b6484','#499aa2','#6be1aa'],soil:['#634a74','#795781','#8e6484'],grass:['#68cf8d','#378e80']},
       coast:{sky:['#236b9b','#69b6d7','#72e7db','#fcebbd'],mountains:['#87cfdf','#44a9cc','#2d72a3'],tree:['#2a7393','#3ba3b5','#81e5e1'],soil:['#325477','#387c9f','#598bac'],grass:['#8ad9c3','#4eb1a9']},
@@ -761,24 +907,24 @@ WW.games.animals = (() => {
       const position=location(first(id===0?'p1':'p2')||first('p1')||{x:3+id*2,y:level.height-3});
       return {id,...position,lastSafe:{...position},vx:0,vy:0,grounded:false,coyote:0,jumpBuffer:0,jumpsUsed:0,
         waterTime:0,face:1,health:3,sleep:false,invincible:0,selected:0,selectedFood:0,energy:Object.fromEntries(TYPES.map(t=>[t,0])),
-        form:null,actionCD:0,frame:0,windup:0};
+        form:null,actionCD:0,frame:0,hurt:0,
+        unlocked:Object.fromEntries(TYPES.map(kind=>[kind,false]))};
     });
-    const animals=level.objects.filter(o=>TYPES.includes(o.kind)).map((o,i)=>({
-      kind:o.kind,...location(o),origin:(o.x+.5)*TILE,homeY:(o.y+1)*TILE,
-      vy:0,alive:true,respawn:0,wary:100,attackCD:1.4+i*.28,dir:i%2?1:-1,
-      phase:i*1.3,frame:0,windup:0,dashTime:0,dashDir:1,hop:0,homeX:(o.x+.5)*TILE,
-      behavior:({springaroo:'hopper',skyling:'swooper',tideling:'swimmer',cloudwhisp:'orbiter',prismtail:'sprinter',
-        mossback:'guardian',glimmermoth:'shy',emberkit:'stalker'})[o.kind]
+    const animals=level.objects.filter(o=>CREATURE[o.kind]).map((o,i)=>({
+      kind:o.kind,...location(o),homeX:(o.x+.5)*TILE,homeY:(o.y+1)*TILE,
+      dir:i%2?1:-1,alive:true,respawn:0,trust:0,distractedUntil:0,
+      eating:0,windup:0,dashTime:0,phase:i*.9,frame:0,homeDir:i%2?1:-1
     }));
     const items=level.objects.filter(o=>(['snack','starShard','checkpoint','exit'].includes(o.kind)||goalKinds.has(o.kind))).map(o=>({kind:o.kind,x:(o.x+.5)*TILE,y:(o.y+.5)*TILE,used:false}));
     const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),keys:Object.fromEntries(goals.map(g=>[g.kind,false])),checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,won:false};
     const challenges=(chapter.events||[]).map(e=>({...e,completed:false,active:false,time:0,owner:null}));
-    const projectiles=[],effects=[];let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,lastLeashHint=-10,signIndex=-1;
+    const projectiles=[],lures=[],captures=[],effects=[];
+    let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,lastLeashHint=-10,signIndex=-1;
     const message=document.getElementById('message');const hud=document.getElementById('hud');
     function say(text,duration=2100) {message.textContent=text;message.classList.add('show');message.dataset.until=String(clock+duration/1000);}
     function showAbility(p){
       if(!p.form){callout.hidden=true;return;}
-      callout.innerHTML=`<img src="${WW.art.portrait(p.form)}" alt=""><span><strong>P${p.id+1} · ${titles[p.form]}</strong><small>${abilityHelp[p.form]} · ${Math.ceil(p.energy[p.form])}s remaining</small></span>`;
+      callout.innerHTML=`<img src="${WW.art.portrait(p.form)}" alt=""><span><strong>P${p.id+1} · ${titles[p.form]}</strong><small>${abilityHelp[p.form]} · A new power for this adventure</small></span>`;
       callout.hidden=false;abilityUntil=clock+3.7;
     }
     function chapterHint(){
@@ -792,41 +938,36 @@ WW.games.animals = (() => {
     function particles(x,y,color,count=9){for(let i=0;i<count;i++)effects.push({x,y,vx:(Math.random()-.5)*3.8,vy:(Math.random()-.7)*3.3,color,time:.55+Math.random()*.6});}
     function throwThing(player,kind){
       if(player.actionCD>0||player.sleep)return;
-      if(kind==='orb'){WW.audio.play('orb');
-        projectiles.push({kind,owner:player.id,x:player.x+player.face*10,y:player.y-12,vx:player.face*5.4,vy:-.45,ttl:1.25});
-        player.actionCD=.45;
+      if(kind==='orb'){
+        WW.audio.play('orb');
+        projectiles.push({kind:'orb',owner:player.id,x:player.x+player.face*12,y:player.y-15,
+          vx:player.face*6.1,vy:-.35,ttl:1.2,age:0});
+        player.actionCD=.33;
         return;
       }
       const choice=FOODS[player.selectedFood],food=FOOD[choice];
-      if(shared.foods[choice]<=0){say(`Out of ${food.name}! Try another treat or find a snack bush.`);return;}
-      shared.foods[choice]--;WW.audio.play('food');
-      player.actionCD=food.method==='spray'?.48:.3;
-      if(food.method==='spray'){
-        let touched=0;
-        for(const a of animals)if(a.alive&&Math.abs(player.x-a.x)<74&&Math.abs(player.y-10-(a.y-10))<38&&player.face*(a.x-player.x)>-8){
-          charm(a,food.affection,choice,player.id);touched++;
-        }
-        for(let i=0;i<16;i++)effects.push({x:player.x+player.face*10,y:player.y-14,vx:player.face*(1+Math.random()*3),vy:(Math.random()-.5)*2,color:'#85fbe7',time:.45});
-        if(!touched)say('Nectar mist sparkles ahead. Try near a creature!',1100);
-        WW.input.rumble(player.id,.18,90);
-        return;
-      }
-      projectiles.push({kind:'food',food:choice,owner:player.id,x:player.x+player.face*10,y:player.y-11,
-        vx:player.face*food.speed,vy:food.method==='straight'?-0.2:food.method==='float'?-2.3:-2.0,
-        ttl:food.method==='float'?2.5:1.7,age:0,hit:[]});
+      if(!shared.foods[choice]){say('Your basket is empty. Look for a picnic basket.',1800);return;}
+      shared.foods[choice]--;WW.audio.play('food');player.actionCD=.28;
+      projectiles.push({kind:'food',food:choice,owner:player.id,
+        x:player.x+player.face*11,y:player.y-14,vx:player.face*food.speed,vy:-2.5,
+        ttl:4,age:0});
     }
-    function charm(a,amount,food,owner){
-      const favorite=FORM[a.kind].favorite;
-      const wasReady=a.wary<=BOND_THRESHOLD;
-      const boost=food===favorite?1.7:1;
-      a.wary=Math.max(0,a.wary-amount*boost);
-      a.attackCD=Math.max(a.attackCD,.55);
-      particles(a.x,a.y-14,FOOD[food].color,food===favorite?16:10);
-      if(!wasReady&&a.wary<=BOND_THRESHOLD){
-        say(`${titles[a.kind]} trusts you! Aim a capture orb (G / X) to borrow its power.`,1900);
+    function placeFood(pr){
+      const heightAt=liquid(pr.x,pr.y)?Math.floor(pr.y/TILE)*TILE:pr.y;
+      lures.push({x:pr.x,y:heightAt,food:pr.food,age:0,ttl:24,used:false});
+      particles(pr.x,heightAt-2,FOOD[pr.food].color,6);
+    }
+    function eatFood(animal,lure){
+      lure.used=true;animal.eating=.8;
+      const favorite=CREATURE[animal.kind].favorite===lure.food;
+      animal.trust=Math.min(TRUST_TARGET,animal.trust+(favorite?60:36));
+      WW.audio.play('munch');
+      particles(animal.x,animal.y-17,FOOD[lure.food].color,9);
+      if(animal.trust>=TRUST_TARGET&&CREATURE[animal.kind].capturable){
+        animal.distractedUntil=clock+DISTRACTION_SECONDS;
         WW.audio.play('ready');
-      } else if(food===favorite){
-        say(`${titles[a.kind]} loves ${FOOD[food].name}! Keep building trust.`,1350);
+        particles(animal.x,animal.y-19,'#ffeab3',20);
+        say(titles[animal.kind]+' is happily distracted! Throw an orb before it looks up.',2500);
       }
     }
     function recallParty(destination=spawn){WW.audio.play('recall');
@@ -834,12 +975,20 @@ WW.games.animals = (() => {
         if(p.sleep){p.sleep=false;p.health=3;}p.invincible=2;particles(p.x,p.y-10,'#b9f6ff',24);});
       cameraX=0;cameraY=0;WW.input.reset();say('Camp portal! Your relics, snacks and transformation time are safe.',2800);
     }
-    function hitPlayer(player){
+    function hitPlayer(player,sourceX=player.x-player.face*20){
       if(player.invincible>0||player.sleep||shared.won)return;
-      player.health--;WW.audio.play('hit');player.invincible=1.5;shake=6; WW.input.rumble(player.id,.95,220);particles(player.x,player.y-10,'#ffb8a4',10);
-      if(player.health===0){WW.audio.play('sleep');player.sleep=true;player.vx=0;say(player.id===0?'You fainted! Press Revive to wake up.':'A friend fainted! Move close and press Revive.',3000);}
+      player.health--;WW.audio.play('hit');player.invincible=1.2;
+      player.hurt=.23;player.grounded=false;
+      player.vx=sourceX<player.x?3.3:-3.3;
+      player.vy=-3.6;shake=6;
+      WW.input.rumble(player.id,.78,180);
+      particles(player.x,player.y-14,'#ffb8a4',15);
+      if(player.health<=0){
+        WW.audio.play('sleep');player.sleep=true;player.vx=0;
+        say('A little rest! Press Revive to return to your last safe spot.',2600);
+      }
     }
-    function revive(player,by){WW.audio.play('revive');player.sleep=false;player.health=3;player.invincible=2;player.vy=-2;player.waterTime=0;player.x=player.lastSafe.x;player.y=player.lastSafe.y;particles(player.x,player.y-10,'#aafae3',14); WW.input.rumble(by.id,.45,180);say('Back on your feet!');}
+    function revive(player,by){WW.audio.play('revive');player.sleep=false;player.hurt=0;player.health=3;player.invincible=2;player.vy=-2;player.waterTime=0;player.x=player.lastSafe.x;player.y=player.lastSafe.y;particles(player.x,player.y-10,'#aafae3',14); WW.input.rumble(by.id,.45,180);say('Back on your feet!');}
     function movePlayer(p,controls,dt){
       const step=dt*60;
       if(p.sleep){
@@ -849,18 +998,19 @@ WW.games.animals = (() => {
       }
       p.invincible=Math.max(0,p.invincible-dt);
       p.actionCD=Math.max(0,p.actionCD-dt);
+      p.hurt=Math.max(0,p.hurt-dt);
       p.previousX=p.x;
       const direction=Number(controls.right)-Number(controls.left);
       if(direction)p.face=direction;
       const swimming=p.form==='tideling' && (liquid(p.x,p.y-8)||liquid(p.x,p.y+2));
       const flying=p.form==='skyling';
-      const run=p.form==='prismtail'?4.0:p.form==='springaroo'?2.6:swimming?2.45:PHYSICS.run;
+      const run=p.form==='springaroo'?2.65:swimming?2.55:PHYSICS.run;
       const water=liquid(p.x,p.y-9)||liquid(p.x,p.y-1);
       // Acceleration gives movement weight without sacrificing the sprint trial.
       const targetSpeed=direction*run*(water&&!swimming?.42:1);
       const traction=direction?(p.grounded?.52:.34):(p.grounded?.65:.32);
-      p.vx+=clamp(targetSpeed-p.vx,-traction*step,traction*step);
-      if(!direction&&Math.abs(p.vx)<.08)p.vx=0;
+      if(!p.hurt)p.vx+=clamp(targetSpeed-p.vx,-traction*step,traction*step);
+      if(!direction&&!p.hurt&&Math.abs(p.vx)<.08)p.vx=0;
       if(swimming){
         p.vy=(Number(controls.down)-Number(controls.jump))*2.45;
         p.coyote=0;p.jumpBuffer=0;p.jumpsUsed=0;
@@ -879,12 +1029,7 @@ WW.games.animals = (() => {
         // Releasing early makes a short hop; holding yields full jump height.
         if(controls.released.jump&&p.vy< -1&&!flying)p.vy*=.56;
         if(flying && controls.jump) p.vy=Math.max(-2.95,p.vy-.52*step);
-        if(p.form==='cloudwhisp'&&controls.jump&&p.vy>0)p.vy=Math.min(p.vy,.78);
-        // Starfall thermals lift gliding creatures; other forms cross without being carried.
-        if(p.form==='cloudwhisp'&&(at(p.x,p.y-12)==='thermal'||at(p.x,p.y-25)==='thermal')){
-          p.vy=Math.max(-2.7,p.vy-.45*step);
-          if(Math.floor(clock*8)!==Math.floor((clock-dt)*8))particles(p.x,p.y-15,'#b8f9ff',3);
-        }
+
         p.vy=Math.min(PHYSICS.maxFall,p.vy+PHYSICS.gravity*step);
       }
       let nx=p.x+p.vx*step;
@@ -931,167 +1076,153 @@ WW.games.animals = (() => {
       if(controls.pressed.snack)throwThing(p,'food');
       if(controls.pressed.orb)throwThing(p,'orb');
       if(controls.pressed.foodCycle){p.selectedFood=(p.selectedFood+1)%FOODS.length;const food=FOODS[p.selectedFood];say(`P${p.id+1}: ${FOOD[food].name} · ${shared.foods[food]} left`,1350);}
-      if(controls.pressed.cycle){p.selected=(p.selected+1)%TYPES.length;const type=TYPES[p.selected];say(`P${p.id+1}: ${titles[type]} · ${Math.ceil(p.energy[type])}s stored · ${FORM[type].power}`,1450);}
+      if(controls.pressed.cycle){p.selected=(p.selected+1)%TYPES.length;const type=TYPES[p.selected];say(`${titles[type]} · ${p.unlocked[type]?'Ready to transform':'Find and befriend one first'}`,1400);}
       if(controls.pressed.transform){
         const type=TYPES[p.selected];
-        if(p.form===type){p.form=null;callout.hidden=true;say(`P${p.id+1}: Returned to explorer. Remaining magic saved!`,1450);}
-        else if(p.energy[type]>.02){p.form=type;WW.audio.play('morph');WW.input.rumble(p.id,.35,180);particles(p.x,p.y-10,FORM[type].color,24);
-          showAbility(p);say(`P${p.id+1} becomes ${titles[type]}! ${FORM[type].power}.`,1700);}
-        else say(`P${p.id+1}: Befriend a ${titles[type]} to earn transformation time.`,1500);
-      }
-      if(p.form){
-        p.energy[p.form]=Math.max(0,p.energy[p.form]-dt);
-        if(p.energy[p.form]<=0){p.form=null;callout.hidden=true;particles(p.x,p.y-9,'#ffffff',15);say(`P${p.id+1}: Time's up! Catch another creature.`,1850);
-          if(nowWater){const safe=liquid(p.lastSafe.x,p.lastSafe.y-9)?spawn:p.lastSafe;p.x=safe.x;p.y=safe.y;p.vy=0;p.invincible=1;}
-        }
-      }
-      if(p.form==='glimmermoth' && Math.floor(clock*5)!==Math.floor((clock-dt)*5)){
-        for(const a of animals)if(a.alive&&a.wary>0&&distance(p,a)<76){a.wary=Math.max(0,a.wary-2.7);a.attackCD=Math.max(a.attackCD,.3);particles(a.x,a.y-14,'#f2b8ff',2);}
-      }
-      if(p.form==='emberkit'&&controls.pressed.down&&p.grounded&&p.actionCD<=0){
-        for(const a of animals)if(a.alive&&distance(p,a)<90){a.wary=Math.max(0,a.wary-27);particles(a.x,a.y-14,'#ffc28b',15);}
-        p.actionCD=2.2;WW.input.rumble(p.id,.3,120);say('Emberkit released a warmth wave!',1350);
+        if(p.form===type){p.form=null;callout.hidden=true;say('Back to explorer form.',1200);}
+        else if(p.unlocked[type]){p.form=type;WW.audio.play('morph');WW.input.rumble(p.id,.35,180);particles(p.x,p.y-10,FORM[type].color,24);
+          showAbility(p);say(`${titles[type]} power! ${FORM[type].power}.`,1700);}
+        else say(`Leave ${FOOD[FORM[type].favorite].name} for a ${titles[type]} to befriend one.`,1750);
       }
       if(controls.pressed.recall)recallParty();
       if(controls.pressed.revive)for(const other of players)if(other!==p&&other.sleep&&distance(other,p)<48)revive(other,p);
-      p.frame+=Math.abs(p.vx)*dt*6;
+      p.frame+=dt*(p.grounded?Math.abs(p.vx)*5+1:7);
     }
-    function targetFor(animal){return players.filter(p=>!p.sleep).sort((a,b)=>distance(a,animal)-distance(b,animal))[0];}
-    function fireAnimalAttack(a,target){
-      const dx=target.x-a.x,dy=(target.y-9)-(a.y-9),len=Math.hypot(dx,dy)||1;
-      const attacks={skyling:'feather',tideling:'bubble',springaroo:'thorn',cloudwhisp:'gust',
-        prismtail:'spark',mossback:'seed',glimmermoth:'starlight',emberkit:'ember'};
-      const kind=attacks[a.kind],base=kind==='spark'?3.3:kind==='gust'?1.4:2.0;
-      const spreads={feather:[-.4,0,.4],ember:[-.25,.25],seed:[-.22,.22],starlight:[0],thorn:[0],gust:[0],spark:[0],bubble:[-.18,.18]};
-      for(const offset of spreads[kind]){
-        const c=Math.cos(offset),si=Math.sin(offset);
-        projectiles.push({kind,owner:-1,x:a.x,y:a.y-12,
-          vx:(dx/len*c-dy/len*si)*base,vy:(dy/len*c+dx/len*si)*base,
-          ttl:kind==='gust'?1.7:2.0,age:0});
-      }
-      particles(a.x,a.y-13,FORM[a.kind].color,5);
+    function targetFor(animal){
+      return players.filter(p=>!p.sleep).sort((a,b)=>distance(a,animal)-distance(b,animal))[0];
+    }
+    function nearbyFood(animal){
+      return lures.filter(food=>!food.used&&food.ttl>0&&Math.abs(food.x-animal.homeX)<180)
+        .filter(food=>Math.abs(food.x-animal.x)<170&&Math.abs(food.y-animal.y)<100)
+        .sort((a,b)=>Math.hypot(a.x-animal.x,a.y-animal.y)-Math.hypot(b.x-animal.x,b.y-animal.y))[0];
+    }
+    function standingHeight(x,fallback){
+      const tileX=clamp(Math.floor(x/TILE),0,level.width-1);
+      const row=map.findIndex(line=>line[tileX]==='ground');
+      return row>=0?row*TILE:fallback;
     }
     function updateAnimals(dt){
       const step=dt*60;
       for(const a of animals){
-        if(!a.alive){a.respawn-=dt;if(a.respawn<=0){a.alive=true;a.wary=100;a.attackCD=2;a.windup=0;a.dashTime=0;}continue;}
-        a.phase+=dt;a.frame+=dt*(a.wary>BOND_THRESHOLD?6:3);
-        const target=targetFor(a),near=target&&distance(target,a)<175&&a.wary>BOND_THRESHOLD;
-        const dx=target?target.x-a.x:0;
-        const home=a.homeX,baseY=a.homeY;
-        // The eight magical species have distinct movement and combat patterns.
-        switch(a.behavior){
-          case 'hopper':{
-            const hopping=near?Math.abs(Math.sin(a.phase*3.1)):Math.abs(Math.sin(a.phase*1.7));
-            a.y=baseY-hopping*(near?23:9);
-            a.x=clamp(a.x+(near?Math.sign(dx)*.78:Math.sin(a.phase)*.4)*step,home-47,home+47);
-            break;
-          }
-          case 'swooper':{
-            a.x=clamp(a.x+(near?Math.sign(dx)*1.0:Math.cos(a.phase*1.4)*.46)*step,home-85,home+85);
-            const dive=near?clamp((target.y-45-baseY)*.4,-22,20):0;
-            a.y=baseY+Math.sin(a.phase*2.8)*13+dive;
-            break;
-          }
-          case 'swimmer':
-            a.x=home+Math.sin(a.phase*1.35)*35;a.y=baseY+Math.sin(a.phase*3.7)*7;break;
-          case 'orbiter':
-            a.x=home+Math.cos(a.phase*1.22)*28;a.y=baseY+Math.sin(a.phase*1.8)*21;break;
-          case 'sprinter':{
-            if(a.dashTime>0){
-              a.x=clamp(a.x+a.dashDir*3.6*step,home-89,home+89);
-              a.dashTime=Math.max(0,a.dashTime-dt);
-              if(target&&Math.abs(target.x-a.x)<21&&Math.abs(target.y-a.y)<24)hitPlayer(target);
-            }else if(!near)a.x=home+Math.sin(a.phase*.9)*15;
-            else a.x+=clamp(dx*.012,-.6,.6)*step;
-            a.y=baseY-2-Math.abs(Math.sin(a.phase*6))*4;
-            break;
-          }
-          case 'guardian':
-            a.x=home+Math.sin(a.phase*.65)*4;a.y=baseY;break;
-          case 'shy':{
-            // Glimmermoths avoid confrontation: approach carefully or use nectar mist.
-            if(target&&distance(target,a)<115) a.x=clamp(a.x-Math.sign(dx)*1.25*step,home-67,home+67);
-            else a.x+=(home-a.x)*Math.min(.04*step,1);
-            a.y=baseY+Math.sin(a.phase*3.2)*12;
-            break;
-          }
-          case 'stalker':{
-            a.x=clamp(a.x+(near?Math.sign(dx)*.55:Math.sin(a.phase)*.28)*step,home-52,home+52);
-            a.y=baseY-Math.abs(Math.sin(a.phase*2.1))*(near?19:8);
-            if(near&&Math.abs(dx)<15&&Math.abs(target.y-a.y)<20)hitPlayer(target);
-            break;
-          }
+        if(!a.alive){
+          a.respawn-=dt;
+          if(a.respawn<=0){a.alive=true;a.trust=0;a.distractedUntil=0;a.eating=0;}
+          continue;
         }
-        a.dir=target&&near?(dx>=0?1:-1):(Math.cos(a.phase)>=0?1:-1);
-        if(a.wary<=BOND_THRESHOLD){a.windup=0;continue;}
-        if(a.windup>0){
-          a.windup-=dt;
-          if(a.windup<=0){
-            a.windup=0;
-            if(target&&distance(target,a)<220){
-              fireAnimalAttack(a,target);
-              if(a.behavior==='sprinter'){a.dashTime=.33;a.dashDir=dx>=0?1:-1;}
-            }
-            a.attackCD=a.behavior==='guardian'?3.4:a.behavior==='shy'?4.8:a.behavior==='swooper'?3.6:2.7;
-          }
+        a.phase+=dt;
+        const target=targetFor(a),food=nearbyFood(a);
+        const distract=a.distractedUntil>clock,feeding=a.eating>0;
+        if(feeding)a.eating=Math.max(0,a.eating-dt);
+        const range=a.kind==='emberkit'?102:75;
+        const near=target&&distance(a,target)<range;
+        let desiredX=a.homeX+Math.sin(a.phase*.48+a.homeX)*35;
+        let speed=.48;
+        if(a.kind==='mossback'){speed=.34;desiredX=a.homeX+Math.sin(a.phase*.48)*62;}
+        if(a.kind==='prismtail'){
+          speed=1.8;
+          desiredX=near?a.x+(a.x-target.x>0?90:-90):a.homeX+Math.sin(a.phase*.9)*75;
+        }
+        if(a.kind==='glimmermoth'){
+          speed=1.25;
+          if(near)desiredX=a.x+(a.x-target.x>0?85:-85);
+        }
+        if(a.kind==='emberkit'){
+          speed=near?1.5:.53;
+          desiredX=near?target.x:a.homeX+Math.sin(a.phase*.9)*45;
+        }
+        if(a.kind==='springaroo')speed=.73;
+        if(a.kind==='tideling')speed=.63;
+        if(a.kind==='skyling'||a.kind==='cloudwhisp')speed=.8;
+        if(food){desiredX=food.x;speed=a.kind==='mossback'?.72:a.kind==='glimmermoth'?.95:1.22;}
+        if(feeding||distract){desiredX=a.x;speed=0;}
+        const dx=clamp(desiredX-a.x,-speed*step,speed*step);
+        const candidate=clamp(a.x+dx,a.homeX-125,a.homeX+125);
+        // Ground walkers turn away from pools and ledges. Flyers can approach their snacks.
+        const flying=['skyling','glimmermoth','cloudwhisp'].includes(a.kind);
+        const floor=standingHeight(candidate,a.homeY);
+        if(flying||!liquid(candidate,floor-6)){
+          a.x=candidate;
+          if(dx)a.dir=dx>0?1:-1;
+        }else a.dir*=-1;
+        if(flying){
+          const floatY=a.homeY+Math.sin(a.phase*(a.kind==='skyling'?2.4:1.6))*8;
+          const wanted=food?food.y-16:floatY;
+          a.y+=(wanted-a.y)*Math.min(1,dt*(food?3.8:2.8));
         }else{
-          a.attackCD-=dt;
-          if(near&&distance(target,a)<(a.behavior==='guardian'?166:130)&&a.attackCD<=0){
-            a.windup=a.behavior==='sprinter'?.72:.48;
+          const groundY=Math.min(floor,a.homeY+20);
+          const bounce=a.kind==='springaroo'?Math.abs(Math.sin(a.phase*5))*12:
+            a.kind==='emberkit'?Math.abs(Math.sin(a.phase*3.8))*5:
+            a.kind==='prismtail'?Math.abs(Math.sin(a.phase*11))*4:1.5*Math.abs(Math.sin(a.phase*2));
+          a.y=groundY-bounce;
+        }
+        a.frame+=dt*(speed>1?12:6);
+        if(food&&!distract&&!feeding&&Math.abs(a.x-food.x)<18&&Math.abs(a.y-12-food.y)<37){
+          eatFood(a,food);
+        }
+        // Only the territorial Emberkit is dangerous. Body overlap checks both axes
+        // every update, including airborne frames; there is no arbitrary bullet spam.
+        a.windup=a.kind==='emberkit'&&near&&!food&&!feeding&&!distract?.2:0;
+        if(a.kind==='emberkit'&&!food&&!feeding&&!distract){
+          for(const p of players){
+            if(!p.sleep&&Math.abs(p.x-a.x)<19&&p.y>a.y-27&&p.y-25<a.y+1){
+              hitPlayer(p,a.x);
+            }
           }
         }
       }
     }
     function capture(animal,owner){
-      if(animal.wary>BOND_THRESHOLD){
+      const species=CREATURE[animal.kind];
+      if(!species.capturable){
         WW.audio.play('miss');
-        particles(animal.x,animal.y-8,'#f4b0dd',7);
-        say(`${titles[animal.kind]} is still wary. Try ${FOOD[FORM[animal.kind].favorite].name} to earn its trust!`,1900);
+        say(species.name+' is part of the wild. Only Springaroo, Tidefox and Moonwing share powers.',2100);
         return;
       }
-        WW.audio.play('catch');animal.alive=false;animal.respawn=5;
-        for(const c of challenges)if(c.type==='befriend'&&c.kind===animal.kind&&!c.completed){
-          c.catches=(c.catches||0)+1;
-          if(c.catches>=c.count){c.completed=true;say('Hearth ritual complete! The Ember Gem can now be collected.',3200);}
-        }
-        players[owner].energy[animal.kind]+=FORM[animal.kind].seconds;players[owner].selected=TYPES.indexOf(animal.kind);
-        particles(animal.x,animal.y-8,FORM[animal.kind].color,28);
-        WW.input.rumble(owner,.55,290);say(`P${owner+1} befriended ${titles[animal.kind]}! +${FORM[animal.kind].seconds}s of ${FORM[animal.kind].power.toLowerCase()}. Press Transform!`,2800);
+      if(animal.distractedUntil<=clock){
+        WW.audio.play('miss');
+        say(species.name+' is not distracted. Leave two '+FOOD[species.favorite].name+' treats nearby.',2100);
+        return;
+      }
+      animal.alive=false;animal.respawn=17;
+      players[owner].unlocked[animal.kind]=true;
+      players[owner].selected=TYPES.indexOf(animal.kind);
+      captures.push({x:animal.x,y:animal.y-16,age:0,color:species.color,kind:animal.kind});
+      WW.audio.play('catch');
+      WW.input.rumble(owner,.55,270);shake=2.5;
+      particles(animal.x,animal.y-15,species.color,30);
+      say(species.name+' befriended! Power unlocked for this whole chapter. Press Transform (T / Y).',3100);
     }
     function updateProjectiles(dt){
+      const step=dt*60;
       for(let i=projectiles.length-1;i>=0;i--){
-        const pr=projectiles[i];pr.age=(pr.age||0)+dt;pr.ttl-=dt;
-        pr.x+=pr.vx*dt*60;pr.y+=pr.vy*dt*60;
-        if(pr.kind==='food'){
-          const method=FOOD[pr.food].method;
-          if(method==='lob'||method==='splash')pr.vy+=.11*dt*60;
-          if(method==='float'){pr.vy=Math.max(-.3,pr.vy+.04*dt*60);pr.x+=Math.sin(pr.age*10)*.7;}
-        } else if(pr.kind==='orb')pr.vy+=.045*dt*60;
-        if(pr.kind==='seed'||pr.kind==='thorn')pr.vy+=.05*dt*60;
-        if(pr.kind==='feather'||pr.kind==='starlight')pr.y+=Math.sin(pr.age*11)*.6;
-        if(pr.kind==='bubble'){pr.vy-=.015*dt*60;pr.x+=Math.sin(pr.age*8)*.65;}
-        if(pr.kind==='gust'){pr.vx*=Math.pow(.985,dt*60);pr.y+=Math.sin(pr.age*13)*.9;}
-        if(pr.kind==='ember'){pr.vx*=Math.pow(1.006,dt*60);pr.vy*=Math.pow(1.006,dt*60);}
-        if(pr.ttl<=0||solid(pr.x,pr.y)){
-          if(pr.kind==='food'&&FOOD[pr.food].method==='splash')splash(pr);
+        const pr=projectiles[i],oldX=pr.x,oldY=pr.y;
+        pr.age+=dt;pr.ttl-=dt;
+        pr.x+=pr.vx*step;pr.y+=pr.vy*step;
+        pr.vy+=(pr.kind==='food'?.17:.045)*step;
+        if(pr.kind==='food'&&FOOD[pr.food].method==='float'){
+          pr.vy=Math.min(pr.vy,2.2);pr.x+=Math.sin(pr.age*9)*.5;
+        }
+        const floorHit=solid(pr.x,pr.y)||at(pr.x,pr.y)==='platform'&&oldY<=Math.floor(pr.y/TILE)*TILE;
+        const waterHit=pr.kind==='food'&&liquid(pr.x,pr.y);
+        if(pr.ttl<=0||floorHit||waterHit){
+          if(pr.kind==='food'&&pr.ttl>0)placeFood(pr);
           projectiles.splice(i,1);continue;
         }
-        if(pr.owner>=0){
-          const a=animals.find(a=>a.alive&&Math.hypot(pr.x-a.x,pr.y-(a.y-10))<14);
-          if(a){projectiles.splice(i,1);if(pr.kind==='food'){
-            if(FOOD[pr.food].method==='splash')splash(pr);else charm(a,FOOD[pr.food].affection,pr.food,pr.owner);
-          }else capture(a,pr.owner);}
-        }else{
-          const p=players.find(p=>!p.sleep&&p.invincible<=0&&Math.hypot(pr.x-p.x,pr.y-(p.y-9))<11);
-          if(p){projectiles.splice(i,1);if(p.form==='mossback'){
-              particles(p.x,p.y-12,'#c9ffd4',9);WW.input.rumble(p.id,.15,80);
-            }else hitPlayer(p);}
+        if(pr.kind==='orb'){
+          const a=animals.find(a=>a.alive&&
+            Math.abs(pr.x-a.x)<17&&Math.abs(pr.y-(a.y-14))<22);
+          if(a){capture(a,pr.owner);projectiles.splice(i,1);}
         }
       }
+      for(let i=lures.length-1;i>=0;i--){
+        lures[i].age+=dt;lures[i].ttl-=dt;
+        if(lures[i].used||lures[i].ttl<=0)lures.splice(i,1);
+      }
+      for(let i=captures.length-1;i>=0;i--){
+        captures[i].age+=dt;
+        if(captures[i].age>1.05)captures.splice(i,1);
+      }
     }
-    function splash(pr){for(const a of animals)if(a.alive&&Math.hypot(a.x-pr.x,a.y-11-pr.y)<46)charm(a,FOOD.honey.affection,'honey',pr.owner);
-      particles(pr.x,pr.y,'#ffcd75',20);}
     function updateChallenges(dt){
       for(const c of challenges){
         if(c.type!=='sprint'||c.completed)continue;
@@ -1183,17 +1314,25 @@ WW.games.animals = (() => {
       if(clock>+(message.dataset.until||0))message.classList.remove('show');
       if(clock-hudTime>.16){
         hudTime=clock;
-        // Only the current and selected forms appear in the permanent HUD. The full roster lives in the guide.
-        const portrait=t=>`<img src="${WW.art.portrait(t)}" alt="${t}">`;
-        hud.innerHTML=`<div class="compact-players">${players.map(p=>{
-          const chosen=TYPES[p.selected],food=FOODS[p.selectedFood];
-          return `<div class="compact-player p${p.id+1}">
-              <b>P${p.id+1}</b><span class="mini-hearts">${Array.from({length:3},(_,i)=>i<p.health?'♥':'♡').join('')}</span>
-              <span class="mini-form ${p.form?'morphed':''}" title="${p.form?abilityHelp[p.form]:FORM[chosen].power}">${portrait(p.form||chosen)}<span>${p.form?Math.ceil(p.energy[p.form])+'s':Math.ceil(p.energy[chosen])+'s'}</span></span>
-              <span class="mini-label">${p.sleep?'ASLEEP':p.form?titles[p.form]+' · '+FORM[p.form].power:titles[chosen]}</span>
-              <span class="mini-food"> <img src="${WW.art.foodIcon(food)}" alt="">${shared.foods[food]}</span>
-            </div>`;}).join('')}</div>
-          <div class="compact-quest"><b>${chapter.name}</b><span>${goals.map(g=>`<span class="quest-gem ${shared.keys[g.kind]?'found':''}" title="${g.name}">◆</span>`).join('')}</span><small>✦ ${shared.shards}/${shared.totalShards}</small></div>`;
+        hud.innerHTML=`
+          <div class="compact-players">${players.map(p=>{
+            const chosen=TYPES[p.selected],food=FOODS[p.selectedFood];
+            const display=p.form||chosen,active=p.unlocked[chosen];
+            return `<div class="compact-player p${p.id+1}">
+              <b>P${p.id+1}</b><span class="mini-hearts">${'♥'.repeat(p.health)}${'♡'.repeat(3-p.health)}</span>
+              <span class="mini-form ${p.form?'morphed':''}">
+                <img src="${WW.art.portrait(display)}" alt="${titles[display]}">
+                <span>${p.form?'ON':active?'✓':'—'}</span>
+              </span>
+              <span class="mini-label">${p.form?FORM[p.form].power:active?'T: Transform':'Find '+titles[chosen]}</span>
+              <span class="mini-food" title="${FOOD[food].name} (F: leave food, E: cycle)">
+                <img src="${WW.art.foodIcon(food)}" alt="">×${shared.foods[food]}
+              </span>
+            </div>`;
+          }).join('')}</div>
+          <div class="compact-quest"><b>${chapter.name}</b><span class="quest-gem ${goals.every(g=>shared.keys[g.kind])?'found':''}">◆</span>
+            <small>${goals.every(g=>shared.keys[g.kind])?'GATE OPEN':'FIND THE LIGHT'} · ✦ ${shared.shards}/${shared.totalShards}</small>
+          </div>`;
       }
     }
     function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
@@ -1255,10 +1394,10 @@ WW.games.animals = (() => {
       }
     }
     function sceneryBack(ctx,time){
-      const l=Math.floor((cameraX-120)/110),r=Math.ceil((cameraX+W+120)/110);
+      const l=Math.floor((cameraX-180)/172),r=Math.ceil((cameraX+W+180)/172);
       const base=spawn.y+28;
       for(let i=l;i<=r;i++){
-        const x=i*110+(hash(i,29)%23),wind=Math.sin(time*.66+i)*2;
+        const x=i*172+(hash(i,29)%23),wind=Math.sin(time*.66+i)*2;
         const high=base-130-(i%3)*8;
         if(chapter.biome==='coast'){
           // Glassy mineral spires with sharp colored facets and teal reef anemones.
@@ -1304,6 +1443,82 @@ WW.games.animals = (() => {
           box(ctx,x-26,base-10,18,7,'#cc8ecb');box(ctx,x-23,base-17,12,9,'#f8b6e3');
           box(ctx,x+20,base-13,15,8,'#86d8d1');box(ctx,x+22,base-22,11,12,'#9dffda');
         }
+      }
+    }
+    function drawLandmarks(ctx,time){
+      for(const place of level.landmarks||[]){
+        const x=place.x*TILE;
+        if(x<cameraX-130||x>cameraX+W+130)continue;
+        const row=map.findIndex(line=>line[place.x]==='ground'||line[place.x]==='water');
+        if(row<0)continue;
+        const y=row*TILE,wind=Math.sin(time*.9+x*.013)*3;
+        ctx.save();ctx.translate(x,y);
+        if(place.type==='tree'){
+          // Giant hollow trees and lantern boughs become recognizable places, not tiled noise.
+          box(ctx,-13,-113,26,116,'#244d59');
+          box(ctx,-7,-111,7,108,'#3d857b');
+          box(ctx,5,-95,3,93,'#73b18d');
+          ctx.strokeStyle='#3a7471';ctx.lineWidth=10;ctx.beginPath();
+          ctx.moveTo(-6,-77);ctx.lineTo(-44,-115);ctx.moveTo(7,-89);ctx.lineTo(47,-130);ctx.stroke();
+          for(const [dx,dy,r,c] of [[-31,-135,35,'#357e74'],[32,-150,36,'#448e80'],[1,-160,44,'#5dab87'],[-14,-180,24,'#89cc9a']]){
+            ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(dx+wind,dy,r,r*.62,0,0,Math.PI*2);ctx.fill();
+          }
+          box(ctx,-18,-58,36,5,'#ae8c74');box(ctx,-12,-62,24,5,'#d1bc88');
+          box(ctx,-7,-46,14,23,'#1a3c49');box(ctx,-4,-42,8,15,'#a0c5a4');
+          for(let j=0;j<7;j++){
+            const rx=-47+hash(place.x,j)%97,ry=-178+hash(j,place.x)%69;
+            box(ctx,rx+wind,ry,2,3,j%2?'#f4dba0':'#c3f2c5');
+          }
+        }else if(place.type==='crystal'){
+          for(const [dx,h,w,color] of [[-37,76,23,'#27587f'],[-11,117,30,'#58a6b9'],[20,90,27,'#397ca6'],[47,61,18,'#83d9cf']]){
+            ctx.fillStyle=color;ctx.beginPath();
+            ctx.moveTo(dx,-h);ctx.lineTo(dx+w*.6,-h*.67);ctx.lineTo(dx+w,0);
+            ctx.lineTo(dx-w*.5,0);ctx.closePath();ctx.fill();
+            ctx.fillStyle='#baf6eb7a';ctx.beginPath();ctx.moveTo(dx,-h);ctx.lineTo(dx+w*.6,-h*.67);
+            ctx.lineTo(dx+w*.2,-18);ctx.closePath();ctx.fill();
+            box(ctx,dx+2,-h*.6,2,18,'#e6fff2');
+          }
+        }else if(place.type==='reef'||place.type==='pond'){
+          for(let j=0;j<10;j++){
+            const dx=-45+hash(place.x,j)%90,depth=14+hash(j,place.x)%28;
+            ctx.strokeStyle=j%3===0?'#e6a6d2':j%2?'#7be8c1':'#83bff4';
+            ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(dx,0);
+            ctx.quadraticCurveTo(dx+wind*2,-depth*.6,dx+wind-5,-depth);ctx.stroke();
+            box(ctx,dx+wind-8,-depth,7,4,'#b8f4d9');
+          }
+        }else if(place.type==='observatory'){
+          ctx.lineWidth=12;ctx.strokeStyle='#5a648d';ctx.beginPath();
+          ctx.arc(0,-75,53,Math.PI,Math.PI*2);ctx.stroke();
+          ctx.strokeStyle='#b0b2dc';ctx.lineWidth=3;ctx.beginPath();
+          ctx.arc(0,-75,43,Math.PI,Math.PI*2);ctx.stroke();
+          box(ctx,-56,-72,12,74,'#4c5379');box(ctx,44,-72,12,74,'#4c5379');
+          box(ctx,-62,-7,124,11,'#8085b3');box(ctx,-47,-12,94,5,'#b8bce1');
+          for(let j=0;j<9;j++){
+            const theta=Math.PI+j*Math.PI/8;
+            const rx=50*Math.cos(theta),ry=-75+50*Math.sin(theta);
+            box(ctx,rx-2,ry-2,4,4,'#e8dcb5');
+          }
+        }else if(place.type==='island'){
+          ctx.fillStyle='#536090';ctx.beginPath();
+          ctx.moveTo(-48,-70);ctx.lineTo(44,-70);ctx.lineTo(27,-41);
+          ctx.lineTo(4,-22);ctx.lineTo(-18,-49);ctx.closePath();ctx.fill();
+          box(ctx,-48,-76,92,8,'#b7c8ab');
+          for(let j=0;j<6;j++){
+            const xx=-36+j*14;
+            box(ctx,xx,-83,3,7,'#91d0ae');
+            box(ctx,xx-4,-88,10,5,j%2?'#dfb4e4':'#b0e9cc');
+          }
+          ctx.strokeStyle='#a5c8c2';ctx.lineWidth=2;
+          for(let j=0;j<4;j++){const xx=-27+j*15;ctx.beginPath();ctx.moveTo(xx,-42);ctx.quadraticCurveTo(xx+wind*2,-22,xx-3,-10);ctx.stroke();}
+        }else if(place.type==='lantern'){
+          box(ctx,-4,-68,7,69,'#526b69');
+          box(ctx,-12,-74,23,8,'#bfa27a');
+          box(ctx,-8,-89,15,18,'#f2dca4');
+          ctx.globalAlpha=.2+.07*Math.sin(time*3);
+          ctx.fillStyle='#f9e3a4';ctx.beginPath();ctx.arc(0,-81,35,0,Math.PI*2);ctx.fill();
+          ctx.globalAlpha=1;
+        }
+        ctx.restore();
       }
     }
     function groundDetails(ctx,time){
@@ -1369,30 +1584,24 @@ WW.games.animals = (() => {
       }
     }
     function objective(){
-      const seeker=players[0];
-      const remaining=goals.filter(goal=>!shared.keys[goal.kind]);
-      const choices=remaining.map(goal=>{
-        const pending=challenges.find(c=>c.goal===goal.kind&&!c.completed);
-        const gem=items.find(item=>item.kind===goal.kind);
-        if(pending?.type==='sprint')return {
-          x:(pending.active?pending.finish:pending.start)*TILE,y:seeker.y,
-          name:pending.active?'REACH THE FINISH':'FIND THE STARTING ARCH',
-          hint:pending.active?'Keep sprinting!':'Use Prismtail for the crystal speed trial',
-          goal:goal.kind
-        };
-        if(pending?.type==='befriend'){
-          const creature=animals.filter(a=>a.kind===pending.kind&&a.alive).sort((a,b)=>distance(a,seeker)-distance(b,seeker))[0];
-          return {x:creature?.x??gem.x,y:creature?.y??gem.y,
-            name:'BEFRIEND EMBERKITS',
-            hint:`${pending.catches||0}/${pending.count} befriended · offer Honeybombs`,
-            goal:goal.kind};
+      const goal=goals.find(g=>!shared.keys[g.kind]);
+      if(goal){
+        const active=players[0],kind=goal.form;
+        if(kind&&!active.unlocked[kind]){
+          const creature=animals.filter(a=>a.alive&&a.kind===kind)
+            .sort((a,b)=>distance(a,active)-distance(b,active))[0];
+          if(creature)return {
+            x:creature.x,y:creature.y,goal:kind,
+            name:'BEFRIEND '+titles[kind].toUpperCase(),
+            hint:'F: leave '+FOOD[FORM[kind].favorite].name+' · wait for DISTRACTED · G: orb'
+          };
         }
-        return {x:gem.x,y:gem.y,name:goal.name.toUpperCase(),hint:goal.hint,goal:goal.kind};
-      });
-      choices.sort((a,b)=>Math.abs(a.x-seeker.x)-Math.abs(b.x-seeker.x));
-      if(choices.length)return choices[0];
+        const gem=items.find(item=>item.kind===goal.kind);
+        return {x:gem.x,y:gem.y,name:goal.name.toUpperCase(),goal:goal.kind,
+          hint:active.form!==kind?'Q: choose '+titles[kind]+' · T: transform · '+goal.hint:goal.hint};
+      }
       const gate=items.find(item=>item.kind==='exit');
-      return {x:gate.x,y:gate.y,name:'THE ANCIENT GATE',hint:'All relics found · reach the gate to finish!',goal:'exit'};
+      return {x:gate.x,y:gate.y,name:'RETURN TO THE GATE',hint:'Your light is found · carry it to the gate',goal:'exit'};
     }
     function trailGuide(ctx,now){
       const current=objective(),p=players[0],delta=current.x-p.x;
@@ -1437,7 +1646,7 @@ WW.games.animals = (() => {
       ctx.setTransform(3,0,0,3,0,0);
       background(ctx,now);
       ctx.save();ctx.translate(Math.round((Math.random()-.5)*shake),Math.round((Math.random()-.5)*shake));ctx.translate(-Math.round(cameraX),-Math.round(cameraY));
-      sceneryBack(ctx,now);terrain(ctx,now);groundDetails(ctx,now);
+      sceneryBack(ctx,now);drawLandmarks(ctx,now);terrain(ctx,now);groundDetails(ctx,now);
       for(const sign of chapter.signs||[]){
         const x=sign.x*TILE;if(x<cameraX-65||x>cameraX+W+65)continue;
         const ground=Array.from({length:level.height},(_,y)=>y).find(y=>map[y]?.[sign.x]==='ground');
@@ -1473,7 +1682,7 @@ WW.games.animals = (() => {
           ctx.save();ctx.translate(it.x,it.y+bob);ctx.rotate(now*.65);
           box(ctx,-5,-5,10,10,tint);box(ctx,-2,-10,4,5,'#ffffff');box(ctx,6,-2,5,4,tint);box(ctx,-9,-1,4,3,tint);ctx.restore();
           ctx.globalAlpha=.65+.3*Math.sin(now*5);box(ctx,it.x-2,it.y-13+bob,4,2,'#fffcef');box(ctx,it.x+12,it.y+bob,3,3,tint);ctx.globalAlpha=1;
-          ctx.fillStyle='#fff4dd';ctx.font='bold 8px sans-serif';ctx.fillText('GEM',it.x-9,it.y-19+bob);
+          ctx.fillStyle='#fff4dd';ctx.font='bold 8px sans-serif';ctx.fillText('LIGHT',it.x-12,it.y-19+bob);
         }
         if(it.kind==='exit'){
           box(ctx,it.x-12,it.y-28,24,36,'#725771');box(ctx,it.x-8,it.y-25,16,31,goals.every(g=>shared.keys[g.kind])?'#6befc6':'#423c6b');
@@ -1489,43 +1698,76 @@ WW.games.animals = (() => {
           }
         }
       });
+      lures.forEach(lure=>{
+        const shimmer=.6+.2*Math.sin(now*4+lure.x);
+        ctx.save();ctx.translate(lure.x,lure.y-3);
+        ctx.globalAlpha=shimmer*.35;ctx.fillStyle=FOOD[lure.food].color;
+        ctx.beginPath();ctx.ellipse(0,0,17,5,0,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=1;
+        ctx.fillStyle='#213b43';ctx.fillRect(-4,-5,8,7);
+        ctx.fillStyle=FOOD[lure.food].color;ctx.fillRect(-3,-7,6,7);
+        ctx.fillStyle='#fff7db';ctx.fillRect(-2,-6,2,2);
+        ctx.fillStyle='#9bdc9e';ctx.fillRect(1,-9,4,2);
+        for(let n=0;n<2;n++){
+          const pulse=(now*.9+n*.5)%1;
+          ctx.globalAlpha=(1-pulse)*.45;
+          ctx.strokeStyle=FOOD[lure.food].color;ctx.lineWidth=1;
+          ctx.beginPath();ctx.ellipse(0,-4,8+pulse*24,3+pulse*7,0,0,Math.PI*2);ctx.stroke();
+        }
+        ctx.restore();
+      });
       animals.forEach(a=>{
         if(!a.alive)return;
-        const frame=Math.floor(a.frame)%4;
-        if(a.dashTime>0){
-          ctx.globalAlpha=.3;for(let j=1;j<4;j++)WW.art.draw(ctx,a.kind,a.x-a.dashDir*j*9,a.y,frame,a.dir<0);
-          ctx.globalAlpha=1;
+        const near=players.some(p=>!p.sleep&&Math.abs(p.x-a.x)<105&&Math.abs(p.y-a.y)<105);
+        const species=CREATURE[a.kind],ready=a.distractedUntil>clock;
+        // Feet and shadows visually connect wandering creatures to the ground.
+        ctx.globalAlpha=.17;ctx.fillStyle='#102e3a';
+        ctx.beginPath();ctx.ellipse(a.x,a.y+1,11,3,0,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=1;
+        WW.art.draw(ctx,a.kind,a.x,a.y,Math.floor(a.frame)%6,a.dir<0,null,{
+          action:a.eating>0?'eat':ready?'happy':a.windup?'alert':'idle',time:a.phase
+        });
+        if(a.eating>0||ready){
+          ctx.fillStyle='#ffeab9';ctx.font='bold 9px sans-serif';
+          ctx.fillText('♥',a.x+9,a.y-23-2*Math.sin(now*5));
         }
-        if(a.behavior==='guardian'){
-          ctx.strokeStyle='#c7f1a8';ctx.lineWidth=2;ctx.globalAlpha=.4+.2*Math.sin(now*2);
-          ctx.beginPath();ctx.ellipse(a.x,a.y-17,21,25,0,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+        if(a.windup&&!a.eating){ctx.fillStyle='#ffd6a2';ctx.font='bold 11px sans-serif';ctx.fillText('!',a.x-3,a.y-32);}
+        if(!near)return;
+        if(species.capturable){
+          box(ctx,a.x-19,a.y-39,38,4,'#183a46');
+          box(ctx,a.x-18,a.y-38,36*a.trust/TRUST_TARGET,2,ready?'#f7dc94':'#b0e2b5');
+          ctx.fillStyle=ready?'#ffe9b3':'#f4f2df';ctx.font='bold 8px sans-serif';
+          ctx.fillText(ready?'♥ DISTRACTED · G':titles[a.kind],a.x-28,a.y-45);
+          if(!ready&&a.trust<100){
+            ctx.fillStyle='#a9d9c5';ctx.font='7px sans-serif';
+            ctx.fillText(FOOD[species.favorite].name+' ♥',a.x-25,a.y-31);
+          }
+        }else if(a.kind==='emberkit'){
+          ctx.fillStyle='#ffd6a2';ctx.font='bold 8px sans-serif';
+          ctx.fillText(a.eating?'♥ SNACK TIME':'! TERRITORIAL',a.x-27,a.y-34);
         }
-        WW.art.draw(ctx,a.kind,a.x,a.y,frame,a.dir<0);
-        if(a.windup>0){
-          const pulse=.65+.35*Math.sin(now*19);ctx.save();ctx.globalAlpha=pulse;
-          ctx.fillStyle='#ffcc8a';ctx.fillRect(a.x-4,a.y-70,9,11);
-          ctx.fillStyle='#543e65';ctx.font='bold 10px sans-serif';ctx.fillText('!',a.x-1,a.y-61);
+      });
+      captures.forEach(orb=>{
+        const t=orb.age/1.05,spin=t*Math.PI*5;
+        ctx.save();ctx.translate(orb.x,orb.y);
+        ctx.globalAlpha=Math.max(0,1-t);ctx.strokeStyle=orb.color;
+        ctx.lineWidth=2.5*(1-t)+.4;
+        ctx.beginPath();ctx.arc(0,0,5+25*Math.sin(Math.min(1,t)*Math.PI),spin,spin+Math.PI*1.7);ctx.stroke();
+        for(let j=0;j<7;j++){
+          const angle=spin+j*Math.PI*2/7;
+          const radius=7+22*t;
+          ctx.fillStyle=j%2?'#fff3d4':orb.color;
+          ctx.fillRect(Math.cos(angle)*radius-2,Math.sin(angle)*radius-2,3,3);
+        }
+        if(t<.55){
+          ctx.globalAlpha=(.55-t)*1.3;
+          ctx.save();ctx.scale(1-t*.9,1-t*.9);
+          WW.art.draw(ctx,orb.kind,0,13,0,false);
           ctx.restore();
         }
-        const near=players.some(p=>!p.sleep&&Math.abs(p.x-a.x)<115&&Math.abs(p.y-a.y)<82);
-        if(near){
-          const ready=a.wary<=BOND_THRESHOLD;
-          box(ctx,a.x-15,a.y-49,30,4,'#193c4a');
-          box(ctx,a.x-14,a.y-48,28*(1-a.wary/100),2,ready?'#f8d990':'#99e5c3');
-          ctx.fillStyle=ready?'#ffe5a4':'#f6f5e8';
-          ctx.font='bold 8px sans-serif';
-          ctx.fillText(titles[a.kind],a.x-18,a.y-60);
-          ctx.font='bold 7px sans-serif';
-          if(ready){
-            ctx.fillText('♥ READY · G',a.x-18,a.y-52);
-            ctx.globalAlpha=.35+.2*Math.sin(now*5);
-            ctx.strokeStyle='#e6f4ac';ctx.lineWidth=1.2;ctx.beginPath();
-            ctx.ellipse(a.x,a.y-18,22,26,0,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
-          }else{
-            ctx.fillStyle='#deefcc';
-            ctx.fillText('♥ '+FOOD[FORM[a.kind].favorite].name,a.x-18,a.y-52);
-          }
-        }
+        ctx.globalAlpha=1;
+        ctx.fillStyle='#fff4df';ctx.beginPath();ctx.arc(0,0,3+3*(1-t),0,Math.PI*2);ctx.fill();
+        ctx.restore();
       });
       projectiles.forEach(pr=>{
         const color=pr.kind==='food'?FOOD[pr.food].color:({orb:'#d8bcff',feather:'#f7eec7',bubble:'#9fe4fa',thorn:'#f5ae7a',gust:'#c4f4ff',spark:'#ffcbb9',seed:'#b4eb98',starlight:'#edc9ff',ember:'#ffb675'}[pr.kind]||'#ffffff');
@@ -1533,12 +1775,15 @@ WW.games.animals = (() => {
       });
       players.forEach(p=>{
         if(p.sleep){
-          WW.art.draw(ctx,'hero',p.x,p.y+8,1,p.face<0,p.id);
+          WW.art.draw(ctx,'hero',p.x,p.y+8,1,p.face<0,p.id,{action:'sleep',time:now});
           ctx.font='bold 10px sans-serif';ctx.fillStyle='#f9fbff';
           ctx.fillText('z',p.x+10,p.y-24-Math.sin(now*2)*3);ctx.fillText('Z',p.x+19,p.y-33-Math.sin(now*2+.8)*3);
         }else{
           if(p.form){ctx.save();ctx.globalAlpha=.19+.09*Math.sin(now*5);ctx.fillStyle=FORM[p.form].color;ctx.beginPath();ctx.ellipse(p.x,p.y-13,18,23,0,0,Math.PI*2);ctx.fill();ctx.restore();}
-          WW.art.draw(ctx,p.form||'hero',p.x,p.y,Math.floor(p.frame)%4,p.face<0,p.id);
+          if(p.invincible<=0||Math.floor(now*15)%2===0)
+            WW.art.draw(ctx,p.form||'hero',p.x,p.y,Math.floor(p.frame)%6,p.face<0,p.id,{
+              action:p.hurt>0?'hurt':!p.grounded?'jump':Math.abs(p.vx)>0.25?'run':'idle',time:now
+            });
         }
         // Colored player markers remain clear even while transformed.
         box(ctx,p.x-8,p.y-43,16,3,'#152e42');box(ctx,p.x-7,p.y-42,14,2,p.id===0?'#ffd782':'#91d2ff');
@@ -1565,7 +1810,7 @@ WW.games.animals = (() => {
       trailGuide(ctx,now);
     }
     hud.hidden=false;callout.hidden=true;say(`${chapter.name} · ${chapter.intro}`,4200);
-    return {update,render,recallParty,recallCheckpoint(){recallParty(shared.checkpoint);},stop(){hud.hidden=true;callout.hidden=true;message.classList.remove('show');},get state(){return {chapter,goals,challenges,players,shared,animals,items,projectiles,cameraX,cameraY,objective:objective(),physics:PHYSICS,jumpHeight}}};
+    return {update,render,recallParty,recallCheckpoint(){recallParty(shared.checkpoint);},stop(){hud.hidden=true;callout.hidden=true;message.classList.remove('show');},get state(){return {chapter,goals,challenges,players,shared,animals,items,projectiles,lures,captures,cameraX,cameraY,objective:objective(),physics:PHYSICS,jumpHeight}}};
   }
   return {start};
 })();
@@ -1577,7 +1822,6 @@ WW.main = (() => {
   const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
   const menu=document.getElementById('menu');const hud=document.getElementById('hud');
   let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,pixelsPerTile=1,menuPadLatch='',currentChapterIndex=0;
-  const builtinMaps=window.WONDERWOOD_LEVELS;
   const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel ${screen==='home'?'panel-home':''}">${content}</section>`;menu.querySelector('button')?.focus({preventScroll:true});};
   const button=(id,label,kind='secondary')=>`<button class="${kind}" data-action="${id}">${label}</button>`;
   function home(){
@@ -1597,7 +1841,7 @@ WW.main = (() => {
         <h2>Every creature has a story.<br>Every forest has a secret.</h2>
         <p>Wander through moonlit meadows, luminous reefs and starlit peaks. Make friends with magical creatures, borrow their extraordinary powers, and find the lost gems together.</p>
         <div class="buttons">${button('play',playLabel,'primary')}${button('chapters','✦ CHOOSE A LEVEL')}</div>
-        <div class="home-note">3 enchanted chapters &nbsp; · &nbsp; 8 curious companions &nbsp; · &nbsp; ${completed}/3 completed</div>
+        <div class="home-note">3 unique powers &nbsp; · &nbsp; 8 living creatures &nbsp; · &nbsp; ${completed}/3 completed</div>
       </div>
       <div class="home-art" aria-label="Four magical creatures beneath a glowing moon" role="img">
         <div class="art-stars"></div><div class="art-orbit"></div>
@@ -1616,18 +1860,17 @@ WW.main = (() => {
   }
   function chapters(){
     screen='chapters';
-    const cards=WW.chapters.map((c,i)=>`<div class="chapter-card ${c.biome}"><div class="chapter-number">CHAPTER ${i+1} · ${c.difficulty}</div><div class="chapter-illustration"><img src="${WW.art.portrait(['springaroo','tideling','cloudwhisp'][i])}" alt=""></div><h2>${c.name}</h2><p>${c.tagline}</p><div class="chapter-stats">${c.goals.length} relics · ${[260,296,320][i]} tiles · ${Object.hasOwn(WW.storage.data.progress.chapters||{},c.id)?'✓ Completed':'New adventure'}</div>${button('stage-'+i,'Explore '+c.name,i===currentChapterIndex?'primary':'secondary')}</div>`).join('');
+    const cards=WW.chapters.map((c,i)=>`<div class="chapter-card ${c.biome}"><div class="chapter-number">CHAPTER ${i+1} · ${c.difficulty}</div><div class="chapter-illustration"><img src="${WW.art.portrait(['springaroo','tideling','cloudwhisp'][i])}" alt=""></div><h2>${c.name}</h2><p>${c.tagline}</p><div class="chapter-stats">1 light · ${WW.worlds.summary[c.id].width} tiles · ${Object.hasOwn(WW.storage.data.progress.chapters||{},c.id)?'✓ Completed':'New adventure'}</div>${button('stage-'+i,'Explore '+c.name,i===currentChapterIndex?'primary':'secondary')}</div>`).join('');
     panel(`<div class="kicker">The Wonderwood Atlas</div><h1>CHOOSE YOUR TRAIL</h1><p>Every chapter has a new landscape, different puzzles and magical neighbors. Play in any order.</p><div class="chapter-grid">${cards}</div><div class="buttons">${button('home','Back')}</div>`);
   }
   async function play(index=currentChapterIndex) {
     currentChapterIndex=index;
     const chapter=customMap?null:WW.chapters[index];
-    const url=customMap||builtinMaps[chapter.id];
     if(game){game.stop();game=null;}
     paused=true;screen='loading';
     panel('<div class="kicker">Unfolding the forest map</div><h2>Loading adventure…</h2>');
     try{
-      const level=await WW.levels.load(url,customMap?pixelsPerTile:1);
+      const level=customMap?await WW.levels.load(customMap,pixelsPerTile):WW.worlds.create(chapter);
       level.chapter=chapter;
       if(level.warnings.some(w=>w.startsWith('No ')))throw Error(level.warnings.join(' · '));
       WW.input.reset();game=WW.games.animals.start(level);menu.hidden=true;paused=false;screen='playing';last=0;
@@ -1669,18 +1912,26 @@ WW.main = (() => {
   }
   function journal(){
     screen='journal';
-    const temperaments={springaroo:'Playful hopper',skyling:'Swooping aerial hunter',tideling:'Quick bubble-shooter',cloudwhisp:'Orbiting wind caster',prismtail:'Telegraphed lightning dash',mossback:'Territorial sentinel',glimmermoth:'Shy and evasive',emberkit:'Stalking pouncer'};
-    const creatures=Object.entries(WW.catalog.forms).map(([kind,c])=>`<div class="journal-card"><img src="${WW.art.portrait(kind)}" alt=""><div><b>${c.name}</b><small>${c.power} · ${c.seconds}s per catch<br>${temperaments[kind]} · Loves ${WW.catalog.foods[c.favorite].name}</small></div></div>`).join('');
-    const foods=Object.entries(WW.catalog.foods).map(([kind,c])=>`<span class="food-guide"><img src="${WW.art.foodIcon(kind)}" alt="">${c.name} <small>(${c.method})</small></span>`).join('');
-    panel(`<div class="kicker">Forest field guide</div><h2>Meet the magical neighbors</h2><p>Every catch gives the catching player more time in that form. Transform again to switch or return to explorer; unused time is always saved.</p>
-      <div class="journal-grid">${creatures}</div><h3>Picnic powers</h3><div class="guide-foods">${foods}</div><p>Favorite snacks calm creatures faster. Nectar mist reaches several nearby creatures; honeybombs charm groups in a splash.</p>
-      <div class="buttons">${button('home','Back to menu','primary')}</div>`);
+    const species=Object.entries(WW.catalog.creatures).map(([kind,c])=> {
+      const form=WW.catalog.forms[kind];
+      const role=form?'Companion · '+form.power:'Wildlife · '+c.role;
+      return '<div class="journal-card"><img src="'+WW.art.portrait(kind)+'" alt=""><div><b>'+c.name+
+        '</b><small>'+role+'<br>Favorite: '+WW.catalog.foods[c.favorite].name+
+        (form?' · Befriend to unlock its power':' · Cannot transform')+'</small></div></div>';
+    }).join('');
+    const foods=Object.entries(WW.catalog.foods).map(([kind,c])=>
+      '<span class="food-guide"><img src="'+WW.art.foodIcon(kind)+'" alt="">'+c.name+'</span>').join('');
+    panel('<div class="kicker">Wonderwood field notes</div><h2>Creatures have lives of their own</h2>'+
+      '<p>Leave fruit on the ground. Watch creatures approach and eat. Two favorite treats (or three others) will distract a companion for 12 seconds; while it is distracted, throw an orb to befriend it. That power remains yours for the chapter.</p>'+
+      '<div class="journal-grid">'+species+'</div><h3>Picnic basket</h3><div class="guide-foods">'+foods+'</div>'+
+      '<p>Not every animal is a transformation. Some run away, some wander, some guard their territory. Only Springaroo, Tidefox and Moonwing share movement powers.</p>'+
+      '<div class="buttons">'+button('home','Back to menu','primary')+'</div>');
   }
   function pause(){if(!game||screen!=='playing')return;paused=true;screen='paused';panel(`<div class="kicker">Adventure on hold</div><h2>Paused</h2><p>Snack time? Your forest friends will still be here.</p><div class="buttons">${button('resume','Resume','primary')}${button('camp','Return everyone to camp')}${button('checkpoint','Warp to last checkpoint')}${button('restart','Restart level')}${button('home','Main menu')}</div>`);}
   function win(wins,shards=0,total=0){
     paused=true;screen='won';const chapter=customMap?null:WW.chapters[currentChapterIndex];
     const next=chapter&&currentChapterIndex<WW.chapters.length-1;
-    panel(`<div class="kicker">Chapter complete · ${chapter?.name||'Custom adventure'}</div><h1>YOU DID IT!</h1><h2>The ancient gate has awakened!</h2><p>You collected ${chapter?.goals.length||'all'} magical relics and ${shards}/${total} secret stars. The forest remembers your teamwork. Completed adventures: ${wins}.</p><div class="buttons">${next?button('next','▶ Next: '+WW.chapters[currentChapterIndex+1].name,'primary'):''}${button('restart','Replay chapter')}${button('chapters','Chapter select')}${button('home','Arcade menu')}</div>`);
+    panel(`<div class="kicker">Chapter complete · ${chapter?.name||'Custom adventure'}</div><h1>YOU DID IT!</h1><h2>The ancient gate has awakened!</h2><p>You recovered the chapter's light and found ${shards}/${total} hidden star shards. The forest remembers your teamwork. Completed adventures: ${wins}.</p><div class="buttons">${next?button('next','▶ Next: '+WW.chapters[currentChapterIndex+1].name,'primary'):''}${button('restart','Replay chapter')}${button('chapters','Chapter select')}${button('home','Arcade menu')}</div>`);
   }
   menu.addEventListener('click',async e=>{
     const id=e.target.closest('button')?.dataset.action;
