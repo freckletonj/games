@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wonderwood · Family Adventure Arcade</title>
+  <meta name="theme-color" content="#152736">
+  <style>:root {font-family: ui-rounded, 'Trebuchet MS', system-ui, sans-serif; color:#fff9e6; background:#101d2b; font-synthesis:none;} *{box-sizing:border-box} body{margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(ellipse at 50% 10%,#2d505c,#111c2a 65%); overflow:hidden} button,input{font:inherit} button{border:0;cursor:pointer} #app{position:relative; width:min(100vw, 177.777vh); aspect-ratio:16/9; max-height:100vh; overflow:hidden; background:#75beda; box-shadow:0 22px 90px #08131ce0; image-rendering:pixelated} #game{display:block; width:100%; height:100%;image-rendering:pixelated} .menu{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#071a31a6;backdrop-filter:blur(3px);padding:12px;overflow:auto} .menu[hidden],#hud[hidden]{display:none} .panel{max-width:min(680px,94%);max-height:100%;overflow:auto;background:linear-gradient(140deg,#253c51f0,#182d42f4);padding:clamp(16px,3.8vw,37px);border:3px solid #91d7c7;box-shadow:0 12px 0 #0c1c29,0 24px 60px #071322a0;border-radius:16px;text-align:center} .kicker{font-size:clamp(9px,1.2vw,14px);letter-spacing:.34em;color:#9ff3cc;font-weight:900;text-transform:uppercase;margin-bottom:8px} h1{font-size:clamp(27px,5vw,66px);line-height:1;margin:0 0 6px;text-shadow:4px 5px 0 #123b46;color:#ffdb78;letter-spacing:-.045em} h2{font-size:clamp(19px,2.7vw,32px);margin:0 0 12px;color:#ffdd8c} p{font-size:clamp(11px,1.35vw,16px);line-height:1.5;color:#d3eaf3;margin:10px 0 18px}.buttons{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px} .primary,.secondary{padding:10px 17px;border-radius:8px;transition:transform .12s; font-weight:900; font-size:clamp(12px,1.5vw,17px)}.primary{background:#ffce6a;color:#24334c;box-shadow:0 5px 0 #ac712f}.secondary{background:#3e6070;color:white;box-shadow:0 4px 0 #1a3946}.primary:hover,.secondary:hover{transform:translateY(-2px)} .primary:active,.secondary:active{transform:translateY(3px);box-shadow:none}.instructions{font-size:clamp(9px,1.15vw,13px);color:#b3d5e2;line-height:1.8; margin-top:20px}.instructions b{color:#f5d88a}.chips{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;margin:12px 0}.chip{border:1px solid #82c4b6;color:#c3f3de;border-radius:20px;padding:5px 11px;font-size:12px} label{color:#e3f0ec;font-size:14px} select,input[type=number]{background:#142b3c;color:white;border:1px solid #75a6a0;padding:8px;border-radius:6px}input[type=file]{max-width:210px;font-size:11px}#hud{position:absolute;left:0;right:0;top:0;pointer-events:none;display:flex;align-items:flex-start;justify-content:space-between;padding:11px 17px;font-size:clamp(9px,1.2vw,14px);text-shadow:1px 2px #173544}.hud-player{background:#163747bb;border:1px solid #b1dcc282;border-radius:8px;padding:6px 9px}.hud-center{background:#163747bd;border-radius:8px;padding:7px 12px;text-align:center;color:#fff3b0}.tiny{font-size:.75em;color:#bce4e2}.heart{color:#ff878d;font-size:1.2em}.heart-off{color:#476a78;font-size:1.2em}#message{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);text-align:center;max-width:90%;font-size:clamp(10px,1.8vw,20px);font-weight:900;color:#ffedbd;text-shadow:2px 3px #234556;pointer-events:none;opacity:0;transition:opacity .15s}#message.show{opacity:1}.hint{color:#acd9cf;font-size:12px;line-height:1.5}.row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}.toggle{display:flex;gap:7px;justify-content:center;align-items:center;padding:8px}.warning{color:#ffcb8e}
+</style>
+</head>
+<body>
+  <main id="app">
+    <canvas id="game" width="480" height="270" aria-label="Wonderwood game world"></canvas>
+    <div id="hud" hidden></div>
+    <div id="message" aria-live="polite"></div>
+    <div id="menu" class="menu"></div>
+  </main>
+  <script>window.WONDERWOOD_MAP = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGgAAAAYCAIAAACZXC83AAAA9ElEQVR4nGP8//8/wyggHTANtAOGKhgNODLBaMCRCUYDjkwwGnBkgtGAIxPQNeA2Bv+lp3U0BYx0aMcJSipiCr5/fp/W9tIU0CPghiWgfVZN3UNzKwYCsBClKnUPw2wXIk1Ey5hDJUvCnU2kg/FlVcyyibahQEr0DLj5A1/G0SGF0qJ2GviAG6IApXJgfGfEwMAw6X8oTuV3hXHJML7/QC03fWiTppZR+MHq1auJVSqmgybAKCChQF3XUBGwB22nRPvPdZ7UcgkmGO1ykQlGA45MMBpwZIKhHXD/BdcPlNVDO+AY3wcOlNVDO+AGEAzq5shgBgA+eD120/eoZwAAAABJRU5ErkJggg==";</script>
+  <script>
+window.WW = window.WW || {};
+WW.storage = (() => {
+  const KEY = 'wonderwood-save-v1';
+  const initial = () => ({ settings: { rumble: true, players: 2 }, profiles: {}, progress: { wins: 0 } });
+  let data = initial();
+  function load() {
+    const stored = localStorage.getItem(KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      data = { ...initial(), ...parsed, settings: { ...initial().settings, ...parsed.settings } };
+    }
+    return data;
+  }
+  function save() { localStorage.setItem(KEY, JSON.stringify(data)); }
+  function exportSave() {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'wonderwood-save.json'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  async function importSave(file) {
+    const incoming = JSON.parse(await file.text());
+    if (!incoming || typeof incoming !== 'object' || !incoming.settings || !incoming.profiles) throw Error('Not a Wonderwood save file');
+    data = { ...initial(), ...incoming, settings: { ...initial().settings, ...incoming.settings } }; save();
+  }
+  return { load, save, exportSave, importSave, get data() { return data; } };
+})();
+
+</script>
+<script>
+window.WW = window.WW || {};
+WW.input = (() => {
+  const actions = ['left','right','down','jump','snack','orb','cycle','transform','revive'];
+  const defaults = { left:[{type:'axis',index:0,sign:-1},{type:'button',index:14}],right:[{type:'axis',index:0,sign:1},{type:'button',index:15}],down:[{type:'axis',index:1,sign:1},{type:'button',index:13}],jump:[{type:'button',index:0}],snack:[{type:'button',index:1}],orb:[{type:'button',index:2}],cycle:[{type:'button',index:5}],transform:[{type:'button',index:3}],revive:[{type:'button',index:4}] };
+  const keyMaps = [ { left:['KeyA','ArrowLeft'],right:['KeyD','ArrowRight'],down:['KeyS','ArrowDown'],jump:['KeyW','Space','ArrowUp'],snack:['KeyF'],orb:['KeyG'],cycle:['KeyQ'],transform:['KeyT'],revive:['KeyR'] }, { left:['KeyJ'],right:['KeyL'],down:['KeyK'],jump:['KeyI'],snack:['KeyO'],orb:['KeyP'],cycle:['KeyH'],transform:['KeyU'],revive:['KeyY'] } ];
+  const keys = new Set(); const prev = [new Set(), new Set()]; const assigned = new Map();
+  addEventListener('keydown', e => {if (/^(Arrow|Space)/.test(e.code)) e.preventDefault(); keys.add(e.code);});
+  addEventListener('keyup', e => keys.delete(e.code));
+  addEventListener('blur', () => keys.clear());
+  function pads() { return navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : []; }
+  function syncAssignments() {
+    const connected = pads();
+    for (const [slot,index] of assigned) if (!connected.some(p => p.index === index)) assigned.delete(slot);
+    connected.forEach((p,i) => { if (i < 2 && ![...assigned.values()].includes(p.index) && !assigned.has(i)) assigned.set(i,p.index); });
+  }
+  function bindingActive(pad, binding) {
+    return binding.type === 'button' ? (pad.buttons[binding.index]?.value || 0) > .55 : (pad.axes[binding.index] || 0) * binding.sign > .55;
+  }
+  function getProfile(pad) {return WW.storage.data.profiles[pad.id] || defaults;}
+  function sample(slot) {
+    const pad = pads().find(p => p.index === assigned.get(slot)); const profile = pad && getProfile(pad);
+    return Object.fromEntries(actions.map(action => [action, keyMaps[slot][action].some(key=>keys.has(key)) || !!(pad && (profile[action] || []).some(b=>bindingActive(pad,b)))]));
+  }
+  function read(slot) {
+    const current = sample(slot); const pressed = {}; const released = {};
+    for (const action of actions) { pressed[action] = current[action] && !prev[slot].has(action); released[action] = !current[action] && prev[slot].has(action); }
+    prev[slot] = new Set(actions.filter(a=>current[a]));
+    return { ...current, pressed, released };
+  }
+  function reset() { prev.forEach(s=>s.clear()); keys.clear(); syncAssignments(); }
+  function rumble(slot, strength=.5, duration=160) {
+    if (!WW.storage.data.settings.rumble) return;
+    const pad = pads().find(p=>p.index===assigned.get(slot));
+    const actuator = pad?.vibrationActuator;
+    if (actuator?.effects?.includes('dual-rumble')) actuator.playEffect('dual-rumble',{duration,strongMagnitude:strength,weakMagnitude:strength*.7}).catch(()=>{});
+  }
+  function snapshot(pad) { return { buttons:pad.buttons.map(b=>b.value), axes:[...pad.axes] }; }
+  function changed(pad, baseline) {
+    for (let i=0;i<pad.buttons.length;i++) if ((pad.buttons[i]?.value || 0) > .65 && (baseline.buttons[i] || 0) < .2) return {type:'button',index:i};
+    for (let i=0;i<pad.axes.length;i++) {
+      const value=pad.axes[i]; if (Math.abs(value)>.7 && Math.abs(value-(baseline.axes[i] || 0))>.55) return {type:'axis',index:i,sign:Math.sign(value)};
+    }
+    return null;
+  }
+  function calibrate(index, onStep, onComplete) {
+    const pad = pads().find(p=>p.index===index); if (!pad) return () => {};
+    let step=0, base=snapshot(pad), armed=false, frame=0; const result={};
+    function tick(){
+      const p=pads().find(p=>p.index===index); if(!p)return;
+      const neutral = p.buttons.every(b=>b.value<.2) && p.axes.every((a,i)=>Math.abs(a-(base.axes[i]||0)) < .25);
+      if(!armed && neutral) armed=true;
+      if(armed){const b=changed(p,base); if(b){result[actions[step]]=[b]; step++; armed=false; onStep(step,actions); if(step===actions.length){WW.storage.data.profiles[p.id]=result; WW.storage.save();onComplete();return;}}}
+      frame=requestAnimationFrame(tick);
+    }
+    onStep(0,actions);frame=requestAnimationFrame(tick);
+    return ()=>cancelAnimationFrame(frame);
+  }
+  return {actions,pads,read,reset,rumble,calibrate,syncAssignments,assigned};
+})();
+
+</script>
+<script>
+window.WW = window.WW || {};
+WW.levels = (() => {
+  const colors = {
+    empty: '#ffffff', ground: '#101820', water: '#176ad7', p1: '#00ed31', p2: '#91fe54', exit: '#ff152b',
+    rabbit: '#ffdc12', bird: '#00eeef', otter: '#ef851a', snack: '#ff64bb', skyKey: '#b052fc', diveKey: '#167b86', checkpoint: '#aaaaaa'
+  };
+  const palette = Object.entries(colors).map(([name,hex])=>({ name, rgb: [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)) }));
+  const kinds = new Set(['ground','water']);
+  const markers = new Set(['p1','p2','exit','rabbit','bird','otter','snack','skyKey','diveKey','checkpoint']);
+  function classify(r,g,b,a=255) {
+    if (a<80) return {kind:'empty',confidence:1};
+    const distances=palette.map(({name,rgb})=>({name,d:Math.sqrt((r-rgb[0])**2+(g-rgb[1])**2+(b-rgb[2])**2)})).sort((a,b)=>a.d-b.d);
+    if(distances[0].d<105) return {kind:distances[0].name,confidence:1-distances[0].d/150};
+    if(r>210&&g>210&&b>210)return {kind:'empty',confidence:.4};
+    if(r<45&&g<45&&b<45)return {kind:'ground',confidence:.4};
+    return {kind:'empty',confidence:0};
+  }
+  // For generated maps, each logical tile may span N image pixels.
+  // A majority vote across the central portion of that cell suppresses JPEG-style noise and blurred edges.
+  function parseCanvas(image, pixelsPerTile=1) {
+    const cols=Math.floor(image.width/pixelsPerTile),rows=Math.floor(image.height/pixelsPerTile);
+    if(cols<8||rows<6||cols>400||rows>80) throw Error(`Level grid must be between 8×6 and 400×80 (found ${cols}×${rows})`);
+    const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(image,0,0);
+    const data=ctx.getImageData(0,0,image.width,image.height).data;
+    const grid=[], objects=[], warnings=[];
+    let unknown=0;
+    for(let y=0;y<rows;y++){
+      const row=[];
+      for(let x=0;x<cols;x++){
+        const votes=new Map();const tile=pixelsPerTile;
+        const pad=tile>=4?Math.max(1,Math.floor(tile*.2)):0;
+        const stride=Math.max(1,Math.floor(tile/8));
+        for(let yy=pad;yy<tile-pad;yy+=stride)for(let xx=pad;xx<tile-pad;xx+=stride){
+          const offset=((y*tile+yy)*image.width+x*tile+xx)*4;
+          const sample=classify(...data.slice(offset,offset+4));
+          votes.set(sample.kind,(votes.get(sample.kind)||0)+sample.confidence+.001);
+          if(sample.confidence===0)unknown++;
+        }
+        const type=[...votes].sort((a,b)=>b[1]-a[1])[0]?.[0]||'empty';
+        row.push(kinds.has(type)?type:'empty');
+        if(markers.has(type))objects.push({kind:type,x,y});
+      }
+      grid.push(row);
+    }
+    if(!objects.some(o=>o.kind==='p1'))warnings.push('No green player-start marker');
+    if(!objects.some(o=>o.kind==='exit'))warnings.push('No red level-exit marker');
+    if(unknown>0)warnings.push(`${unknown} unrecognized image samples were treated as empty`);
+    return {grid,objects,warnings,width:cols,height:rows};
+  }
+  function load(url,pixelsPerTile=1) {
+    return new Promise((resolve,reject)=>{
+      const image=new Image();image.onload=()=>{try{resolve(parseCanvas(image,pixelsPerTile))}catch(e){reject(e)}};
+      image.onerror=()=>reject(Error('Could not open the PNG image'));
+      image.src=url;
+    });
+  }
+  return {colors,classify,parseCanvas,load};
+})();
+
+</script>
+<script>
+window.WW = window.WW || {};
+WW.art = (() => {
+  const sprites={
+    hero:[
+      '....HHHH....','...HFFFFH...','..HHFFFFHH..','..HFWFFWFH..','..HFFFFFFH..','...HMMMMH...','....HHHH....','...TTTTTT...','..TTTTTTTT..','..T.TTTT.T..','..A.TTTT.A..','....PPPP....','....P..P....','...PP..PP...','...SS..SS...', '............'
+    ],
+    rabbit:[
+      '...E....E...','...EE..EE...','...EE..EE...','..RRRRRRRR..','..RWRRRWRR..','..RRRNNRRR..','...RRRRRR...','..RRRRRRRR..','..RRRRRRRR..','...RRRRRR...','..RR.RR.RR..','..RR.RR.RR..','...S....S...','............','............','............'
+    ],
+    bird:[
+      '............','.....BBB....','....BBBBB...','...BWBWBB...','...BBBBBC...','....BBBB....','..BBBBBBBB..','BBBBBBBBBBBB','..BBBBBBBB..','....BBBB....','....B..B....','...Y....Y...','............','............','............','............'
+    ],
+    otter:[
+      '............','............','...OOOOOO...','..OOOOOOOO..','..OWOOOWOO..','..OOOOOOOO..','...OONNO....','...OOOOOO...','..OOOOOOOO..','..OOOOOOOOOO','..OOOOOOOOOO','...O....O...','..OO....OO..','............','............','............'
+    ],
+    snack:[
+      '............','.....GG.....','....GGG.....','...PPPPP....','..PPPPPPP...','..PPPPPPP...','..PPPPPPP...','...PPPPP....','....PPP.....','............','............','............','............','............','............','............'
+    ]
+  };
+  const palette={H:'#46344e',F:'#f8c79b',W:'#ffffff',M:'#70424b',T:'#de5e7c',A:'#f5b87d',P:'#4c75c4',S:'#2a4557',E:'#e4a0b6',R:'#d8c6ad',N:'#513e47',B:'#63bfe5',C:'#ffd05e',Y:'#e99e47',O:'#ad7953',G:'#5cae66'};
+  const sheet=document.createElement('canvas');sheet.width=16*5*4;sheet.height=20;const s=sheet.getContext('2d');s.imageSmoothingEnabled=false;
+  Object.entries(sprites).forEach(([name,rows],index)=>{
+    for(let f=0;f<4;f++)rows.forEach((row,y)=>[...row].forEach((ch,x)=>{
+      if(ch==='.')return;
+      let dy=y;
+      if((name==='hero'||name==='rabbit')&&y>10&&f%2===1)dy+=f===1?1:-1;
+      if(name==='bird'&&y>5&&f%2===1)dy-=2;
+      s.fillStyle=palette[ch];s.fillRect(index*64+f*16+x+2,dy+2,1,1);
+    }));
+  });
+  const indexes={hero:0,rabbit:1,bird:2,otter:3,snack:4};
+  function draw(ctx,name,x,y,frame=0,flip=false,tint) {
+    const idx=indexes[name]??0;ctx.save();ctx.translate(Math.round(x),Math.round(y));if(flip)ctx.scale(-1,1);
+    ctx.drawImage(sheet,idx*64+(Math.floor(frame)%4)*16,0,16,20,-8,-17,16,20);
+    if(tint){ctx.globalAlpha=.2;ctx.fillStyle=tint;ctx.fillRect(-7,-15,14,17);}
+    ctx.restore();
+  }
+  return {draw};
+})();
+
+</script>
+<script>
+window.WW = window.WW || {}; WW.games = WW.games || {};
+WW.games.animals = (() => {
+  const TILE=16,W=480,H=270, TYPES=['bird','otter','rabbit'];
+  const titles={bird:'Sky Bird',otter:'River Otter',rabbit:'Jump Rabbit'};
+  const icons={bird:'🪽',otter:'💧',rabbit:'🐇'};
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  const hash=(a,b)=>((a*137+b*991)*(a*17+b*23))>>>0;
+  function start(level) {
+    const map=level.grid;const width=level.width*TILE,height=level.height*TILE;
+    const at=(x,y)=>map[Math.floor(y/TILE)]?.[Math.floor(x/TILE)]||'empty';
+    const solid=(x,y)=>y>=height||x<0||x>=width||at(x,y)==='ground';
+    const liquid=(x,y)=>at(x,y)==='water';
+    const first=(kind)=>level.objects.find(o=>o.kind===kind);
+    const location=(o)=>({x:(o.x+.5)*TILE,y:(o.y+1)*TILE});
+    const spawn=first('p1')?location(first('p1')):{x:48,y:height-32};
+    const players=Array.from({length:WW.storage.data.settings.players},(_,id)=>({id,...location(first(id===0?'p1':'p2')||first('p1')||{x:3+id*2,y:level.height-3}),vx:0,vy:0,grounded:false,face:1,health:3,sleep:false,invincible:0,selected:0,form:null,until:0,actionCD:0,frame:0}));
+    const animals=level.objects.filter(o=>TYPES.includes(o.kind)).map((o,i)=>({kind:o.kind,...location(o),origin:(o.x+.5)*TILE,vy:0,alive:true,respawn:0,wary:100,attackCD:1+i*.6,dir:i%2?1:-1,phase:i*1.3,frame:0}));
+    const items=level.objects.filter(o=>['snack','skyKey','diveKey','checkpoint','exit'].includes(o.kind)).map(o=>({kind:o.kind,x:(o.x+.5)*TILE,y:(o.y+.5)*TILE,used:false}));
+    const shared={snacks:12,charges:{bird:0,otter:0,rabbit:0},skyKey:false,diveKey:false,checkpoint:{...spawn},won:false};
+    const projectiles=[],effects=[];let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0;
+    const message=document.getElementById('message');const hud=document.getElementById('hud');
+    function say(text,duration=2100) {message.textContent=text;message.classList.add('show');message.dataset.until=String(clock+duration/1000);}
+    function particles(x,y,color,count=9){for(let i=0;i<count;i++)effects.push({x,y,vx:(Math.random()-.5)*3.8,vy:(Math.random()-.7)*3.3,color,time:.55+Math.random()*.6});}
+    function throwThing(player,kind){
+      if(player.actionCD>0||player.sleep)return;
+      if(kind==='snack'){if(shared.snacks<=0){say('No snacks left! Find the pink berries.');return;} shared.snacks--;}
+      projectiles.push({kind,owner:player.id,x:player.x+player.face*9,y:player.y-11,vx:player.face*4.1,vy:-1.6,ttl:1.4});
+      player.actionCD=kind==='orb'?.7:.28;
+    }
+    function hitPlayer(player){
+      if(player.invincible>0||player.sleep||shared.won)return;
+      player.health--;player.invincible=1.5;shake=6; WW.input.rumble(player.id,.95,220);particles(player.x,player.y-10,'#ffb8a4',10);
+      if(player.health===0){player.sleep=true;player.vx=0;say(player.id===0?'Leader fainted! Press R / Revive to wake up.':'A friend fainted! Leader: go close and press Revive.',3000);}
+    }
+    function revive(player,by){player.sleep=false;player.health=2;player.invincible=2;player.vy=-2;particles(player.x,player.y-10,'#aafae3',14); WW.input.rumble(by.id,.45,180);say('Back on your feet!');}
+    function movePlayer(p,controls,dt){
+      if(p.sleep){if(p.id===0&&controls.pressed.revive)revive(p,p);return;}
+      p.invincible=Math.max(0,p.invincible-dt);p.actionCD=Math.max(0,p.actionCD-dt);
+      const direction=Number(controls.right)-Number(controls.left);
+      if(direction)p.face=direction;
+      const swimmer=p.form==='otter'&&liquid(p.x,p.y-5);
+      const fly=p.form==='bird';
+      const speed=p.form==='rabbit'?2.45:swimmer?2.4:1.75;
+      p.vx=direction*speed;
+      if(swimmer){p.vy=(Number(controls.down)-Number(controls.jump))*2.25;if(!controls.down&&!controls.jump)p.vy*=.3;}
+      else {
+        if(controls.pressed.jump&&p.grounded){p.vy=p.form==='rabbit'?-6.1:-4.5;p.grounded=false;}
+        if(fly&&controls.jump)p.vy=Math.max(-2.35,p.vy-.6);
+        p.vy=Math.min(5,p.vy+.23);
+      }
+      let nx=p.x+p.vx*dt*60;
+      if(p.vx>0&&(solid(nx+5,p.y-3)||solid(nx+5,p.y-13)))nx=Math.floor((nx+5)/TILE)*TILE-6;
+      if(p.vx<0&&(solid(nx-5,p.y-3)||solid(nx-5,p.y-13)))nx=(Math.floor((nx-5)/TILE)+1)*TILE+6;
+      p.x=clamp(nx,6,width-7);
+      let ny=p.y+p.vy*dt*60;
+      if(p.vy>=0&&(solid(p.x-4,ny)||solid(p.x+4,ny))){ny=Math.floor(ny/TILE)*TILE;p.vy=0;p.grounded=true;}else p.grounded=false;
+      if(p.vy<0&&(solid(p.x-4,ny-16)||solid(p.x+4,ny-16))){ny=(Math.floor((ny-16)/TILE)+1)*TILE+16;p.vy=0;}
+      if(!swimmer&&liquid(p.x,ny-1)){
+        const waterSurface=Math.floor((ny-1)/TILE)*TILE;
+        // Water is walkable at its surface; only an otter form can dive.
+        if(p.form!=='otter'){let surface=waterSurface;while(surface>0&&liquid(p.x,surface-1))surface-=TILE;ny=Math.min(ny,surface);p.vy=0;p.grounded=true;}
+      }
+      p.y=clamp(ny,16,height-8);
+      if(controls.pressed.snack)throwThing(p,'snack');
+      if(controls.pressed.orb)throwThing(p,'orb');
+      if(controls.pressed.cycle){p.selected=(p.selected+1)%TYPES.length; say(`Selected ${titles[TYPES[p.selected]]} (${shared.charges[TYPES[p.selected]]} charges)`,900);}
+      if(controls.pressed.transform){const type=TYPES[p.selected];if(shared.charges[type]>0){shared.charges[type]--;p.form=type;p.until=clock+22;WW.input.rumble(p.id,.5,280);particles(p.x,p.y-10,'#e1b4ff',18);say(`${titles[type]}! 22 seconds — one chance!`);}else say(`Catch a ${titles[type]} first!`,1000);}
+      if(p.form&&clock>=p.until){p.form=null;particles(p.x,p.y-9,'#ffffff',12);say('Transformation ended. Catch another animal!');}
+      if(p.id===0&&controls.pressed.revive)for(const other of players)if(other!==p&&other.sleep&&distance(other,p)<46)revive(other,p);
+      p.frame += Math.abs(p.vx)*dt*7;
+    }
+    function targetFor(animal){return players.filter(p=>!p.sleep).sort((a,b)=>distance(a,animal)-distance(b,animal))[0];}
+    function updateAnimals(dt){
+      animals.forEach(a=>{
+        if(!a.alive){a.respawn-=dt;if(a.respawn<=0){a.alive=true;a.wary=100;a.attackCD=2;}return;}
+        a.phase+=dt;
+        if(a.kind==='bird'){a.x=a.origin+Math.sin(a.phase*.7)*16;a.y+=Math.sin(a.phase*2)*.12;}
+        else {a.dir=Math.sin(a.phase*.85)>0?1:-1;a.x=a.origin+Math.sin(a.phase*.85)*13;}
+        const target=targetFor(a); a.attackCD-=dt;
+        if(a.wary>0&&target&&distance(target,a)<105&&a.attackCD<=0){
+          const dx=target.x-a.x,dy=(target.y-9)-(a.y-9),len=Math.hypot(dx,dy)||1;
+          const kind=a.kind==='bird'?'feather':a.kind==='otter'?'bubble':'thorn';
+          projectiles.push({kind,owner:-1,x:a.x,y:a.y-12,vx:dx/len*2.1,vy:dy/len*2.1,ttl:2.3});
+          a.attackCD=a.kind==='rabbit'?2.3:1.65;
+        }
+        if(a.wary<=0) a.frame+=dt*3;else a.frame+=dt*6;
+      });
+    }
+    function capture(animal,owner){
+      const chance=.08+.88*Math.pow(1-animal.wary/100,1.55);
+      if(Math.random()<chance){
+        animal.alive=false;animal.respawn=8;shared.charges[animal.kind]++;particles(animal.x,animal.y-8,'#fff2a0',24);
+        WW.input.rumble(owner,.55,290);say(`Caught ${titles[animal.kind]}! +1 transformation. Select with Q, use with T.`,3000);
+      } else {particles(animal.x,animal.y-8,'#f4b0dd',7);say(`The orb missed! Catch chance ${Math.round(chance*100)}%.`,1200);}
+    }
+    function updateProjectiles(dt){
+      for(let i=projectiles.length-1;i>=0;i--){
+        const pr=projectiles[i];pr.ttl-=dt;pr.x+=pr.vx*dt*60;pr.y+=pr.vy*dt*60;
+        if(pr.kind==='snack'||pr.kind==='orb')pr.vy+=.085*dt*60;
+        if(pr.ttl<=0||solid(pr.x,pr.y)){projectiles.splice(i,1);continue;}
+        if(pr.owner>=0){
+          const a=animals.find(a=>a.alive&&Math.hypot(pr.x-a.x,pr.y-(a.y-10))<12);
+          if(a){projectiles.splice(i,1);if(pr.kind==='snack'){a.wary=Math.max(0,a.wary-36);particles(a.x,a.y-12,'#f9d68a',9);say(a.wary===0?`${titles[a.kind]} is friendly! Great time to catch!`:`${titles[a.kind]} is warming up (${Math.round(100-a.wary)}% friendly).`,1100);}
+          else capture(a,pr.owner);}
+        }else{
+          const p=players.find(p=>!p.sleep&&p.invincible<=0&&Math.hypot(pr.x-p.x,pr.y-(p.y-9))<9);
+          if(p){projectiles.splice(i,1);hitPlayer(p);}
+        }
+      }
+    }
+    function updateItems(){
+      items.forEach(item=>{
+        if(item.used)return;
+        const p=players.find(p=>!p.sleep&&Math.hypot(p.x-item.x,(p.y-9)-item.y)<14);
+        if(!p)return;
+        if(item.kind==='snack'){item.used=true;shared.snacks+=5;say('+5 yummy snacks!');WW.input.rumble(p.id,.25,100);particles(item.x,item.y,'#ffb7ce');}
+        else if(item.kind==='skyKey'&&p.form==='bird'){item.used=true;shared.skyKey=true;say('Sky key found! The river key is still below.');WW.input.rumble(p.id,.7,380);particles(item.x,item.y,'#f7de83',21);}
+        else if(item.kind==='diveKey'&&p.form==='otter'){item.used=true;shared.diveKey=true;say('River key found! Both keys open the gate.');WW.input.rumble(p.id,.7,380);particles(item.x,item.y,'#88f6ff',21);}
+        else if(item.kind==='checkpoint'){shared.checkpoint={x:item.x,y:item.y+8};item.used=true;say('Checkpoint activated!');}
+        else if(item.kind==='exit'){
+          if(shared.skyKey&&shared.diveKey){shared.won=true;WW.storage.data.progress.wins++;WW.storage.save();WW.main.win(WW.storage.data.progress.wins);}
+          else if(clock>(item.lastHint||0)+2){item.lastHint=clock;say(`Gate needs both keys! Sky ${shared.skyKey?'✓':'✗'} · River ${shared.diveKey?'✓':'✗'}`);}
+        }
+      });
+    }
+    function update(dt){
+      if(shared.won)return;
+      dt=Math.min(dt,.045);clock+=dt; shake=Math.max(0,shake-dt*18);
+      for(let i=0;i<players.length;i++)movePlayer(players[i],WW.input.read(i),dt);
+      updateAnimals(dt);updateProjectiles(dt);updateItems();
+      effects.forEach(e=>{e.x+=e.vx*dt*60;e.y+=e.vy*dt*60;e.vy+=.09*dt*60;e.time-=dt;});
+      for(let i=effects.length-1;i>=0;i--)if(effects[i].time<=0)effects.splice(i,1);
+      const active=players.filter(p=>!p.sleep);const focus=active.length?active:players;
+      const mid=focus.reduce((n,p)=>n+p.x,0)/focus.length;
+      cameraX=clamp(mid-W*.45,0,Math.max(0,width-W));
+      const midY=focus.reduce((n,p)=>n+p.y,0)/focus.length;
+      cameraY=clamp(midY-H*.65,0,Math.max(0,height-H));
+      if(clock>+(message.dataset.until||0))message.classList.remove('show');
+      if(clock-hudTime>.13){hudTime=clock;hud.innerHTML=`<div class="hud-player">${players.map(p=>`<div><b style="color:${p.id?'#98d7ff':'#ffc977'}">P${p.id+1}</b> ${p.sleep?'💤':Array.from({length:3},(_,i)=>`<span class="${i<p.health?'heart':'heart-off'}">♥</span>`).join('')} ${p.form?`<span class="tiny">${titles[p.form]} ${Math.ceil(p.until-clock)}s</span>`:''}</div>`).join('')}</div><div class="hud-center">🍓 ${shared.snacks} &nbsp; 🗝️ Sky ${shared.skyKey?'✓':'○'} · River ${shared.diveKey?'✓':'○'}<div class="tiny">Selected: ${titles[TYPES[players[0].selected]]} · ${TYPES.map(k=>`${icons[k]} ${shared.charges[k]}`).join('  ')} · Esc to pause</div></div>`;}
+    }
+    function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
+    function background(ctx,time){
+      const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#76bcd6');sky.addColorStop(.75,'#bee8d3');sky.addColorStop(1,'#eef3bd');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+      box(ctx,370,27,32,32,'#fce6a5');box(ctx,366,31,40,24,'#fce6a5');
+      for(let layer=0;layer<3;layer++){
+        const offset=cameraX*(.12+layer*.2);const base=115+layer*39;const colors=['#a6cbbf','#6daca8','#477f84'];
+        ctx.fillStyle=colors[layer];ctx.beginPath();ctx.moveTo(0,H);
+        for(let x=-40;x<W+90;x+=25){const world=x+offset;const height=Math.sin(world*.018+layer)*15+Math.sin(world*.047)*11;ctx.lineTo(x,base+height);}
+        ctx.lineTo(W,H);ctx.fill();
+        if(layer===2){for(let n=-2;n<20;n++){
+          const xx=n*42-(offset*.68%42);const yy=base+8+Math.sin(n*2.1)*9;
+          box(ctx,xx+8,yy,5,70,'#37636b');box(ctx,xx-7,yy-15,34,23,'#4f938b');box(ctx,xx-2,yy-27,24,19,'#5ba291');
+        }}
+      }
+      for(let n=0;n<8;n++){
+        const x=((n*108-cameraX*.14+time*1.7)%(W+120)+W+120)%(W+120)-40;
+        const y=27+n%3*17;box(ctx,x,y,32,8,'#eaf9ea');box(ctx,x+8,y-6,20,11,'#eaf9ea');
+      }
+    }
+    function terrain(ctx,time){
+      const left=Math.max(0,Math.floor(cameraX/TILE)-1),right=Math.min(level.width,Math.ceil((cameraX+W)/TILE)+1);
+      const top=Math.max(0,Math.floor(cameraY/TILE)-1),bottom=Math.min(level.height,Math.ceil((cameraY+H)/TILE)+1);
+      for(let y=top;y<bottom;y++)for(let x=left;x<right;x++){
+        const t=map[y][x];if(t==='empty')continue;
+        const px=x*TILE,py=y*TILE,h=hash(x,y);
+        if(t==='ground'){
+          box(ctx,px,py,16,16,'#7d594d');box(ctx,px,py+4,16,12,(h%2?'#775346':'#8d624c'));
+          if(y===0||map[y-1][x]!=='ground'){
+            box(ctx,px,py,16,5,'#4b9f5a');box(ctx,px,py+4,16,2,'#347a52');
+            box(ctx,px+2,py-2,3,3,'#8dd26e');box(ctx,px+11,py-1,2,3,'#a4d86b');
+          }
+          if(h%5===0)box(ctx,px+5,py+9,4,2,'#b38b66');if(h%7===0)box(ctx,px+12,py+12,2,2,'#573e45');
+        } else if(t==='water'){
+          box(ctx,px,py,16,16,y%2?'#368cc9':'#329ed3');
+          if(y===0||map[y-1][x]!=='water'){box(ctx,px,py,16,3,'#9be5e1');box(ctx,px+(Math.floor(time*9+x*7)%11),py+1,5,1,'#edf9ce');}
+          if(h%6===0)box(ctx,px+5,py+8+Math.sin(time*3+x)*2,2,2,'#8fe4e5');
+        }
+      }
+      // tiny foreground blossoms, all procedural and repeatable
+      for(let x=left;x<right;x++)for(let y=top+1;y<bottom;y++)if(map[y]?.[x]==='ground'&&map[y-1]?.[x]==='empty'&&hash(x,y)%8===1){
+        const px=x*TILE+6,py=y*TILE-2;box(ctx,px,py-4,2,5,'#3e8269');box(ctx,px-2,py-6,6,3,'#f39cc3');box(ctx,px,py-7,2,2,'#ffea9f');
+      }
+    }
+    function render(ctx,now){
+      background(ctx,now);
+      ctx.save();ctx.translate(Math.round((Math.random()-.5)*shake),Math.round((Math.random()-.5)*shake));ctx.translate(-Math.round(cameraX),-Math.round(cameraY));
+      terrain(ctx,now);
+      items.forEach(it=>{if(it.used)return;const bob=Math.sin(now*3+it.x)*2;
+        if(it.kind==='snack')WW.art.draw(ctx,'snack',it.x,it.y+8+bob,Math.floor(now*3)%4);
+        if(it.kind==='skyKey'||it.kind==='diveKey'){
+          box(ctx,it.x-4,it.y-4+bob,8,8,it.kind==='skyKey'?'#ffe7a0':'#adfafa');box(ctx,it.x-2,it.y-7+bob,4,4,'#ffffff');box(ctx,it.x+3,it.y+2+bob,7,2,'#ffde7e');
+        }
+        if(it.kind==='exit'){
+          box(ctx,it.x-12,it.y-28,24,36,'#725771');box(ctx,it.x-8,it.y-25,16,31,shared.skyKey&&shared.diveKey?'#6befc6':'#423c6b');
+          box(ctx,it.x-5,it.y-20,10,14,'#af9abb');box(ctx,it.x-3,it.y-19,6,10,'#433f7d');box(ctx,it.x+4,it.y-9,2,2,'#ffdc80');
+        }
+        if(it.kind==='checkpoint') {box(ctx,it.x-2,it.y-22,3,27,'#765968');box(ctx,it.x+1,it.y-22,14,9,'#9bf6c9');}
+      });
+      animals.forEach(a=>{
+        if(!a.alive)return;
+        const frame=Math.floor(a.frame)%4;
+        WW.art.draw(ctx,a.kind,a.x,a.y,frame,a.dir<0);
+        const wary=a.wary;box(ctx,a.x-11,a.y-23,22,4,'#263f46');box(ctx,a.x-10,a.y-22,20*(wary/100),2,wary>40?'#fa8c82':'#a1eaa2');
+        if(!wary){box(ctx,a.x-2,a.y-28,4,3,'#ff9eb6');box(ctx,a.x-4,a.y-26,8,3,'#ff9eb6');}
+      });
+      projectiles.forEach(pr=>{
+        const color={snack:'#fe92b7',orb:'#d8bcff',feather:'#f7eec7',bubble:'#9fe4fa',thorn:'#f5ae7a'}[pr.kind];
+        box(ctx,pr.x-3,pr.y-3,6,6,'#273e55');box(ctx,pr.x-2,pr.y-2,4,4,color);if(pr.kind==='orb')box(ctx,pr.x-1,pr.y-1,2,2,'#ffffff');
+      });
+      players.forEach(p=>{
+        if(p.invincible>0&&Math.floor(now*13)%2)return;
+        if(p.sleep){WW.art.draw(ctx,'hero',p.x,p.y+7,1,p.face<0);box(ctx,p.x+7,p.y-25,4,5,'#ecf6ff');box(ctx,p.x+12,p.y-31,5,6,'#ecf6ff');}
+        else WW.art.draw(ctx,p.form||'hero',p.x,p.y,Math.floor(p.frame)%4,p.face<0);
+        // Player-colored hats keep identical forms identifiable in co-op.
+        box(ctx,p.x-5,p.y-18,10,2,p.id===0?'#fdd17d':'#a8bbff');
+        box(ctx,p.x-3,p.y-24,6,4,p.id===0?'#f9d77e':'#a8bbff');
+      });
+      effects.forEach(e=>box(ctx,e.x,e.y,3,3,e.color));ctx.restore();
+      if(!shared.skyKey||!shared.diveKey){
+        box(ctx,9,H-24,226,16,'#233d50cf');ctx.font='9px monospace';ctx.fillStyle='#fff2c6';ctx.fillText(!shared.skyKey?'Find a bird to reach the SKY key!':'Dive as an otter to find the RIVER key!',15,H-13);
+      }
+    }
+    hud.hidden=false;say('Feed animals → toss orbs → transform! Find both keys.',3500);
+    return {update,render,stop(){hud.hidden=true;message.classList.remove('show');},get state(){return {players,shared,animals,cameraX,cameraY}}};
+  }
+  return {start};
+})();
+
+</script>
+<script>
+window.WW = window.WW || {};
+WW.main = (() => {
+  const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
+  const menu=document.getElementById('menu');const hud=document.getElementById('hud');
+  let game=null,last=0,paused=true,cancelCalibration=null,customMap=null,pixelsPerTile=1;
+  const builtinMap=window.WONDERWOOD_MAP.startsWith('data:')?window.WONDERWOOD_MAP:'src/games/animal-adventure/levels/first-forest.png';
+  const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel">${content}</section>`;};
+  const button=(id,label,kind='secondary')=>`<button class="${kind}" data-action="${id}">${label}</button>`;
+  function home(){
+    if(game){game.stop();game=null;}paused=true;cancelCalibration?.();cancelCalibration=null;
+    panel(`<div class="kicker">An adventure arcade for the whole family</div><h1>WONDERWOOD</h1>
+      <h2>Little friends. Big adventures.</h2><p>Feed grumpy forest friends, earn their trust, catch them with magic orbs, and borrow their special powers to unlock the forest's secrets.</p>
+      <div class="chips"><span class="chip">Local co-op</span><span class="chip">USB gamepads</span><span class="chip">Offline play</span><span class="chip">Pixel-art world</span></div>
+      <div class="buttons">${button('play','▶ PLAY THE FOREST','primary')}${button('settings','⚙ Settings')}${button('calibrate','🎮 Map controller')}${button('level','🗺 Load PNG level')}</div>
+      <div class="instructions"><b>P1:</b> A / D move, W jump, S dive, F snack, G magic orb, Q choose animal, T transform, R revive<br>
+      <b>P2:</b> J / L move, I jump, K dive, O snack, P orb, H choose, U transform, Y revive<br>
+      <b>Controllers:</b> left stick / D-pad move · A jump · B snack · X orb · Y transform · RB choose · LB revive</div>
+      <div class="hint">${customMap?'Custom level loaded for this session.':'Built-in first level: Sky Key + River Key.'} &nbsp; · &nbsp; ${WW.input.pads().length} controller(s) detected</div>`);
+  }
+  async function play() {
+    const url=customMap||builtinMap;
+    panel('<div class="kicker">Unfolding the forest map</div><h2>Loading adventure…</h2>');
+    try{
+      const level=await WW.levels.load(url,pixelsPerTile);
+      if(level.warnings.some(w=>w.startsWith('No ')))throw Error(level.warnings.join(' · '));
+      menu.hidden=true;paused=false;WW.input.reset();game=WW.games.animals.start(level);
+      if(level.warnings.length)game && console.warn('Level warnings:',level.warnings);
+      if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
+    }catch(error){panel(`<h2>Couldn't read this level</h2><p class="warning" id="error"></p><div class="buttons">${button('home','Back to menu')}</div>`);document.getElementById('error').textContent=error.message;}
+  }
+  function settings(){
+    const settings=WW.storage.data.settings;
+    panel(`<div class="kicker">Wonderwood Arcade</div><h2>Game settings</h2>
+      <p>Controls and progress are stored in this browser. Export a save to keep a backup when you move the HTML file.</p>
+      <div class="row"><label for="players">Players</label><select id="players"><option value="1" ${settings.players===1?'selected':''}>1 player</option><option value="2" ${settings.players===2?'selected':''}>2 players</option></select></div>
+      <label class="toggle"><input id="rumble" type="checkbox" ${settings.rumble?'checked':''}> Controller vibration (if supported)</label>
+      <div class="buttons">${button('save-settings','Save settings','primary')}${button('export','Export save')}${button('import','Import save')}${button('home','Back')}</div>
+      <input id="save-file" type="file" accept="application/json,.json" hidden>
+      <div class="instructions">Controller vibration support varies by gamepad, Linux driver, and Firefox version.</div>`);
+    document.getElementById('save-file').addEventListener('change',async(e)=>{
+      const file=e.target.files[0];if(!file)return;
+      try{await WW.storage.importSave(file);settings();}
+      catch(err){alert(err.message);}
+    });
+  }
+  function calibration(){
+    const pads=WW.input.pads();if(!pads.length){panel(`<div class="kicker">Controller setup</div><h2>No gamepad detected</h2><p>Connect a USB controller, then press any button on it while Firefox is focused. The browser only exposes gamepads after interaction.</p><div class="buttons">${button('calibrate','Try again','primary')}${button('home','Back')}</div>`);return;}
+    const p=pads[0];
+    panel(`<div class="kicker">Controller setup · ${p.index+1}</div><h2>Press the requested control</h2><p id="calibration-step"></p><p class="hint">Release each control before the next step. Saves automatically by controller name.</p><div class="buttons">${button('home','Cancel')}</div>`);
+    const display={left:'MOVE LEFT',right:'MOVE RIGHT',down:'MOVE / DIVE DOWN',jump:'JUMP / SWIM UP',snack:'THROW SNACK',orb:'THROW MAGIC ORB',cycle:'CHOOSE ANIMAL FORM',transform:'TRANSFORM',revive:'REVIVE'};
+    cancelCalibration=WW.input.calibrate(p.index,(step,actions)=>{
+      const element=document.getElementById('calibration-step');
+      if(element)element.textContent=`${step+1} / ${actions.length} — ${display[actions[step]]}`;
+    },()=>{cancelCalibration=null;WW.input.rumble(0,.6,220);panel(`<h2>Controller saved!</h2><p>The mapping will load automatically whenever this controller connects.</p><div class="buttons">${button('home','Back to menu','primary')}</div>`);});
+  }
+  function level(){
+    panel(`<div class="kicker">For level creators · AI-assisted maps</div><h2>Load your own PNG map</h2>
+      <p>Use the palette from README.md. One pixel is one tile by default; for an AI-generated image with large color blocks, enter the number of image pixels per tile. The parser uses center sampling and approximate colors.</p>
+      <div class="row"><label>PNG <input type="file" id="level-file" accept="image/png"></label><label>Pixels per tile <input id="tile-size" type="number" min="1" max="64" value="1" style="width:70px"></label></div>
+      <p class="hint">A green start marker and a red exit marker are required. Unknown colors become empty terrain and are reported in the console.</p>
+      <div class="buttons">${button('load-level','Use this level','primary')}${button('reset-level','Use built-in level')}${button('home','Back')}</div>`);
+  }
+  function pause(){if(!game)return;paused=true;panel(`<div class="kicker">Adventure on hold</div><h2>Paused</h2><p>Snack time? Your forest friends will still be here.</p><div class="buttons">${button('resume','Resume','primary')}${button('restart','Restart level')}${button('home','Main menu')}</div>`);}
+  function win(wins){paused=true;panel(`<div class="kicker">A forest full of friends</div><h1>YOU DID IT!</h1><h2>Both keys found. The gate is open!</h2><p>Your teamwork saved the day. Adventures completed: ${wins}. The animals are already getting up to more mischief.</p><div class="buttons">${button('restart','Play again','primary')}${button('home','Arcade menu')}</div>`);}
+  menu.addEventListener('click',async e=>{
+    const id=e.target.closest('button')?.dataset.action;
+    if(!id)return;
+    if(id==='play'||id==='restart')await play();
+    if(id==='home')home();
+    if(id==='settings')settings();
+    if(id==='calibrate')calibration();
+    if(id==='level')level();
+    if(id==='resume'){paused=false;menu.hidden=true;WW.input.reset();}
+    if(id==='save-settings'){WW.storage.data.settings.players=Number(document.getElementById('players').value);WW.storage.data.settings.rumble=document.getElementById('rumble').checked;WW.storage.save();home();}
+    if(id==='export')WW.storage.exportSave();
+    if(id==='import')document.getElementById('save-file').click();
+    if(id==='reset-level'){customMap=null;pixelsPerTile=1;home();}
+    if(id==='load-level'){
+      const file=document.getElementById('level-file').files[0];if(!file){alert('Select a PNG file first.');return;}
+      const size=Number(document.getElementById('tile-size').value);
+      if(!Number.isInteger(size)||size<1||size>64){alert('Pixels per tile must be 1–64.');return;}
+      customMap=URL.createObjectURL(file);pixelsPerTile=size;await play();
+    }
+  });
+  addEventListener('keydown',e=>{if(e.code==='Escape'&&game){e.preventDefault();if(paused&&menu.hidden===false){paused=false;menu.hidden=true;WW.input.reset();}else pause();}});
+  function idle(now){
+    const t=now*.001;const sky=ctx.createLinearGradient(0,0,0,270);sky.addColorStop(0,'#73b6cf');sky.addColorStop(1,'#dbedcf');ctx.fillStyle=sky;ctx.fillRect(0,0,480,270);
+    for(let layer=0;layer<3;layer++){
+      const h=135+layer*38;ctx.fillStyle=['#aacfc1','#77b0a9','#427e7a'][layer];ctx.beginPath();ctx.moveTo(0,270);
+      for(let x=0;x<500;x+=16)ctx.lineTo(x,h+Math.sin(x*.023+layer+t*.06)*14+Math.sin(x*.09)*6);ctx.lineTo(480,270);ctx.fill();
+    }
+    for(let i=0;i<25;i++){const x=i*24+(Math.sin(i*2)*8);ctx.fillStyle='#285963';ctx.fillRect(x,201,5,60);ctx.fillStyle=i%2?'#478b79':'#57987b';ctx.fillRect(x-9,178+Math.sin(i)*12,24,28);}
+    ctx.fillStyle='#89bd71';ctx.fillRect(0,244,480,26);
+    for(let x=0;x<480;x+=16){ctx.fillStyle='#528b69';ctx.fillRect(x,243,16,3);ctx.fillStyle='#a0d181';ctx.fillRect(x+4,240,3,4);}
+    WW.art.draw(ctx,'rabbit',85,244,Math.floor(t*3)%4);WW.art.draw(ctx,'bird',375,183+Math.sin(t*2)*5,Math.floor(t*6)%4);WW.art.draw(ctx,'hero',235,242,Math.floor(t*2)%4);
+  }
+  function frame(now){const dt=last?Math.min((now-last)/1000,.05):0;last=now;if(game){if(!paused)game.update(dt);game.render(ctx,now/1000);}else idle(now);requestAnimationFrame(frame);}
+  WW.storage.load();WW.input.syncAssignments();home();requestAnimationFrame(frame);
+  return {home,pause,win,play,get game(){return game}};
+})();
+
+</script>
+</body>
+</html>
