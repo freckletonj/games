@@ -1,14 +1,14 @@
 window.WW = window.WW || {}; WW.games = WW.games || {};
 WW.games.animals = (() => {
-  const TILE=16,W=480,H=270, FORM=WW.catalog.forms,FOOD=WW.catalog.foods;
+  const TILE=16,W=480,H=270, FORM=WW.catalog.forms, CREATURE=WW.catalog.creatures, FOOD=WW.catalog.foods;
   const TYPES=Object.keys(FORM),FOODS=Object.keys(FOOD);
-  const titles=Object.fromEntries(TYPES.map(t=>[t,FORM[t].name]));
+  const titles=Object.fromEntries(Object.entries(CREATURE).map(([kind,info])=>[kind,info.name]));
   // One world unit is one source-pixel; frames run at 60 Hz. All map jumps obey these rules.
   const PHYSICS={run:2.25,jump:5.7,doubleJump:5.5,gravity:.27,maxFall:5.7,
     bodyHalf:9,bodyHeight:25,waterExposure:.8,leash:W-75};
   const jumpHeight=PHYSICS.jump**2/(2*PHYSICS.gravity);
-  // Creatures are caught through preparation and accurate throws, never a dice roll.
-  const BOND_THRESHOLD=30;
+  // Two favorite treats (or three other treats) distract an animal long enough for an orb.
+  const TRUST_TARGET=100, DISTRACTION_SECONDS=12;
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
   const hash=(a,b)=>((a*137+b*991)*(a*17+b*23))>>>0;
@@ -19,10 +19,11 @@ WW.games.animals = (() => {
       goals:level.objects.filter(o=>o.kind.endsWith('Key')).map(o=>({kind:o.kind,name:o.kind.replace('Key',' Gem'),hint:'Find the glowing gem.'})),signs:[]
     };
     const goals=chapter.goals,goalKinds=new Set(goals.map(g=>g.kind));
-    const abilityHelp={springaroo:'Press Jump again while airborne · Double jump',skyling:'Hold Jump to fly upward',
-      tideling:'In water: Jump swims up · Down dives',cloudwhisp:'Hold Jump while falling to glide',
-      prismtail:'Run to sprint through long crossings',mossback:'Your armor blocks incoming magic',
-      glimmermoth:'Stand near wary creatures to calm them',emberkit:'Press Down on the ground for a warmth burst'};
+    const abilityHelp={
+      springaroo:'Press Jump again in midair for a second jump',
+      tideling:'In water, hold Jump to rise or Down to dive',
+      skyling:'Hold Jump to fly upward; release to glide down'
+    };
     const callout=document.getElementById('ability-callout');let abilityUntil=0;
     const terrainTint={meadow:{sky:['#5e4fa8','#a078da','#7cdbd5','#fff0a9'],mountains:['#a69eda','#6bb0cb','#368a93'],tree:['#2b6484','#499aa2','#6be1aa'],soil:['#634a74','#795781','#8e6484'],grass:['#68cf8d','#378e80']},
       coast:{sky:['#236b9b','#69b6d7','#72e7db','#fcebbd'],mountains:['#87cfdf','#44a9cc','#2d72a3'],tree:['#2a7393','#3ba3b5','#81e5e1'],soil:['#325477','#387c9f','#598bac'],grass:['#8ad9c3','#4eb1a9']},
@@ -38,24 +39,24 @@ WW.games.animals = (() => {
       const position=location(first(id===0?'p1':'p2')||first('p1')||{x:3+id*2,y:level.height-3});
       return {id,...position,lastSafe:{...position},vx:0,vy:0,grounded:false,coyote:0,jumpBuffer:0,jumpsUsed:0,
         waterTime:0,face:1,health:3,sleep:false,invincible:0,selected:0,selectedFood:0,energy:Object.fromEntries(TYPES.map(t=>[t,0])),
-        form:null,actionCD:0,frame:0,windup:0};
+        form:null,actionCD:0,frame:0,hurt:0,
+        unlocked:Object.fromEntries(TYPES.map(kind=>[kind,false]))};
     });
-    const animals=level.objects.filter(o=>TYPES.includes(o.kind)).map((o,i)=>({
-      kind:o.kind,...location(o),origin:(o.x+.5)*TILE,homeY:(o.y+1)*TILE,
-      vy:0,alive:true,respawn:0,wary:100,attackCD:1.4+i*.28,dir:i%2?1:-1,
-      phase:i*1.3,frame:0,windup:0,dashTime:0,dashDir:1,hop:0,homeX:(o.x+.5)*TILE,
-      behavior:({springaroo:'hopper',skyling:'swooper',tideling:'swimmer',cloudwhisp:'orbiter',prismtail:'sprinter',
-        mossback:'guardian',glimmermoth:'shy',emberkit:'stalker'})[o.kind]
+    const animals=level.objects.filter(o=>CREATURE[o.kind]).map((o,i)=>({
+      kind:o.kind,...location(o),homeX:(o.x+.5)*TILE,homeY:(o.y+1)*TILE,
+      dir:i%2?1:-1,alive:true,respawn:0,trust:0,distractedUntil:0,
+      eating:0,windup:0,dashTime:0,phase:i*.9,frame:0,homeDir:i%2?1:-1
     }));
     const items=level.objects.filter(o=>(['snack','starShard','checkpoint','exit'].includes(o.kind)||goalKinds.has(o.kind))).map(o=>({kind:o.kind,x:(o.x+.5)*TILE,y:(o.y+.5)*TILE,used:false}));
     const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),keys:Object.fromEntries(goals.map(g=>[g.kind,false])),checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,won:false};
     const challenges=(chapter.events||[]).map(e=>({...e,completed:false,active:false,time:0,owner:null}));
-    const projectiles=[],effects=[];let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,lastLeashHint=-10,signIndex=-1;
+    const projectiles=[],lures=[],captures=[],effects=[];
+    let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,lastLeashHint=-10,signIndex=-1;
     const message=document.getElementById('message');const hud=document.getElementById('hud');
     function say(text,duration=2100) {message.textContent=text;message.classList.add('show');message.dataset.until=String(clock+duration/1000);}
     function showAbility(p){
       if(!p.form){callout.hidden=true;return;}
-      callout.innerHTML=`<img src="${WW.art.portrait(p.form)}" alt=""><span><strong>P${p.id+1} · ${titles[p.form]}</strong><small>${abilityHelp[p.form]} · ${Math.ceil(p.energy[p.form])}s remaining</small></span>`;
+      callout.innerHTML=`<img src="${WW.art.portrait(p.form)}" alt=""><span><strong>P${p.id+1} · ${titles[p.form]}</strong><small>${abilityHelp[p.form]} · A new power for this adventure</small></span>`;
       callout.hidden=false;abilityUntil=clock+3.7;
     }
     function chapterHint(){
