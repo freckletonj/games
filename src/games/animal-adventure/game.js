@@ -45,7 +45,7 @@ WW.games.animals = (() => {
     const animals=level.objects.filter(o=>CREATURE[o.kind]).map((o,i)=>({
       kind:o.kind,...location(o),homeX:(o.x+.5)*TILE,homeY:(o.y+1)*TILE,
       dir:i%2?1:-1,alive:true,respawn:0,trust:0,distractedUntil:0,
-      eating:0,windup:0,dashTime:0,phase:i*.9,frame:0,homeDir:i%2?1:-1
+      eating:0,windup:0,dashTime:0,dashDir:1,chargeCooldown:1+i*.3,phase:i*.9,frame:0,homeDir:i%2?1:-1
     }));
     const items=level.objects.filter(o=>(['snack','starShard','checkpoint','exit'].includes(o.kind)||goalKinds.has(o.kind))).map(o=>({kind:o.kind,x:(o.x+.5)*TILE,y:(o.y+.5)*TILE,used:false}));
     const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),keys:Object.fromEntries(goals.map(g=>[g.kind,false])),checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,won:false};
@@ -241,7 +241,7 @@ WW.games.animals = (() => {
           if(a.respawn<=0){a.alive=true;a.trust=0;a.distractedUntil=0;a.eating=0;}
           continue;
         }
-        a.phase+=dt;
+        a.phase+=dt;a.chargeCooldown=Math.max(0,a.chargeCooldown-dt);
         const target=targetFor(a),food=nearbyFood(a);
         const distract=a.distractedUntil>clock,feeding=a.eating>0;
         if(feeding)a.eating=Math.max(0,a.eating-dt);
@@ -259,8 +259,22 @@ WW.games.animals = (() => {
           if(near)desiredX=a.x+(a.x-target.x>0?85:-85);
         }
         if(a.kind==='emberkit'){
-          speed=near?1.5:.53;
-          desiredX=near?target.x:a.homeX+Math.sin(a.phase*.9)*45;
+          if(food||feeding||distract){a.windup=0;a.dashTime=0;}
+          if(a.dashTime>0){
+            a.dashTime=Math.max(0,a.dashTime-dt);
+            desiredX=a.x+a.dashDir*100;speed=3.5;
+          }else if(a.windup>0){
+            a.windup=Math.max(0,a.windup-dt);desiredX=a.x;speed=0;
+            if(a.windup<=0){
+              a.dashTime=.31;a.dashDir=target&&target.x<a.x?-1:1;
+              a.chargeCooldown=2.6;particles(a.x,a.y-8,'#ffc197',8);
+            }
+          }else if(near&&a.chargeCooldown<=0){
+            a.windup=.48;desiredX=a.x;speed=0;
+          }else{
+            speed=near?.85:.53;
+            desiredX=near?target.x:a.homeX+Math.sin(a.phase*.9)*45;
+          }
         }
         if(a.kind==='springaroo')speed=.73;
         if(a.kind==='tideling')speed=.63;
@@ -293,7 +307,6 @@ WW.games.animals = (() => {
         }
         // Only the territorial Emberkit is dangerous. Body overlap checks both axes
         // every update, including airborne frames; there is no arbitrary bullet spam.
-        a.windup=a.kind==='emberkit'&&near&&!food&&!feeding&&!distract?.2:0;
         if(a.kind==='emberkit'&&!food&&!feeding&&!distract){
           for(const p of players){
             if(!p.sleep&&Math.abs(p.x-a.x)<19&&p.y>a.y-27&&p.y-25<a.y+1){
