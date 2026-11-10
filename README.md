@@ -95,10 +95,30 @@ Run browser regression tests after installing Python Playwright and its Chromium
     python tests/playability.py
     python tests/routes.py
     python tests/game_feel.py
+    python tests/creature_mechanics.py
+    python tests/painted_illustrations.py
 
 GitHub Actions runs the same suite on pull requests. The traversal suite checks that the three chapter lights require their intended power using actual player physics. `tests/creature_mechanics.py` additionally checks every capturable form, latest-catch replacement, spell consequences, safe head-stomps and hazard windup.
 
 **Status:** This is a playable iteration, not a finished commercial release. Dedicated animation art, encounter pacing and real-device playtesting remain important. The standalone HTML, browser storage and vibration should be tested on actual browsers and controllers before a public release.
+
+### Illustrated scenery, pickups, and powers
+
+The four transparent 720×540 WebP sheets in `src/assets/illustrations/` are
+embedded directly by `scripts/build.mjs`: `props.webp` (gates, checkpoints,
+signpost, basket, star, relic), `effects.webp` (honey, bubbles, gusts, petals,
+splash, stun spark), `landmarks.webp` (trees, reefs, crystals, observatories,
+ponds, islands and lanterns), and `flora.webp` (flowers, berry bushes, reeds,
+mushrooms and stones). Each sheet uses a 4-column by 2-row atlas; frame names
+and indexing are defined in `src/platform/illustrations.js` and shared by
+`src/platform/props.js`, `src/platform/scenery.js`, and the game renderer.
+
+All eight animal species use their original painted animation atlases. The
+obsolete procedural creature, food, and prop art has been replaced; terrain
+continues to use seamless bitmap swatches and semantic neighbor geometry.
+The offline bundle performs no image fetches. Run
+`python tests/painted_illustrations.py` after building to verify 32 decoded
+transparent sprites and produce `dist/preview-illustrations.png`.
 
 ### Painted visual assets
 
