@@ -190,6 +190,13 @@ WW.art = (() => {
       ctx.strokeStyle=color;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';
       ctx.beginPath();ctx.moveTo(...points[0]);for(let i=1;i<points.length;i++)ctx.lineTo(...points[i]);ctx.stroke();
     };
+    // Volumetric paint for the wildlife whose final illustrated atlases are
+    // still in production. The familiar silhouettes and feet stay fixed.
+    const shadedOval=(x,y,rx,ry,light,mid,shadow)=>{
+      const shade=ctx.createRadialGradient(x-rx*.45,y-ry*.6,.2,x,y,Math.max(rx,ry)*1.65);
+      shade.addColorStop(0,light);shade.addColorStop(.53,mid);shade.addColorStop(1,shadow);
+      ctx.fillStyle=shade;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill();
+    };
     const eye=(x,y)=>{
       if(eat){stroke([[x-2,y],[x+2,y]],'#384559',1.3);return;}
       oval(x,y,1.6,1.9,'#273c4e');oval(x+.4,y-.7,.6,.6,'#fff8e4');
@@ -238,13 +245,22 @@ WW.art = (() => {
       eye(8,-21);oval(2,-26,2,2,'#f8e7b3');
       if(jump||happy){oval(-15,-24-wing,2,2,'#e3f8f0');}
     }else if(name==='mossback'){
-      feet('#648b71',action==='run'?2:1);
-      oval(0,-10,14,11,'#3c6b67');
-      oval(-2,-15,13,11,'#75a17b');
-      oval(-2,-16,10,7,'#a8d59b');
-      for(let i=0;i<4;i++)poly([[-11+i*6,-20],[-9+i*6,-29-i%2*3],[-6+i*6,-21]],i%2?'#96c986':'#60a88c');
-      oval(10,-13,8,7,'#c0df9d');eye(13,-14);
-      oval(16,-10,2,2,'#738d61');
+      feet('#537d67',action==='run'?2:1);
+      shadedOval(0,-11,14,10,'#b4d8a1','#5f987b','#294f54');
+      shadedOval(-2,-16,13,10,'#cbeaa7','#80b38a','#3b7876');
+      // Layered, slightly asymmetrical moss tufts make the shell read as plants.
+      for(let i=0;i<7;i++){
+        const xx=-12+i*4,yy=-23+(i%3)*2;
+        poly([[xx-3,yy+6],[xx-1,yy-4-(i%2)*4],[xx+3,yy+5]],
+          i%2?'#5f9a79':'#91c58f');
+        oval(xx-1,yy-1,1.4,2,i%3?'#d4e7a6':'#ebc4da');
+      }
+      for(let i=0;i<11;i++){
+        const xx=-11+(i*7%24),yy=-18+(i*5%11);
+        oval(xx,yy,1.1,.65,i%3?'#e4efb7':'#d3a8cc');
+      }
+      shadedOval(10,-13,8,7,'#ecf1bb','#b2d6a0','#78a48a');
+      oval(16,-10,2,1.6,'#658079');eye(13,-14);
     }else if(name==='prismtail'){
       poly([[-7,-11],[-16,-16+flap*3],[-23,-23],[-19,-13],[-23,-8],[-10,-7]],'#f5a277');
       poly([[-21,-22],[-16,-15],[-22,-10]],'#ffe4a2');
