@@ -41,7 +41,7 @@ const scenes = {
 };
 const illustrations = Object.fromEntries(await Promise.all(
   ['props','effects','landmarks','flora'].map(async name => [
-    name,await dataUrl(`src/assets/illustrations/${name}.png`,'image/png')
+    name,await dataUrl(`src/assets/illustrations/${name}.webp`,'image/webp')
   ])
 ));
 const assetScript = '<script>\nwindow.WW_EMBEDDED_ILLUSTRATIONS=' +
