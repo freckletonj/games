@@ -3,7 +3,7 @@ WW.art = (() => {
   // 64×80 pixel-art sprite frames, with detailed magical silhouettes and micro-highlights.
   // All frames and HUD portraits are drawn locally; no fetched textures.
   const kinds=['hero','springaroo','skyling','tideling','cloudwhisp','prismtail','mossback','glimmermoth','emberkit','snack'];
-  const sw=64,sh=80,frames=4;
+  const sw=64,sh=80,frames=6;
   const sheet=document.createElement('canvas');sheet.width=sw*frames*kinds.length;sheet.height=sh;
   const g=sheet.getContext('2d');g.imageSmoothingEnabled=false;
   function oval(x,y,rx,ry,color){g.fillStyle=color;g.beginPath();g.ellipse(x,y,rx,ry,0,0,Math.PI*2);g.fill();}
@@ -16,7 +16,7 @@ WW.art = (() => {
     oval(11,36+(phase?1:0),2,1,'#fff3dc');oval(21,36+(phase?-1:0),2,1,'#fff3dc');
   }
   function hero(f){
-    const bounce=f===1?-1:f===3?1:0;
+    const bounce=f===1||f===4?-2:f===3||f===5?1:0;
     feet('#354d79',f%2);
     shape([[8,24+bounce],[24,24+bounce],[27,34+bounce],[5,34+bounce]],'#2d547f');
     oval(16,28+bounce,10,7,'#597ead');
@@ -33,7 +33,7 @@ WW.art = (() => {
     shine(12,12,1.2);
   }
   function springaroo(f){
-    const bounce=f===1?-2:f===3?1:0;
+    const bounce=f===1||f===4?-3:f===3||f===5?1:0;
     shape([[21,29+bounce],[28,25+bounce],[30,28+bounce],[29,33+bounce],[22,35+bounce]],'#8e4979');
     line([[23,28+bounce],[27,31+bounce],[29,30+bounce]],'#ffca8a',2);
     feet('#8a4875',f%2);
@@ -173,14 +173,45 @@ WW.art = (() => {
     }
   }
   g.putImageData(pixels,0,0);
-  function draw(ctx,name,x,y,frame=0,flip=false,playerId=null) {
+  function draw(ctx,name,x,y,frame=0,flip=false,playerId=null,pose={}) {
     const index=Math.max(0,kinds.indexOf(name));
-    ctx.save();ctx.translate(Math.round(x),Math.round(y));
-    if(flip)ctx.scale(-1,1);
-    ctx.imageSmoothingEnabled=false;
+    const action=pose.action||'idle',time=pose.time||0;
     const snack=name==='snack';
-    ctx.drawImage(sheet,index*sw*frames+(Math.floor(frame)%frames)*sw,0,sw,sh,snack?-13:-18,snack?-25:-40,snack?26:36,snack?28:43);
-    // A distinct scarf/crest for each child, even when they wear animal forms.
+    const explorer=playerId!==null;
+    const sizes={
+      hero:[30,36],springaroo:[29,32],skyling:[31,32],tideling:[30,30],
+      cloudwhisp:[28,27],prismtail:[28,30],mossback:[29,27],
+      glimmermoth:[26,28],emberkit:[30,31],snack:[23,25]
+    };
+    const [w,h]=sizes[name]||sizes.hero;
+    const running=action==='run',jumping=action==='jump',eating=action==='eat';
+    const bounce=running?Math.abs(Math.sin(time*15))*3:
+      jumping?-4:eating?2:Math.sin(time*2.8+index)*.9;
+    const stretch=jumping?1.12:action==='hurt'?.85:running?1+.055*Math.sin(time*15):1;
+    const squash=eating?.9:jumping?.91:running?1-.025*Math.sin(time*15):1;
+    const lean=running?Math.sin(time*15)*.08:action==='hurt'?.22:0;
+    ctx.save();ctx.translate(Math.round(x),Math.round(y+bounce));
+    if(flip)ctx.scale(-1,1);
+    ctx.transform(squash,0,lean,stretch,0,0);
+    ctx.imageSmoothingEnabled=false;
+    const spriteFrame=(Math.floor(frame)%frames+frames)%frames;
+    ctx.drawImage(sheet,index*sw*frames+spriteFrame*sw,0,sw,sh,-w/2,-h,w,h);
+    // Character-specific secondary animation makes motion readable at small scale.
+    if(name==='skyling'&&action!=='eat'){
+      const flap=Math.sin(time*12)*4;
+      ctx.fillStyle='#a7f4e4';
+      ctx.fillRect(-w/2-2,-19-flap/2,5,3);
+      ctx.fillRect(w/2-3,-17+flap/2,5,3);
+    }
+    if(name==='glimmermoth'){
+      ctx.fillStyle='#fff4be';
+      ctx.globalAlpha=.45+.4*Math.abs(Math.sin(time*7));
+      ctx.fillRect(-w/2-2,-h+9,3,3);ctx.fillRect(w/2,-h+5,3,3);
+      ctx.globalAlpha=1;
+    }
+    if(name==='springaroo'&&jumping){
+      ctx.fillStyle='#fce4aa';ctx.fillRect(-13,-5,5,2);ctx.fillRect(9,-7,4,2);
+    }
     if(playerId!==null){
       ctx.fillStyle=playerId===0?'#ffd57f':'#b4a0ff';ctx.fillRect(-5,-8,10,2);
       ctx.fillStyle=playerId===0?'#fff0ba':'#e5ddff';ctx.fillRect(-2,-8,3,2);
