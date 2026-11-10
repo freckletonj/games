@@ -34,8 +34,9 @@ const atlases = Object.fromEntries(await Promise.all(characterDirs.map(async nam
 })));
 const scenes = {
   backdrop: await dataUrl('src/assets/scenes/meadow/backdrop.webp','image/webp'),
-  lanternTree: 'data:image/svg+xml;charset=utf-8,' +
-    encodeURIComponent(await read('src/assets/scenes/meadow/lantern-tree.svg')),
+  lanternTree: await dataUrl('src/assets/scenes/meadow/lantern-tree.webp','image/webp'),
+  coastBackdrop: await dataUrl('src/assets/scenes/coast/backdrop.webp','image/webp'),
+  summitBackdrop: await dataUrl('src/assets/scenes/summit/backdrop.webp','image/webp'),
   tiles: await dataUrl('src/assets/tiles/meadow/tiles.png','image/png')
 };
 const assetScript = '<script>\nwindow.WW_EMBEDDED_ATLASES=' +

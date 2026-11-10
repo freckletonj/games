@@ -12,37 +12,12 @@ WW.scenery = (() => {
   const url = name => sources[name] || '';
 
   function background(ctx, biome, cameraX) {
-    if (!ready('backdrop')) return false;
+    const source={meadow:'backdrop',coast:'coastBackdrop',summit:'summitBackdrop'}[biome];
+    if(!source||!ready(source))return false;
     ctx.save();
-    ctx.imageSmoothingEnabled = true;
-    const image = images.backdrop;
-    const offset = Math.min(40, Math.max(0, cameraX * .023));
-    if (biome === 'meadow') {
-      ctx.drawImage(image, -offset, -8, 520, 292);
-    } else if (biome === 'coast') {
-      // The waterfall/cliff side of the painted panorama suits the coast.
-      ctx.filter = 'hue-rotate(-12deg) saturate(1.08)';
-      ctx.drawImage(image, 155, 45, 480, 270, -offset, -8, 520, 292);
-    } else if (biome === 'summit') {
-      // Night grading and a soft aurora distinguish the summit from the coast.
-      ctx.filter = 'hue-rotate(145deg) saturate(.8) brightness(.62)';
-      ctx.drawImage(image, 110, 0, 480, 270, -offset, -8, 520, 292);
-      ctx.filter = 'none';
-      ctx.fillStyle = 'rgba(35,23,92,.36)';
-      ctx.fillRect(0, 0, 480, 270);
-      const aurora = ctx.createLinearGradient(0, 0, 470, 150);
-      aurora.addColorStop(0, '#a6b8e900');
-      aurora.addColorStop(.55, '#f4a7e92b');
-      aurora.addColorStop(1, '#69e5d522');
-      ctx.fillStyle = aurora;
-      ctx.beginPath(); ctx.moveTo(0, 0);
-      for (let x = 0; x < 500; x += 15) ctx.lineTo(x, 25 + Math.sin(x * .017) * 17);
-      for (let x = 495; x >= 0; x -= 15) ctx.lineTo(x, 83 + Math.sin(x * .016 + 1) * 16);
-      ctx.closePath(); ctx.fill();
-    } else {
-      ctx.restore();
-      return false;
-    }
+    ctx.imageSmoothingEnabled=true;
+    const offset=Math.min(40,Math.max(0,cameraX*.023));
+    ctx.drawImage(images[source],-offset,-8,520,292);
     ctx.restore();
     return true;
   }
