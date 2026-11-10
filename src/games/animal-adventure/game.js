@@ -436,7 +436,7 @@ WW.games.animals = (() => {
       for(const type of TYPES)player.unlocked[type]=false;
       player.unlocked[animal.kind]=true;
       player.caught=animal.kind;player.selected=TYPES.indexOf(animal.kind);
-      player.form=null;player.hover=0;
+      player.form=null;player.hover=0;callout.hidden=true;
       captures.push({x:animal.x,y:animal.y-16,age:0,color:species.color,kind:animal.kind});
       WW.audio.play('catch');
       WW.input.rumble(owner,.55,270);shake=2.5;
@@ -587,17 +587,17 @@ WW.games.animals = (() => {
         hudTime=clock;
         hud.innerHTML=`
           <div class="compact-players">${players.map(p=>{
-            const chosen=TYPES[p.selected],food=FOODS[p.selectedFood];
-            const display=p.form||chosen,active=p.unlocked[chosen];
+            const chosen=p.caught,food=FOODS[p.selectedFood];
+            const display=p.form||chosen||'hero',active=!!chosen;
             return `<div class="compact-player p${p.id+1}">
               <b>P${p.id+1}</b><span class="mini-hearts">${'♥'.repeat(p.health)}${'♡'.repeat(3-p.health)}</span>
               <span class="mini-form ${p.form?'morphed':''}">
-                <img src="${WW.art.portrait(display)}" alt="${titles[display]}">
+                <img src="${WW.art.portrait(display)}" alt="${titles[display]||'Explorer'}">
                 <span>${p.form?'ON':active?'✓':'—'}</span>
               </span>
-              <span class="mini-label">${p.form?FORM[p.form].power:active?'T: Transform':'Find '+titles[chosen]}</span>
-              <span class="mini-food" title="${FOOD[food].name} (F: leave food, E: cycle)">
-                <img src="${WW.art.foodIcon(food)}" alt="">×${shared.foods[food]}
+              <span class="mini-label">${p.form?'F: '+FORM[p.form].power:active?'T: Become '+titles[chosen]:'Offer fruit · catch with G'}</span>
+              <span class="mini-food" title="${p.form?'F: creature power':FOOD[food].name+' (F: leave food, E: cycle)'}">
+                ${p.form?'✦ POWER':'<img src="'+WW.art.foodIcon(food)+'" alt="">×'+shared.foods[food]}
               </span>
             </div>`;
           }).join('')}</div>
@@ -907,7 +907,7 @@ WW.games.animals = (() => {
         }
         const gem=items.find(item=>item.kind===goal.kind);
         return {x:gem.x,y:gem.y,name:goal.name.toUpperCase(),goal:goal.kind,
-          hint:active.form!==kind?'Q: choose '+titles[kind]+' · T: transform · '+goal.hint:goal.hint};
+          hint:active.form!==kind?'T: become '+titles[kind]+' · '+goal.hint:goal.hint};
       }
       const gate=items.find(item=>item.kind==='exit');
       return {x:gate.x,y:gate.y,name:'RETURN TO THE GATE',hint:'Your light is found · carry it to the gate',goal:'exit'};
