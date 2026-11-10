@@ -17,8 +17,8 @@ WW.catalog = {
     emberkit: {name:'Emberkit',role:'territorial chaser',favorite:'berry',color:'#ffad79',capturable:false}
   },
   foods: {
-    berry: {name:'Blushberry',method:'lob',affection:1,color:'#fa73aa',speed:4.1},
-    nectar: {name:'Nectar fruit',method:'lob',affection:1,color:'#82f9e5',speed:3.8},
-    star: {name:'Stardrop',method:'float',affection:1,color:'#fff0a1',speed:3.5}
+    berry: {name:'Blushberry',method:'lob',affection:1,color:'#fa73aa',speed:3.2},
+    nectar: {name:'Nectar fruit',method:'lob',affection:1,color:'#82f9e5',speed:3.0},
+    star: {name:'Stardrop',method:'float',affection:1,color:'#fff0a1',speed:2.9}
   }
 };
