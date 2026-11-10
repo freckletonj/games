@@ -288,7 +288,7 @@ WW.games.animals = (() => {
           a.y=groundY-bounce;
         }
         a.frame+=dt*(speed>1?12:6);
-        if(food&&!distract&&!feeding&&Math.abs(a.x-food.x)<18&&Math.abs(a.y-12-food.y)<28){
+        if(food&&!distract&&!feeding&&Math.abs(a.x-food.x)<18&&Math.abs(a.y-12-food.y)<37){
           eatFood(a,food);
         }
         // Only the territorial Emberkit is dangerous. Body overlap checks both axes
@@ -446,17 +446,25 @@ WW.games.animals = (() => {
       if(clock>+(message.dataset.until||0))message.classList.remove('show');
       if(clock-hudTime>.16){
         hudTime=clock;
-        // Only the current and selected forms appear in the permanent HUD. The full roster lives in the guide.
-        const portrait=t=>`<img src="${WW.art.portrait(t)}" alt="${t}">`;
-        hud.innerHTML=`<div class="compact-players">${players.map(p=>{
-          const chosen=TYPES[p.selected],food=FOODS[p.selectedFood];
-          return `<div class="compact-player p${p.id+1}">
-              <b>P${p.id+1}</b><span class="mini-hearts">${Array.from({length:3},(_,i)=>i<p.health?'♥':'♡').join('')}</span>
-              <span class="mini-form ${p.form?'morphed':''}" title="${p.form?abilityHelp[p.form]:FORM[chosen].power}">${portrait(p.form||chosen)}<span>${p.form?Math.ceil(p.energy[p.form])+'s':Math.ceil(p.energy[chosen])+'s'}</span></span>
-              <span class="mini-label">${p.sleep?'ASLEEP':p.form?titles[p.form]+' · '+FORM[p.form].power:titles[chosen]}</span>
-              <span class="mini-food"> <img src="${WW.art.foodIcon(food)}" alt="">${shared.foods[food]}</span>
-            </div>`;}).join('')}</div>
-          <div class="compact-quest"><b>${chapter.name}</b><span>${goals.map(g=>`<span class="quest-gem ${shared.keys[g.kind]?'found':''}" title="${g.name}">◆</span>`).join('')}</span><small>✦ ${shared.shards}/${shared.totalShards}</small></div>`;
+        hud.innerHTML=`
+          <div class="compact-players">${players.map(p=>{
+            const chosen=TYPES[p.selected],food=FOODS[p.selectedFood];
+            const display=p.form||chosen,active=p.unlocked[chosen];
+            return `<div class="compact-player p${p.id+1}">
+              <b>P${p.id+1}</b><span class="mini-hearts">${'♥'.repeat(p.health)}${'♡'.repeat(3-p.health)}</span>
+              <span class="mini-form ${p.form?'morphed':''}">
+                <img src="${WW.art.portrait(display)}" alt="${titles[display]}">
+                <span>${p.form?'ON':active?'✓':'—'}</span>
+              </span>
+              <span class="mini-label">${p.form?FORM[p.form].power:active?'T: Transform':'Find '+titles[chosen]}</span>
+              <span class="mini-food" title="${FOOD[food].name} (F: leave food, E: cycle)">
+                <img src="${WW.art.foodIcon(food)}" alt="">×${shared.foods[food]}
+              </span>
+            </div>`;
+          }).join('')}</div>
+          <div class="compact-quest"><b>${chapter.name}</b><span class="quest-gem ${goals.every(g=>shared.keys[g.kind])?'found':''}">◆</span>
+            <small>${goals.every(g=>shared.keys[g.kind])?'GATE OPEN':'FIND THE LIGHT'} · ✦ ${shared.shards}/${shared.totalShards}</small>
+          </div>`;
       }
     }
     function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
@@ -632,30 +640,24 @@ WW.games.animals = (() => {
       }
     }
     function objective(){
-      const seeker=players[0];
-      const remaining=goals.filter(goal=>!shared.keys[goal.kind]);
-      const choices=remaining.map(goal=>{
-        const pending=challenges.find(c=>c.goal===goal.kind&&!c.completed);
-        const gem=items.find(item=>item.kind===goal.kind);
-        if(pending?.type==='sprint')return {
-          x:(pending.active?pending.finish:pending.start)*TILE,y:seeker.y,
-          name:pending.active?'REACH THE FINISH':'FIND THE STARTING ARCH',
-          hint:pending.active?'Keep sprinting!':'Use Prismtail for the crystal speed trial',
-          goal:goal.kind
-        };
-        if(pending?.type==='befriend'){
-          const creature=animals.filter(a=>a.kind===pending.kind&&a.alive).sort((a,b)=>distance(a,seeker)-distance(b,seeker))[0];
-          return {x:creature?.x??gem.x,y:creature?.y??gem.y,
-            name:'BEFRIEND EMBERKITS',
-            hint:`${pending.catches||0}/${pending.count} befriended · offer Honeybombs`,
-            goal:goal.kind};
+      const goal=goals.find(g=>!shared.keys[g.kind]);
+      if(goal){
+        const active=players[0],kind=goal.form;
+        if(kind&&!active.unlocked[kind]){
+          const creature=animals.filter(a=>a.alive&&a.kind===kind)
+            .sort((a,b)=>distance(a,active)-distance(b,active))[0];
+          if(creature)return {
+            x:creature.x,y:creature.y,goal:kind,
+            name:'BEFRIEND '+titles[kind].toUpperCase(),
+            hint:'F: leave '+FOOD[FORM[kind].favorite].name+' · wait for DISTRACTED · G: orb'
+          };
         }
-        return {x:gem.x,y:gem.y,name:goal.name.toUpperCase(),hint:goal.hint,goal:goal.kind};
-      });
-      choices.sort((a,b)=>Math.abs(a.x-seeker.x)-Math.abs(b.x-seeker.x));
-      if(choices.length)return choices[0];
+        const gem=items.find(item=>item.kind===goal.kind);
+        return {x:gem.x,y:gem.y,name:goal.name.toUpperCase(),goal:goal.kind,
+          hint:active.form!==kind?'Q: choose '+titles[kind]+' · T: transform · '+goal.hint:goal.hint};
+      }
       const gate=items.find(item=>item.kind==='exit');
-      return {x:gate.x,y:gate.y,name:'THE ANCIENT GATE',hint:'All relics found · reach the gate to finish!',goal:'exit'};
+      return {x:gate.x,y:gate.y,name:'RETURN TO THE GATE',hint:'Your light is found · carry it to the gate',goal:'exit'};
     }
     function trailGuide(ctx,now){
       const current=objective(),p=players[0],delta=current.x-p.x;
