@@ -250,9 +250,6 @@ WW.games.animals = (() => {
       if(controls.pressed.snack){if(p.form)usePower(p);else throwThing(p,'food');}
       if(controls.pressed.orb)throwThing(p,'orb');
       if(controls.pressed.foodCycle){p.selectedFood=(p.selectedFood+1)%FOODS.length;const food=FOODS[p.selectedFood];say(`P${p.id+1}: ${FOOD[food].name} · ${shared.foods[food]} left`,1350);}
-      if(controls.pressed.cycle){
-        say(p.caught?'Only your latest friend, '+titles[p.caught]+', can transform. Press T.':'Befriend a creature with food and an orb first.',1800);
-      }
       if(controls.pressed.transform){
         if(p.form){p.form=null;p.hover=0;callout.hidden=true;say('Back to explorer form. F throws food again.',1500);}
         else if(p.caught){
