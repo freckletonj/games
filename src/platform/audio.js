@@ -3,6 +3,8 @@ WW.audio = (() => {
   let context;
   const tunes = {
     jump:[[420,550,.09,'triangle']], double:[[490,740,.17,'triangle']],
+    land:[[160,92,.07,'triangle']], ready:[[510,680,.1,'sine'],[680,930,.18,'sine']],
+    checkpoint:[[320,510,.13,'triangle'],[510,760,.22,'sine'],[760,1010,.29,'sine']],
     food:[[500,400,.13,'sine']], orb:[[680,400,.19,'sine']],
     catch:[[480,660,.13,'triangle'],[640,880,.22,'sine'],[920,1160,.29,'sine']],
     miss:[[280,190,.20,'triangle']], gem:[[610,820,.20,'triangle'],[800,1050,.30,'sine'],[1100,1360,.34,'sine']],

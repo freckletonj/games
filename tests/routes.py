@@ -6,7 +6,7 @@ from playwright.sync_api import sync_playwright
 html=Path(__file__).parents[1]/'dist'/'wonderwood.html'
 s=html.read_text().replace('requestAnimationFrame(frame);','').replace('<script>window.WONDERWOOD_LEVELS','<script>Object.defineProperty(window,"localStorage",{value:{getItem:()=>null,setItem:()=>{}}});</script><script>window.WONDERWOOD_LEVELS')
 with sync_playwright() as pw:
- b=pw.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox']);p=b.new_page()
+ b=pw.chromium.launch(headless=True,args=['--no-sandbox']);p=b.new_page()
  errs=[];p.on('pageerror',lambda e:errs.append(str(e)));p.set_content(s,wait_until='domcontentloaded')
  p.get_by_role('button',name='PLAY FIRST FOREST').click();p.locator('#menu').wait_for(state='hidden')
  def advance(n):p.evaluate(f'for(let i=0;i<{n};i++)WW.main.game.update(1/60)')
@@ -20,11 +20,11 @@ with sync_playwright() as pw:
  p.evaluate('WW.main.game.state.animals.forEach(a=>{a.alive=false;a.respawn=99999})')
  # Canopy puzzle: a plain single jump from the top ledge cannot reach the gem.
  setp(47*16,19*16)
- key('w');advance(48)
+ key('w',12);advance(48)
  assert not got('springKey'),'Canopy Gem accidentally reachable without double jump'
  # Springaroo makes a genuinely different vertical route possible.
  setp(47*16,19*16,'springaroo')
- key('w');advance(12);key('w');advance(27)
+ key('w',10);advance(3);key('w',12);advance(27)
  assert got('springKey'),'Springaroo double jump did not reach the gem'
  # Sky puzzle: an ordinary jump cannot, Moonwing flight does.
  setp(167*16,14*16)

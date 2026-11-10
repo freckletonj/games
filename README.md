@@ -57,7 +57,9 @@ Menus work with arrow keys + Enter, mouse or standard gamepad. The built-in **Co
 | **Glimmermoth** | Runs away from explorers; tosses starlight | Passive friendship aura |
 | **Emberkit** | Stalks its territory, pounces and releases embers | Press Down on the ground for a calming burst |
 
-Enemies signal their attacks with a clear **!** before throwing projectiles or dashing. Each has a wariness meter; reducing wariness with its favorite food makes capturing easier. Capture chance rises from 12% to 98%. Captures grant **time in that one form to the catching player**. Switching saves any unused time for later. The active transformation shows its **portrait, ability instructions and timer**, then contracts into a small HUD indicator.
+Creatures signal attacks with a clear **!** before throwing projectiles or dashing. Nearby creatures display their favorite food and a friendship meter. Offer treats to reduce wariness until **READY** appears: a properly aimed orb then captures reliably. An orb succeeds every time once the creature's wariness falls to 30 or below; throwing earlier always fails, with a hint about the creature's favorite food. Captures grant **time in that one form to the catching player**. Switching saves any unused time for later. The active transformation shows its **portrait, ability instructions and timer**, then contracts into a small HUD indicator.
+
+Movement uses accelerating starts, controllable braking, forgiving buffered/coyote jumps, and variable jump heights: tap Jump for a short hop or hold for a full-height leap. Landing, bonding and checkpoints each have their own sound/particle feedback. A compass points to the nearest unfinished objective, including sprint arches and Emberkits, while a compact trail atlas shows overall journey progress. Activated checkpoints remain lit, restore hearts, and offer a safe return point.
 
 The five foods have distinct trajectories: Blushberries arc, Stardrops shoot straight, Nectar sprays a calming cloud, Honeybombs splash in an area, and Cloudmallows float. Favorite foods are 70% more effective.
 
@@ -90,8 +92,9 @@ The three shipped maps are authored deterministically with `scripts/make-levels.
 python tests/smoke.py
 python tests/playability.py
 python tests/routes.py
+python tests/game_feel.py
 ```
 
-These require Python Playwright and Chromium (`/usr/bin/chromium` in the reference environment). They cover all three chapters, reduced HUD, controller-independent keyboard menus, unique AI behaviors, transform help cards, time preservation, rescue, loot and goal gating, the sprint trial, Cloudwhisp lift, the Emberkit ritual, winning and progression. The routes test uses actual physics to show **normal jumps do not bypass the first chapter's key power challenges**, while double jump, flight and swimming do reach the relics.
+These require Python Playwright and its managed Chromium browser (`python -m pip install playwright && python -m playwright install chromium`). GitHub Actions runs the full suite on new commits and pull requests. They cover all three chapters, reduced HUD, controller-independent keyboard menus, unique AI behaviors, transform help cards, time preservation, rescue, loot and goal gating, the sprint trial, Cloudwhisp lift, the Emberkit ritual, deterministic capture readiness, jump height, checkpoint healing, winning and progression. The routes test uses actual physics to show **normal jumps do not bypass the first chapter's key power challenges**, while double jump, flight and swimming do reach the relics.
 
 **Known limitations:** This is a larger playable prototype with original procedural pixel art, not a fully art-directed commercial production. The build and input behavior were tested in headless Chromium; Linux/Firefox USB controllers and vibration still need on-device verification. Levels are designed and ability-tested, but actual family playtesting is essential to tune difficulty, fun, readability and pace. Single-file `file://` browser storage is browser-dependent; exported saves are strongly recommended.
