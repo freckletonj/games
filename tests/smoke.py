@@ -55,6 +55,23 @@ with sync_playwright() as playwright:
     )""")
     assert page.evaluate("WW.spriteAtlas.portrait('hero').startsWith('data:image/png;base64,')")
     assert page.evaluate("WW.spriteAtlas.portrait('springaroo').startsWith('data:image/png;base64,')")
+    # Remaining wildlife retain distinct illustrated silhouettes and states.
+    wildlife = page.evaluate("""() => {
+        const names = ['mossback', 'prismtail', 'glimmermoth', 'cloudwhisp'];
+        const canvas = document.createElement('canvas');
+        canvas.width = 96; canvas.height = 80;
+        const ctx = canvas.getContext('2d');
+        const render = (kind, action) => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            WW.art.draw(ctx, kind, 48, 52, 0, false, null, {action, time:.16});
+            const pixels = ctx.getImageData(0, 0, 96, 80).data;
+            return [...pixels].reduce((value, channel, index) =>
+                value + channel * ((index % 11) + 1), 0);
+        };
+        return names.map(name => [render(name, 'idle'), render(name, 'run')]);
+    }""")
+    assert len(set(idle for idle, running in wildlife)) == 4, wildlife
+    assert all(idle != running for idle, running in wildlife), wildlife
     # No alpha gaps at the boundaries of the world-anchored painted texture.
     # Neighboring pixels may differ naturally because texture detail is continuous,
     # rather than repeated identically on each side of every 16-unit seam.
