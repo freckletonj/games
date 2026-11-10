@@ -153,3 +153,15 @@ single-color rectangular placeholders. This is a visual-only change: collision,
 interactions, coordinates, objectives and checkpoint state still come from the
 semantic level and gameplay logic. Locked and unlocked gate visuals have
 distinctive lighting and color, checked by Chromium pixel regression tests.
+
+## Wildlife illustration refinement
+
+Mossback, Prismtail, Glimmermoth and Cloudwhisp now have volumetric
+gradient-shaded silhouettes in the procedural fallback, with botanical shell
+details, a refracted-color tail, translucent veined wings and layered cloud
+lighting, respectively. This is an intermediate visual refinement, **not** a
+claim that those four have independently painted, frame-by-frame sprite atlases.
+They still use the same world-space pivots, animations and creature logic;
+the next asset-production pass can replace them by adding normal character
+atlases and manifests. Browser tests check four distinct visible silhouettes
+and that their idle/run states differ.
