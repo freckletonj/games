@@ -30,4 +30,20 @@ with TemporaryDirectory() as tmp:
         assert cell.getchannel("A").getbbox()
         assert cell.getchannel("A").getbbox()[3] == 96
         assert cell.getpixel((0, 0))[3] == 0
+# Verify shipped WebP atlases are true RGBA art, rather than painted
+# rectangular backgrounds or frames with baked cast shadows underneath.
+for name in ("mossback", "prismtail", "glimmermoth", "cloudwhisp"):
+    path = root / "src" / "assets" / "characters" / name / "sheet.webp"
+    image = Image.open(path).convert("RGBA")
+    assert image.size == (512, 256), name
+    for row in range(2):
+        for col in range(4):
+            cell = image.crop((col * 128, row * 128,
+                               (col + 1) * 128, (row + 1) * 128))
+            assert cell.getchannel("A").getbbox(), (name, row, col)
+            # The final 16 source pixels are all transparent: no shadow disc
+            # can appear beneath a hovering creature when it animates.
+            ground_shadow = cell.crop((0, 112, 128, 128)).getchannel("A")
+            assert ground_shadow.getextrema()[1] == 0, (name, row, col)
+
 print("PASS: eight painted RGBA frames share one foot anchor")
