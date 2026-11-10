@@ -841,31 +841,18 @@ WW.games.animals = (() => {
       items.forEach(it=>{if(it.used&&it.kind!=='checkpoint')return;const bob=Math.sin(now*3+it.x)*2;
         if(it.kind==='snack')WW.art.draw(ctx,'snack',it.x,it.y+8+bob,Math.floor(now*3)%4);
         if(it.kind==='starShard'){
-          ctx.save();ctx.translate(it.x,it.y+bob);ctx.rotate(Math.sin(now*3+it.x)*.22);
-          ctx.fillStyle='#fff8bd';ctx.beginPath();for(let i=0;i<10;i++){
-            const a=i*Math.PI/5-Math.PI/2,r=i%2?3:8;
-            ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);
-          }ctx.closePath();ctx.fill();box(ctx,-1,-3,2,4,'#ffffff');ctx.restore();
+          WW.props.star(ctx,it.x,it.y+bob,now);
         }
         if(goalKinds.has(it.kind)){
           const tint=({springKey:'#ff94d5',skyKey:'#f5dfa9',diveKey:'#91f5ff',prismKey:'#ffaf68',mossKey:'#a7f8a0',cloudKey:'#d9bfff',emberKey:'#ff8d6d'})[it.kind]||'#ffe79f';
-          ctx.save();ctx.translate(it.x,it.y+bob);ctx.rotate(now*.65);
-          box(ctx,-5,-5,10,10,tint);box(ctx,-2,-10,4,5,'#ffffff');box(ctx,6,-2,5,4,tint);box(ctx,-9,-1,4,3,tint);ctx.restore();
-          ctx.globalAlpha=.65+.3*Math.sin(now*5);box(ctx,it.x-2,it.y-13+bob,4,2,'#fffcef');box(ctx,it.x+12,it.y+bob,3,3,tint);ctx.globalAlpha=1;
+          WW.props.light(ctx,it.x,it.y+bob,tint,now);
           ctx.fillStyle='#fff4dd';ctx.font='bold 8px sans-serif';ctx.fillText('LIGHT',it.x-12,it.y-19+bob);
         }
         if(it.kind==='exit'){
-          box(ctx,it.x-12,it.y-28,24,36,'#725771');box(ctx,it.x-8,it.y-25,16,31,goals.every(g=>shared.keys[g.kind])?'#6befc6':'#423c6b');
-          box(ctx,it.x-5,it.y-20,10,14,'#af9abb');box(ctx,it.x-3,it.y-19,6,10,'#433f7d');box(ctx,it.x+4,it.y-9,2,2,'#ffdc80');
+          WW.props.gate(ctx,it.x,it.y,goals.every(g=>shared.keys[g.kind]),chapter.biome,now);
         }
         if(it.kind==='checkpoint') {
-          box(ctx,it.x-2,it.y-22,3,27,it.used?'#bde5af':'#765968');
-          box(ctx,it.x+1,it.y-22,14,9,it.used?'#f5dfa1':'#9bf6c9');
-          if(it.used){
-            ctx.globalAlpha=.3+.2*Math.sin(now*3);
-            ctx.fillStyle='#fff3aa';ctx.beginPath();ctx.arc(it.x+7,it.y-18,12,0,Math.PI*2);ctx.fill();
-            ctx.globalAlpha=1;
-          }
+          WW.props.checkpoint(ctx,it.x,it.y,it.used,chapter.biome,now);
         }
       });
       lures.forEach(lure=>{
