@@ -6,7 +6,7 @@ from playwright.sync_api import sync_playwright
 html=Path(__file__).parents[1]/'dist'/'wonderwood.html'
 s=html.read_text().replace('requestAnimationFrame(frame);','').replace('<script>window.WONDERWOOD_LEVELS','<script>Object.defineProperty(window,"localStorage",{value:{getItem:()=>null,setItem:()=>{}}});</script><script>window.WONDERWOOD_LEVELS')
 with sync_playwright() as pw:
- b=pw.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox']);p=b.new_page()
+ b=pw.chromium.launch(headless=True,args=['--no-sandbox']);p=b.new_page()
  errs=[];p.on('pageerror',lambda e:errs.append(str(e)));p.set_content(s,wait_until='domcontentloaded')
  p.get_by_role('button',name='PLAY FIRST FOREST').click();p.locator('#menu').wait_for(state='hidden')
  def advance(n):p.evaluate(f'for(let i=0;i<{n};i++)WW.main.game.update(1/60)')
