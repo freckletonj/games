@@ -4,7 +4,7 @@ WW.scenery = (() => {
   const sources = window.WW_EMBEDDED_SCENES || {};
   const images = Object.fromEntries(Object.entries(sources).map(([name, source]) => {
     const image = new Image();
-    image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source);
+    image.src = source;
     return [name, image];
   }));
 
@@ -13,7 +13,7 @@ WW.scenery = (() => {
   }
 
   function url(name) {
-    return sources[name] ? 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(sources[name]) : '';
+    return sources[name] || '';
   }
 
   // Wide panoramic image, with a bounded camera pan so no empty edges become visible.
@@ -47,7 +47,10 @@ WW.scenery = (() => {
     if (index < 0) return false;
     ctx.save();
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(images.tiles, index * 64, 0, 64, 64, x, y, 16, 16);
+    const tileW = images.tiles.naturalWidth / 4;
+    const tileH = images.tiles.naturalHeight / 2;
+    ctx.drawImage(images.tiles, (index % 4) * tileW, Math.floor(index / 4) * tileH,
+      tileW, tileH, x, y, 16, 16);
     ctx.restore();
     return true;
   }
