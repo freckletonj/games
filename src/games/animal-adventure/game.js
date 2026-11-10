@@ -491,15 +491,32 @@ WW.games.animals = (() => {
     function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
     function background(ctx,time){
       if(WW.scenery.background(ctx,chapter.biome,cameraX)){
-        // Subtle animated motes keep the illustrated atmosphere alive.
-        for(let i=0;i<23;i++){
-          const x=((i*113.1-cameraX*.09+time*4)%(W+60)+(W+60))%(W+60)-25;
-          const y=25+(hash(i,13)%194)+Math.sin(time*1.7+i)*5;
-          ctx.globalAlpha=.18+.4*(.5+.5*Math.sin(time*2.2+i*2.5));
-          ctx.fillStyle=i%3?'#f8e8ae':'#caffdb';
-          ctx.beginPath();ctx.arc(x,y,i%7===0?1.6:.85,0,Math.PI*2);ctx.fill();
+        // Each painted biome has its own atmospheric motion: fireflies,
+        // refracted sea spray or quiet stars. All effects sit behind collisions.
+        ctx.save();
+        ctx.globalCompositeOperation='screen';
+        for(let i=0;i<27;i++){
+          const coast=chapter.biome==='coast',summit=chapter.biome==='summit';
+          const speed=coast?8:summit?1.7:4;
+          const drift=coast?-time*speed:time*speed;
+          const x=((i*113.1-cameraX*.09+drift)%(W+60)+(W+60))%(W+60)-25;
+          const y=25+(hash(i,13)%194)+Math.sin(time*(coast?2.4:.9)+i)* (coast?8:4);
+          const twinkle=.5+.5*Math.sin(time*(summit?1.8:3)+i*2.5);
+          ctx.globalAlpha=.13+.42*twinkle;
+          if(coast){
+            ctx.fillStyle=i%2?'#d4fffa':'#72dbe9';
+            ctx.beginPath();ctx.ellipse(x,y,1.7,.55,-.5,0,Math.PI*2);ctx.fill();
+          }else if(summit){
+            ctx.strokeStyle=i%3?'#e4d2ff':'#a6f7e9';
+            ctx.lineWidth=.65;
+            ctx.beginPath();ctx.moveTo(x-2,y);ctx.lineTo(x+2,y);
+            ctx.moveTo(x,y-2.5);ctx.lineTo(x,y+2.5);ctx.stroke();
+          }else{
+            ctx.fillStyle=i%3?'#f8e8ae':'#caffdb';
+            ctx.beginPath();ctx.arc(x,y,i%7===0?1.6:.85,0,Math.PI*2);ctx.fill();
+          }
         }
-        ctx.globalAlpha=1;
+        ctx.restore();
         return;
       }
       const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,tint.sky[0]);sky.addColorStop(.30,tint.sky[1]);sky.addColorStop(.72,tint.sky[2]);sky.addColorStop(1,tint.sky[3]);ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
