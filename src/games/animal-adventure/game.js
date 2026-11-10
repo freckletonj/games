@@ -81,7 +81,7 @@ WW.games.animals = (() => {
       if(!shared.foods[choice]){say('Your basket is empty. Look for a picnic basket.',1800);return;}
       shared.foods[choice]--;WW.audio.play('food');player.actionCD=.28;
       projectiles.push({kind:'food',food:choice,owner:player.id,
-        x:player.x+player.face*11,y:player.y-14,vx:player.face*food.speed,vy:-2.5,
+        x:player.x+player.face*11,y:player.y-14,vx:player.face*food.speed,vy:-2.2,
         ttl:4,age:0});
     }
     function placeFood(pr){
@@ -343,7 +343,7 @@ WW.games.animals = (() => {
         const pr=projectiles[i],oldX=pr.x,oldY=pr.y;
         pr.age+=dt;pr.ttl-=dt;
         pr.x+=pr.vx*step;pr.y+=pr.vy*step;
-        pr.vy+=(pr.kind==='food'?.17:.045)*step;
+        pr.vy+=(pr.kind==='food'?.20:.045)*step;
         if(pr.kind==='food'&&FOOD[pr.food].method==='float'){
           pr.vy=Math.min(pr.vy,2.2);pr.x+=Math.sin(pr.age*9)*.5;
         }
