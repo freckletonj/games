@@ -288,6 +288,7 @@ WW.art = (() => {
   }
 
   function draw(ctx,name,x,y,frame=0,flip=false,playerId=null,pose={}) {
+    if(WW.spriteAtlas.draw(ctx,name,x,y,frame,flip,playerId,pose))return;
     const index=Math.max(0,kinds.indexOf(name));
     const action=pose.action||'idle',time=pose.time??(frame/3);
     const snack=name==='snack';
