@@ -17,7 +17,7 @@ WW.main = (() => {
         <div class="home-rule">A LITTLE MAGIC GOES A LONG WAY</div>
         <h2>Every creature has a story.<br>Every forest has a secret.</h2>
         <p>Wander through moonlit meadows, luminous reefs and starlit peaks. Make friends with magical creatures, borrow their extraordinary powers, and find the lost gems together.</p>
-        <div class="buttons">${button('play','▶ BEGIN ADVENTURE','primary')}${button('chapters','✦ CHOOSE A LEVEL')}</div>
+        <div class="buttons">${button('play','▶ PLAY FIRST FOREST','primary')}${button('chapters','✦ CHOOSE A LEVEL')}</div>
         <div class="home-note">3 enchanted chapters &nbsp; · &nbsp; 8 curious companions &nbsp; · &nbsp; 1–2 explorers</div>
       </div>
       <div class="home-art" aria-label="Four magical creatures beneath a glowing moon" role="img">
