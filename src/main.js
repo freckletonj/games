@@ -2,7 +2,7 @@ window.WW = window.WW || {};
 WW.main = (() => {
   const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
   const menu=document.getElementById('menu');const hud=document.getElementById('hud');
-  let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,pixelsPerTile=1,menuPadLatch='',currentChapterIndex=0;
+  let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,customMapJson=false,pixelsPerTile=1,menuPadLatch='',currentChapterIndex=0;
   const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel ${screen==='home'?'panel-home':''}">${content}</section>`;menu.querySelector('button')?.focus({preventScroll:true});};
   const button=(id,label,kind='secondary')=>`<button class="${kind}" data-action="${id}">${label}</button>`;
   function home(){
@@ -51,7 +51,7 @@ WW.main = (() => {
     paused=true;screen='loading';
     panel('<div class="kicker">Unfolding the forest map</div><h2>Loading adventure…</h2>');
     try{
-      const level=customMap?await WW.levels.load(customMap,pixelsPerTile):WW.worlds.create(chapter);
+      const level=customMap?(customMapJson?await WW.levels.loadJSON(customMap):await WW.levels.load(customMap,pixelsPerTile)):WW.worlds.create(chapter);
       level.chapter=chapter;
       if(level.warnings.some(w=>w.startsWith('No ')))throw Error(level.warnings.join(' · '));
       WW.input.reset();game=WW.games.animals.start(level);menu.hidden=true;paused=false;screen='playing';last=0;
@@ -85,9 +85,9 @@ WW.main = (() => {
     },()=>{cancelCalibration=null;WW.input.rumble(0,.6,220);panel(`<h2>Controller saved!</h2><p>The mapping will load automatically whenever this controller connects.</p><div class="buttons">${button('home','Back to menu','primary')}</div>`);});
   }
   function level(){
-    screen='level';panel(`<div class="kicker">For level creators · AI-assisted maps</div><h2>Load your own PNG map</h2>
-      <p>Use the palette from README.md. One pixel is one tile by default; for an AI-generated image with large color blocks, enter the number of image pixels per tile. The parser uses center sampling and approximate colors.</p>
-      <div class="row"><label>PNG <input type="file" id="level-file" accept="image/png"></label><label>Pixels per tile <input id="tile-size" type="number" min="1" max="64" value="1" style="width:70px"></label></div>
+    screen='level';panel(`<div class="kicker">For level creators · AI-assisted maps</div><h2>Load your own PNG or compiled JSON map</h2>
+      <p>Use the palette from README.md for a semantic PNG, or load level JSON exported by scripts/compile-semantic-level.py. Pixels per tile applies to PNG only.</p>
+      <div class="row"><label>PNG <input type="file" id="level-file" accept="image/png,.json"></label><label>Pixels per tile <input id="tile-size" type="number" min="1" max="64" value="1" style="width:70px"></label></div>
       <p class="hint">A green start marker and a red exit marker are required. Unknown colors become empty terrain and are reported in the console.</p>
       <div class="buttons">${button('load-level','Use this level','primary')}${button('reset-level','Use built-in level')}${button('home','Back')}</div>`);
   }
@@ -132,12 +132,12 @@ WW.main = (() => {
     if(id==='save-settings'){WW.storage.data.settings.players=Number(document.getElementById('players').value);WW.storage.data.settings.rumble=document.getElementById('rumble').checked;WW.storage.data.settings.sound=document.getElementById('sound').checked;WW.storage.save();home();}
     if(id==='export')WW.storage.exportSave();
     if(id==='import')document.getElementById('save-file').click();
-    if(id==='reset-level'){customMap=null;pixelsPerTile=1;home();}
+    if(id==='reset-level'){customMap=null;customMapJson=false;pixelsPerTile=1;home();}
     if(id==='load-level'){
       const file=document.getElementById('level-file').files[0];if(!file){alert('Select a PNG file first.');return;}
       const size=Number(document.getElementById('tile-size').value);
       if(!Number.isInteger(size)||size<1||size>64){alert('Pixels per tile must be 1–64.');return;}
-      customMap=URL.createObjectURL(file);pixelsPerTile=size;await play();
+      customMap=URL.createObjectURL(file);customMapJson=file.name.toLowerCase().endsWith('.json');pixelsPerTile=size;await play();
     }
   });
   addEventListener('keydown',e=>{
