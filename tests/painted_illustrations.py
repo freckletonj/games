@@ -35,7 +35,7 @@ with sync_playwright() as playwright:
       return {counts,frames};
     }""")
     assert len(result['counts']) == 32,result
-    assert result['frames'] == [[320,240]]*4,result['frames']
+    assert result['frames'] == [[720,540]]*4,result['frames']
     assert all(painted and pixels>50 for name,painted,pixels in result['counts']),result['counts']
 
     # Renderer uses the same real illustrations for gates, campfires, collectibles
