@@ -82,6 +82,36 @@ with sync_playwright() as playwright:
         }));
     }""")
     assert portraits == [[96, 96]] * 4, portraits
+    # Publish a close-up contact sheet so visual reviews don't have to hunt
+    # through authored levels for each of the four still-procedural species.
+    page.evaluate("""async () => {
+        const canvas = document.createElement('canvas');
+        canvas.id = 'wildlife-preview';
+        canvas.width = 640; canvas.height = 202;
+        const ctx = canvas.getContext('2d');
+        const names = ['mossback','prismtail','glimmermoth','cloudwhisp'];
+        for (let i=0;i<names.length;i++){
+            const x=i*160;
+            ctx.fillStyle = i%2 ? '#254354' : '#1d3849';
+            ctx.fillRect(x,0,160,202);
+            const image = new Image();
+            image.src = WW.art.portrait(names[i]);
+            await image.decode();
+            ctx.drawImage(image,x+32,7,96,96);
+            ctx.fillStyle='#fff0d6';
+            ctx.font='bold 13px system-ui';
+            ctx.textAlign='center';
+            ctx.fillText(names[i].toUpperCase(), x+80,121);
+            ctx.save();
+            ctx.translate(x+80,188);
+            ctx.scale(2,2);
+            WW.art.draw(ctx,names[i],0,0,0,false,null,{action:'run',time:.16});
+            ctx.restore();
+        }
+        document.body.appendChild(canvas);
+    }""")
+    page.locator('#wildlife-preview').screenshot(path=str(html.parent / 'preview-wildlife.png'))
+    page.locator('#wildlife-preview').evaluate('(node) => node.remove()')
     # No alpha gaps at the boundaries of the world-anchored painted texture.
     # Neighboring pixels may differ naturally because texture detail is continuous,
     # rather than repeated identically on each side of every 16-unit seam.
