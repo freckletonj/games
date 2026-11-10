@@ -35,3 +35,10 @@ jobs:
           python tests/playability.py
           python tests/routes.py
           python tests/game_feel.py
+      - name: Upload visual previews
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wonderwood-previews
+          path: dist/preview-*.png
+          if-no-files-found: ignore
