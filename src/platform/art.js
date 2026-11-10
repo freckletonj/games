@@ -358,5 +358,5 @@ WW.art = (() => {
     if(name==='marshmallow'){c.fillStyle='#fff7ff';c.fillRect(11,12,13,11);}
     return [name,canvas.toDataURL()];
   }));
-  return {draw,portrait:name=>portraits[name]||portraits.hero,foodIcon:name=>foodIcons[name]||foodIcons.berry};
+  return {draw,portrait:name=>WW.spriteAtlas.portrait(name)||portraits[name]||portraits.hero,foodIcon:name=>foodIcons[name]||foodIcons.berry};
 })();
