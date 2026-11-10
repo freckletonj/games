@@ -262,28 +262,53 @@ WW.art = (() => {
       shadedOval(10,-13,8,7,'#ecf1bb','#b2d6a0','#78a48a');
       oval(16,-10,2,1.6,'#658079');eye(13,-14);
     }else if(name==='prismtail'){
-      poly([[-7,-11],[-16,-16+flap*3],[-23,-23],[-19,-13],[-23,-8],[-10,-7]],'#f5a277');
-      poly([[-21,-22],[-16,-15],[-22,-10]],'#ffe4a2');
-      feet('#aa607e',action==='run'?3.5:2);
-      oval(-1,-12,12,7.5,'#cf759b');
+      // A fan of refracted colors at the tail tip identifies this fast runner.
+      const sweep=flap*2.5;
+      poly([[-7,-11],[-17,-18+sweep],[-23,-26],[-19,-14],[-25,-9],[-10,-6]],'#b8739c');
+      poly([[-18,-22],[-23,-26],[-21,-14],[-16,-14]],'#f9c77e');
+      poly([[-23,-11],[-18,-15],[-11,-11],[-17,-6]],'#93dbd6');
+      stroke([[-22,-22],[-16,-17],[-13,-12]],'#ffe6be',.9);
+      feet('#a05b78',action==='run'?3.5:2);
+      shadedOval(-1,-12,12,7.5,'#ffe2ad','#cd8ca5','#805c9b');
       poly([[5,-18],[7,-28],[12,-22],[18,-26],[16,-17]],'#b9618e');
-      oval(9,-17,9,7,'#f3a98c');oval(14,-14,5,3,'#ffe0b5');eye(12,-19);
+      shadedOval(9,-17,9,7,'#ffe1ae','#f2aa91','#b97191');
+      shadedOval(14,-14,5,3,'#fff3dc','#fdd7b2','#d5a28c');
+      oval(15,-20,1.3,.65,'#fff6dd');eye(12,-19);
       poly([[2,-18],[1,-22],[6,-19]],'#ffe79b');
     }else if(name==='glimmermoth'){
-      const w=flap*3.5;
-      poly([[-1,-15],[-16,-29-w],[-15,-10],[0,-8]],'#f3b0e6');
-      poly([[0,-17],[12,-30+w],[16,-9],[1,-8]],'#c5b6ee');
+      const wing=flap*3.5;
+      const leftWing=ctx.createLinearGradient(-15,-30,-2,-8);
+      leftWing.addColorStop(0,'#fcf0d4');leftWing.addColorStop(.5,'#ebb8ea');
+      leftWing.addColorStop(1,'#8eb4df');
+      const rightWing=ctx.createLinearGradient(14,-30,0,-10);
+      rightWing.addColorStop(0,'#c5fcf0');rightWing.addColorStop(.5,'#d9c3f5');
+      rightWing.addColorStop(1,'#8b8dcc');
+      poly([[-1,-15],[-17,-29-wing],[-16,-10],[0,-8]],leftWing);
+      poly([[0,-17],[12,-30+wing],[17,-9],[1,-8]],rightWing);
+      stroke([[-1,-13],[-13,-25-wing],[-13,-15]],'#fff7e8',.9);
+      stroke([[1,-13],[11,-25+wing],[13,-14]],'#e8fff1',.9);
+      oval(-10,-21-wing*.4,2.4,2.4,'#f2ffdb');
+      oval(11,-19+wing*.4,2.5,2.5,'#f7e0ff');
       poly([[-1,-10],[-11,-5],[-7,-2],[1,-7]],'#91d1dd');
-      oval(1,-15,5,10,'#7d6aa9');oval(6,-21,6,6,'#b397d3');eye(9,-22);
+      shadedOval(1,-15,5,10,'#cfb9ef','#856eae','#565880');
+      shadedOval(6,-21,6,6,'#f3d7eb','#bb9cd5','#7d82b7');
+      eye(9,-22);
       stroke([[5,-26],[3,-31]],'#a9e9db',1);
       oval(3,-31,2,2,'#ffeeb4');
-      oval(-9,-17-w,2.5,2.5,'#fff2bb');
     }else if(name==='cloudwhisp'){
-      oval(-10,-12+flap*2,8,7,'#a79bd9');
-      oval(9,-12-flap*2,8,8,'#bcb1e7');
-      oval(-2,-17,12,11,'#e0d2f5');oval(3,-12,13,8,'#f3e9f7');
-      poly([[-7,-7],[-13,0],[-1,-3]],'#b1a0e7');
-      poly([[4,-7],[10,1],[15,-10]],'#a5b7de');
+      const sway=flap*1.5;
+      ctx.globalAlpha=.6;
+      shadedOval(-10,-12+sway,8,7,'#f4edff','#bdb5e5','#778bc8');
+      shadedOval(9,-12-sway,8,8,'#eefaf9','#c3b6e7','#779bc4');
+      ctx.globalAlpha=1;
+      shadedOval(-2,-17,12,11,'#ffffff','#e1d1f4','#a3a5d6');
+      shadedOval(3,-12,13,8,'#ffffff','#eee5fa','#afb8df');
+      poly([[-7,-7],[-13,0],[-1,-3]],'#ada0d3');
+      poly([[4,-7],[10,1],[15,-10]],'#a2b5d9');
+      ctx.globalAlpha=.75;
+      oval(-7,-23,2.3,1.2,'#ffffff');
+      oval(1,-27,4.2,1.2,'#ffffff');
+      ctx.globalAlpha=1;
       eye(6,-18);oval(10,-14,1.5,1.2,'#dc9bb9');
       oval(-11,-23,3,2,'#dcf1f4');
     }else if(name==='emberkit'){
