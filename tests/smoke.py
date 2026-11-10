@@ -17,6 +17,10 @@ with sync_playwright() as playwright:
     errors = []
     page.on('pageerror', lambda error: errors.append(str(error)))
     page.set_content(source, wait_until='domcontentloaded')
+    assert page.evaluate("Boolean(window.WW_EMBEDDED_ATLASES?.springaroo)")
+    page.wait_for_function("""() => WW.spriteAtlas.draw(
+        document.querySelector('#game').getContext('2d'), 'springaroo', 40, 80, 0
+    )""")
     page.screenshot(path=str(html.parent / 'preview-home.png'))
     print('BOOT DIAGNOSTIC:', errors, page.locator('h1').all_inner_texts(), page.locator('body').inner_text()[:250])
     assert page.locator('h1').count()==1 and page.locator('h1').inner_text()=='WONDERWOOD',errors
