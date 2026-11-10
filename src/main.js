@@ -183,15 +183,10 @@ WW.main = (() => {
       WW.art.draw(ctx,'hero',235,244,Math.floor(now/300)%4,false,null,{action:'idle',time:now*.001});
       return;
     }
-    const t=now*.001;const sky=ctx.createLinearGradient(0,0,0,270);sky.addColorStop(0,'#73b6cf');sky.addColorStop(1,'#dbedcf');ctx.fillStyle=sky;ctx.fillRect(0,0,480,270);
-    for(let layer=0;layer<3;layer++){
-      const h=135+layer*38;ctx.fillStyle=['#aacfc1','#77b0a9','#427e7a'][layer];ctx.beginPath();ctx.moveTo(0,270);
-      for(let x=0;x<500;x+=16)ctx.lineTo(x,h+Math.sin(x*.023+layer+t*.06)*14+Math.sin(x*.09)*6);ctx.lineTo(480,270);ctx.fill();
-    }
-    for(let i=0;i<25;i++){const x=i*24+(Math.sin(i*2)*8);ctx.fillStyle='#285963';ctx.fillRect(x,201,5,60);ctx.fillStyle=i%2?'#478b79':'#57987b';ctx.fillRect(x-9,178+Math.sin(i)*12,24,28);}
-    ctx.fillStyle='#89bd71';ctx.fillRect(0,244,480,26);
-    for(let x=0;x<480;x+=16){ctx.fillStyle='#528b69';ctx.fillRect(x,243,16,3);ctx.fillStyle='#a0d181';ctx.fillRect(x+4,240,3,4);}
-    WW.art.draw(ctx,'springaroo',85,244,Math.floor(t*3)%4);WW.art.draw(ctx,'skyling',375,183+Math.sin(t*2)*5,Math.floor(t*6)%4);WW.art.draw(ctx,'tideling',135,244,Math.floor(t*3)%4);WW.art.draw(ctx,'hero',235,242,Math.floor(t*2)%4);
+    // The first image decode may be asynchronous; use a quiet backdrop until
+    // the painted scene and characters are ready, not a vector placeholder.
+    ctx.fillStyle='#263b56';
+    ctx.fillRect(0,0,480,270);
   }
   function frame(now){const dt=last?Math.min((now-last)/1000,.05):0;last=now;if(game){if(!paused)game.update(dt);game.render(ctx,now/1000);}else idle(now);
     pollMenuGamepad();requestAnimationFrame(frame);}
