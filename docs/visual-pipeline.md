@@ -143,3 +143,13 @@ concave/convex shoreline and rock shoulders as well as the upper corners.
 Browser tests compare each missing diagonal against an interior tile for
 both water and ground, in addition to testing visible alpha continuity
 across terrain cell boundaries.
+
+## Illustrated gameplay props
+
+Signs, checkpoint flags, gates, star shards and quest lights now render through
+`src/platform/props.js`. They are layered, anti-aliased canvas art with stone
+facets, wood grain, lantern lighting and biome-specific accents, replacing
+single-color rectangular placeholders. This is a visual-only change: collision,
+interactions, coordinates, objectives and checkpoint state still come from the
+semantic level and gameplay logic. Locked and unlocked gate visuals have
+distinctive lighting and color, checked by Chromium pixel regression tests.
