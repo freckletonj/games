@@ -691,61 +691,22 @@ WW.games.animals = (() => {
       }
     }
     function sceneryBack(ctx,time){
-      if(WW.scenery.ready('backdrop'))return;
-      const l=Math.floor((cameraX-180)/172),r=Math.ceil((cameraX+W+180)/172);
-      const base=spawn.y+28;
-      for(let i=l;i<=r;i++){
-        const x=i*172+(hash(i,29)%23),wind=Math.sin(time*.66+i)*2;
-        const high=base-130-(i%3)*8;
-        if(chapter.biome==='meadow' && WW.scenery.ready('lanternTree')){
-          ctx.save();ctx.translate(x,base);ctx.scale(.72,.72);ctx.globalAlpha=.38;
-          WW.scenery.landmark(ctx,chapter.biome,'tree',time+i*.5);
-          ctx.restore();continue;
-        }
-        if(chapter.biome==='coast'){
-          // Glassy mineral spires with sharp colored facets and teal reef anemones.
-          const y=high-5+(i%2)*15;
-          ctx.fillStyle='#23588a';ctx.beginPath();ctx.moveTo(x-28,base);ctx.lineTo(x-10,y+23);
-          ctx.lineTo(x+8,y-23);ctx.lineTo(x+30,y+27);ctx.lineTo(x+46,base);ctx.fill();
-          ctx.fillStyle='#7be1e2';ctx.beginPath();ctx.moveTo(x+8,y-23);ctx.lineTo(x+30,y+27);ctx.lineTo(x+10,y+12);ctx.fill();
-          ctx.fillStyle='#b3f9ef';ctx.beginPath();ctx.moveTo(x-10,y+23);ctx.lineTo(x+8,y-23);ctx.lineTo(x+2,y+30);ctx.fill();
-          for(let j=0;j<8;j++){
-            const xx=x-33+(hash(i,j)%75),yy=base-22+(hash(j,i)%19);
-            box(ctx,xx,yy,3,8,j%2?'#94ffe3':'#d59cf3');box(ctx,xx-3,yy-3,9,4,'#67c9e7');
-          }
-        }else if(chapter.biome==='summit'){
-          // Cliffs, shards and floating islets under the aurora.
-          ctx.fillStyle='#3f4c92';ctx.beginPath();ctx.moveTo(x-38,base);ctx.lineTo(x-9,high+15);
-          ctx.lineTo(x+6,high-38);ctx.lineTo(x+28,high+28);ctx.lineTo(x+48,base);ctx.fill();
-          ctx.fillStyle='#b2a3f4';ctx.beginPath();ctx.moveTo(x+6,high-38);ctx.lineTo(x+28,high+28);
-          ctx.lineTo(x+6,high+19);ctx.fill();
-          ctx.fillStyle='#8dbad9';ctx.beginPath();ctx.ellipse(x+31,high-49,17,6,-.15,0,Math.PI*2);ctx.fill();
-          box(ctx,x+12,high-53,33,4,'#c4c2ff');
-          for(let j=0;j<5;j++){
-            box(ctx,x-14+(hash(i,j)%52),high-28+(hash(j,i)%40),2,2,'#f0dcff');
-          }
-        }else{
-          // Monumental lantern trees and mushroom terraces (all original procedural pixels).
-          box(ctx,x-9,high+33,21,base-high-33,'#285978');
-          box(ctx,x-5,high+35,5,base-high-35,'#3986a0');
-          const clusters=[[-20,9,24,tint.tree[0]],[19,8,25,tint.tree[1]],[-1,-11,31,tint.tree[2]],[-12,-30,17,'#83e7bb']];
-          for(const [dx,dy,rad,color] of clusters){
-            ctx.fillStyle=color;ctx.beginPath();ctx.arc(x+dx+wind,high+dy,rad,0,Math.PI*2);ctx.fill();
-          }
-          for(let j=0;j<10;j++){
-            const xx=x-31+(hash(i,j)%65),yy=high-30+(hash(j,i)%52);
-            box(ctx,xx,yy,3,3,j%2?'#ffe4af':'#b9ffee');
-          }
-          if(i%3===0){
-            box(ctx,x+18,high+17,2,29,'#62b49c');
-            const glow=ctx.createRadialGradient(x+19,high+47,1,x+19,high+47,23);
-            glow.addColorStop(0,'#ffe8a68a');glow.addColorStop(1,'#ffe8a600');
-            ctx.fillStyle=glow;ctx.fillRect(x-4,high+24,46,46);
-            box(ctx,x+15,high+44,9,10,'#ffe8a6');
-          }
-          box(ctx,x-26,base-10,18,7,'#cc8ecb');box(ctx,x-23,base-17,12,9,'#f8b6e3');
-          box(ctx,x+20,base-13,15,8,'#86d8d1');box(ctx,x+22,base-22,11,12,'#9dffda');
-        }
+      // Large, transparent painted flora occupy the middle distance. They are
+      // decorative only and remain anchored in world coordinates.
+      const themes={
+        meadow:['lanternTree','mushrooms','flowers'],
+        coast:['reef','pond','reeds'],
+        summit:['crystal','island','observatory']
+      };
+      const choices=themes[chapter.biome]||themes.meadow;
+      const first=Math.floor((cameraX-170)/150);
+      const last=Math.ceil((cameraX+W+170)/150);
+      for(let i=first;i<=last;i++){
+        const kind=choices[((i%choices.length)+choices.length)%choices.length];
+        const x=i*150+hash(i,31)%30;
+        const y=spawn.y+20+(hash(i,7)%19);
+        const large=['lanternTree','island','observatory'].includes(kind);
+        WW.illustrations.draw(ctx,kind,x,y,large?105:66,large?137:74,.25);
       }
     }
     function drawLandmarks(ctx,time){
@@ -754,96 +715,32 @@ WW.games.animals = (() => {
         if(x<cameraX-130||x>cameraX+W+130)continue;
         const row=map.findIndex(line=>line[place.x]==='ground'||line[place.x]==='water');
         if(row<0)continue;
-        const y=row*TILE,wind=Math.sin(time*.9+x*.013)*3;
-        ctx.save();ctx.translate(x,y);
-        if(WW.scenery.landmark(ctx,chapter.biome,place.type,time)){ctx.restore();continue;}
-        if(place.type==='tree'){
-          // Giant hollow trees and lantern boughs become recognizable places, not tiled noise.
-          box(ctx,-13,-113,26,116,'#244d59');
-          box(ctx,-7,-111,7,108,'#3d857b');
-          box(ctx,5,-95,3,93,'#73b18d');
-          ctx.strokeStyle='#3a7471';ctx.lineWidth=10;ctx.beginPath();
-          ctx.moveTo(-6,-77);ctx.lineTo(-44,-115);ctx.moveTo(7,-89);ctx.lineTo(47,-130);ctx.stroke();
-          for(const [dx,dy,r,c] of [[-31,-135,35,'#357e74'],[32,-150,36,'#448e80'],[1,-160,44,'#5dab87'],[-14,-180,24,'#89cc9a']]){
-            ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(dx+wind,dy,r,r*.62,0,0,Math.PI*2);ctx.fill();
-          }
-          box(ctx,-18,-58,36,5,'#ae8c74');box(ctx,-12,-62,24,5,'#d1bc88');
-          box(ctx,-7,-46,14,23,'#1a3c49');box(ctx,-4,-42,8,15,'#a0c5a4');
-          for(let j=0;j<7;j++){
-            const rx=-47+hash(place.x,j)%97,ry=-178+hash(j,place.x)%69;
-            box(ctx,rx+wind,ry,2,3,j%2?'#f4dba0':'#c3f2c5');
-          }
-        }else if(place.type==='crystal'){
-          for(const [dx,h,w,color] of [[-37,76,23,'#27587f'],[-11,117,30,'#58a6b9'],[20,90,27,'#397ca6'],[47,61,18,'#83d9cf']]){
-            ctx.fillStyle=color;ctx.beginPath();
-            ctx.moveTo(dx,-h);ctx.lineTo(dx+w*.6,-h*.67);ctx.lineTo(dx+w,0);
-            ctx.lineTo(dx-w*.5,0);ctx.closePath();ctx.fill();
-            ctx.fillStyle='#baf6eb7a';ctx.beginPath();ctx.moveTo(dx,-h);ctx.lineTo(dx+w*.6,-h*.67);
-            ctx.lineTo(dx+w*.2,-18);ctx.closePath();ctx.fill();
-            box(ctx,dx+2,-h*.6,2,18,'#e6fff2');
-          }
-        }else if(place.type==='reef'||place.type==='pond'){
-          for(let j=0;j<10;j++){
-            const dx=-45+hash(place.x,j)%90,depth=14+hash(j,place.x)%28;
-            ctx.strokeStyle=j%3===0?'#e6a6d2':j%2?'#7be8c1':'#83bff4';
-            ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(dx,0);
-            ctx.quadraticCurveTo(dx+wind*2,-depth*.6,dx+wind-5,-depth);ctx.stroke();
-            box(ctx,dx+wind-8,-depth,7,4,'#b8f4d9');
-          }
-        }else if(place.type==='observatory'){
-          ctx.lineWidth=12;ctx.strokeStyle='#5a648d';ctx.beginPath();
-          ctx.arc(0,-75,53,Math.PI,Math.PI*2);ctx.stroke();
-          ctx.strokeStyle='#b0b2dc';ctx.lineWidth=3;ctx.beginPath();
-          ctx.arc(0,-75,43,Math.PI,Math.PI*2);ctx.stroke();
-          box(ctx,-56,-72,12,74,'#4c5379');box(ctx,44,-72,12,74,'#4c5379');
-          box(ctx,-62,-7,124,11,'#8085b3');box(ctx,-47,-12,94,5,'#b8bce1');
-          for(let j=0;j<9;j++){
-            const theta=Math.PI+j*Math.PI/8;
-            const rx=50*Math.cos(theta),ry=-75+50*Math.sin(theta);
-            box(ctx,rx-2,ry-2,4,4,'#e8dcb5');
-          }
-        }else if(place.type==='island'){
-          ctx.fillStyle='#536090';ctx.beginPath();
-          ctx.moveTo(-48,-70);ctx.lineTo(44,-70);ctx.lineTo(27,-41);
-          ctx.lineTo(4,-22);ctx.lineTo(-18,-49);ctx.closePath();ctx.fill();
-          box(ctx,-48,-76,92,8,'#b7c8ab');
-          for(let j=0;j<6;j++){
-            const xx=-36+j*14;
-            box(ctx,xx,-83,3,7,'#91d0ae');
-            box(ctx,xx-4,-88,10,5,j%2?'#dfb4e4':'#b0e9cc');
-          }
-          ctx.strokeStyle='#a5c8c2';ctx.lineWidth=2;
-          for(let j=0;j<4;j++){const xx=-27+j*15;ctx.beginPath();ctx.moveTo(xx,-42);ctx.quadraticCurveTo(xx+wind*2,-22,xx-3,-10);ctx.stroke();}
-        }else if(place.type==='lantern'){
-          box(ctx,-4,-68,7,69,'#526b69');
-          box(ctx,-12,-74,23,8,'#bfa27a');
-          box(ctx,-8,-89,15,18,'#f2dca4');
-          ctx.globalAlpha=.2+.07*Math.sin(time*3);
-          ctx.fillStyle='#f9e3a4';ctx.beginPath();ctx.arc(0,-81,35,0,Math.PI*2);ctx.fill();
-          ctx.globalAlpha=1;
-        }
+        ctx.save();ctx.translate(x,row*TILE);
+        WW.scenery.landmark(ctx,chapter.biome,place.type,time);
         ctx.restore();
       }
     }
     function groundDetails(ctx,time){
-      if(WW.scenery.ready('tiles'))return;
-      const left=Math.max(0,Math.floor(cameraX/TILE)-1),right=Math.min(level.width,Math.ceil((cameraX+W)/TILE)+1);
+      // Sparse small painted vegetation is distinct from the seamless terrain.
+      // Never introduce decorative collision or change the semantic map.
+      const themes={
+        meadow:['flowers','berryBush','mushrooms','nectarFruit'],
+        coast:['reeds','stones','flowers','shells'],
+        summit:['moonStone','stardropFruit','mushrooms','flowers']
+      };
+      const choices=themes[chapter.biome]||themes.meadow;
+      const left=Math.max(0,Math.floor(cameraX/TILE)-2);
+      const right=Math.min(level.width,Math.ceil((cameraX+W)/TILE)+2);
       for(let x=left;x<right;x++){
-        for(let y=1;y<level.height-1;y++){
+        const seed=hash(x,17);
+        if(seed%7!==0)continue;
+        for(let y=1;y<level.height;y++){
           if(map[y]?.[x]!=='ground'||map[y-1]?.[x]!=='empty')continue;
-          const px=x*TILE+8,py=y*TILE,h=hash(x,y);
-          if(h%9===0){
-            box(ctx,px-1,py-18,3,18,'#2a936d');
-            box(ctx,px-5,py-22,11,6,'#ff87c2');box(ctx,px-2,py-26,6,7,'#ffd5f2');
-            box(ctx,px-1,py-23,3,3,'#ffe68e');
-          }else if(h%13===0){
-            box(ctx,px-3,py-12,7,10,'#80def5');box(ctx,px-1,py-19,3,7,'#e2f9fa');
-            box(ctx,px-6,py-7,4,5,'#d6a5ff');
-          }else if(h%4===0){
-            box(ctx,px-4,py-5,2,5,'#52c884');box(ctx,px+1,py-8,2,8,'#61d79b');
-            box(ctx,px-6,py-9,4,5,'#d4a9ff');box(ctx,px,py-12,4,5,'#ffb5cf');
-          }
-          if(h%21===0){const f=1+Math.sin(time*3+x)*2;box(ctx,px+4,py-20+f,3,3,'#ffffae');}
+          const kind=choices[seed%choices.length];
+          const w=kind==='stones'?23:kind==='shells'?28:20;
+          const h=kind==='reeds'?24:kind==='moonStone'?26:21;
+          WW.illustrations.draw(ctx,kind,x*TILE+8,y*TILE+2,w,h,.9);
+          break;
         }
       }
     }
@@ -971,7 +868,7 @@ WW.games.animals = (() => {
         }
       }
       items.forEach(it=>{if(it.used&&it.kind!=='checkpoint')return;const bob=Math.sin(now*3+it.x)*2;
-        if(it.kind==='snack')WW.art.draw(ctx,'snack',it.x,it.y+8+bob,Math.floor(now*3)%4);
+        if(it.kind==='snack')WW.props.snack(ctx,it.x,it.y+8+bob,now);
         if(it.kind==='starShard'){
           WW.props.star(ctx,it.x,it.y+bob,now);
         }
