@@ -894,10 +894,27 @@ WW.games.animals = (() => {
         if(!a.alive)return;
         const near=players.some(p=>!p.sleep&&Math.abs(p.x-a.x)<105&&Math.abs(p.y-a.y)<105);
         const species=CREATURE[a.kind],ready=a.distractedUntil>clock;
-        // Feet and shadows visually connect wandering creatures to the ground.
-        ctx.globalAlpha=.17;ctx.fillStyle='#102e3a';
-        ctx.beginPath();ctx.ellipse(a.x,a.y+1,11,3,0,0,Math.PI*2);ctx.fill();
-        ctx.globalAlpha=1;
+        // Shadows belong on supporting terrain; flying wildlife cast none.
+        if(!['skyling','glimmermoth','cloudwhisp'].includes(a.kind)){
+          const col=clamp(Math.floor(a.x/TILE),0,level.width-1);
+          const firstRow=Math.max(0,Math.floor((a.y+1)/TILE));
+          let surfaceY=null;
+          for(let row=firstRow;row<level.height;row++){
+            if(map[row][col]==='ground'||map[row][col]==='platform'){
+              surfaceY=row*TILE;break;
+            }
+          }
+          if(surfaceY!==null){
+            const rise=Math.max(0,surfaceY-a.y);
+            if(rise<24){
+              ctx.save();
+              ctx.globalAlpha=.17*(1-rise/24);
+              ctx.fillStyle='#102e3a';
+              ctx.beginPath();ctx.ellipse(a.x,surfaceY+.5,11-rise*.16,2.5,0,0,Math.PI*2);ctx.fill();
+              ctx.restore();
+            }
+          }
+        }
         WW.art.draw(ctx,a.kind,a.x,a.y,Math.floor(a.frame)%6,a.dir<0,null,{
           action:a.eating>0?'eat':ready?'happy':a.windup?'alert':a.moving?'run':'idle',time:a.phase
         });
