@@ -2,7 +2,7 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 const root=resolve(import.meta.dirname,'..');
 const read=async name=>readFile(resolve(root,name),'utf8');
-const scripts=['src/platform/storage.js','src/platform/input.js','src/platform/levels.js','src/platform/art.js','src/games/animal-adventure/game.js','src/main.js'];
+const scripts=['src/platform/storage.js','src/platform/input.js','src/platform/levels.js','src/platform/art.js','src/platform/audio.js','src/games/animal-adventure/catalog.js','src/games/animal-adventure/game.js','src/main.js'];
 const source=await read('index.html');
 const css=await read('src/style.css');
 const js=(await Promise.all(scripts.map(read))).map(code=>`<script>\n${code.replaceAll('</script>','<\\/script>')}\n</script>`).join('\n');

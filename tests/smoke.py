@@ -20,7 +20,7 @@ with sync_playwright() as playwright:
     page.on('pageerror', lambda error: errors.append(str(error)))
     page.set_content(source, wait_until='domcontentloaded')
     assert page.locator('h1').inner_text() == 'WONDERWOOD'
-    page.get_by_role('button', name='PLAY THE FOREST').click()
+    page.get_by_role('button', name='PLAY FIRST FOREST').click()
     page.locator('#menu').wait_for(state='hidden')
     assert page.locator('#hud').is_visible()
     page.keyboard.down('d')

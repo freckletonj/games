@@ -2,20 +2,22 @@ window.WW = window.WW || {};
 WW.main = (() => {
   const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
   const menu=document.getElementById('menu');const hud=document.getElementById('hud');
-  let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,pixelsPerTile=1;
+  let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,pixelsPerTile=1,menuPadLatch='';
   const builtinMap=window.WONDERWOOD_MAP.startsWith('data:')?window.WONDERWOOD_MAP:'src/games/animal-adventure/levels/first-forest.png';
-  const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel">${content}</section>`;};
+  const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel">${content}</section>`;menu.querySelector('button')?.focus({preventScroll:true});};
   const button=(id,label,kind='secondary')=>`<button class="${kind}" data-action="${id}">${label}</button>`;
   function home(){
     if(game){game.stop();game=null;}paused=true;screen='home';cancelCalibration?.();cancelCalibration=null;
-    panel(`<div class="kicker">An adventure arcade for the whole family</div><h1>WONDERWOOD</h1>
-      <h2>Three magical powers. Three hidden gems.</h2><p>Befriend and catch fantasy creatures! Springaroo double-jumps, Moonwing flies, Tidefox dives. Each capture gives that player one timed transformation. The deep lake is dangerous unless you become a Tidefox.</p>
-      <div class="chips"><span class="chip">Local co-op</span><span class="chip">USB gamepads</span><span class="chip">Offline play</span><span class="chip">Pixel-art world</span></div>
-      <div class="buttons">${button('play','▶ PLAY THE FOREST','primary')}${button('settings','⚙ Settings')}${button('calibrate','🎮 Map controller')}${button('level','🗺 Load PNG level')}</div>
-      <div class="instructions"><b>P1:</b> A / D move, W jump, S dive, F snack, G magic orb, Q choose animal, T transform, R revive<br>
-      <b>P2:</b> J / L move, I jump, K dive, O snack, P orb, H choose, U transform, Y revive<br>
-      <b>Controllers:</b> left stick / D-pad move · A jump · B snack · X orb · Y transform · RB choose · LB revive</div>
-      <div class="hint">${customMap?'Custom level loaded for this session.':'First Forest: Canopy Gem + Sky Gem + River Gem.'} &nbsp; · &nbsp; ${WW.input.pads().length} controller(s) detected</div>`);
+    const portraits=Object.keys(WW.catalog.forms).map(t=>`<span class="menu-creature" title="${WW.catalog.forms[t].name} · ${WW.catalog.forms[t].power}"><img src="${WW.art.portrait(t)}" alt="${WW.catalog.forms[t].name}"></span>`).join('');
+    panel(`<div class="kicker">The enchanted forest is calling</div><h1>WONDERWOOD</h1>
+      <h2>Be kind. Be brave. Become magical.</h2>
+      <div class="menu-portraits">${portraits}</div>
+      <p>Eight whimsical creatures, five magical snacks and three ancient gems. Win creatures over, catch them, transform into them and use their powers to solve the forest's secrets. You can switch forms and save their remaining time!</p>
+      <div class="buttons">${button('play','▶ PLAY FIRST FOREST','primary')}${button('journal','✦ Creature guide')}${button('settings','⚙ Settings')}${button('calibrate','🎮 Controller setup')}${button('level','▧ Load PNG map')}</div>
+      <div class="instructions"><b>Keyboard P1:</b> A / D move · W jump · F food · E change food · G catch orb · Q choose form · T transform · R wake · C back to camp<br>
+      <b>Keyboard P2:</b> J / L move · I jump · O food · M change food · P catch orb · H choose form · U transform · Y wake · N back to camp<br>
+      <b>Menu:</b> Arrow keys + Enter, or Tab + Enter · Escape pauses · All gems auto-collect on contact</div>
+      <div class="hint">${customMap?'Custom map selected.':'First Forest · three gems · unlimited homeward spell'} &nbsp; · &nbsp; ${WW.input.pads().length} controller(s) detected</div>`);
   }
   async function play() {
     const url=customMap||builtinMap;
@@ -35,7 +37,7 @@ WW.main = (() => {
     panel(`<div class="kicker">Wonderwood Arcade</div><h2>Game settings</h2>
       <p>Controls and progress are stored in this browser. Export a save to keep a backup when you move the HTML file.</p>
       <div class="row"><label for="players">Players</label><select id="players"><option value="1" ${settings.players===1?'selected':''}>1 player</option><option value="2" ${settings.players===2?'selected':''}>2 players</option></select></div>
-      <label class="toggle"><input id="rumble" type="checkbox" ${settings.rumble?'checked':''}> Controller vibration (if supported)</label>
+      <label class="toggle"><input id="rumble" type="checkbox" ${settings.rumble?'checked':''}> Controller vibration (if supported)</label><label class="toggle"><input id="sound" type="checkbox" ${settings.sound?'checked':''}> Magical sound effects</label>
       <div class="buttons">${button('save-settings','Save settings','primary')}${button('export','Export save')}${button('import','Import save')}${button('home','Back')}</div>
       <input id="save-file" type="file" accept="application/json,.json" hidden>
       <div class="instructions">Controller vibration support varies by gamepad, Linux driver, and Firefox version.</div>`);
@@ -49,7 +51,7 @@ WW.main = (() => {
     screen='calibration';const pads=WW.input.pads();if(!pads.length){panel(`<div class="kicker">Controller setup</div><h2>No gamepad detected</h2><p>Connect a USB controller, then press any button on it while Firefox is focused. The browser only exposes gamepads after interaction.</p><div class="buttons">${button('calibrate','Try again','primary')}${button('home','Back')}</div>`);return;}
     const p=pads[0];
     panel(`<div class="kicker">Controller setup · ${p.index+1}</div><h2>Press the requested control</h2><p id="calibration-step"></p><p class="hint">Release each control before the next step. Saves automatically by controller name.</p><div class="buttons">${button('home','Cancel')}</div>`);
-    const display={left:'MOVE LEFT',right:'MOVE RIGHT',down:'MOVE / DIVE DOWN',jump:'JUMP / SWIM UP',snack:'THROW SNACK',orb:'THROW MAGIC ORB',cycle:'CHOOSE ANIMAL FORM',transform:'TRANSFORM',revive:'REVIVE'};
+    const display={left:'MOVE LEFT',right:'MOVE RIGHT',down:'DIVE DOWN',jump:'JUMP / FLY',snack:'THROW SELECTED FOOD',orb:'MAGIC CATCH ORB',cycle:'CHOOSE ANIMAL',transform:'SWITCH FORM',revive:'WAKE / REVIVE',foodCycle:'CHANGE FOOD',recall:'RETURN TO CAMP'};
     cancelCalibration=WW.input.calibrate(p.index,(step,actions)=>{
       const element=document.getElementById('calibration-step');
       if(element)element.textContent=`${step+1} / ${actions.length} — ${display[actions[step]]}`;
@@ -62,18 +64,28 @@ WW.main = (() => {
       <p class="hint">A green start marker and a red exit marker are required. Unknown colors become empty terrain and are reported in the console.</p>
       <div class="buttons">${button('load-level','Use this level','primary')}${button('reset-level','Use built-in level')}${button('home','Back')}</div>`);
   }
-  function pause(){if(!game||screen!=='playing')return;paused=true;screen='paused';panel(`<div class="kicker">Adventure on hold</div><h2>Paused</h2><p>Snack time? Your forest friends will still be here.</p><div class="buttons">${button('resume','Resume','primary')}${button('restart','Restart level')}${button('home','Main menu')}</div>`);}
-  function win(wins){paused=true;screen='won';panel(`<div class="kicker">A forest full of friends</div><h1>YOU DID IT!</h1><h2>All three gems found. The gate is open!</h2><p>Your teamwork saved the day. Adventures completed: ${wins}. The animals are already getting up to more mischief.</p><div class="buttons">${button('restart','Play again','primary')}${button('home','Arcade menu')}</div>`);}
+  function journal(){
+    screen='journal';
+    const creatures=Object.entries(WW.catalog.forms).map(([kind,c])=>`<div class="journal-card"><img src="${WW.art.portrait(kind)}" alt=""><div><b>${c.name}</b><small>${c.power} · ${c.seconds}s per catch<br>Loves ${WW.catalog.foods[c.favorite].name}</small></div></div>`).join('');
+    const foods=Object.entries(WW.catalog.foods).map(([kind,c])=>`<span class="food-guide"><img src="${WW.art.foodIcon(kind)}" alt="">${c.name} <small>(${c.method})</small></span>`).join('');
+    panel(`<div class="kicker">Forest field guide</div><h2>Meet the magical neighbors</h2><p>Every catch gives the catching player more time in that form. Transform again to switch or return to explorer; unused time is always saved.</p>
+      <div class="journal-grid">${creatures}</div><h3>Picnic powers</h3><div class="guide-foods">${foods}</div><p>Favorite snacks calm creatures faster. Nectar mist reaches several nearby creatures; honeybombs charm groups in a splash.</p>
+      <div class="buttons">${button('home','Back to menu','primary')}</div>`);
+  }
+  function pause(){if(!game||screen!=='playing')return;paused=true;screen='paused';panel(`<div class="kicker">Adventure on hold</div><h2>Paused</h2><p>Snack time? Your forest friends will still be here.</p><div class="buttons">${button('resume','Resume','primary')}${button('camp','Return everyone to camp')}${button('restart','Restart level')}${button('home','Main menu')}</div>`);}
+  function win(wins,shards=0,total=0){paused=true;screen='won';panel(`<div class="kicker">A forest full of friends</div><h1>YOU DID IT!</h1><h2>You gathered all three gems. The enchanted gate is open!</h2><p>Your teamwork saved the day. Bonus star shards: ${shards}/${total}. Adventures completed: ${wins}. The animals are already getting up to more mischief.</p><div class="buttons">${button('restart','Play again','primary')}${button('home','Arcade menu')}</div>`);}
   menu.addEventListener('click',async e=>{
     const id=e.target.closest('button')?.dataset.action;
     if(!id)return;
     if(id==='play'||id==='restart')await play();
     if(id==='home')home();
     if(id==='settings')settings();
+    if(id==='journal')journal();
     if(id==='calibrate')calibration();
     if(id==='level')level();
+    if(id==='camp'&&screen==='paused'){game.recallParty();paused=false;screen='playing';menu.hidden=true;last=0;}
     if(id==='resume'&&screen==='paused'){paused=false;screen='playing';menu.hidden=true;WW.input.reset();last=0;}
-    if(id==='save-settings'){WW.storage.data.settings.players=Number(document.getElementById('players').value);WW.storage.data.settings.rumble=document.getElementById('rumble').checked;WW.storage.save();home();}
+    if(id==='save-settings'){WW.storage.data.settings.players=Number(document.getElementById('players').value);WW.storage.data.settings.rumble=document.getElementById('rumble').checked;WW.storage.data.settings.sound=document.getElementById('sound').checked;WW.storage.save();home();}
     if(id==='export')WW.storage.exportSave();
     if(id==='import')document.getElementById('save-file').click();
     if(id==='reset-level'){customMap=null;pixelsPerTile=1;home();}
@@ -84,9 +96,40 @@ WW.main = (() => {
       customMap=URL.createObjectURL(file);pixelsPerTile=size;await play();
     }
   });
-  addEventListener('keydown',e=>{if(e.code!=='Escape')return;if(screen==='playing'){e.preventDefault();pause();}else if(screen==='paused'){e.preventDefault();paused=false;screen='playing';menu.hidden=true;WW.input.reset();last=0;}});
+  addEventListener('keydown',e=>{
+    if(e.code==='Escape'){
+      if(screen==='playing'){e.preventDefault();pause();}
+      else if(screen==='paused'){e.preventDefault();paused=false;screen='playing';menu.hidden=true;WW.input.reset();last=0;}
+      else if(!['home','loading','won'].includes(screen)){e.preventDefault();home();}
+      return;
+    }
+    if(menu.hidden||!['ArrowDown','ArrowRight','ArrowUp','ArrowLeft','KeyW','KeyS'].includes(e.code))return;
+    if(e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+    const buttons=[...menu.querySelectorAll('button:not([disabled])')];
+    if(!buttons.length)return;
+    e.preventDefault();const index=buttons.indexOf(document.activeElement);
+    const forward=['ArrowDown','ArrowRight','KeyS'].includes(e.code);
+    buttons[(index+(forward?1:-1)+buttons.length)%buttons.length].focus();
+  });
+  function pollMenuGamepad(){
+    if(menu.hidden || screen==='calibration'){menuPadLatch='';return;}
+    const pad=WW.input.pads()[0];if(!pad){menuPadLatch='';return;}
+    const left=pad.buttons[14]?.pressed||pad.axes[0]<-.55;
+    const right=pad.buttons[15]?.pressed||pad.axes[0]>.55;
+    const up=pad.buttons[12]?.pressed||pad.axes[1]<-.55;
+    const down=pad.buttons[13]?.pressed||pad.axes[1]>.55;
+    const confirm=pad.buttons[0]?.pressed;
+    const value=confirm?'confirm':left||up?'previous':right||down?'next':'';
+    if(value&&value!==menuPadLatch){
+      const buttons=[...menu.querySelectorAll('button:not([disabled])')];
+      if(value==='confirm')document.activeElement?.click?.();
+      else if(buttons.length){const selected=buttons.indexOf(document.activeElement);
+        buttons[(selected+(value==='next'?1:-1)+buttons.length)%buttons.length].focus({preventScroll:true});}
+    }
+    menuPadLatch=value;
+  }
   function idle(now){
-    ctx.setTransform(2,0,0,2,0,0);
+    ctx.setTransform(3,0,0,3,0,0);
     const t=now*.001;const sky=ctx.createLinearGradient(0,0,0,270);sky.addColorStop(0,'#73b6cf');sky.addColorStop(1,'#dbedcf');ctx.fillStyle=sky;ctx.fillRect(0,0,480,270);
     for(let layer=0;layer<3;layer++){
       const h=135+layer*38;ctx.fillStyle=['#aacfc1','#77b0a9','#427e7a'][layer];ctx.beginPath();ctx.moveTo(0,270);
@@ -97,7 +140,8 @@ WW.main = (() => {
     for(let x=0;x<480;x+=16){ctx.fillStyle='#528b69';ctx.fillRect(x,243,16,3);ctx.fillStyle='#a0d181';ctx.fillRect(x+4,240,3,4);}
     WW.art.draw(ctx,'springaroo',85,244,Math.floor(t*3)%4);WW.art.draw(ctx,'skyling',375,183+Math.sin(t*2)*5,Math.floor(t*6)%4);WW.art.draw(ctx,'tideling',135,244,Math.floor(t*3)%4);WW.art.draw(ctx,'hero',235,242,Math.floor(t*2)%4);
   }
-  function frame(now){const dt=last?Math.min((now-last)/1000,.05):0;last=now;if(game){if(!paused)game.update(dt);game.render(ctx,now/1000);}else idle(now);requestAnimationFrame(frame);}
+  function frame(now){const dt=last?Math.min((now-last)/1000,.05):0;last=now;if(game){if(!paused)game.update(dt);game.render(ctx,now/1000);}else idle(now);
+    pollMenuGamepad();requestAnimationFrame(frame);}
   WW.storage.load();WW.input.syncAssignments();home();requestAnimationFrame(frame);
   return {home,pause,win,play,get game(){return game}};
 })();

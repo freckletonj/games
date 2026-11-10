@@ -2,11 +2,11 @@ window.WW = window.WW || {};
 WW.levels = (() => {
   const colors = {
     empty: '#ffffff', ground: '#101820', platform: '#5f5b85', water: '#176ad7', p1: '#00ed31', p2: '#91fe54', exit: '#ff152b',
-    springaroo: '#ffdc12', skyling: '#00eeef', tideling: '#ef851a', snack: '#ff64bb', skyKey: '#b052fc', diveKey: '#167b86', springKey: '#e83c86', checkpoint: '#aaaaaa'
+    springaroo: '#ffdc12', skyling: '#00eeef', tideling: '#ef851a', snack: '#ff64bb', skyKey: '#b052fc', diveKey: '#167b86', springKey: '#e83c86', checkpoint: '#aaaaaa',cloudwhisp:'#9480ed',prismtail:'#ff895d',mossback:'#6b9c42',glimmermoth:'#ce6dff',emberkit:'#fc5d3e',starShard:'#f2f28a'
   };
   const palette = Object.entries(colors).map(([name,hex])=>({ name, rgb: [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)) }));
   const kinds = new Set(['ground','platform','water']);
-  const markers = new Set(['p1','p2','exit','springaroo','skyling','tideling','snack','skyKey','diveKey','springKey','checkpoint']);
+  const markers = new Set(['p1','p2','exit','springaroo','skyling','tideling','cloudwhisp','prismtail','mossback','glimmermoth','emberkit','snack','skyKey','diveKey','springKey','starShard','checkpoint']);
   function classify(r,g,b,a=255) {
     if (a<80) return {kind:'empty',confidence:1};
     const distances=palette.map(({name,rgb})=>({name,d:Math.sqrt((r-rgb[0])**2+(g-rgb[1])**2+(b-rgb[2])**2)})).sort((a,b)=>a.d-b.d);

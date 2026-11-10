@@ -1,9 +1,9 @@
 window.WW = window.WW || {};
 WW.art = (() => {
-  // Native 32×40 illustrations, rather than 12×16 colored masks. The canvas
-  // itself renders at 2× logical resolution, keeping the edges crisp.
-  const kinds=['hero','springaroo','skyling','tideling','snack'];
-  const sw=32,sh=40,frames=4;
+  // 64×80 pixel-art sprite frames, with detailed magical silhouettes and micro-highlights.
+  // All frames and HUD portraits are drawn locally; no fetched textures.
+  const kinds=['hero','springaroo','skyling','tideling','cloudwhisp','prismtail','mossback','glimmermoth','emberkit','snack'];
+  const sw=64,sh=80,frames=4;
   const sheet=document.createElement('canvas');sheet.width=sw*frames*kinds.length;sheet.height=sh;
   const g=sheet.getContext('2d');g.imageSmoothingEnabled=false;
   function oval(x,y,rx,ry,color){g.fillStyle=color;g.beginPath();g.ellipse(x,y,rx,ry,0,0,Math.PI*2);g.fill();}
@@ -85,23 +85,101 @@ WW.art = (() => {
     shape([[15,17],[13,11],[19,15],[22,10],[22,19]],'#4f9b75');line([[16,18],[16,11]],'#356f5a');
     if(f%2)shine(24,16,1.3);
   }
+
+  // These five additional guardians use individual silhouettes and accent palettes,
+  // not recolored copies of the same animal.
+  function cloudwhisp(f) {
+    const bob=f%2?-2:0;
+    oval(6,27+bob,6,6,'#948dd6');oval(26,27+bob,6,6,'#948dd6');
+    oval(16,28+bob,12,10,'#c9b8fa');oval(16,31+bob,8,5,'#f7eaff');
+    shape([[8,22+bob],[2,16+bob],[8,10+bob],[12,16+bob]],'#9d9ce6');
+    shape([[24,22+bob],[30,16+bob],[24,10+bob],[20,16+bob]],'#9d9ce6');
+    oval(16,17+bob,12,9,'#efe0ff');
+    oval(11,17+bob,2,3,'#62558a');oval(21,17+bob,2,3,'#62558a');
+    oval(16,22+bob,2,1,'#ed9cc8');
+    shape([[12,8+bob],[15,1+bob],[17,8+bob],[21,3+bob],[21,13+bob]],'#d5f7ff');
+    shine(15,6+bob,2);line([[8,29+bob],[15,33+bob],[24,29+bob]],'#fffbeb',1);
+  }
+  function prismtail(f){
+    const wave=f%2?2:-2;
+    shape([[23,28],[29,24+wave],[31,18+wave],[27,18+wave],[25,24]],'#fa805d');
+    shape([[25,25],[30,19+wave],[29,27]],'#fff1a9');
+    feet('#ac637a',f%2);
+    oval(16,28,10,10,'#dc7ca1');oval(16,29,7,6,'#ffd1b0');
+    shape([[6,15],[3,3],[13,10]],'#b9628f');shape([[26,15],[29,3],[19,10]],'#b9628f');
+    shape([[7,13],[6,7],[12,12]],'#ffe6a2');shape([[25,13],[26,7],[20,12]],'#ffe6a2');
+    oval(16,19,12,10,'#ffb59b');eyes(10,19,12);
+    oval(16,25,2,2,'#764767');
+    shape([[16,4],[19,10],[26,11],[21,16],[22,23],[16,19],[10,23],[11,16],[6,11],[13,10]],'#ffe293');
+    shine(16,13,1.6);
+  }
+  function mossback(f){
+    feet('#678c5f',f%2);
+    oval(16,29,14,10,'#699a76');
+    oval(16,26,12,10,'#547b6c');
+    oval(16,24,10,9,'#91bc7a');
+    for(let x=7;x<=25;x+=6){shape([[x,20],[x-3,13-(x%3)],[x+4,18]],x%2?'#a8df8a':'#74c797');}
+    shape([[6,18],[2,7],[11,12]],'#759a6b');shape([[26,18],[30,7],[21,12]],'#759a6b');
+    oval(16,21,12,9,'#b4d991');oval(16,24,7,4,'#e6f0b1');
+    eyes(11,21,10,'#354c59');oval(16,26,2,1.5,'#6a7850');
+    for(let x=7;x<28;x+=7){oval(x,29+(x%3),2,2,'#f0dc8c');}
+    shine(11,10,1.5);
+  }
+  function glimmermoth(f){
+    const flap=f%2?3:-1;
+    shape([[16,20],[2,5+flap],[1,25],[13,30]],'#f3adf5');
+    shape([[16,20],[30,5+flap],[31,25],[19,30]],'#e4adff');
+    shape([[13,25],[3,27],[5,35],[15,33]],'#a7e4f1');
+    shape([[19,25],[29,27],[27,35],[17,33]],'#a7e4f1');
+    oval(16,26,6,9,'#7663b2');oval(16,28,3,5,'#fce3b1');
+    oval(16,17,8,8,'#b385db');eyes(12,18,8,'#fff2ee');
+    line([[13,12],[8,4]],'#9cebe9',1.5);line([[19,12],[24,4]],'#9cebe9',1.5);
+    shine(7,6,2);shine(25,6,2);
+    oval(6,17+flap,3,3,'#ffedba');oval(26,17+flap,3,3,'#ffedba');
+  }
+  function emberkit(f){
+    const flame=f%2?2:0;
+    shape([[21,31],[29,30],[31,17+flame],[26,22],[29,14+flame],[22,19]],'#ff9856');
+    shape([[24,30],[30,23],[27,26]],'#fff0a3');
+    feet('#a44f73',f%2);
+    oval(16,27,11,10,'#f48777');oval(16,30,7,5,'#ffe4b1');
+    shape([[7,16],[4,3],[13,10]],'#a6537c');shape([[25,16],[28,3],[19,10]],'#a6537c');
+    shape([[7,13],[6,7],[12,13]],'#ffcb84');shape([[25,13],[26,7],[20,13]],'#ffcb84');
+    oval(16,19,11,9,'#ffac85');eyes(11,19,10);oval(16,24,2,2,'#704460');
+    shape([[11,9],[13,1+flame],[16,7],[19,0],[22,11],[17,14]],'#ffd173');
+    shape([[14,9],[16,4+flame],[19,10]],'#fff9bd');shine(16,9,1.3);
+  }
   kinds.forEach((name,index)=>{
     for(let f=0;f<frames;f++){
-      g.save();g.translate(index*sw*frames+f*sw,0);
+      g.save();g.translate(index*sw*frames+f*sw,0);g.scale(2,2);
       // soft pixel-glow behind magical creatures; no network assets.
       if(name!=='hero'&&name!=='snack'){
         oval(16,27,14,12,'#376b7d22');shine(2+f*2,11+f,1.1);
       }
-      ({hero,springaroo,skyling,tideling,snack})[name](f);
+      ({hero,springaroo,skyling,tideling,cloudwhisp,prismtail,mossback,glimmermoth,emberkit,snack})[name](f);
       g.restore();
     }
   });
+  // A sparse high-resolution dither pass adds fur and wing texture to every 64×80
+  // sprite. It is applied once at asset creation, not every animation frame.
+  const pixels=g.getImageData(0,0,sheet.width,sheet.height);
+  for(let y=0;y<sheet.height;y++)for(let x=0;x<sheet.width;x++){
+    const i=(y*sheet.width+x)*4;
+    if(pixels.data[i+3]<200)continue;
+    const grain=((x*31+y*17)^(x*y*7))%43;
+    if(grain===0||grain===5){
+      const amount=grain===0?24:-13;
+      for(let c=0;c<3;c++)pixels.data[i+c]=Math.max(0,Math.min(255,pixels.data[i+c]+amount));
+    }
+  }
+  g.putImageData(pixels,0,0);
   function draw(ctx,name,x,y,frame=0,flip=false,playerId=null) {
     const index=Math.max(0,kinds.indexOf(name));
     ctx.save();ctx.translate(Math.round(x),Math.round(y));
     if(flip)ctx.scale(-1,1);
     ctx.imageSmoothingEnabled=false;
-    ctx.drawImage(sheet,index*sw*frames+(Math.floor(frame)%frames)*sw,0,sw,sh,-14,-32,28,34);
+    const snack=name==='snack';
+    ctx.drawImage(sheet,index*sw*frames+(Math.floor(frame)%frames)*sw,0,sw,sh,snack?-13:-18,snack?-25:-40,snack?26:36,snack?28:43);
     // A distinct scarf/crest for each child, even when they wear animal forms.
     if(playerId!==null){
       ctx.fillStyle=playerId===0?'#ffd57f':'#b4a0ff';ctx.fillRect(-5,-8,10,2);
@@ -109,5 +187,28 @@ WW.art = (() => {
     }
     ctx.restore();
   }
-  return {draw};
+
+  const portraits = Object.fromEntries(kinds.map(name=>{
+    const canvas=document.createElement('canvas');canvas.width=56;canvas.height=56;
+    const context=canvas.getContext('2d');context.imageSmoothingEnabled=false;
+    context.fillStyle='#203c55';context.fillRect(0,0,56,56);
+    const i=kinds.indexOf(name);
+    context.drawImage(sheet,i*sw*frames,0,sw,sh,2,0,52,56);
+    return [name,canvas.toDataURL()];
+  }));
+  const foodColors={berry:['#ff91c2','#bc427d'],star:['#fff5b5','#d3a755'],nectar:['#a2fff0','#5ba9cd'],honey:['#ffd187','#d17f55'],marshmallow:['#ecdaff','#a197de']};
+  const foodIcons=Object.fromEntries(Object.entries(foodColors).map(([name,[light,dark]])=>{
+    const canvas=document.createElement('canvas');canvas.width=36;canvas.height=36;
+    const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;
+    c.fillStyle='#294563';c.fillRect(0,0,36,36);
+    c.fillStyle=dark;c.fillRect(7,13,22,18);c.fillStyle=light;c.fillRect(9,11,18,17);
+    c.fillStyle='#fffce2';c.fillRect(12,15,5,4);c.fillRect(21,21,3,3);
+    if(name==='star'){c.fillStyle='#fff9dc';c.beginPath();for(let j=0;j<10;j++){const a=j*Math.PI/5-Math.PI/2,r=j%2?8:15;c.lineTo(18+Math.cos(a)*r,18+Math.sin(a)*r);}c.closePath();c.fill();}
+    if(name==='nectar'){c.fillStyle='#96e7f5';c.fillRect(14,5,8,8);c.fillStyle='#e6fff2';c.fillRect(15,7,5,3);}
+    if(name==='honey'){c.fillStyle='#9e6b50';c.fillRect(12,7,12,5);}
+    if(name==='berry'){c.fillStyle='#7fd68e';c.fillRect(17,7,5,8);}
+    if(name==='marshmallow'){c.fillStyle='#fff7ff';c.fillRect(11,12,13,11);}
+    return [name,canvas.toDataURL()];
+  }));
+  return {draw,portrait:name=>portraits[name]||portraits.hero,foodIcon:name=>foodIcons[name]||foodIcons.berry};
 })();

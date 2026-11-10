@@ -8,21 +8,55 @@
   <style>:root {font-family: ui-rounded, 'Trebuchet MS', system-ui, sans-serif; color:#fff9e6; background:#101d2b; font-synthesis:none;} *{box-sizing:border-box} body{margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(ellipse at 50% 10%,#2d505c,#111c2a 65%); overflow:hidden} button,input{font:inherit} button{border:0;cursor:pointer} #app{position:relative; width:min(100vw, 177.777vh); aspect-ratio:16/9; max-height:100vh; overflow:hidden; background:#75beda; box-shadow:0 22px 90px #08131ce0; image-rendering:pixelated} #game{display:block; width:100%; height:100%;image-rendering:pixelated} .menu{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#071a31a6;backdrop-filter:blur(3px);padding:12px;overflow:auto} .menu[hidden],#hud[hidden]{display:none} .panel{max-width:min(680px,94%);max-height:100%;overflow:auto;background:linear-gradient(140deg,#253c51f0,#182d42f4);padding:clamp(16px,3.8vw,37px);border:3px solid #91d7c7;box-shadow:0 12px 0 #0c1c29,0 24px 60px #071322a0;border-radius:16px;text-align:center} .kicker{font-size:clamp(9px,1.2vw,14px);letter-spacing:.34em;color:#9ff3cc;font-weight:900;text-transform:uppercase;margin-bottom:8px} h1{font-size:clamp(27px,5vw,66px);line-height:1;margin:0 0 6px;text-shadow:4px 5px 0 #123b46;color:#ffdb78;letter-spacing:-.045em} h2{font-size:clamp(19px,2.7vw,32px);margin:0 0 12px;color:#ffdd8c} p{font-size:clamp(11px,1.35vw,16px);line-height:1.5;color:#d3eaf3;margin:10px 0 18px}.buttons{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px} .primary,.secondary{padding:10px 17px;border-radius:8px;transition:transform .12s; font-weight:900; font-size:clamp(12px,1.5vw,17px)}.primary{background:#ffce6a;color:#24334c;box-shadow:0 5px 0 #ac712f}.secondary{background:#3e6070;color:white;box-shadow:0 4px 0 #1a3946}.primary:hover,.secondary:hover{transform:translateY(-2px)} .primary:active,.secondary:active{transform:translateY(3px);box-shadow:none}.instructions{font-size:clamp(9px,1.15vw,13px);color:#b3d5e2;line-height:1.8; margin-top:20px}.instructions b{color:#f5d88a}.chips{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;margin:12px 0}.chip{border:1px solid #82c4b6;color:#c3f3de;border-radius:20px;padding:5px 11px;font-size:12px} label{color:#e3f0ec;font-size:14px} select,input[type=number]{background:#142b3c;color:white;border:1px solid #75a6a0;padding:8px;border-radius:6px}input[type=file]{max-width:210px;font-size:11px}#hud{position:absolute;left:0;right:0;top:0;pointer-events:none;display:flex;align-items:flex-start;justify-content:space-between;padding:11px 17px;font-size:clamp(9px,1.2vw,14px);text-shadow:1px 2px #173544}.hud-player{background:#163747bb;border:1px solid #b1dcc282;border-radius:8px;padding:6px 9px}.hud-center{background:#163747bd;border-radius:8px;padding:7px 12px;text-align:center;color:#fff3b0}.tiny{font-size:.75em;color:#bce4e2}.heart{color:#ff878d;font-size:1.2em}.heart-off{color:#476a78;font-size:1.2em}#message{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);text-align:center;max-width:90%;font-size:clamp(10px,1.8vw,20px);font-weight:900;color:#ffedbd;text-shadow:2px 3px #234556;pointer-events:none;opacity:0;transition:opacity .15s}#message.show{opacity:1}.hint{color:#acd9cf;font-size:12px;line-height:1.5}.row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}.toggle{display:flex;gap:7px;justify-content:center;align-items:center;padding:8px}.warning{color:#ffcb8e}
 
 .player-info{padding:4px 8px;margin:3px 0 6px;border-radius:3px;background:#0f334e9c;text-align:left;min-width:155px}.hud-center{line-height:1.45}.hud-player{max-width:45%} .panel button:focus-visible{outline:3px solid #fff1a0;outline-offset:3px}
+/* v3: roomy, readable couch-co-op UI and illustrated inventory portraits */
+#app{background:#7967bc}
+.panel{max-width:min(850px,96%);border:3px solid #cdb9ff;border-radius:20px;background:linear-gradient(140deg,#483a74f2,#203d65f5 70%,#174a58f5);box-shadow:0 12px 0 #12243a,0 30px 75px #0b1537d9}
+h1{color:#ffe89c;text-shadow:3px 4px 0 #8d4386,7px 8px 0 #243b6b}
+h2{color:#ffdfb4}
+.menu-portraits{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0 13px}
+.menu-creature{width:55px;height:55px;padding:3px;background:#284663;border:2px solid #b0eadf;border-radius:11px;box-shadow:0 4px 0 #1b2d50;transition:transform .15s}
+.menu-creature:nth-child(odd){border-color:#e1b2f7}.menu-creature:hover{transform:translateY(-5px)}
+.menu-creature img{width:100%;height:100%;image-rendering:pixelated;border-radius:5px}
+#hud{gap:10px;padding:9px 12px;align-items:flex-start;text-shadow:1px 2px 2px #203b53}
+.hud-player{padding:3px;background:#101e40da;border:2px solid #a1dbd5aa;border-radius:11px;max-width:min(58%,550px);box-shadow:0 4px 10px #0c213080}
+.player-info{padding:6px 8px;margin:3px;border:2px solid #ffe49e;border-radius:8px;background:#172c52e3;min-width:230px}
+.player-info+.player-info{margin-top:5px}.player-top{display:flex;justify-content:space-between;align-items:center;font-size:clamp(10px,1.4vw,16px);color:#fff0c5}
+.player-top span{color:#ff90a3;font-size:1.25em}
+.form-row{display:flex;align-items:center;flex-wrap:wrap;gap:3px;margin:5px 0 4px}
+.form-chip{display:flex;flex-direction:column;align-items:center;padding:2px;border:1px solid #455d83;background:#162846a6;border-radius:5px;filter:saturate(.65);opacity:.7}
+.form-chip img{width:25px;height:25px;object-fit:cover;image-rendering:pixelated}.form-chip small{font-size:8px;line-height:1.2;color:#e7dcff}
+.form-chip.unlocked{filter:none;opacity:1;background:#356574}.form-chip.selected{border:2px solid #ffe88a;padding:1px;box-shadow:0 0 7px #ffe9ab80;opacity:1}
+.form-chip.active{background:#6659a5;box-shadow:0 0 9px #edb6ffbb}
+.hud-caption{font-size:10px;color:#ffe5b0;font-weight:bold;white-space:nowrap}
+.food-caption{display:flex;align-items:center;gap:6px;font-size:10px;color:#b8f6df;margin-top:4px;font-weight:bold}
+.food-caption img{width:24px;height:24px;image-rendering:pixelated;border:1px solid #91e7ce;border-radius:5px}
+.food-caption span{color:#b6b0ee;margin-left:auto}
+.hud-center{background:#17234edb;border:2px solid #dec1ff9c;border-radius:10px;padding:8px 10px;max-width:50%;box-shadow:0 4px 10px #0b203266}
+.quest-title{font-size:clamp(9px,1.3vw,15px);letter-spacing:.13em;font-weight:900;color:#ffefa7}
+.gems{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:5px 0;color:#9ea6c8;font-weight:bold;font-size:clamp(9px,1.25vw,15px)}
+.gems span{padding:3px 6px;background:#28375b;border-radius:5px;border:1px solid #556588}.gems .done{background:#337c84;color:#fff0b8;border-color:#aaecc9}
+.journal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;text-align:left;margin:14px 0}
+.journal-card{display:flex;gap:10px;align-items:center;background:#213857d7;border:1px solid #a7cadd8a;padding:7px;border-radius:9px}
+.journal-card img{width:53px;height:53px;image-rendering:pixelated;border-radius:5px}
+.journal-card b{display:block;color:#fff0b0}.journal-card small{display:block;color:#c7dfee;font-size:11px;line-height:1.4}
+.guide-foods{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}.food-guide{display:inline-flex;align-items:center;gap:6px;background:#344d75;padding:5px 7px;border-radius:7px;font-size:12px}
+.food-guide img{width:25px;height:25px;image-rendering:pixelated}.food-guide small{color:#c2bbdc}
+@media(max-width:760px){.panel{padding:12px}.menu-creature{width:39px;height:39px}.hud-player{max-width:63%}.hud-center{max-width:39%}.player-info{min-width:0}.form-chip img{width:18px;height:18px}.form-chip small{font-size:7px}.food-caption{font-size:8px}.hud-caption{font-size:8px}.journal-grid{grid-template-columns:1fr}.journal-card img{width:40px;height:40px}}
 </style>
 </head>
 <body>
   <main id="app">
-    <canvas id="game" width="960" height="540" aria-label="Wonderwood game world"></canvas>
+    <canvas id="game" width="1440" height="810" aria-label="Wonderwood game world"></canvas>
     <div id="hud" hidden></div>
     <div id="message" aria-live="polite"></div>
     <div id="menu" class="menu"></div>
   </main>
-  <script>window.WONDERWOOD_MAP = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAAZCAIAAAB1rn16AAABCUlEQVR4nGP8//8/wyigPWAaaAeMFDAa0HQCowFNJzAa0HQCowFNJzAa0HQC1Anol7btJKnfGPyXKvYOIcBIz3Z0QkwbpuCCJVV0c8AAAroG9EgGo2U0ncBoQNMJsNDIXMzieISUxbgANcro1D0Ms12o4ZjBAWjjHYoCeji1Imjtl9FWB50A4TJ62CRbCj1CofbRFE0ngGjeMb4zYmBgmPQ/FMq/K8yQuodMU2EaGd9/wKXkQ5s0XNnq1avJtAgvQBhLtkeIAXgMF9OBMxkFJBRo6AhSAHvQdmoZ9XOdJ7WMohYY7bDQCYwGNJ3A0Avo/4LrB9oJ5IChF9CM7wMH2gnkgEFUGQ5vAABZB0moOSmWnQAAAABJRU5ErkJggg==";</script>
+  <script>window.WONDERWOOD_MAP = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAAZCAIAAAB1rn16AAABRUlEQVR4nGP8//8/wyigPWAaaAeMFDAa0HQCowFNJzAa0HQCowFNJzAa0HQC1Anol7btJKnfGPyXKvYOIcBIz3Z0QkwbpuCCJVV0c8AAAroG9EgGo2U0nQDNA3pq4zs4+/PnblpbN2gBrYoOzOJ4hJTFOMF/ykHKbmTep09dVDBzAAGqd6gFKErRw6kVQXO/kBc/Qz7ZEgGgfuyMpYpphFP0sEm2FHqE0nDAF5lDARDpVJr6iBjDEQHN8Nbw////E/+FQPl3hLBUCym7////P6XhLQFT4Rox8x1M6n2r1P+U3dlznP7//79q1SqCDiUZpOxGGIvkkXO52NxJHPgTa4fVIpwaRLXhTEYBCQViEz+NAXvQdmoZ9XOdJ7WMohYY7RnSCYwGNJ3A0Avo/4LrB9oJ5IChF9CM7wMH2gnkgEFUGQ5vAABsqrK0jNz+ZQAAAABJRU5ErkJggg==";</script>
   <script>
 window.WW = window.WW || {};
 WW.storage = (() => {
   const KEY = 'wonderwood-save-v1';
-  const initial = () => ({ settings: { rumble: true, players: 2 }, profiles: {}, progress: { wins: 0 } });
+  const initial = () => ({ settings: { rumble: true, sound: true, players: 2 }, profiles: {}, progress: { wins: 0 } });
   let data = initial();
   function load() {
     const stored = localStorage.getItem(KEY);
@@ -51,11 +85,11 @@ WW.storage = (() => {
 <script>
 window.WW = window.WW || {};
 WW.input = (() => {
-  const actions = ['left','right','down','jump','snack','orb','cycle','transform','revive'];
-  const defaults = { left:[{type:'axis',index:0,sign:-1},{type:'button',index:14}],right:[{type:'axis',index:0,sign:1},{type:'button',index:15}],down:[{type:'axis',index:1,sign:1},{type:'button',index:13}],jump:[{type:'button',index:0}],snack:[{type:'button',index:1}],orb:[{type:'button',index:2}],cycle:[{type:'button',index:5}],transform:[{type:'button',index:3}],revive:[{type:'button',index:4}] };
-  const keyMaps = [ { left:['KeyA','ArrowLeft'],right:['KeyD','ArrowRight'],down:['KeyS','ArrowDown'],jump:['KeyW','Space','ArrowUp'],snack:['KeyF'],orb:['KeyG'],cycle:['KeyQ'],transform:['KeyT'],revive:['KeyR'] }, { left:['KeyJ'],right:['KeyL'],down:['KeyK'],jump:['KeyI'],snack:['KeyO'],orb:['KeyP'],cycle:['KeyH'],transform:['KeyU'],revive:['KeyY'] } ];
+  const actions = ['left','right','down','jump','snack','orb','cycle','transform','revive','foodCycle','recall'];
+  const defaults = { left:[{type:'axis',index:0,sign:-1},{type:'button',index:14}],right:[{type:'axis',index:0,sign:1},{type:'button',index:15}],down:[{type:'axis',index:1,sign:1},{type:'button',index:13}],jump:[{type:'button',index:0}],snack:[{type:'button',index:1}],orb:[{type:'button',index:2}],cycle:[{type:'button',index:5}],transform:[{type:'button',index:3}],revive:[{type:'button',index:4}],foodCycle:[{type:'button',index:7}],recall:[{type:'button',index:8}] };
+  const keyMaps = [ { left:['KeyA','ArrowLeft'],right:['KeyD','ArrowRight'],down:['KeyS','ArrowDown'],jump:['KeyW','Space','ArrowUp'],snack:['KeyF'],orb:['KeyG'],cycle:['KeyQ'],transform:['KeyT'],revive:['KeyR'],foodCycle:['KeyE'],recall:['KeyC'] }, { left:['KeyJ'],right:['KeyL'],down:['KeyK'],jump:['KeyI'],snack:['KeyO'],orb:['KeyP'],cycle:['KeyH'],transform:['KeyU'],revive:['KeyY'],foodCycle:['KeyM'],recall:['KeyN'] } ];
   const keys = new Set(); const prev = [new Set(), new Set()]; const assigned = new Map();
-  addEventListener('keydown', e => {if (/^(Arrow|Space)/.test(e.code)) e.preventDefault(); keys.add(e.code);});
+  addEventListener('keydown', e => {if (/^(Arrow|Space)/.test(e.code) && document.getElementById('menu')?.hidden) e.preventDefault(); keys.add(e.code);});
   addEventListener('keyup', e => keys.delete(e.code));
   addEventListener('blur', () => keys.clear());
   function pads() { return navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : []; }
@@ -100,7 +134,7 @@ WW.input = (() => {
       const p=pads().find(p=>p.index===index); if(!p)return;
       const neutral = p.buttons.every(b=>b.value<.2) && p.axes.every((a,i)=>Math.abs(a-(base.axes[i]||0)) < .25);
       if(!armed && neutral) armed=true;
-      if(armed){const b=changed(p,base); if(b){result[actions[step]]=[b]; step++; armed=false; onStep(step,actions); if(step===actions.length){WW.storage.data.profiles[p.id]=result; WW.storage.save();onComplete();return;}}}
+      if(armed){const b=changed(p,base); if(b){result[actions[step]]=[b]; step++; armed=false; if(step<actions.length)onStep(step,actions); if(step===actions.length){WW.storage.data.profiles[p.id]=result; WW.storage.save();onComplete();return;}}}
       frame=requestAnimationFrame(tick);
     }
     onStep(0,actions);frame=requestAnimationFrame(tick);
@@ -117,11 +151,11 @@ window.WW = window.WW || {};
 WW.levels = (() => {
   const colors = {
     empty: '#ffffff', ground: '#101820', platform: '#5f5b85', water: '#176ad7', p1: '#00ed31', p2: '#91fe54', exit: '#ff152b',
-    springaroo: '#ffdc12', skyling: '#00eeef', tideling: '#ef851a', snack: '#ff64bb', skyKey: '#b052fc', diveKey: '#167b86', springKey: '#e83c86', checkpoint: '#aaaaaa'
+    springaroo: '#ffdc12', skyling: '#00eeef', tideling: '#ef851a', snack: '#ff64bb', skyKey: '#b052fc', diveKey: '#167b86', springKey: '#e83c86', checkpoint: '#aaaaaa',cloudwhisp:'#9480ed',prismtail:'#ff895d',mossback:'#6b9c42',glimmermoth:'#ce6dff',emberkit:'#fc5d3e',starShard:'#f2f28a'
   };
   const palette = Object.entries(colors).map(([name,hex])=>({ name, rgb: [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)) }));
   const kinds = new Set(['ground','platform','water']);
-  const markers = new Set(['p1','p2','exit','springaroo','skyling','tideling','snack','skyKey','diveKey','springKey','checkpoint']);
+  const markers = new Set(['p1','p2','exit','springaroo','skyling','tideling','cloudwhisp','prismtail','mossback','glimmermoth','emberkit','snack','skyKey','diveKey','springKey','starShard','checkpoint']);
   function classify(r,g,b,a=255) {
     if (a<80) return {kind:'empty',confidence:1};
     const distances=palette.map(({name,rgb})=>({name,d:Math.sqrt((r-rgb[0])**2+(g-rgb[1])**2+(b-rgb[2])**2)})).sort((a,b)=>a.d-b.d);
@@ -177,10 +211,10 @@ WW.levels = (() => {
 <script>
 window.WW = window.WW || {};
 WW.art = (() => {
-  // Native 32×40 illustrations, rather than 12×16 colored masks. The canvas
-  // itself renders at 2× logical resolution, keeping the edges crisp.
-  const kinds=['hero','springaroo','skyling','tideling','snack'];
-  const sw=32,sh=40,frames=4;
+  // 64×80 pixel-art sprite frames, with detailed magical silhouettes and micro-highlights.
+  // All frames and HUD portraits are drawn locally; no fetched textures.
+  const kinds=['hero','springaroo','skyling','tideling','cloudwhisp','prismtail','mossback','glimmermoth','emberkit','snack'];
+  const sw=64,sh=80,frames=4;
   const sheet=document.createElement('canvas');sheet.width=sw*frames*kinds.length;sheet.height=sh;
   const g=sheet.getContext('2d');g.imageSmoothingEnabled=false;
   function oval(x,y,rx,ry,color){g.fillStyle=color;g.beginPath();g.ellipse(x,y,rx,ry,0,0,Math.PI*2);g.fill();}
@@ -262,23 +296,101 @@ WW.art = (() => {
     shape([[15,17],[13,11],[19,15],[22,10],[22,19]],'#4f9b75');line([[16,18],[16,11]],'#356f5a');
     if(f%2)shine(24,16,1.3);
   }
+
+  // These five additional guardians use individual silhouettes and accent palettes,
+  // not recolored copies of the same animal.
+  function cloudwhisp(f) {
+    const bob=f%2?-2:0;
+    oval(6,27+bob,6,6,'#948dd6');oval(26,27+bob,6,6,'#948dd6');
+    oval(16,28+bob,12,10,'#c9b8fa');oval(16,31+bob,8,5,'#f7eaff');
+    shape([[8,22+bob],[2,16+bob],[8,10+bob],[12,16+bob]],'#9d9ce6');
+    shape([[24,22+bob],[30,16+bob],[24,10+bob],[20,16+bob]],'#9d9ce6');
+    oval(16,17+bob,12,9,'#efe0ff');
+    oval(11,17+bob,2,3,'#62558a');oval(21,17+bob,2,3,'#62558a');
+    oval(16,22+bob,2,1,'#ed9cc8');
+    shape([[12,8+bob],[15,1+bob],[17,8+bob],[21,3+bob],[21,13+bob]],'#d5f7ff');
+    shine(15,6+bob,2);line([[8,29+bob],[15,33+bob],[24,29+bob]],'#fffbeb',1);
+  }
+  function prismtail(f){
+    const wave=f%2?2:-2;
+    shape([[23,28],[29,24+wave],[31,18+wave],[27,18+wave],[25,24]],'#fa805d');
+    shape([[25,25],[30,19+wave],[29,27]],'#fff1a9');
+    feet('#ac637a',f%2);
+    oval(16,28,10,10,'#dc7ca1');oval(16,29,7,6,'#ffd1b0');
+    shape([[6,15],[3,3],[13,10]],'#b9628f');shape([[26,15],[29,3],[19,10]],'#b9628f');
+    shape([[7,13],[6,7],[12,12]],'#ffe6a2');shape([[25,13],[26,7],[20,12]],'#ffe6a2');
+    oval(16,19,12,10,'#ffb59b');eyes(10,19,12);
+    oval(16,25,2,2,'#764767');
+    shape([[16,4],[19,10],[26,11],[21,16],[22,23],[16,19],[10,23],[11,16],[6,11],[13,10]],'#ffe293');
+    shine(16,13,1.6);
+  }
+  function mossback(f){
+    feet('#678c5f',f%2);
+    oval(16,29,14,10,'#699a76');
+    oval(16,26,12,10,'#547b6c');
+    oval(16,24,10,9,'#91bc7a');
+    for(let x=7;x<=25;x+=6){shape([[x,20],[x-3,13-(x%3)],[x+4,18]],x%2?'#a8df8a':'#74c797');}
+    shape([[6,18],[2,7],[11,12]],'#759a6b');shape([[26,18],[30,7],[21,12]],'#759a6b');
+    oval(16,21,12,9,'#b4d991');oval(16,24,7,4,'#e6f0b1');
+    eyes(11,21,10,'#354c59');oval(16,26,2,1.5,'#6a7850');
+    for(let x=7;x<28;x+=7){oval(x,29+(x%3),2,2,'#f0dc8c');}
+    shine(11,10,1.5);
+  }
+  function glimmermoth(f){
+    const flap=f%2?3:-1;
+    shape([[16,20],[2,5+flap],[1,25],[13,30]],'#f3adf5');
+    shape([[16,20],[30,5+flap],[31,25],[19,30]],'#e4adff');
+    shape([[13,25],[3,27],[5,35],[15,33]],'#a7e4f1');
+    shape([[19,25],[29,27],[27,35],[17,33]],'#a7e4f1');
+    oval(16,26,6,9,'#7663b2');oval(16,28,3,5,'#fce3b1');
+    oval(16,17,8,8,'#b385db');eyes(12,18,8,'#fff2ee');
+    line([[13,12],[8,4]],'#9cebe9',1.5);line([[19,12],[24,4]],'#9cebe9',1.5);
+    shine(7,6,2);shine(25,6,2);
+    oval(6,17+flap,3,3,'#ffedba');oval(26,17+flap,3,3,'#ffedba');
+  }
+  function emberkit(f){
+    const flame=f%2?2:0;
+    shape([[21,31],[29,30],[31,17+flame],[26,22],[29,14+flame],[22,19]],'#ff9856');
+    shape([[24,30],[30,23],[27,26]],'#fff0a3');
+    feet('#a44f73',f%2);
+    oval(16,27,11,10,'#f48777');oval(16,30,7,5,'#ffe4b1');
+    shape([[7,16],[4,3],[13,10]],'#a6537c');shape([[25,16],[28,3],[19,10]],'#a6537c');
+    shape([[7,13],[6,7],[12,13]],'#ffcb84');shape([[25,13],[26,7],[20,13]],'#ffcb84');
+    oval(16,19,11,9,'#ffac85');eyes(11,19,10);oval(16,24,2,2,'#704460');
+    shape([[11,9],[13,1+flame],[16,7],[19,0],[22,11],[17,14]],'#ffd173');
+    shape([[14,9],[16,4+flame],[19,10]],'#fff9bd');shine(16,9,1.3);
+  }
   kinds.forEach((name,index)=>{
     for(let f=0;f<frames;f++){
-      g.save();g.translate(index*sw*frames+f*sw,0);
+      g.save();g.translate(index*sw*frames+f*sw,0);g.scale(2,2);
       // soft pixel-glow behind magical creatures; no network assets.
       if(name!=='hero'&&name!=='snack'){
         oval(16,27,14,12,'#376b7d22');shine(2+f*2,11+f,1.1);
       }
-      ({hero,springaroo,skyling,tideling,snack})[name](f);
+      ({hero,springaroo,skyling,tideling,cloudwhisp,prismtail,mossback,glimmermoth,emberkit,snack})[name](f);
       g.restore();
     }
   });
+  // A sparse high-resolution dither pass adds fur and wing texture to every 64×80
+  // sprite. It is applied once at asset creation, not every animation frame.
+  const pixels=g.getImageData(0,0,sheet.width,sheet.height);
+  for(let y=0;y<sheet.height;y++)for(let x=0;x<sheet.width;x++){
+    const i=(y*sheet.width+x)*4;
+    if(pixels.data[i+3]<200)continue;
+    const grain=((x*31+y*17)^(x*y*7))%43;
+    if(grain===0||grain===5){
+      const amount=grain===0?24:-13;
+      for(let c=0;c<3;c++)pixels.data[i+c]=Math.max(0,Math.min(255,pixels.data[i+c]+amount));
+    }
+  }
+  g.putImageData(pixels,0,0);
   function draw(ctx,name,x,y,frame=0,flip=false,playerId=null) {
     const index=Math.max(0,kinds.indexOf(name));
     ctx.save();ctx.translate(Math.round(x),Math.round(y));
     if(flip)ctx.scale(-1,1);
     ctx.imageSmoothingEnabled=false;
-    ctx.drawImage(sheet,index*sw*frames+(Math.floor(frame)%frames)*sw,0,sw,sh,-14,-32,28,34);
+    const snack=name==='snack';
+    ctx.drawImage(sheet,index*sw*frames+(Math.floor(frame)%frames)*sw,0,sw,sh,snack?-13:-18,snack?-25:-40,snack?26:36,snack?28:43);
     // A distinct scarf/crest for each child, even when they wear animal forms.
     if(playerId!==null){
       ctx.fillStyle=playerId===0?'#ffd57f':'#b4a0ff';ctx.fillRect(-5,-8,10,2);
@@ -286,19 +398,102 @@ WW.art = (() => {
     }
     ctx.restore();
   }
-  return {draw};
+
+  const portraits = Object.fromEntries(kinds.map(name=>{
+    const canvas=document.createElement('canvas');canvas.width=56;canvas.height=56;
+    const context=canvas.getContext('2d');context.imageSmoothingEnabled=false;
+    context.fillStyle='#203c55';context.fillRect(0,0,56,56);
+    const i=kinds.indexOf(name);
+    context.drawImage(sheet,i*sw*frames,0,sw,sh,2,0,52,56);
+    return [name,canvas.toDataURL()];
+  }));
+  const foodColors={berry:['#ff91c2','#bc427d'],star:['#fff5b5','#d3a755'],nectar:['#a2fff0','#5ba9cd'],honey:['#ffd187','#d17f55'],marshmallow:['#ecdaff','#a197de']};
+  const foodIcons=Object.fromEntries(Object.entries(foodColors).map(([name,[light,dark]])=>{
+    const canvas=document.createElement('canvas');canvas.width=36;canvas.height=36;
+    const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;
+    c.fillStyle='#294563';c.fillRect(0,0,36,36);
+    c.fillStyle=dark;c.fillRect(7,13,22,18);c.fillStyle=light;c.fillRect(9,11,18,17);
+    c.fillStyle='#fffce2';c.fillRect(12,15,5,4);c.fillRect(21,21,3,3);
+    if(name==='star'){c.fillStyle='#fff9dc';c.beginPath();for(let j=0;j<10;j++){const a=j*Math.PI/5-Math.PI/2,r=j%2?8:15;c.lineTo(18+Math.cos(a)*r,18+Math.sin(a)*r);}c.closePath();c.fill();}
+    if(name==='nectar'){c.fillStyle='#96e7f5';c.fillRect(14,5,8,8);c.fillStyle='#e6fff2';c.fillRect(15,7,5,3);}
+    if(name==='honey'){c.fillStyle='#9e6b50';c.fillRect(12,7,12,5);}
+    if(name==='berry'){c.fillStyle='#7fd68e';c.fillRect(17,7,5,8);}
+    if(name==='marshmallow'){c.fillStyle='#fff7ff';c.fillRect(11,12,13,11);}
+    return [name,canvas.toDataURL()];
+  }));
+  return {draw,portrait:name=>portraits[name]||portraits.hero,foodIcon:name=>foodIcons[name]||foodIcons.berry};
 })();
+
+</script>
+<script>
+window.WW = window.WW || {};
+WW.audio = (() => {
+  let context;
+  const tunes = {
+    jump:[[420,550,.09,'triangle']], double:[[490,740,.17,'triangle']],
+    food:[[500,400,.13,'sine']], orb:[[680,400,.19,'sine']],
+    catch:[[480,660,.13,'triangle'],[640,880,.22,'sine'],[920,1160,.29,'sine']],
+    miss:[[280,190,.20,'triangle']], gem:[[610,820,.20,'triangle'],[800,1050,.30,'sine'],[1100,1360,.34,'sine']],
+    hit:[[240,105,.22,'sawtooth']], sleep:[[350,190,.26,'sine']],
+    revive:[[360,680,.23,'triangle'],[540,900,.20,'sine']],
+    morph:[[350,800,.22,'triangle'],[600,1120,.27,'sine']],
+    recall:[[620,430,.23,'sine'],[460,780,.35,'triangle']],
+    win:[[540,720,.22,'triangle'],[670,910,.26,'sine'],[820,1170,.37,'sine']]
+  };
+  function play(name){
+    if(!WW.storage.data.settings.sound)return;
+    const Audio=window.AudioContext||window.webkitAudioContext;
+    if(!Audio)return;
+    context ||=new Audio();
+    if(context.state==='suspended')context.resume();
+    const notes=tunes[name];if(!notes)return;
+    for(const [from,to,length,wave] of notes){
+      const oscillator=context.createOscillator(),gain=context.createGain(),start=context.currentTime;
+      oscillator.type=wave;oscillator.frequency.setValueAtTime(from,start);
+      oscillator.frequency.exponentialRampToValueAtTime(Math.max(10,to),start+length);
+      gain.gain.setValueAtTime(.0001,start);
+      gain.gain.exponentialRampToValueAtTime(.035/notes.length,start+.016);
+      gain.gain.exponentialRampToValueAtTime(.0001,start+length);
+      oscillator.connect(gain).connect(context.destination);
+      oscillator.start(start);oscillator.stop(start+length+.01);
+    }
+  }
+  return {play};
+})();
+
+</script>
+<script>
+window.WW = window.WW || {};
+WW.catalog = {
+  forms: {
+    springaroo: {name:'Springaroo',power:'Double jump',seconds:36,color:'#ff8fc6',favorite:'berry'},
+    skyling: {name:'Moonwing',power:'Hold jump to fly',seconds:30,color:'#a4e9ff',favorite:'star'},
+    tideling: {name:'Tidefox',power:'Swim & dive',seconds:42,color:'#75eddf',favorite:'nectar'},
+    cloudwhisp: {name:'Cloudwhisp',power:'Float & glide',seconds:34,color:'#d5c7ff',favorite:'marshmallow'},
+    prismtail: {name:'Prismtail',power:'Super sprint',seconds:32,color:'#ffc18b',favorite:'star'},
+    mossback: {name:'Mossback',power:'Thorn-proof armor',seconds:45,color:'#b0f084',favorite:'honey'},
+    glimmermoth: {name:'Glimmermoth',power:'Friendship aura',seconds:32,color:'#f9adfa',favorite:'nectar'},
+    emberkit: {name:'Emberkit',power:'Warmth burst',seconds:30,color:'#ffad79',favorite:'honey'}
+  },
+  foods: {
+    berry: {name:'Blushberry',method:'lob',affection:34,speed:4.2,color:'#fa73aa'},
+    star: {name:'Stardrop',method:'straight',affection:26,speed:6.2,color:'#fff0a1'},
+    nectar: {name:'Nectar mist',method:'spray',affection:18,speed:0,color:'#82f9e5'},
+    honey: {name:'Honeybomb',method:'splash',affection:27,speed:3.6,color:'#ffc15a'},
+    marshmallow: {name:'Cloudmallow',method:'float',affection:30,speed:2.9,color:'#e7d7ff'}
+  }
+};
 
 </script>
 <script>
 window.WW = window.WW || {}; WW.games = WW.games || {};
 WW.games.animals = (() => {
-  const TILE=16,W=480,H=270, TYPES=['springaroo','skyling','tideling'];
-  const titles={springaroo:'Springaroo',skyling:'Moonwing',tideling:'Tidefox'};
-  const icons={springaroo:'✦',skyling:'✧',tideling:'❋'};
+  const TILE=16,W=480,H=270, FORM=WW.catalog.forms,FOOD=WW.catalog.foods;
+  const TYPES=Object.keys(FORM),FOODS=Object.keys(FOOD);
+  const titles=Object.fromEntries(TYPES.map(t=>[t,FORM[t].name]));
   // One world unit is one source-pixel; frames run at 60 Hz. All map jumps obey these rules.
   const PHYSICS={run:2.25,jump:5.7,doubleJump:5.5,gravity:.27,maxFall:5.7,
-    bodyHalf:9,bodyHeight:25,waterExposure:.9,leash:W-72};
+    bodyHalf:9,bodyHeight:25,waterExposure:.8,leash:W-75};
   const jumpHeight=PHYSICS.jump**2/(2*PHYSICS.gravity);
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -314,32 +509,66 @@ WW.games.animals = (() => {
     const players=Array.from({length:WW.storage.data.settings.players},(_,id)=>{
       const position=location(first(id===0?'p1':'p2')||first('p1')||{x:3+id*2,y:level.height-3});
       return {id,...position,lastSafe:{...position},vx:0,vy:0,grounded:false,coyote:0,jumpBuffer:0,jumpsUsed:0,
-        waterTime:0,face:1,health:3,sleep:false,invincible:0,selected:0,charges:Object.fromEntries(TYPES.map(t=>[t,0])),
-        form:null,until:0,actionCD:0,frame:0};
+        waterTime:0,face:1,health:3,sleep:false,invincible:0,selected:0,selectedFood:0,energy:Object.fromEntries(TYPES.map(t=>[t,0])),
+        form:null,actionCD:0,frame:0,windup:0};
     });
     const animals=level.objects.filter(o=>TYPES.includes(o.kind)).map((o,i)=>({kind:o.kind,...location(o),origin:(o.x+.5)*TILE,vy:0,alive:true,respawn:0,wary:100,attackCD:1+i*.6,dir:i%2?1:-1,phase:i*1.3,frame:0}));
-    const items=level.objects.filter(o=>['snack','skyKey','diveKey','springKey','checkpoint','exit'].includes(o.kind)).map(o=>({kind:o.kind,x:(o.x+.5)*TILE,y:(o.y+.5)*TILE,used:false}));
-    const shared={snacks:14,skyKey:false,diveKey:false,springKey:false,checkpoint:{...spawn},won:false};
+    const items=level.objects.filter(o=>['snack','skyKey','diveKey','springKey','starShard','checkpoint','exit'].includes(o.kind)).map(o=>({kind:o.kind,x:(o.x+.5)*TILE,y:(o.y+.5)*TILE,used:false}));
+    const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),skyKey:false,diveKey:false,springKey:false,checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,won:false};
     const projectiles=[],effects=[];let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,lastLeashHint=-10;
     const message=document.getElementById('message');const hud=document.getElementById('hud');
     function say(text,duration=2100) {message.textContent=text;message.classList.add('show');message.dataset.until=String(clock+duration/1000);}
     function particles(x,y,color,count=9){for(let i=0;i<count;i++)effects.push({x,y,vx:(Math.random()-.5)*3.8,vy:(Math.random()-.7)*3.3,color,time:.55+Math.random()*.6});}
     function throwThing(player,kind){
       if(player.actionCD>0||player.sleep)return;
-      if(kind==='snack'){if(shared.snacks<=0){say('No snacks left! Find the pink berries.');return;} shared.snacks--;}
-      projectiles.push({kind,owner:player.id,x:player.x+player.face*9,y:player.y-11,vx:player.face*4.1,vy:-1.6,ttl:1.4});
-      player.actionCD=kind==='orb'?.7:.28;
+      if(kind==='orb'){WW.audio.play('orb');
+        projectiles.push({kind,owner:player.id,x:player.x+player.face*10,y:player.y-12,vx:player.face*5.4,vy:-.45,ttl:1.25});
+        player.actionCD=.45;
+        return;
+      }
+      const choice=FOODS[player.selectedFood],food=FOOD[choice];
+      if(shared.foods[choice]<=0){say(`Out of ${food.name}! Try another treat or find a snack bush.`);return;}
+      shared.foods[choice]--;WW.audio.play('food');
+      player.actionCD=food.method==='spray'?.48:.3;
+      if(food.method==='spray'){
+        let touched=0;
+        for(const a of animals)if(a.alive&&Math.abs(player.x-a.x)<74&&Math.abs(player.y-10-(a.y-10))<38&&player.face*(a.x-player.x)>-8){
+          charm(a,food.affection,choice,player.id);touched++;
+        }
+        for(let i=0;i<16;i++)effects.push({x:player.x+player.face*10,y:player.y-14,vx:player.face*(1+Math.random()*3),vy:(Math.random()-.5)*2,color:'#85fbe7',time:.45});
+        if(!touched)say('Nectar mist sparkles ahead. Try near a creature!',1100);
+        WW.input.rumble(player.id,.18,90);
+        return;
+      }
+      projectiles.push({kind:'food',food:choice,owner:player.id,x:player.x+player.face*10,y:player.y-11,
+        vx:player.face*food.speed,vy:food.method==='straight'?-0.2:food.method==='float'?-2.3:-2.0,
+        ttl:food.method==='float'?2.5:1.7,age:0,hit:[]});
+    }
+    function charm(a,amount,food,owner){
+      const favorite=FORM[a.kind].favorite;
+      const boost=food===favorite?1.7:1;
+      a.wary=Math.max(0,a.wary-amount*boost);
+      a.attackCD=Math.max(a.attackCD,.55);
+      particles(a.x,a.y-14,FOOD[food].color,food===favorite?16:10);
+      if(food===favorite)say(`${titles[a.kind]} LOVES ${FOOD[food].name}! +${Math.round(amount*boost)} friendship`,1400);
+      else if(a.wary===0)say(`${titles[a.kind]} is friendly! Your orb has a 98% chance.`,1600);
+    }
+    function recallParty(){WW.audio.play('recall');
+      players.forEach((p,i)=>{p.x=spawn.x+i*25;p.y=spawn.y;p.vx=p.vy=0;p.waterTime=0;p.lastSafe={x:p.x,y:p.y};p.grounded=false;
+        if(p.sleep){p.sleep=false;p.health=3;}p.invincible=2;particles(p.x,p.y-10,'#b9f6ff',24);});
+      cameraX=0;cameraY=0;WW.input.reset();say('Homeward spell! Your gems, snacks and transformation time are safe.',2800);
     }
     function hitPlayer(player){
       if(player.invincible>0||player.sleep||shared.won)return;
-      player.health--;player.invincible=1.5;shake=6; WW.input.rumble(player.id,.95,220);particles(player.x,player.y-10,'#ffb8a4',10);
-      if(player.health===0){player.sleep=true;player.vx=0;say(player.id===0?'You fainted! Press Revive to wake up.':'A friend fainted! Move close and press Revive.',3000);}
+      player.health--;WW.audio.play('hit');player.invincible=1.5;shake=6; WW.input.rumble(player.id,.95,220);particles(player.x,player.y-10,'#ffb8a4',10);
+      if(player.health===0){WW.audio.play('sleep');player.sleep=true;player.vx=0;say(player.id===0?'You fainted! Press Revive to wake up.':'A friend fainted! Move close and press Revive.',3000);}
     }
-    function revive(player,by){player.sleep=false;player.health=3;player.invincible=2;player.vy=-2;player.waterTime=0;particles(player.x,player.y-10,'#aafae3',14); WW.input.rumble(by.id,.45,180);say('Back on your feet!');}
+    function revive(player,by){WW.audio.play('revive');player.sleep=false;player.health=3;player.invincible=2;player.vy=-2;player.waterTime=0;player.x=player.lastSafe.x;player.y=player.lastSafe.y;particles(player.x,player.y-10,'#aafae3',14); WW.input.rumble(by.id,.45,180);say('Back on your feet!');}
     function movePlayer(p,controls,dt){
       const step=dt*60;
       if(p.sleep){
-        if(p.id===0&&controls.pressed.revive)revive(p,p);
+        if(controls.pressed.recall)recallParty();
+        else if(controls.pressed.revive)revive(p,p);
         return;
       }
       p.invincible=Math.max(0,p.invincible-dt);
@@ -348,7 +577,7 @@ WW.games.animals = (() => {
       if(direction)p.face=direction;
       const swimming=p.form==='tideling' && (liquid(p.x,p.y-8)||liquid(p.x,p.y+2));
       const flying=p.form==='skyling';
-      const run=p.form==='springaroo'?2.6:swimming?2.45:PHYSICS.run;
+      const run=p.form==='prismtail'?4.0:p.form==='springaroo'?2.6:swimming?2.45:PHYSICS.run;
       const water=liquid(p.x,p.y-9)||liquid(p.x,p.y-1);
       p.vx=direction*run*(water&&!swimming?.42:1);
       if(swimming){
@@ -362,11 +591,12 @@ WW.games.animals = (() => {
         p.jumpBuffer=controls.pressed.jump?.12:Math.max(0,p.jumpBuffer-dt);
         if(p.jumpBuffer>0 && (p.coyote>0 || (p.form==='springaroo' && p.jumpsUsed<2))){
           const second=p.coyote<=0;
-          p.vy=-(second?PHYSICS.doubleJump:PHYSICS.jump);
+          p.vy=-(second?PHYSICS.doubleJump:PHYSICS.jump);WW.audio.play(second?'double':'jump');
           p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumpsUsed++;
           if(second){particles(p.x,p.y-5,'#f6e190',13);WW.input.rumble(p.id,.25,80);}
         }
         if(flying && controls.jump) p.vy=Math.max(-2.95,p.vy-.52*step);
+        if(p.form==='cloudwhisp'&&controls.jump&&p.vy>0)p.vy=Math.min(p.vy,.78);
         p.vy=Math.min(PHYSICS.maxFall,p.vy+PHYSICS.gravity*step);
       }
       let nx=p.x+p.vx*step;
@@ -395,31 +625,41 @@ WW.games.animals = (() => {
         p.waterTime+=dt;
         if(p.waterTime>=PHYSICS.waterExposure){
           p.waterTime=0;
-          p.x=p.lastSafe.x;p.y=p.lastSafe.y;p.vx=p.vy=0;
+          // Never allow a character to faint or respawn inside liquid.
+          const safe=liquid(p.lastSafe.x,p.lastSafe.y-9)?spawn:p.lastSafe;
+          p.x=safe.x;p.y=safe.y;p.vx=p.vy=0;p.invincible=0;
           hitPlayer(p);
           say('Deep water! Catch a Tidefox to swim and dive.',2400);
         }
       } else {
         p.waterTime=0;
-        if(p.grounded&&!nowWater)p.lastSafe={x:p.x,y:p.y};
+        if(p.grounded&&!nowWater&&!liquid(p.x+14,p.y-8)&&!liquid(p.x-14,p.y-8))p.lastSafe={x:p.x,y:p.y};
       }
-      if(controls.pressed.snack)throwThing(p,'snack');
+      if(controls.pressed.snack)throwThing(p,'food');
       if(controls.pressed.orb)throwThing(p,'orb');
-      if(controls.pressed.cycle){p.selected=(p.selected+1)%TYPES.length;const type=TYPES[p.selected];say(`P${p.id+1}: ${titles[type]} · ${p.charges[type]} charge(s)`,1150);}
+      if(controls.pressed.foodCycle){p.selectedFood=(p.selectedFood+1)%FOODS.length;const food=FOODS[p.selectedFood];say(`P${p.id+1}: ${FOOD[food].name} · ${shared.foods[food]} left`,1350);}
+      if(controls.pressed.cycle){p.selected=(p.selected+1)%TYPES.length;const type=TYPES[p.selected];say(`P${p.id+1}: ${titles[type]} · ${Math.ceil(p.energy[type])}s stored · ${FORM[type].power}`,1450);}
       if(controls.pressed.transform){
         const type=TYPES[p.selected];
-        if(p.form)say(`P${p.id+1}: Your current magic must finish first.`,1000);
-        else if(p.charges[type]>0){
-          p.charges[type]--;p.form=type;p.until=clock+22;
-          WW.input.rumble(p.id,.5,280);particles(p.x,p.y-10,'#e1b4ff',22);
-          say(`P${p.id+1} becomes ${titles[type]} for 22 seconds!`,2800);
-        }else say(`P${p.id+1}: Catch a ${titles[type]} first!`,1350);
+        if(p.form===type){p.form=null;say(`P${p.id+1}: Returned to explorer. Remaining magic saved!`,1450);}
+        else if(p.energy[type]>.02){p.form=type;WW.audio.play('morph');WW.input.rumble(p.id,.35,180);particles(p.x,p.y-10,FORM[type].color,24);
+          say(`P${p.id+1} becomes ${titles[type]}! ${Math.ceil(p.energy[type])}s of magic available.`,2200);}
+        else say(`P${p.id+1}: Befriend a ${titles[type]} to earn transformation time.`,1500);
       }
-      if(p.form&&clock>=p.until){
-        p.form=null;
-        if(nowWater){p.x=p.lastSafe.x;p.y=p.lastSafe.y;p.vy=0;}
-        particles(p.x,p.y-9,'#ffffff',12);say(`P${p.id+1}: Magic faded. Catch another creature!`,1800);
+      if(p.form){
+        p.energy[p.form]=Math.max(0,p.energy[p.form]-dt);
+        if(p.energy[p.form]<=0){p.form=null;particles(p.x,p.y-9,'#ffffff',15);say(`P${p.id+1}: Time's up! Catch another creature.`,1850);
+          if(nowWater){const safe=liquid(p.lastSafe.x,p.lastSafe.y-9)?spawn:p.lastSafe;p.x=safe.x;p.y=safe.y;p.vy=0;p.invincible=1;}
+        }
       }
+      if(p.form==='glimmermoth' && Math.floor(clock*5)!==Math.floor((clock-dt)*5)){
+        for(const a of animals)if(a.alive&&a.wary>0&&distance(p,a)<76){a.wary=Math.max(0,a.wary-2.7);a.attackCD=Math.max(a.attackCD,.3);particles(a.x,a.y-14,'#f2b8ff',2);}
+      }
+      if(p.form==='emberkit'&&controls.pressed.down&&p.grounded&&p.actionCD<=0){
+        for(const a of animals)if(a.alive&&distance(p,a)<90){a.wary=Math.max(0,a.wary-27);particles(a.x,a.y-14,'#ffc28b',15);}
+        p.actionCD=2.2;WW.input.rumble(p.id,.3,120);say('Emberkit released a warmth wave!',1350);
+      }
+      if(controls.pressed.recall)recallParty();
       if(controls.pressed.revive)for(const other of players)if(other!==p&&other.sleep&&distance(other,p)<48)revive(other,p);
       p.frame+=Math.abs(p.vx)*dt*6;
     }
@@ -428,14 +668,22 @@ WW.games.animals = (() => {
       animals.forEach(a=>{
         if(!a.alive){a.respawn-=dt;if(a.respawn<=0){a.alive=true;a.wary=100;a.attackCD=2;}return;}
         a.phase+=dt;
-        if(a.kind==='skyling'){a.x=a.origin+Math.sin(a.phase*.7)*16;a.y+=Math.sin(a.phase*2)*.12;}
+        if(a.kind==='skyling'||a.kind==='cloudwhisp'||a.kind==='glimmermoth'){a.x=a.origin+Math.sin(a.phase*.7)*16;a.y+=Math.sin(a.phase*2)*.12;}
         else {a.dir=Math.sin(a.phase*.85)>0?1:-1;a.x=a.origin+Math.sin(a.phase*.85)*13;}
         const target=targetFor(a); a.attackCD-=dt;
         if(a.wary>0&&target&&distance(target,a)<105&&a.attackCD<=0){
           const dx=target.x-a.x,dy=(target.y-9)-(a.y-9),len=Math.hypot(dx,dy)||1;
-          const kind=a.kind==='skyling'?'feather':a.kind==='tideling'?'bubble':'thorn';
-          projectiles.push({kind,owner:-1,x:a.x,y:a.y-12,vx:dx/len*2.1,vy:dy/len*2.1,ttl:2.3});
-          a.attackCD=a.kind==='springaroo'?2.3:1.9;
+          const attacks={skyling:'feather',tideling:'bubble',springaroo:'thorn',cloudwhisp:'gust',prismtail:'spark',mossback:'seed',glimmermoth:'starlight',emberkit:'ember'};
+          const kind=attacks[a.kind];
+          const base=kind==='spark'?3.5:kind==='gust'?1.5:2.1;
+          const bursts=kind==='feather'?[-.36,0,.36]:kind==='ember'?[-.22,.22]:[0];
+          for(const offset of bursts){
+            const c=Math.cos(offset),si=Math.sin(offset);
+            const vx=(dx/len*c-dy/len*si)*base;
+            const vy=(dy/len*c+dx/len*si)*base;
+            projectiles.push({kind,owner:-1,x:a.x,y:a.y-12,vx,vy,ttl:kind==='gust'?1.3:2.1,age:0});
+          }
+          a.attackCD=a.kind==='skyling'?2.9:a.kind==='springaroo'?2.3:2.1;
         }
         if(a.wary<=0) a.frame+=dt*3;else a.frame+=dt*6;
       });
@@ -443,38 +691,69 @@ WW.games.animals = (() => {
     function capture(animal,owner){
       const chance=.12+.86*Math.pow(1-animal.wary/100,1.55);
       if(Math.random()<chance){
-        animal.alive=false;animal.respawn=7;players[owner].charges[animal.kind]++;particles(animal.x,animal.y-8,'#fff2a0',24);
-        WW.input.rumble(owner,.55,290);say(`P${owner+1} caught ${titles[animal.kind]}! One 22-second transformation earned.`,2900);
-      } else {particles(animal.x,animal.y-8,'#f4b0dd',7);say(`The orb missed! Catch chance ${Math.round(chance*100)}%.`,1200);}
+        WW.audio.play('catch');animal.alive=false;animal.respawn=5;players[owner].energy[animal.kind]+=FORM[animal.kind].seconds;players[owner].selected=TYPES.indexOf(animal.kind);
+        particles(animal.x,animal.y-8,FORM[animal.kind].color,28);
+        WW.input.rumble(owner,.55,290);say(`P${owner+1} befriended ${titles[animal.kind]}! +${FORM[animal.kind].seconds}s of ${FORM[animal.kind].power.toLowerCase()}. Press Transform!`,2800);
+      } else {WW.audio.play('miss');particles(animal.x,animal.y-8,'#f4b0dd',7);say(`The orb missed! Catch chance ${Math.round(chance*100)}%.`,1200);}
     }
     function updateProjectiles(dt){
       for(let i=projectiles.length-1;i>=0;i--){
-        const pr=projectiles[i];pr.ttl-=dt;pr.x+=pr.vx*dt*60;pr.y+=pr.vy*dt*60;
-        if(pr.kind==='snack'||pr.kind==='orb')pr.vy+=.085*dt*60;
-        if(pr.ttl<=0||solid(pr.x,pr.y)){projectiles.splice(i,1);continue;}
+        const pr=projectiles[i];pr.age=(pr.age||0)+dt;pr.ttl-=dt;
+        pr.x+=pr.vx*dt*60;pr.y+=pr.vy*dt*60;
+        if(pr.kind==='food'){
+          const method=FOOD[pr.food].method;
+          if(method==='lob'||method==='splash')pr.vy+=.11*dt*60;
+          if(method==='float'){pr.vy=Math.max(-.3,pr.vy+.04*dt*60);pr.x+=Math.sin(pr.age*10)*.7;}
+        } else if(pr.kind==='orb')pr.vy+=.045*dt*60;
+        if(pr.kind==='seed'||pr.kind==='thorn')pr.vy+=.05*dt*60;
+        if(pr.kind==='feather'||pr.kind==='starlight')pr.y+=Math.sin(pr.age*11)*.6;
+        if(pr.kind==='bubble'){pr.vy-=.015*dt*60;pr.x+=Math.sin(pr.age*8)*.65;}
+        if(pr.kind==='gust'){pr.vx*=Math.pow(.985,dt*60);pr.y+=Math.sin(pr.age*13)*.9;}
+        if(pr.kind==='ember'){pr.vx*=Math.pow(1.006,dt*60);pr.vy*=Math.pow(1.006,dt*60);}
+        if(pr.ttl<=0||solid(pr.x,pr.y)){
+          if(pr.kind==='food'&&FOOD[pr.food].method==='splash')splash(pr);
+          projectiles.splice(i,1);continue;
+        }
         if(pr.owner>=0){
-          const a=animals.find(a=>a.alive&&Math.hypot(pr.x-a.x,pr.y-(a.y-10))<12);
-          if(a){projectiles.splice(i,1);if(pr.kind==='snack'){a.wary=Math.max(0,a.wary-36);particles(a.x,a.y-12,'#f9d68a',9);say(a.wary===0?`${titles[a.kind]} is friendly! Great time to catch!`:`${titles[a.kind]} is warming up (${Math.round(100-a.wary)}% friendly).`,1100);}
-          else capture(a,pr.owner);}
+          const a=animals.find(a=>a.alive&&Math.hypot(pr.x-a.x,pr.y-(a.y-10))<14);
+          if(a){projectiles.splice(i,1);if(pr.kind==='food'){
+            if(FOOD[pr.food].method==='splash')splash(pr);else charm(a,FOOD[pr.food].affection,pr.food,pr.owner);
+          }else capture(a,pr.owner);}
         }else{
-          const p=players.find(p=>!p.sleep&&p.invincible<=0&&Math.hypot(pr.x-p.x,pr.y-(p.y-9))<9);
-          if(p){projectiles.splice(i,1);hitPlayer(p);}
+          const p=players.find(p=>!p.sleep&&p.invincible<=0&&Math.hypot(pr.x-p.x,pr.y-(p.y-9))<11);
+          if(p){projectiles.splice(i,1);if(p.form==='mossback'){
+              particles(p.x,p.y-12,'#c9ffd4',9);WW.input.rumble(p.id,.15,80);
+            }else hitPlayer(p);}
         }
       }
     }
+    function splash(pr){for(const a of animals)if(a.alive&&Math.hypot(a.x-pr.x,a.y-11-pr.y)<46)charm(a,FOOD.honey.affection,'honey',pr.owner);
+      particles(pr.x,pr.y,'#ffcd75',20);}
     function updateItems(){
       items.forEach(item=>{
         if(item.used&&item.kind==='snack'&&clock>=item.respawn)item.used=false;
         if(item.used)return;
-        const p=players.find(p=>!p.sleep&&Math.hypot(p.x-item.x,(p.y-9)-item.y)<14);
+        const p=players.find(p=>!p.sleep&&Math.abs(p.x-item.x)<20&&Math.abs((p.y-13)-item.y)<28);
         if(!p)return;
-        if(item.kind==='snack'){item.used=true;item.respawn=clock+13;shared.snacks+=5;say('+5 yummy snacks!');WW.input.rumble(p.id,.25,100);particles(item.x,item.y,'#ffb7ce');}
-        else if(item.kind==='springKey'&&p.form==='springaroo'){item.used=true;shared.springKey=true;say('Canopy gem found! A perfect double jump!');WW.input.rumble(p.id,.7,380);particles(item.x,item.y,'#ffb6e7',24);}
-        else if(item.kind==='skyKey'&&p.form==='skyling'){item.used=true;shared.skyKey=true;say('Sky key found! The river key is still below.');WW.input.rumble(p.id,.7,380);particles(item.x,item.y,'#f7de83',21);}
-        else if(item.kind==='diveKey'&&p.form==='tideling'){item.used=true;shared.diveKey=true;say('River key found! Both keys open the gate.');WW.input.rumble(p.id,.7,380);particles(item.x,item.y,'#88f6ff',21);}
+        if(item.kind==='snack'){
+          item.used=true;item.respawn=clock+11;
+          for(const food of FOODS)shared.foods[food]+=food==='berry'?4:2;
+          say('Picnic basket! Restocked every kind of magic treat.');WW.input.rumble(p.id,.25,100);particles(item.x,item.y,'#ffb7ce',18);
+        }
+        else if(item.kind==='springKey'||item.kind==='skyKey'||item.kind==='diveKey'){
+          WW.audio.play('gem');item.used=true;shared[item.kind]=true;
+          const names={springKey:'Canopy',skyKey:'Sky',diveKey:'River'};
+          say(`${names[item.kind]} gem collected! It stays yours, even if you return to camp.`,2750);
+          WW.input.rumble(p.id,.8,340);particles(item.x,item.y,'#ffec94',32);
+        }
+        else if(item.kind==='starShard'){
+          item.used=true;shared.shards++;shared.foods.star+=2;WW.audio.play('gem');
+          WW.input.rumble(p.id,.35,110);particles(item.x,item.y,'#faffbc',18);
+          say(`Star shard ${shared.shards}/${shared.totalShards}! +2 Stardrops. Bonus treasure!`,1550);
+        }
         else if(item.kind==='checkpoint'){shared.checkpoint={x:item.x,y:item.y+8};item.used=true;say('Checkpoint activated!');}
         else if(item.kind==='exit'){
-          if(shared.skyKey&&shared.diveKey&&shared.springKey){shared.won=true;WW.storage.data.progress.wins++;WW.storage.save();WW.main.win(WW.storage.data.progress.wins);}
+          if(shared.skyKey&&shared.diveKey&&shared.springKey){shared.won=true;WW.storage.data.progress.wins++;WW.storage.data.progress.bestShards=Math.max(WW.storage.data.progress.bestShards||0,shared.shards);WW.storage.save();WW.audio.play('win');WW.main.win(WW.storage.data.progress.wins,shared.shards,shared.totalShards);}
           else if(clock>(item.lastHint||0)+2){item.lastHint=clock;say(`Gate needs 3 gems: Canopy ${shared.springKey?'✓':'✗'} · Sky ${shared.skyKey?'✓':'✗'} · River ${shared.diveKey?'✓':'✗'}`);}
         }
       });
@@ -495,14 +774,21 @@ WW.games.animals = (() => {
       const minY=Math.min(...players.map(p=>p.y)),maxY=Math.max(...players.map(p=>p.y));
       cameraY=clamp((minY+maxY)/2-H*.55,0,Math.max(0,height-H));
       if(clock>+(message.dataset.until||0))message.classList.remove('show');
-      if(clock-hudTime>.13){
+      if(clock-hudTime>.16){
         hudTime=clock;
-        hud.innerHTML=`<div class="hud-player">${players.map(p=>`<div class="player-info" style="border-left:4px solid ${p.id?'#9ad8ff':'#ffd782'}"><b>P${p.id+1}</b> ${p.sleep?'SLEEPING':Array.from({length:3},(_,i)=>`<span class="${i<p.health?'heart':'heart-off'}">♥</span>`).join('')}<div class="tiny">${titles[TYPES[p.selected]]}: ${p.charges[TYPES[p.selected]]} charge${p.charges[TYPES[p.selected]]===1?'':'s'} ${p.form?'· '+titles[p.form]+' '+Math.max(0,Math.ceil(p.until-clock))+'s':''}</div></div>`).join('')}</div><div class="hud-center">✦ ${shared.snacks} snacks &nbsp; Canopy ${shared.springKey?'✓':'◇'} · Sky ${shared.skyKey?'✓':'◇'} · River ${shared.diveKey?'✓':'◇'}<div class="tiny">Select your form · Transform yourself · Esc pauses</div></div>`;
+        const pic=(type)=>`<img class="portrait" alt="${titles[type]}" src="${WW.art.portrait(type)}">`;
+        hud.innerHTML=`<div class="hud-player">${players.map(p=>{
+          const chosen=TYPES[p.selected],food=FOODS[p.selectedFood];
+          return `<div class="player-info" style="border-color:${p.id?'#93d8ff':'#ffe094'}"><div class="player-top"><strong>P${p.id+1} ${p.sleep?'ASLEEP':''}</strong><span>${Array.from({length:3},(_,i)=>i<p.health?'♥':'♡').join('')}</span></div>
+            <div class="form-row">${TYPES.map(t=>`<span class="form-chip ${p.selected===TYPES.indexOf(t)?'selected':''} ${p.form===t?'active':''} ${p.energy[t]>.1?'unlocked':''}" title="${titles[t]} – ${FORM[t].power}">${pic(t)}<small>${p.energy[t]>0?Math.ceil(p.energy[t])+'s':'·'}</small></span>`).join('')}</div>
+            <div class="hud-caption">${p.form?'Playing as '+titles[p.form]+' · '+Math.ceil(p.energy[p.form])+'s left':`Selected ${titles[chosen]} · ${Math.ceil(p.energy[chosen])}s stored`}</div>
+            <div class="food-caption"><img src="${WW.art.foodIcon(food)}" alt=""> ${FOOD[food].name} × ${shared.foods[food]} <span>⟳ E / M</span></div></div>`;}).join('')}</div>
+          <div class="hud-center"><div class="quest-title">THE THREE GEMS · ✧ ${shared.shards}/${shared.totalShards} STARS</div><div class="gems"><span class="${shared.springKey?'done':''}">✿ Canopy</span><span class="${shared.skyKey?'done':''}">✧ Sky</span><span class="${shared.diveKey?'done':''}">❖ River</span></div><div class="tiny">Q/H choose form · T/U morph · C/N return to camp</div></div>`;
       }
     }
     function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
     function background(ctx,time){
-      const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#76bcd6');sky.addColorStop(.75,'#bee8d3');sky.addColorStop(1,'#eef3bd');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+      const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#625cba');sky.addColorStop(.30,'#9586e2');sky.addColorStop(.72,'#78d8d5');sky.addColorStop(1,'#d3f6ae');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
       // Layered glowing moon and drifting fireflies make the biome feel enchanted.
       const moon=ctx.createRadialGradient(390,43,5,390,43,56);
       moon.addColorStop(0,'#fff6c9ab');moon.addColorStop(.5,'#e8d5ff45');moon.addColorStop(1,'#e8d5ff00');
@@ -518,18 +804,60 @@ WW.games.animals = (() => {
       }
       ctx.globalAlpha=1;
       for(let layer=0;layer<3;layer++){
-        const offset=cameraX*(.12+layer*.2);const base=115+layer*39;const colors=['#a6cbbf','#6daca8','#477f84'];
+        const offset=cameraX*(.12+layer*.2);const base=115+layer*39;const colors=['#c4aee6','#87bad4','#448ca2'];
         ctx.fillStyle=colors[layer];ctx.beginPath();ctx.moveTo(0,H);
         for(let x=-40;x<W+90;x+=25){const world=x+offset;const height=Math.sin(world*.018+layer)*15+Math.sin(world*.047)*11;ctx.lineTo(x,base+height);}
         ctx.lineTo(W,H);ctx.fill();
         if(layer===2){for(let n=-2;n<20;n++){
           const xx=n*42-(offset*.68%42);const yy=base+8+Math.sin(n*2.1)*9;
-          box(ctx,xx+8,yy,5,70,'#37636b');box(ctx,xx-7,yy-15,34,23,'#4f938b');box(ctx,xx-2,yy-27,24,19,'#5ba291');
+          box(ctx,xx+8,yy,5,70,'#356d82');box(ctx,xx-7,yy-15,34,23,'#4baaa1');box(ctx,xx-2,yy-27,24,19,'#6cc7b4');
         }}
       }
       for(let n=0;n<8;n++){
         const x=((n*108-cameraX*.14+time*1.7)%(W+120)+W+120)%(W+120)-40;
-        const y=27+n%3*17;box(ctx,x,y,32,8,'#eaf9ea');box(ctx,x+8,y-6,20,11,'#eaf9ea');
+        const y=27+n%3*17;box(ctx,x,y,32,8,'#ede6ff');box(ctx,x+8,y-6,20,11,'#fff7ea');
+      }
+    }
+    function sceneryBack(ctx,time){
+      // Large overlapping silhouettes give the world a sense of scale and depth.
+      const l=Math.floor((cameraX-80)/100),r=Math.ceil((cameraX+W+80)/100);
+      for(let i=l;i<=r;i++){
+        const x=i*102+(hash(i,29)%32),bottom=308;
+        const sway=Math.sin(time*.7+i)*2;
+        ctx.fillStyle=i%2?'#286479':'#316878';
+        ctx.beginPath();ctx.moveTo(x-8,bottom);ctx.lineTo(x-3,166+(i%3)*12);ctx.lineTo(x+7,164+(i%3)*12);ctx.lineTo(x+13,bottom);ctx.closePath();ctx.fill();
+        const y=153+(i%3)*13;
+        for(const [dx,dy,radius,color] of [[-22,6,20,'#357f91'],[19,6,22,'#378fa1'],[0,-13,24,'#3ba5aa'],[-9,-19,16,'#57bcb6']]){
+          ctx.fillStyle=color;ctx.beginPath();ctx.arc(x+dx+sway,y+dy,radius,0,Math.PI*2);ctx.fill();
+        }
+        for(let j=0;j<7;j++){const xx=x-24+(hash(i,j)%50),yy=y-23+(hash(j,i)%33);
+          box(ctx,xx,yy,2,3,hash(i,j)%2?'#8befc9':'#d2d2ff');}
+        // Hanging lanterns bloom gently, but don't obscure traversal geometry.
+        if(i%3===0){box(ctx,x+16,y+7,1,24,'#6fd3ae');
+          const glow=ctx.createRadialGradient(x+16,y+31,0,x+16,y+31,14);
+          glow.addColorStop(0,'#fff7acb5');glow.addColorStop(1,'#fff7ac00');ctx.fillStyle=glow;ctx.fillRect(x+2,y+17,28,28);
+          box(ctx,x+13,y+27,7,7,'#fff2b1');}
+      }
+    }
+    function groundDetails(ctx,time){
+      const left=Math.max(0,Math.floor(cameraX/TILE)-1),right=Math.min(level.width,Math.ceil((cameraX+W)/TILE)+1);
+      for(let x=left;x<right;x++){
+        for(let y=1;y<level.height-1;y++){
+          if(map[y]?.[x]!=='ground'||map[y-1]?.[x]!=='empty')continue;
+          const px=x*TILE+8,py=y*TILE,h=hash(x,y);
+          if(h%9===0){
+            box(ctx,px-1,py-18,3,18,'#2a936d');
+            box(ctx,px-5,py-22,11,6,'#ff87c2');box(ctx,px-2,py-26,6,7,'#ffd5f2');
+            box(ctx,px-1,py-23,3,3,'#ffe68e');
+          }else if(h%13===0){
+            box(ctx,px-3,py-12,7,10,'#80def5');box(ctx,px-1,py-19,3,7,'#e2f9fa');
+            box(ctx,px-6,py-7,4,5,'#d6a5ff');
+          }else if(h%4===0){
+            box(ctx,px-4,py-5,2,5,'#52c884');box(ctx,px+1,py-8,2,8,'#61d79b');
+            box(ctx,px-6,py-9,4,5,'#d4a9ff');box(ctx,px,py-12,4,5,'#ffb5cf');
+          }
+          if(h%21===0){const f=1+Math.sin(time*3+x)*2;box(ctx,px+4,py-20+f,3,3,'#ffffae');}
+        }
       }
     }
     function terrain(ctx,time){
@@ -539,20 +867,20 @@ WW.games.animals = (() => {
         const t=map[y][x];if(t==='empty')continue;
         const px=x*TILE,py=y*TILE,h=hash(x,y);
         if(t==='ground'){
-          box(ctx,px,py,16,16,'#7d594d');box(ctx,px,py+4,16,12,(h%2?'#775346':'#8d624c'));
+          box(ctx,px,py,16,16,'#634a74');box(ctx,px,py+4,16,12,(h%2?'#795781':'#8e6484'));
           if(y===0||map[y-1][x]!=='ground'){
-            box(ctx,px,py,16,5,'#4b9f5a');box(ctx,px,py+4,16,2,'#347a52');
-            box(ctx,px+2,py-2,3,3,'#8dd26e');box(ctx,px+11,py-1,2,3,'#a4d86b');
+            box(ctx,px,py,16,6,'#68cf8d');box(ctx,px,py+5,16,2,'#378e80');
+            box(ctx,px+2,py-2,3,3,'#a4ed96');box(ctx,px+11,py-1,2,3,'#efffa1');
           }
-          if(h%5===0)box(ctx,px+5,py+9,4,2,'#b38b66');if(h%7===0)box(ctx,px+12,py+12,2,2,'#573e45');
+          if(h%5===0)box(ctx,px+5,py+9,4,2,'#f6ad9b');if(h%7===0)box(ctx,px+12,py+12,2,2,'#c38bd7');
           if(h%23===0){box(ctx,px+8,py+6,3,7,'#7b7bb1');box(ctx,px+9,py+5,1,5,'#b1c9f0');}
         } else if(t==='platform'){
-          box(ctx,px,py,16,7,'#6966ab');box(ctx,px,py,16,3,'#a4e9bf');
+          box(ctx,px,py,16,7,'#6659a1');box(ctx,px,py,16,3,'#b2ffd1');
           box(ctx,px+2,py+7,12,3,'#555583');
           box(ctx,px+5,py+10,6,3,'#7f7dba');
           if(h%3===0){box(ctx,px+5,py-3,2,4,'#aeefcf');box(ctx,px+3,py-5,6,3,'#f4a0cf');}
         } else if(t==='water'){
-          box(ctx,px,py,16,16,y%2?'#368cc9':'#329ed3');
+          box(ctx,px,py,16,16,y%2?'#3b89da':'#3f9fde');
           if(y===0||map[y-1][x]!=='water'){box(ctx,px,py,16,3,'#9be5e1');box(ctx,px+(Math.floor(time*9+x*7)%11),py+1,5,1,'#edf9ce');}
           if(h%6===0)box(ctx,px+5,py+8+Math.sin(time*3+x)*2,2,2,'#8fe4e5');
         }
@@ -563,14 +891,25 @@ WW.games.animals = (() => {
       }
     }
     function render(ctx,now){
-      ctx.setTransform(2,0,0,2,0,0);
+      ctx.setTransform(3,0,0,3,0,0);
       background(ctx,now);
       ctx.save();ctx.translate(Math.round((Math.random()-.5)*shake),Math.round((Math.random()-.5)*shake));ctx.translate(-Math.round(cameraX),-Math.round(cameraY));
-      terrain(ctx,now);
+      sceneryBack(ctx,now);terrain(ctx,now);groundDetails(ctx,now);
       items.forEach(it=>{if(it.used)return;const bob=Math.sin(now*3+it.x)*2;
         if(it.kind==='snack')WW.art.draw(ctx,'snack',it.x,it.y+8+bob,Math.floor(now*3)%4);
+        if(it.kind==='starShard'){
+          ctx.save();ctx.translate(it.x,it.y+bob);ctx.rotate(Math.sin(now*3+it.x)*.22);
+          ctx.fillStyle='#fff8bd';ctx.beginPath();for(let i=0;i<10;i++){
+            const a=i*Math.PI/5-Math.PI/2,r=i%2?3:8;
+            ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);
+          }ctx.closePath();ctx.fill();box(ctx,-1,-3,2,4,'#ffffff');ctx.restore();
+        }
         if(it.kind==='skyKey'||it.kind==='diveKey'||it.kind==='springKey'){
-          box(ctx,it.x-4,it.y-4+bob,8,8,it.kind==='skyKey'?'#ffe7a0':it.kind==='springKey'?'#ff94d5':'#adfafa');box(ctx,it.x-2,it.y-7+bob,4,4,'#ffffff');box(ctx,it.x+3,it.y+2+bob,7,2,'#ffde7e');
+          const tint=it.kind==='skyKey'?'#fff0a3':it.kind==='springKey'?'#ff94d5':'#91f5ff';
+          ctx.save();ctx.translate(it.x,it.y+bob);ctx.rotate(now*.65);
+          box(ctx,-5,-5,10,10,tint);box(ctx,-2,-10,4,5,'#ffffff');box(ctx,6,-2,5,4,tint);box(ctx,-9,-1,4,3,tint);ctx.restore();
+          ctx.globalAlpha=.65+.3*Math.sin(now*5);box(ctx,it.x-2,it.y-13+bob,4,2,'#fffcef');box(ctx,it.x+12,it.y+bob,3,3,tint);ctx.globalAlpha=1;
+          ctx.fillStyle='#fff4dd';ctx.font='bold 8px sans-serif';ctx.fillText('GEM',it.x-9,it.y-19+bob);
         }
         if(it.kind==='exit'){
           box(ctx,it.x-12,it.y-28,24,36,'#725771');box(ctx,it.x-8,it.y-25,16,31,shared.skyKey&&shared.diveKey&&shared.springKey?'#6befc6':'#423c6b');
@@ -582,32 +921,37 @@ WW.games.animals = (() => {
         if(!a.alive)return;
         const frame=Math.floor(a.frame)%4;
         WW.art.draw(ctx,a.kind,a.x,a.y,frame,a.dir<0);
-        const wary=a.wary;box(ctx,a.x-11,a.y-23,22,4,'#263f46');box(ctx,a.x-10,a.y-22,20*(wary/100),2,wary>40?'#fa8c82':'#a1eaa2');
-        if(!wary){box(ctx,a.x-2,a.y-28,4,3,'#ff9eb6');box(ctx,a.x-4,a.y-26,8,3,'#ff9eb6');}
+        const wary=a.wary;box(ctx,a.x-13,a.y-49,26,4,'#263f46');box(ctx,a.x-12,a.y-48,24*(wary/100),2,wary>40?'#fa8c82':'#a1eaa2');
+        if(!wary){box(ctx,a.x-2,a.y-52,4,3,'#ff9eb6');box(ctx,a.x-4,a.y-50,8,3,'#ff9eb6');}
         const chance=Math.round((.12+.86*Math.pow(1-a.wary/100,1.55))*100);
         ctx.fillStyle='#f4fbef';ctx.font='bold 7px sans-serif';
-        ctx.fillText(titles[a.kind],a.x-17,a.y-39);
-        if(a.wary<100){ctx.fillStyle='#fceab0';ctx.fillText(`Catch ${chance}%`,a.x-17,a.y-30);}
+        ctx.fillText(titles[a.kind],a.x-17,a.y-59);
+        if(a.wary<100){ctx.fillStyle='#fceab0';ctx.fillText(`Catch ${chance}%`,a.x-17,a.y-51);}
       });
       projectiles.forEach(pr=>{
-        const color={snack:'#fe92b7',orb:'#d8bcff',feather:'#f7eec7',bubble:'#9fe4fa',thorn:'#f5ae7a'}[pr.kind];
-        box(ctx,pr.x-3,pr.y-3,6,6,'#273e55');box(ctx,pr.x-2,pr.y-2,4,4,color);if(pr.kind==='orb')box(ctx,pr.x-1,pr.y-1,2,2,'#ffffff');
+        const color=pr.kind==='food'?FOOD[pr.food].color:({orb:'#d8bcff',feather:'#f7eec7',bubble:'#9fe4fa',thorn:'#f5ae7a',gust:'#c4f4ff',spark:'#ffcbb9',seed:'#b4eb98',starlight:'#edc9ff',ember:'#ffb675'}[pr.kind]||'#ffffff');
+        box(ctx,pr.x-4,pr.y-4,8,8,'#273e55');box(ctx,pr.x-3,pr.y-3,6,6,color);if(pr.kind==='orb'||pr.kind==='food')box(ctx,pr.x-1,pr.y-2,2,2,'#ffffff');
       });
       players.forEach(p=>{
-        if(p.invincible>0&&Math.floor(now*13)%2)return;
-        if(p.sleep){WW.art.draw(ctx,'hero',p.x,p.y+7,1,p.face<0,p.id);box(ctx,p.x+7,p.y-25,4,5,'#ecf6ff');box(ctx,p.x+12,p.y-31,5,6,'#ecf6ff');}
-        else WW.art.draw(ctx,p.form||'hero',p.x,p.y,Math.floor(p.frame)%4,p.face<0,p.id);
+        if(p.sleep){
+          WW.art.draw(ctx,'hero',p.x,p.y+8,1,p.face<0,p.id);
+          ctx.font='bold 10px sans-serif';ctx.fillStyle='#f9fbff';
+          ctx.fillText('z',p.x+10,p.y-24-Math.sin(now*2)*3);ctx.fillText('Z',p.x+19,p.y-33-Math.sin(now*2+.8)*3);
+        }else{
+          if(p.form){ctx.save();ctx.globalAlpha=.19+.09*Math.sin(now*5);ctx.fillStyle=FORM[p.form].color;ctx.beginPath();ctx.ellipse(p.x,p.y-13,18,23,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+          WW.art.draw(ctx,p.form||'hero',p.x,p.y,Math.floor(p.frame)%4,p.face<0,p.id);
+        }
         // Colored player markers remain clear even while transformed.
-        box(ctx,p.x-8,p.y-35,16,3,'#152e42');box(ctx,p.x-7,p.y-34,14,2,p.id===0?'#ffd782':'#91d2ff');
-        ctx.font='bold 8px sans-serif';ctx.fillStyle='#102b41';ctx.fillText(String(p.id+1),p.x-2,p.y-38);
+        box(ctx,p.x-8,p.y-43,16,3,'#152e42');box(ctx,p.x-7,p.y-42,14,2,p.id===0?'#ffd782':'#91d2ff');
+        ctx.font='bold 8px sans-serif';ctx.fillStyle='#102b41';ctx.fillText(String(p.id+1),p.x-2,p.y-46);
       });
       effects.forEach(e=>box(ctx,e.x,e.y,3,3,e.color));ctx.restore();
       if(!shared.skyKey||!shared.diveKey||!shared.springKey){
-        box(ctx,9,H-24,355,16,'#233d50cf');ctx.font='9px monospace';ctx.fillStyle='#fff2c6';ctx.fillText(!shared.springKey?'Double jump as a SPRINGAROO for the canopy gem!':!shared.skyKey?'Fly as a MOONWING to the sky gem!':'Dive as a TIDEFOX for the river gem!',15,H-13);
+        box(ctx,8,H-23,453,16,'#14243cda');ctx.font='bold 8px sans-serif';ctx.fillStyle='#fff3c6';ctx.fillText(!shared.springKey?'SPRINGAROO ➜ double-jump to the canopy gem':!shared.skyKey?'MOONWING ➜ fly to the sky gem':'TIDEFOX ➜ dive to the river gem · C to return to camp',15,H-12);
       }
     }
     hud.hidden=false;say('Catch three magical creatures. Their powers unlock three gems!',3600);
-    return {update,render,stop(){hud.hidden=true;message.classList.remove('show');},get state(){return {players,shared,animals,items,cameraX,cameraY,physics:PHYSICS,jumpHeight}}};
+    return {update,render,recallParty,stop(){hud.hidden=true;message.classList.remove('show');},get state(){return {players,shared,animals,items,projectiles,cameraX,cameraY,physics:PHYSICS,jumpHeight}}};
   }
   return {start};
 })();
@@ -618,20 +962,22 @@ window.WW = window.WW || {};
 WW.main = (() => {
   const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
   const menu=document.getElementById('menu');const hud=document.getElementById('hud');
-  let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,pixelsPerTile=1;
+  let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,pixelsPerTile=1,menuPadLatch='';
   const builtinMap=window.WONDERWOOD_MAP.startsWith('data:')?window.WONDERWOOD_MAP:'src/games/animal-adventure/levels/first-forest.png';
-  const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel">${content}</section>`;};
+  const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel">${content}</section>`;menu.querySelector('button')?.focus({preventScroll:true});};
   const button=(id,label,kind='secondary')=>`<button class="${kind}" data-action="${id}">${label}</button>`;
   function home(){
     if(game){game.stop();game=null;}paused=true;screen='home';cancelCalibration?.();cancelCalibration=null;
-    panel(`<div class="kicker">An adventure arcade for the whole family</div><h1>WONDERWOOD</h1>
-      <h2>Three magical powers. Three hidden gems.</h2><p>Befriend and catch fantasy creatures! Springaroo double-jumps, Moonwing flies, Tidefox dives. Each capture gives that player one timed transformation. The deep lake is dangerous unless you become a Tidefox.</p>
-      <div class="chips"><span class="chip">Local co-op</span><span class="chip">USB gamepads</span><span class="chip">Offline play</span><span class="chip">Pixel-art world</span></div>
-      <div class="buttons">${button('play','▶ PLAY THE FOREST','primary')}${button('settings','⚙ Settings')}${button('calibrate','🎮 Map controller')}${button('level','🗺 Load PNG level')}</div>
-      <div class="instructions"><b>P1:</b> A / D move, W jump, S dive, F snack, G magic orb, Q choose animal, T transform, R revive<br>
-      <b>P2:</b> J / L move, I jump, K dive, O snack, P orb, H choose, U transform, Y revive<br>
-      <b>Controllers:</b> left stick / D-pad move · A jump · B snack · X orb · Y transform · RB choose · LB revive</div>
-      <div class="hint">${customMap?'Custom level loaded for this session.':'First Forest: Canopy Gem + Sky Gem + River Gem.'} &nbsp; · &nbsp; ${WW.input.pads().length} controller(s) detected</div>`);
+    const portraits=Object.keys(WW.catalog.forms).map(t=>`<span class="menu-creature" title="${WW.catalog.forms[t].name} · ${WW.catalog.forms[t].power}"><img src="${WW.art.portrait(t)}" alt="${WW.catalog.forms[t].name}"></span>`).join('');
+    panel(`<div class="kicker">The enchanted forest is calling</div><h1>WONDERWOOD</h1>
+      <h2>Be kind. Be brave. Become magical.</h2>
+      <div class="menu-portraits">${portraits}</div>
+      <p>Eight whimsical creatures, five magical snacks and three ancient gems. Win creatures over, catch them, transform into them and use their powers to solve the forest's secrets. You can switch forms and save their remaining time!</p>
+      <div class="buttons">${button('play','▶ PLAY FIRST FOREST','primary')}${button('journal','✦ Creature guide')}${button('settings','⚙ Settings')}${button('calibrate','🎮 Controller setup')}${button('level','▧ Load PNG map')}</div>
+      <div class="instructions"><b>Keyboard P1:</b> A / D move · W jump · F food · E change food · G catch orb · Q choose form · T transform · R wake · C back to camp<br>
+      <b>Keyboard P2:</b> J / L move · I jump · O food · M change food · P catch orb · H choose form · U transform · Y wake · N back to camp<br>
+      <b>Menu:</b> Arrow keys + Enter, or Tab + Enter · Escape pauses · All gems auto-collect on contact</div>
+      <div class="hint">${customMap?'Custom map selected.':'First Forest · three gems · unlimited homeward spell'} &nbsp; · &nbsp; ${WW.input.pads().length} controller(s) detected</div>`);
   }
   async function play() {
     const url=customMap||builtinMap;
@@ -651,7 +997,7 @@ WW.main = (() => {
     panel(`<div class="kicker">Wonderwood Arcade</div><h2>Game settings</h2>
       <p>Controls and progress are stored in this browser. Export a save to keep a backup when you move the HTML file.</p>
       <div class="row"><label for="players">Players</label><select id="players"><option value="1" ${settings.players===1?'selected':''}>1 player</option><option value="2" ${settings.players===2?'selected':''}>2 players</option></select></div>
-      <label class="toggle"><input id="rumble" type="checkbox" ${settings.rumble?'checked':''}> Controller vibration (if supported)</label>
+      <label class="toggle"><input id="rumble" type="checkbox" ${settings.rumble?'checked':''}> Controller vibration (if supported)</label><label class="toggle"><input id="sound" type="checkbox" ${settings.sound?'checked':''}> Magical sound effects</label>
       <div class="buttons">${button('save-settings','Save settings','primary')}${button('export','Export save')}${button('import','Import save')}${button('home','Back')}</div>
       <input id="save-file" type="file" accept="application/json,.json" hidden>
       <div class="instructions">Controller vibration support varies by gamepad, Linux driver, and Firefox version.</div>`);
@@ -665,7 +1011,7 @@ WW.main = (() => {
     screen='calibration';const pads=WW.input.pads();if(!pads.length){panel(`<div class="kicker">Controller setup</div><h2>No gamepad detected</h2><p>Connect a USB controller, then press any button on it while Firefox is focused. The browser only exposes gamepads after interaction.</p><div class="buttons">${button('calibrate','Try again','primary')}${button('home','Back')}</div>`);return;}
     const p=pads[0];
     panel(`<div class="kicker">Controller setup · ${p.index+1}</div><h2>Press the requested control</h2><p id="calibration-step"></p><p class="hint">Release each control before the next step. Saves automatically by controller name.</p><div class="buttons">${button('home','Cancel')}</div>`);
-    const display={left:'MOVE LEFT',right:'MOVE RIGHT',down:'MOVE / DIVE DOWN',jump:'JUMP / SWIM UP',snack:'THROW SNACK',orb:'THROW MAGIC ORB',cycle:'CHOOSE ANIMAL FORM',transform:'TRANSFORM',revive:'REVIVE'};
+    const display={left:'MOVE LEFT',right:'MOVE RIGHT',down:'DIVE DOWN',jump:'JUMP / FLY',snack:'THROW SELECTED FOOD',orb:'MAGIC CATCH ORB',cycle:'CHOOSE ANIMAL',transform:'SWITCH FORM',revive:'WAKE / REVIVE',foodCycle:'CHANGE FOOD',recall:'RETURN TO CAMP'};
     cancelCalibration=WW.input.calibrate(p.index,(step,actions)=>{
       const element=document.getElementById('calibration-step');
       if(element)element.textContent=`${step+1} / ${actions.length} — ${display[actions[step]]}`;
@@ -678,18 +1024,28 @@ WW.main = (() => {
       <p class="hint">A green start marker and a red exit marker are required. Unknown colors become empty terrain and are reported in the console.</p>
       <div class="buttons">${button('load-level','Use this level','primary')}${button('reset-level','Use built-in level')}${button('home','Back')}</div>`);
   }
-  function pause(){if(!game||screen!=='playing')return;paused=true;screen='paused';panel(`<div class="kicker">Adventure on hold</div><h2>Paused</h2><p>Snack time? Your forest friends will still be here.</p><div class="buttons">${button('resume','Resume','primary')}${button('restart','Restart level')}${button('home','Main menu')}</div>`);}
-  function win(wins){paused=true;screen='won';panel(`<div class="kicker">A forest full of friends</div><h1>YOU DID IT!</h1><h2>All three gems found. The gate is open!</h2><p>Your teamwork saved the day. Adventures completed: ${wins}. The animals are already getting up to more mischief.</p><div class="buttons">${button('restart','Play again','primary')}${button('home','Arcade menu')}</div>`);}
+  function journal(){
+    screen='journal';
+    const creatures=Object.entries(WW.catalog.forms).map(([kind,c])=>`<div class="journal-card"><img src="${WW.art.portrait(kind)}" alt=""><div><b>${c.name}</b><small>${c.power} · ${c.seconds}s per catch<br>Loves ${WW.catalog.foods[c.favorite].name}</small></div></div>`).join('');
+    const foods=Object.entries(WW.catalog.foods).map(([kind,c])=>`<span class="food-guide"><img src="${WW.art.foodIcon(kind)}" alt="">${c.name} <small>(${c.method})</small></span>`).join('');
+    panel(`<div class="kicker">Forest field guide</div><h2>Meet the magical neighbors</h2><p>Every catch gives the catching player more time in that form. Transform again to switch or return to explorer; unused time is always saved.</p>
+      <div class="journal-grid">${creatures}</div><h3>Picnic powers</h3><div class="guide-foods">${foods}</div><p>Favorite snacks calm creatures faster. Nectar mist reaches several nearby creatures; honeybombs charm groups in a splash.</p>
+      <div class="buttons">${button('home','Back to menu','primary')}</div>`);
+  }
+  function pause(){if(!game||screen!=='playing')return;paused=true;screen='paused';panel(`<div class="kicker">Adventure on hold</div><h2>Paused</h2><p>Snack time? Your forest friends will still be here.</p><div class="buttons">${button('resume','Resume','primary')}${button('camp','Return everyone to camp')}${button('restart','Restart level')}${button('home','Main menu')}</div>`);}
+  function win(wins,shards=0,total=0){paused=true;screen='won';panel(`<div class="kicker">A forest full of friends</div><h1>YOU DID IT!</h1><h2>You gathered all three gems. The enchanted gate is open!</h2><p>Your teamwork saved the day. Bonus star shards: ${shards}/${total}. Adventures completed: ${wins}. The animals are already getting up to more mischief.</p><div class="buttons">${button('restart','Play again','primary')}${button('home','Arcade menu')}</div>`);}
   menu.addEventListener('click',async e=>{
     const id=e.target.closest('button')?.dataset.action;
     if(!id)return;
     if(id==='play'||id==='restart')await play();
     if(id==='home')home();
     if(id==='settings')settings();
+    if(id==='journal')journal();
     if(id==='calibrate')calibration();
     if(id==='level')level();
+    if(id==='camp'&&screen==='paused'){game.recallParty();paused=false;screen='playing';menu.hidden=true;last=0;}
     if(id==='resume'&&screen==='paused'){paused=false;screen='playing';menu.hidden=true;WW.input.reset();last=0;}
-    if(id==='save-settings'){WW.storage.data.settings.players=Number(document.getElementById('players').value);WW.storage.data.settings.rumble=document.getElementById('rumble').checked;WW.storage.save();home();}
+    if(id==='save-settings'){WW.storage.data.settings.players=Number(document.getElementById('players').value);WW.storage.data.settings.rumble=document.getElementById('rumble').checked;WW.storage.data.settings.sound=document.getElementById('sound').checked;WW.storage.save();home();}
     if(id==='export')WW.storage.exportSave();
     if(id==='import')document.getElementById('save-file').click();
     if(id==='reset-level'){customMap=null;pixelsPerTile=1;home();}
@@ -700,9 +1056,40 @@ WW.main = (() => {
       customMap=URL.createObjectURL(file);pixelsPerTile=size;await play();
     }
   });
-  addEventListener('keydown',e=>{if(e.code!=='Escape')return;if(screen==='playing'){e.preventDefault();pause();}else if(screen==='paused'){e.preventDefault();paused=false;screen='playing';menu.hidden=true;WW.input.reset();last=0;}});
+  addEventListener('keydown',e=>{
+    if(e.code==='Escape'){
+      if(screen==='playing'){e.preventDefault();pause();}
+      else if(screen==='paused'){e.preventDefault();paused=false;screen='playing';menu.hidden=true;WW.input.reset();last=0;}
+      else if(!['home','loading','won'].includes(screen)){e.preventDefault();home();}
+      return;
+    }
+    if(menu.hidden||!['ArrowDown','ArrowRight','ArrowUp','ArrowLeft','KeyW','KeyS'].includes(e.code))return;
+    if(e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+    const buttons=[...menu.querySelectorAll('button:not([disabled])')];
+    if(!buttons.length)return;
+    e.preventDefault();const index=buttons.indexOf(document.activeElement);
+    const forward=['ArrowDown','ArrowRight','KeyS'].includes(e.code);
+    buttons[(index+(forward?1:-1)+buttons.length)%buttons.length].focus();
+  });
+  function pollMenuGamepad(){
+    if(menu.hidden || screen==='calibration'){menuPadLatch='';return;}
+    const pad=WW.input.pads()[0];if(!pad){menuPadLatch='';return;}
+    const left=pad.buttons[14]?.pressed||pad.axes[0]<-.55;
+    const right=pad.buttons[15]?.pressed||pad.axes[0]>.55;
+    const up=pad.buttons[12]?.pressed||pad.axes[1]<-.55;
+    const down=pad.buttons[13]?.pressed||pad.axes[1]>.55;
+    const confirm=pad.buttons[0]?.pressed;
+    const value=confirm?'confirm':left||up?'previous':right||down?'next':'';
+    if(value&&value!==menuPadLatch){
+      const buttons=[...menu.querySelectorAll('button:not([disabled])')];
+      if(value==='confirm')document.activeElement?.click?.();
+      else if(buttons.length){const selected=buttons.indexOf(document.activeElement);
+        buttons[(selected+(value==='next'?1:-1)+buttons.length)%buttons.length].focus({preventScroll:true});}
+    }
+    menuPadLatch=value;
+  }
   function idle(now){
-    ctx.setTransform(2,0,0,2,0,0);
+    ctx.setTransform(3,0,0,3,0,0);
     const t=now*.001;const sky=ctx.createLinearGradient(0,0,0,270);sky.addColorStop(0,'#73b6cf');sky.addColorStop(1,'#dbedcf');ctx.fillStyle=sky;ctx.fillRect(0,0,480,270);
     for(let layer=0;layer<3;layer++){
       const h=135+layer*38;ctx.fillStyle=['#aacfc1','#77b0a9','#427e7a'][layer];ctx.beginPath();ctx.moveTo(0,270);
@@ -713,7 +1100,8 @@ WW.main = (() => {
     for(let x=0;x<480;x+=16){ctx.fillStyle='#528b69';ctx.fillRect(x,243,16,3);ctx.fillStyle='#a0d181';ctx.fillRect(x+4,240,3,4);}
     WW.art.draw(ctx,'springaroo',85,244,Math.floor(t*3)%4);WW.art.draw(ctx,'skyling',375,183+Math.sin(t*2)*5,Math.floor(t*6)%4);WW.art.draw(ctx,'tideling',135,244,Math.floor(t*3)%4);WW.art.draw(ctx,'hero',235,242,Math.floor(t*2)%4);
   }
-  function frame(now){const dt=last?Math.min((now-last)/1000,.05):0;last=now;if(game){if(!paused)game.update(dt);game.render(ctx,now/1000);}else idle(now);requestAnimationFrame(frame);}
+  function frame(now){const dt=last?Math.min((now-last)/1000,.05):0;last=now;if(game){if(!paused)game.update(dt);game.render(ctx,now/1000);}else idle(now);
+    pollMenuGamepad();requestAnimationFrame(frame);}
   WW.storage.load();WW.input.syncAssignments();home();requestAnimationFrame(frame);
   return {home,pause,win,play,get game(){return game}};
 })();
