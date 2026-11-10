@@ -64,13 +64,15 @@ platform. The full palette (creatures, pickups, powers, thermals) lives in
 4×4 blocks per tile and set **Pixels per tile** accordingly in the level loader.
 
 Open **Load PNG map** on the title screen to play directly from the mask, or use
-`python scripts/compile-semantic-level.py input.png --pixels-per-tile 4 --out output.json`
+`python scripts/compile-semantic-level.py input.png --pixels-per-tile 4 --biome coast --out output.json`
 to produce an importable JSON level, a snapped semantic PNG and a diagnostic
 report. Masks must be 8–400 tiles wide and 6–80 tiles tall, have exact divisible
 dimensions, and use recognizable palette colors; unknown pixels are tolerated
 only up to 10% of samples. Neither route interprets painted scenery as
 collision. The renderer derives all terrain edges, corners and waterlines from
 the resulting grid so level art stitches without painting manual corner tiles.
+Choose Meadow, Coast, or Summit scenery in the PNG loader, or save that choice
+inside compiled JSON with the CLI's `--biome` option.
 
 Existing bitmap examples in **src/games/animal-adventure/levels/** remain available for users of the custom Load PNG Map feature, but they are no longer the built-in chapter maps.
 

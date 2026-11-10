@@ -101,7 +101,7 @@ with sync_playwright() as playwright:
         paint('platform', 10, 5, 5, 1);
         paint('p1', 3, 7);
         paint('exit', 20, 7);
-        const result = WW.levels.parseCanvas(canvas, tile);
+        const result = WW.levels.parseCanvas(canvas, tile, 'summit');
         const invalid = document.createElement('canvas');
         invalid.width = canvas.width; invalid.height = canvas.height;
         const bad = invalid.getContext('2d');
@@ -111,12 +111,12 @@ with sync_playwright() as playwright:
         try {WW.levels.parseCanvas(invalid, tile);} catch (error) {
             rejected = error.message.includes('unknown colors');
         }
-        return {w:result.width, h:result.height, cells:[
+        return {w:result.width, h:result.height, biome:result.biome, cells:[
             result.grid[8][5], result.grid[9][6], result.grid[10][6],
             result.grid[10][5], result.grid[5][10]
         ],markers:result.objects.map(item => item.kind), rejected};
     }""")
-    assert parsed == {'w':24,'h':12,
+    assert parsed == {'w':24,'h':12,'biome':'summit',
         'cells':['water','water','water','ground','platform'],
         'markers':['p1','exit'],'rejected':True}, parsed
     # A compiled level JSON bundle must be loadable without any network access.

@@ -15,7 +15,7 @@ WW.games.animals = (() => {
   function start(level) {
     const map=level.grid;const width=level.width*TILE,height=level.height*TILE;
     const chapter=level.chapter||{
-      id:'custom',name:'Your Own Wonderwood',biome:'meadow',intro:'Explore the map you created!',
+      id:'custom',name:'Your Own Wonderwood',biome:level.biome||'meadow',intro:'Explore the map you created!',
       goals:level.objects.filter(o=>o.kind.endsWith('Key')).map(o=>({kind:o.kind,name:o.kind.replace('Key',' Gem'),hint:'Find the glowing gem.'})),signs:[]
     };
     const goals=chapter.goals,goalKinds=new Set(goals.map(g=>g.kind));

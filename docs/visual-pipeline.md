@@ -132,3 +132,8 @@ Until separate Coast and Summit plates exist, the painted panorama is also
 cropped and color-graded for those chapters. This is better than the low-res
 placeholder mountain triangles, but the chapters still need their own genuinely
 different paintings. No art reuse changes movement, quests, or collision.
+
+A compiled JSON can declare `"biome": "meadow" | "coast" | "summit"`; the
+in-game PNG import form has the matching scenery selector. This lets the same
+proxy collision layout be visualized with different painted backdrops and
+terrain color treatments, without changing its gameplay cells.

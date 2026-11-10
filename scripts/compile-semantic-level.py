@@ -38,7 +38,7 @@ def classify(pixel, threshold):
     return name if distance <= threshold * threshold else None
 
 
-def compile_image(image, pixels_per_tile=1, max_color_distance=36):
+def compile_image(image, pixels_per_tile=1, max_color_distance=36, biome='meadow'):
     image = image.convert("RGBA")
     if image.width % pixels_per_tile or image.height % pixels_per_tile:
         raise ValueError("Image dimensions must be divisible by pixels-per-tile")
@@ -94,7 +94,7 @@ def compile_image(image, pixels_per_tile=1, max_color_distance=36):
             errors.append(f"{obj['kind']} cannot be on the bottom row")
     level = {
         "width": width, "height": height, "grid": grid,
-        "objects": objects, "warnings": warnings,
+        "objects": objects, "warnings": warnings, "biome": biome,
     }
     report = {
         "valid": not errors,
@@ -124,11 +124,13 @@ def main():
     parser.add_argument("--pixels-per-tile", type=int, default=1)
     parser.add_argument("--max-color-distance", type=int, default=36)
     parser.add_argument("--out", type=Path, required=True, help="Output level JSON path")
+    parser.add_argument("--biome", choices=("meadow", "coast", "summit"), default="meadow",
+                        help="Painted scenery to use when this level is loaded")
     args = parser.parse_args()
     if not 1 <= args.pixels_per_tile <= 64:
         parser.error("--pixels-per-tile must be 1..64")
     with Image.open(args.image) as image:
-        level, report = compile_image(image, args.pixels_per_tile, args.max_color_distance)
+        level, report = compile_image(image, args.pixels_per_tile, args.max_color_distance, args.biome)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     report_path = args.out.with_suffix(".report.json")
     mask_path = args.out.with_suffix(".semantic.png")

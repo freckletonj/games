@@ -47,7 +47,7 @@ WW.levels = (() => {
 
   // An N×N proxy-image block means one gameplay cell, NOT one visual sprite.
   // Edge/corner variants come from neighboring cells in the scenery renderer.
-  function parseCanvas(image, pixelsPerTile = 1) {
+  function parseCanvas(image, pixelsPerTile = 1, biome = 'meadow') {
     if (!Number.isInteger(pixelsPerTile) || pixelsPerTile < 1 || pixelsPerTile > 64 ||
         image.width % pixelsPerTile || image.height % pixelsPerTile) {
       throw Error('Image dimensions must be divisible by pixels-per-tile (1–64)');
@@ -87,17 +87,17 @@ WW.levels = (() => {
     }
     if (unknown) warnings.push(`${unknown}/${samples} samples had unknown colors; those samples were ignored during tile voting`);
     if (unknown > samples * .10) throw Error('More than 10% of semantic mask samples have unknown colors');
-    const level = {grid, objects, warnings, width: cols, height: rows};
+    const level = {grid, objects, warnings, width: cols, height: rows, biome};
     const errors = validateMarkers(level);
     if (errors.length) throw Error(errors.join(' · '));
     return level;
   }
 
-  function load(url, pixelsPerTile = 1) {
+  function load(url, pixelsPerTile = 1, biome = 'meadow') {
     return new Promise((resolve, reject) => {
       const image = new Image();
       image.onload = () => {
-        try {resolve(parseCanvas(image, pixelsPerTile));}
+        try {resolve(parseCanvas(image, pixelsPerTile, biome));}
         catch (error) {reject(error);}
       };
       image.onerror = () => reject(Error('Could not open the PNG image'));
@@ -119,6 +119,9 @@ WW.levels = (() => {
           !Number.isInteger(obj.x) || !Number.isInteger(obj.y) ||
           obj.x < 0 || obj.x >= width || obj.y < 0 || obj.y >= height)) {
       throw Error('Invalid compiled level JSON');
+    }
+    if (level.biome !== undefined && !['meadow', 'coast', 'summit'].includes(level.biome)) {
+      throw Error('Invalid scenery biome');
     }
     const errors = validateMarkers(level);
     if (errors.length) throw Error(errors.join(' · '));

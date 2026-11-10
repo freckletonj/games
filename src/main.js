@@ -2,7 +2,7 @@ window.WW = window.WW || {};
 WW.main = (() => {
   const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
   const menu=document.getElementById('menu');const hud=document.getElementById('hud');
-  let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,customMapJson=false,pixelsPerTile=1,menuPadLatch='',currentChapterIndex=0;
+  let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,customMapJson=false,pixelsPerTile=1,customBiome='meadow',menuPadLatch='',currentChapterIndex=0;
   const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel ${screen==='home'?'panel-home':''}">${content}</section>`;menu.querySelector('button')?.focus({preventScroll:true});};
   const button=(id,label,kind='secondary')=>`<button class="${kind}" data-action="${id}">${label}</button>`;
   function home(){
@@ -53,8 +53,9 @@ WW.main = (() => {
     paused=true;screen='loading';
     panel('<div class="kicker">Unfolding the forest map</div><h2>Loading adventure…</h2>');
     try{
-      const level=customMap?(customMapJson?await WW.levels.loadJSON(customMap):await WW.levels.load(customMap,pixelsPerTile)):WW.worlds.create(chapter);
+      const level=customMap?(customMapJson?await WW.levels.loadJSON(customMap):await WW.levels.load(customMap,pixelsPerTile,customBiome)):WW.worlds.create(chapter);
       level.chapter=chapter;
+      if(customMap && !customMapJson)level.biome=customBiome;
       if(level.warnings.some(w=>w.startsWith('No ')))throw Error(level.warnings.join(' · '));
       WW.input.reset();game=WW.games.animals.start(level);menu.hidden=true;paused=false;screen='playing';last=0;
       if(level.warnings.length)game && console.warn('Level warnings:',level.warnings);
@@ -88,8 +89,8 @@ WW.main = (() => {
   }
   function level(){
     screen='level';panel(`<div class="kicker">For level creators · AI-assisted maps</div><h2>Load your own PNG or compiled JSON map</h2>
-      <p>Use the palette from README.md for a semantic PNG, or load level JSON exported by scripts/compile-semantic-level.py. Pixels per tile applies to PNG only.</p>
-      <div class="row"><label>PNG <input type="file" id="level-file" accept="image/png,.json"></label><label>Pixels per tile <input id="tile-size" type="number" min="1" max="64" value="1" style="width:70px"></label></div>
+      <p>Use the palette from README.md for a semantic PNG, or load level JSON exported by scripts/compile-semantic-level.py. Pixels per tile and scenery biome apply to PNG only; compiled JSON may declare its biome.</p>
+      <div class="row"><label>PNG <input type="file" id="level-file" accept="image/png,.json"></label><label>Pixels per tile <input id="tile-size" type="number" min="1" max="64" value="1" style="width:70px"></label><label>Scenery <select id="level-biome"><option value="meadow">Mosslight Meadow</option><option value="coast">Crystal Coast</option><option value="summit">Starfall Summit</option></select></label></div>
       <p class="hint">Use one color per semantic tile, not a painted scene. Start and exit need solid ground beneath them; masks with too many unknown colors are rejected.</p>
       <div class="buttons">${button('load-level','Use this level','primary')}${button('reset-level','Use built-in level')}${button('home','Back')}</div>`);
   }
@@ -134,12 +135,12 @@ WW.main = (() => {
     if(id==='save-settings'){WW.storage.data.settings.players=Number(document.getElementById('players').value);WW.storage.data.settings.rumble=document.getElementById('rumble').checked;WW.storage.data.settings.sound=document.getElementById('sound').checked;WW.storage.save();home();}
     if(id==='export')WW.storage.exportSave();
     if(id==='import')document.getElementById('save-file').click();
-    if(id==='reset-level'){customMap=null;customMapJson=false;pixelsPerTile=1;home();}
+    if(id==='reset-level'){customMap=null;customMapJson=false;pixelsPerTile=1;customBiome='meadow';home();}
     if(id==='load-level'){
       const file=document.getElementById('level-file').files[0];if(!file){alert('Select a PNG file first.');return;}
       const size=Number(document.getElementById('tile-size').value);
       if(!Number.isInteger(size)||size<1||size>64){alert('Pixels per tile must be 1–64.');return;}
-      customMap=URL.createObjectURL(file);customMapJson=file.name.toLowerCase().endsWith('.json');pixelsPerTile=size;await play();
+      customMap=URL.createObjectURL(file);customMapJson=file.name.toLowerCase().endsWith('.json');pixelsPerTile=size;customBiome=document.getElementById('level-biome').value;await play();
     }
   });
   addEventListener('keydown',e=>{

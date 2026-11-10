@@ -55,6 +55,7 @@ class SemanticPipelineTests(unittest.TestCase):
             report = json.loads(target.with_suffix(".report.json").read_text())
             self.assertTrue(report["valid"])
             self.assertEqual((level["width"], level["height"]), (24, 12))
+            self.assertEqual(level["biome"], "meadow")
             self.assertEqual(level["grid"][8][0], "ground")
             self.assertEqual(level["grid"][5][12], "platform")
             self.assertEqual(
@@ -81,6 +82,20 @@ class SemanticPipelineTests(unittest.TestCase):
             self.assertTrue(report["valid"], report)
             self.assertEqual(level["grid"][8][5:8], ["water"] * 3)
             self.assertEqual(level["grid"][10][5:8], ["ground", "water", "ground"])
+
+    def test_compiler_can_select_painted_biome(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "semantic.png"
+            target = Path(directory) / "coast.json"
+            self.make_mask(source)
+            result = subprocess.run(
+                [sys.executable, str(ROOT / "scripts/compile-semantic-level.py"),
+                 str(source), "--pixels-per-tile", "4", "--biome", "coast",
+                 "--out", str(target)],
+                capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(target.read_text())["biome"], "coast")
 
     def test_spawn_above_water_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
