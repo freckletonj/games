@@ -289,7 +289,7 @@ WW.art = (() => {
 
   function draw(ctx,name,x,y,frame=0,flip=false,playerId=null,pose={}) {
     const index=Math.max(0,kinds.indexOf(name));
-    const action=pose.action||'idle',time=pose.time||0;
+    const action=pose.action||'idle',time=pose.time??(frame/3);
     const snack=name==='snack';
     const explorer=playerId!==null;
     const sizes={
