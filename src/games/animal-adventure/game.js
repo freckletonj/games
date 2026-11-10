@@ -33,7 +33,7 @@ WW.games.animals = (() => {
     const terrainNeighbors = map.map((row, y) => row.map((kind, x) => {
       const same = (dx, dy) => map[y + dy]?.[x + dx] === kind;
       return {n:same(0,-1),ne:same(1,-1),e:same(1,0),se:same(1,1),
-        s:same(0,1),sw:same(-1,1),w:same(-1,0),nw:same(-1,-1)};
+        s:same(0,1),sw:same(-1,1),w:same(-1,0),nw:same(-1,-1),north:map[y-1]?.[x]||'empty'};
     }));
     const at=(x,y)=>map[Math.floor(y/TILE)]?.[Math.floor(x/TILE)]||'empty';
     const solid=(x,y)=>y>=height||x<0||x>=width||at(x,y)==='ground';
@@ -559,7 +559,7 @@ WW.games.animals = (() => {
       }
     }
     function sceneryBack(ctx,time){
-      if(chapter.biome==='meadow'&&WW.scenery.ready('backdrop'))return;
+      if(WW.scenery.ready('backdrop'))return;
       const l=Math.floor((cameraX-180)/172),r=Math.ceil((cameraX+W+180)/172);
       const base=spawn.y+28;
       for(let i=l;i<=r;i++){
@@ -694,7 +694,7 @@ WW.games.animals = (() => {
       }
     }
     function groundDetails(ctx,time){
-      if(chapter.biome==='meadow'&&WW.scenery.ready('tiles'))return;
+      if(WW.scenery.ready('tiles'))return;
       const left=Math.max(0,Math.floor(cameraX/TILE)-1),right=Math.min(level.width,Math.ceil((cameraX+W)/TILE)+1);
       for(let x=left;x<right;x++){
         for(let y=1;y<level.height-1;y++){
@@ -753,7 +753,7 @@ WW.games.animals = (() => {
         }
       }
       // tiny foreground blossoms, all procedural and repeatable
-      for(let x=left;x<right;x++)for(let y=top+1;y<bottom;y++)if(map[y]?.[x]==='ground'&&map[y-1]?.[x]==='empty'&&hash(x,y)%8===1){
+      for(let x=left;x<right;x++)for(let y=top+1;y<bottom;y++)if(!WW.scenery.ready('tiles')&&map[y]?.[x]==='ground'&&map[y-1]?.[x]==='empty'&&hash(x,y)%8===1){
         const px=x*TILE+6,py=y*TILE-2;box(ctx,px,py-4,2,5,'#3e8269');box(ctx,px-2,py-6,6,3,'#f39cc3');box(ctx,px,py-7,2,2,'#ffea9f');
       }
     }

@@ -55,27 +55,28 @@ with sync_playwright() as playwright:
     )""")
     assert page.evaluate("WW.spriteAtlas.portrait('hero').startsWith('data:image/png;base64,')")
     assert page.evaluate("WW.spriteAtlas.portrait('springaroo').startsWith('data:image/png;base64,')")
-    # Connected water/soil swatches have no per-cell seams, even with flipped UVs.
-    seams = page.evaluate("""() => {
-        function difference(kind) {
+    # No alpha gaps at the boundaries of the world-anchored painted texture.
+    # Neighboring pixels may differ naturally because texture detail is continuous,
+    # rather than repeated identically on each side of every 16-unit seam.
+    seam_alpha = page.evaluate("""() => {
+        return ['water','ground','platform'].map(kind => {
             const canvas = document.createElement('canvas');
             canvas.width = 32; canvas.height = 16;
             const ctx = canvas.getContext('2d');
             const neighbors = {n:true,e:true,s:true,w:true,ne:true,nw:true,se:true,sw:true};
-            WW.scenery.tile(ctx, 'meadow', kind, 0, 0, 0, neighbors);
-            WW.scenery.tile(ctx, 'meadow', kind, 16, 0, 0, neighbors);
-            const pixels = ctx.getImageData(0, 0, 32, 16).data;
-            let maxDelta = 0;
-            for(let y = 5; y < 12; y++)for(let c = 0; c < 3; c++){
-                const first = pixels[(y*32+15)*4+c];
-                const second = pixels[(y*32+16)*4+c];
-                maxDelta = Math.max(maxDelta, Math.abs(first-second));
+            WW.scenery.tile(ctx,'meadow',kind,0,0,0,neighbors);
+            WW.scenery.tile(ctx,'meadow',kind,16,0,0,neighbors);
+            const data = ctx.getImageData(0,0,32,16).data;
+            let alpha = 255;
+            for(let y=0;y<16;y++)for(const x of [15,16]) {
+                alpha = Math.min(alpha,data[(y*32+x)*4+3]);
             }
-            return maxDelta;
-        }
-        return {water:difference('water'),ground:difference('ground')};
+            return alpha;
+        });
     }""")
-    assert seams['water'] <= 8 and seams['ground'] <= 8, seams
+    assert min(seam_alpha) >= 245, seam_alpha
+    assert page.evaluate("""() => ['coast','summit'].every(biome =>
+        WW.scenery.background(document.createElement('canvas').getContext('2d'),biome,0))""")
     # Every shape of shoreline, including concave and convex corners, renders.
     assert page.evaluate("""() => {
         const ctx = document.createElement('canvas').getContext('2d');

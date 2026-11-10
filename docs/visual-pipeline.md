@@ -96,8 +96,8 @@ The compiled `dist/wonderwood.html` is generated instead of tracked: full-resolu
 
 The 4×2 Meadow painting is a **source swatch atlas**, not a collection of eight
 interchangeable complete tiles. The runtime samples the *interior* of the painted
-ground, platform and water cells, mirrors neighboring samples at fixed world-grid
-boundaries, then overlays only those cliffs, grass caps, platform ends and
+ground, platform and water cells, assembles mirrored 128-unit painted swatches into world-anchored textures,
+then overlays only those cliffs, grass caps, platform ends and
 shorelines that the eight neighboring **semantic** cells expose. This avoids
 repeating a baked waterline down every row, and keeps the interior of long pools
 continuous. Both convex and concave corners are handled. Variants no longer
@@ -119,3 +119,16 @@ Both require exactly one start and exit with a solid landing tile directly below
 and reject keys placed on the bottom row. A proxy is a semantic layout, *not* a
 reference photo or an RGB illustration. A hand-painted beauty plate may be
 composited behind it without changing movement.
+
+## Screen-reviewed biome pass
+
+Chromium screenshots showed that a mirrored **16-unit** rock swatch still looked
+like a tiled mosaic. The repeat period is now 256 world units, assembled from
+reflections of a 128-unit painted interior. The cliff, floating ledge and water
+cap are independent layers, so submerged earth does not sprout a grass border.
+The tiny procedural foreground flowers were removed whenever painted tiles load.
+
+Until separate Coast and Summit plates exist, the painted panorama is also
+cropped and color-graded for those chapters. This is better than the low-res
+placeholder mountain triangles, but the chapters still need their own genuinely
+different paintings. No art reuse changes movement, quests, or collision.
