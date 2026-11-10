@@ -7,6 +7,8 @@ WW.games.animals = (() => {
   const PHYSICS={run:2.25,jump:5.7,doubleJump:5.5,gravity:.27,maxFall:5.7,
     bodyHalf:9,bodyHeight:25,waterExposure:.8,leash:W-75};
   const jumpHeight=PHYSICS.jump**2/(2*PHYSICS.gravity);
+  // Creatures are caught through preparation and accurate throws, never a dice roll.
+  const BOND_THRESHOLD=30;
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
   const hash=(a,b)=>((a*137+b*991)*(a*17+b*23))>>>0;
@@ -96,8 +98,12 @@ WW.games.animals = (() => {
       a.wary=Math.max(0,a.wary-amount*boost);
       a.attackCD=Math.max(a.attackCD,.55);
       particles(a.x,a.y-14,FOOD[food].color,food===favorite?16:10);
-      if(food===favorite)say(`${titles[a.kind]} LOVES ${FOOD[food].name}! +${Math.round(amount*boost)} friendship`,1400);
-      else if(a.wary===0)say(`${titles[a.kind]} is friendly! Your orb has a 98% chance.`,1600);
+      if(a.wary<=BOND_THRESHOLD){
+        say(`${titles[a.kind]} trusts you! Aim a capture orb (G / X) to borrow its power.`,1900);
+        WW.audio.play('ready');
+      } else if(food===favorite){
+        say(`${titles[a.kind]} loves ${FOOD[food].name}! Keep building trust.`,1350);
+      }
     }
     function recallParty(destination=spawn){WW.audio.play('recall');
       players.forEach((p,i)=>{p.x=destination.x+i*25;p.y=destination.y;p.vx=p.vy=0;p.waterTime=0;p.lastSafe={x:p.x,y:p.y};p.grounded=false;
@@ -126,7 +132,11 @@ WW.games.animals = (() => {
       const flying=p.form==='skyling';
       const run=p.form==='prismtail'?4.0:p.form==='springaroo'?2.6:swimming?2.45:PHYSICS.run;
       const water=liquid(p.x,p.y-9)||liquid(p.x,p.y-1);
-      p.vx=direction*run*(water&&!swimming?.42:1);
+      // Acceleration gives movement weight without sacrificing the sprint trial.
+      const targetSpeed=direction*run*(water&&!swimming?.42:1);
+      const traction=direction?(p.grounded?.52:.34):(p.grounded?.65:.32);
+      p.vx+=clamp(targetSpeed-p.vx,-traction*step,traction*step);
+      if(!direction&&Math.abs(p.vx)<.08)p.vx=0;
       if(swimming){
         p.vy=(Number(controls.down)-Number(controls.jump))*2.45;
         p.coyote=0;p.jumpBuffer=0;p.jumpsUsed=0;
@@ -142,6 +152,8 @@ WW.games.animals = (() => {
           p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumpsUsed++;
           if(second){particles(p.x,p.y-5,'#f6e190',13);WW.input.rumble(p.id,.25,80);}
         }
+        // Releasing early makes a short hop; holding yields full jump height.
+        if(controls.released.jump&&p.vy< -1&&!flying)p.vy*=.56;
         if(flying && controls.jump) p.vy=Math.max(-2.95,p.vy-.52*step);
         if(p.form==='cloudwhisp'&&controls.jump&&p.vy>0)p.vy=Math.min(p.vy,.78);
         // Starfall thermals lift gliding creatures; other forms cross without being carried.
@@ -163,6 +175,7 @@ WW.games.animals = (() => {
       }
       p.x=clamp(nx,half+1,width-half-1);
       let ny=p.y+p.vy*step;
+      const wasGrounded=p.grounded,landingSpeed=p.vy;
       // Floating platforms are one-way: jump through from below, land from above.
       const platformAt=(x)=>at(x,ny)==='platform' && p.y<=Math.floor(ny/TILE)*TILE;
       if(p.vy>=0&&(solid(p.x-half+2,ny)||solid(p.x+half-2,ny)||platformAt(p.x-half+2)||platformAt(p.x+half-2))){
@@ -172,6 +185,10 @@ WW.games.animals = (() => {
         ny=(Math.floor((ny-upper)/TILE)+1)*TILE+upper;p.vy=0;
       }
       p.y=clamp(ny,upper+1,height-8);
+      if(p.grounded&&!wasGrounded&&landingSpeed>2.3){
+        particles(p.x,p.y-1,chapter.biome==='coast'?'#b1f4e8':'#d8d5aa',6);
+        WW.audio.play('land');
+      }
       const nowWater=liquid(p.x,p.y-8)||liquid(p.x,p.y-1);
       if(nowWater && p.form!=='tideling'){
         p.waterTime+=dt;
@@ -234,8 +251,8 @@ WW.games.animals = (() => {
       const step=dt*60;
       for(const a of animals){
         if(!a.alive){a.respawn-=dt;if(a.respawn<=0){a.alive=true;a.wary=100;a.attackCD=2;a.windup=0;a.dashTime=0;}continue;}
-        a.phase+=dt;a.frame+=dt*(a.wary>0?6:3);
-        const target=targetFor(a),near=target&&distance(target,a)<175&&a.wary>0;
+        a.phase+=dt;a.frame+=dt*(a.wary>BOND_THRESHOLD?6:3);
+        const target=targetFor(a),near=target&&distance(target,a)<175&&a.wary>BOND_THRESHOLD;
         const dx=target?target.x-a.x:0;
         const home=a.homeX,baseY=a.homeY;
         // The eight magical species have distinct movement and combat patterns.
@@ -283,7 +300,7 @@ WW.games.animals = (() => {
           }
         }
         a.dir=target&&near?(dx>=0?1:-1):(Math.cos(a.phase)>=0?1:-1);
-        if(a.wary<=0){a.windup=0;continue;}
+        if(a.wary<=BOND_THRESHOLD){a.windup=0;continue;}
         if(a.windup>0){
           a.windup-=dt;
           if(a.windup<=0){
@@ -303,8 +320,12 @@ WW.games.animals = (() => {
       }
     }
     function capture(animal,owner){
-      const chance=.12+.86*Math.pow(1-animal.wary/100,1.55);
-      if(Math.random()<chance){
+      if(animal.wary>BOND_THRESHOLD){
+        WW.audio.play('miss');
+        particles(animal.x,animal.y-8,'#f4b0dd',7);
+        say(`${titles[animal.kind]} is still wary. Try ${FOOD[FORM[animal.kind].favorite].name} to earn its trust!`,1900);
+        return;
+      }
         WW.audio.play('catch');animal.alive=false;animal.respawn=5;
         for(const c of challenges)if(c.type==='befriend'&&c.kind===animal.kind&&!c.completed){
           c.catches=(c.catches||0)+1;
@@ -313,7 +334,7 @@ WW.games.animals = (() => {
         players[owner].energy[animal.kind]+=FORM[animal.kind].seconds;players[owner].selected=TYPES.indexOf(animal.kind);
         particles(animal.x,animal.y-8,FORM[animal.kind].color,28);
         WW.input.rumble(owner,.55,290);say(`P${owner+1} befriended ${titles[animal.kind]}! +${FORM[animal.kind].seconds}s of ${FORM[animal.kind].power.toLowerCase()}. Press Transform!`,2800);
-      } else {WW.audio.play('miss');particles(animal.x,animal.y-8,'#f4b0dd',7);say(`The orb missed! Catch chance ${Math.round(chance*100)}%.`,1200);}
+      }
     }
     function updateProjectiles(dt){
       for(let i=projectiles.length-1;i>=0;i--){
@@ -398,7 +419,13 @@ WW.games.animals = (() => {
           WW.input.rumble(p.id,.35,110);particles(item.x,item.y,'#faffbc',18);
           say(`Star shard ${shared.shards}/${shared.totalShards}! +2 Stardrops. Bonus treasure!`,1550);
         }
-        else if(item.kind==='checkpoint'){shared.checkpoint={x:item.x,y:item.y+8};item.used=true;say('Checkpoint activated!');}
+        else if(item.kind==='checkpoint'){
+          shared.checkpoint={x:item.x,y:item.y+8};item.used=true;
+          players.forEach(player=>player.health=3);
+          WW.audio.play('checkpoint');
+          particles(item.x,item.y-8,'#abf5cb',22);
+          say('Campfire reached! Checkpoint saved and hearts restored.',2400);
+        }
         else if(item.kind==='exit'){
           if(goals.every(g=>shared.keys[g.kind])){
             shared.won=true;const progress=WW.storage.data.progress;
@@ -423,9 +450,13 @@ WW.games.animals = (() => {
       const minX=Math.min(...xs),maxX=Math.max(...xs);
       // The desired camera position must contain *all* players plus a margin.
       const targetX=clamp((minX+maxX)/2-W/2,maxX-(W-30),minX-30);
-      cameraX=clamp(targetX,0,Math.max(0,width-W));
+      const desiredX=clamp(targetX+(players.length===1?players[0].vx*14:0),0,Math.max(0,width-W));
+      const smoothingX=Math.abs(desiredX-cameraX)>W*.85?1:Math.min(1,dt*10);
+      cameraX+=(desiredX-cameraX)*smoothingX;
       const minY=Math.min(...players.map(p=>p.y)),maxY=Math.max(...players.map(p=>p.y));
-      cameraY=clamp((minY+maxY)/2-H*.73,0,Math.max(0,height-H));
+      const desiredY=clamp((minY+maxY)/2-H*.73,0,Math.max(0,height-H));
+      const smoothingY=Math.abs(desiredY-cameraY)>H*.9?1:Math.min(1,dt*8);
+      cameraY+=(desiredY-cameraY)*smoothingY;
       if(clock>+(message.dataset.until||0))message.classList.remove('show');
       if(clock-hudTime>.16){
         hudTime=clock;
