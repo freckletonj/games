@@ -1,13 +1,14 @@
 {
   "name": "springaroo",
-  "image": "sheet.svg",
-  "frameWidth": 96,
-  "frameHeight": 96,
+  "image": "sheet.png",
+  "frameWidth": 444,
+  "frameHeight": 444,
+  "columns": 4,
   "origin": {
-    "x": 48,
-    "y": 85
+    "x": 214,
+    "y": 355
   },
-  "worldScale": 0.46,
+  "worldScale": 0.1,
   "animations": {
     "idle": {
       "frames": [
@@ -19,49 +20,51 @@
     "run": {
       "frames": [
         2,
-        3
+        3,
+        4,
+        5
       ],
       "fps": 10
     },
     "jump": {
       "frames": [
-        4
+        6
       ],
       "fps": 1
     },
     "fall": {
       "frames": [
-        5
+        6
       ],
       "fps": 1
     },
     "eat": {
       "frames": [
-        6
+        1
       ],
       "fps": 1
     },
     "happy": {
       "frames": [
-        7
+        1
       ],
-      "fps": 1
+      "fps": 2
     },
     "alert": {
       "frames": [
-        1
+        2
       ],
       "fps": 1
     },
     "hurt": {
       "frames": [
-        5
+        7
       ],
       "fps": 1
     },
     "sleep": {
       "frames": [
-        6
+        0
       ],
       "fps": 1
     }
