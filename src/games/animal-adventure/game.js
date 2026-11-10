@@ -482,6 +482,18 @@ WW.games.animals = (() => {
     }
     function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
     function background(ctx,time){
+      if(WW.scenery.background(ctx,chapter.biome,cameraX)){
+        // Subtle animated motes keep the illustrated atmosphere alive.
+        for(let i=0;i<23;i++){
+          const x=((i*113.1-cameraX*.09+time*4)%(W+60)+(W+60))%(W+60)-25;
+          const y=25+(hash(i,13)%194)+Math.sin(time*1.7+i)*5;
+          ctx.globalAlpha=.18+.4*(.5+.5*Math.sin(time*2.2+i*2.5));
+          ctx.fillStyle=i%3?'#f8e8ae':'#caffdb';
+          ctx.beginPath();ctx.arc(x,y,i%7===0?1.6:.85,0,Math.PI*2);ctx.fill();
+        }
+        ctx.globalAlpha=1;
+        return;
+      }
       const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,tint.sky[0]);sky.addColorStop(.30,tint.sky[1]);sky.addColorStop(.72,tint.sky[2]);sky.addColorStop(1,tint.sky[3]);ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
       // Layered glowing moon and drifting fireflies make the biome feel enchanted.
       const moon=ctx.createRadialGradient(390,43,5,390,43,56);
@@ -544,6 +556,11 @@ WW.games.animals = (() => {
       for(let i=l;i<=r;i++){
         const x=i*172+(hash(i,29)%23),wind=Math.sin(time*.66+i)*2;
         const high=base-130-(i%3)*8;
+        if(chapter.biome==='meadow' && WW.scenery.ready('lanternTree')){
+          ctx.save();ctx.translate(x,base);ctx.scale(.72,.72);ctx.globalAlpha=.38;
+          WW.scenery.landmark(ctx,chapter.biome,'tree',time+i*.5);
+          ctx.restore();continue;
+        }
         if(chapter.biome==='coast'){
           // Glassy mineral spires with sharp colored facets and teal reef anemones.
           const y=high-5+(i%2)*15;
@@ -598,6 +615,7 @@ WW.games.animals = (() => {
         if(row<0)continue;
         const y=row*TILE,wind=Math.sin(time*.9+x*.013)*3;
         ctx.save();ctx.translate(x,y);
+        if(WW.scenery.landmark(ctx,chapter.biome,place.type,time)){ctx.restore();continue;}
         if(place.type==='tree'){
           // Giant hollow trees and lantern boughs become recognizable places, not tiled noise.
           box(ctx,-13,-113,26,116,'#244d59');
@@ -693,6 +711,7 @@ WW.games.animals = (() => {
       for(let y=top;y<bottom;y++)for(let x=left;x<right;x++){
         const t=map[y][x];if(t==='empty')continue;
         const px=x*TILE,py=y*TILE,h=hash(x,y);
+        if(WW.scenery.tile(ctx,chapter.biome,t,px,py,h,y===0||map[y-1][x]!=='ground'))continue;
         if(t==='ground'){
           box(ctx,px,py,16,16,tint.soil[0]);box(ctx,px,py+4,16,12,tint.soil[h%2?1:2]);
           if(y===0||map[y-1][x]!=='ground'){
