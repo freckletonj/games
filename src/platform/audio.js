@@ -2,6 +2,7 @@ window.WW = window.WW || {};
 WW.audio = (() => {
   let context;
   const tunes = {
+    munch:[[260,340,.08,'sine'],[360,430,.09,'sine']],
     jump:[[420,550,.09,'triangle']], double:[[490,740,.17,'triangle']],
     land:[[160,92,.07,'triangle']], ready:[[510,680,.1,'sine'],[680,930,.18,'sine']],
     checkpoint:[[320,510,.13,'triangle'],[510,760,.22,'sine'],[760,1010,.29,'sine']],

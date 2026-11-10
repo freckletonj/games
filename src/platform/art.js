@@ -3,7 +3,7 @@ WW.art = (() => {
   // 64×80 pixel-art sprite frames, with detailed magical silhouettes and micro-highlights.
   // All frames and HUD portraits are drawn locally; no fetched textures.
   const kinds=['hero','springaroo','skyling','tideling','cloudwhisp','prismtail','mossback','glimmermoth','emberkit','snack'];
-  const sw=64,sh=80,frames=4;
+  const sw=64,sh=80,frames=6;
   const sheet=document.createElement('canvas');sheet.width=sw*frames*kinds.length;sheet.height=sh;
   const g=sheet.getContext('2d');g.imageSmoothingEnabled=false;
   function oval(x,y,rx,ry,color){g.fillStyle=color;g.beginPath();g.ellipse(x,y,rx,ry,0,0,Math.PI*2);g.fill();}
@@ -16,7 +16,7 @@ WW.art = (() => {
     oval(11,36+(phase?1:0),2,1,'#fff3dc');oval(21,36+(phase?-1:0),2,1,'#fff3dc');
   }
   function hero(f){
-    const bounce=f===1?-1:f===3?1:0;
+    const bounce=f===1||f===4?-2:f===3||f===5?1:0;
     feet('#354d79',f%2);
     shape([[8,24+bounce],[24,24+bounce],[27,34+bounce],[5,34+bounce]],'#2d547f');
     oval(16,28+bounce,10,7,'#597ead');
@@ -33,7 +33,7 @@ WW.art = (() => {
     shine(12,12,1.2);
   }
   function springaroo(f){
-    const bounce=f===1?-2:f===3?1:0;
+    const bounce=f===1||f===4?-3:f===3||f===5?1:0;
     shape([[21,29+bounce],[28,25+bounce],[30,28+bounce],[29,33+bounce],[22,35+bounce]],'#8e4979');
     line([[23,28+bounce],[27,31+bounce],[29,30+bounce]],'#ffca8a',2);
     feet('#8a4875',f%2);
@@ -173,14 +173,161 @@ WW.art = (() => {
     }
   }
   g.putImageData(pixels,0,0);
-  function draw(ctx,name,x,y,frame=0,flip=false,playerId=null) {
+  // Side-view stage sprites are distinct from the large front-facing field-guide portraits.
+  // Every animal reads as a different silhouette, even before its colors are visible.
+  function drawWorldSprite(ctx,name,time,action){
+    const step=Math.sin(time*12),flap=Math.sin(time*13);
+    const eat=action==='eat',happy=action==='happy',jump=action==='jump';
+    const oval=(x,y,rx,ry,color)=>{
+      ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill();
+    };
+    const poly=(points,color)=>{
+      ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(...points[0]);
+      for(let i=1;i<points.length;i++)ctx.lineTo(...points[i]);
+      ctx.closePath();ctx.fill();
+    };
+    const stroke=(points,color,w=2)=>{
+      ctx.strokeStyle=color;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';
+      ctx.beginPath();ctx.moveTo(...points[0]);for(let i=1;i<points.length;i++)ctx.lineTo(...points[i]);ctx.stroke();
+    };
+    const eye=(x,y)=>{
+      if(eat){stroke([[x-2,y],[x+2,y]],'#384559',1.3);return;}
+      oval(x,y,1.6,1.9,'#273c4e');oval(x+.4,y-.7,.6,.6,'#fff8e4');
+    };
+    const feet=(color,pace=1)=>{
+      oval(-7,-2+step*pace,4,2.6,color);oval(7,-2-step*pace,4,2.6,color);
+    };
+    const pink='#ffb2be',ivory='#f8e8c5',night='#334257';
+    if(name==='hero'){
+      feet('#32476b',action==='run'?3:0);
+      poly([[-10,-7],[-8,-20],[3,-23],[9,-7]],'#2e577c');
+      poly([[-12,-13],[-15,-19],[-7,-22],[-4,-13]],'#f5c381');
+      oval(0,-21,9,10,'#ffd3ae');
+      poly([[-9,-24],[-10,-31],[-1,-34],[10,-27],[7,-23],[0,-27]],'#4c3a5d');
+      oval(5,-23,2.5,3,'#ffe6c6');eye(6,-23);
+      stroke([[-4,-11],[5,-10],[10,-13]],'#ffd78c',2.5);
+      oval(-9,-13+step*1.3,2.8,4,'#f7b998');
+      if(action==='run')oval(10,-12-step*2,2.5,4,'#ffd3ae');
+    }else if(name==='springaroo'){
+      stroke([[-8,-11],[-18,-11-step*2],[-21,-5]],'#ad5e83',5);
+      feet('#9d567e',action==='run'?3:1);
+      oval(-1,-13,12,10,'#c77597');oval(2,-10,8,5,'#f9c9ad');
+      poly([[0,-20],[-1,-35+flap*2],[5,-33+flap*2],[8,-19]],'#a95d85');
+      poly([[7,-20],[10,-38-flap*2],[16,-35-flap*2],[15,-20]],'#b96991');
+      poly([[3,-24],[3,-33+flap*2],[5,-32],[6,-23]],'#f8b5c3');
+      oval(7,-20,9,8,'#dc8eab');oval(12,-16,6,4,'#ffd8c6');eye(12,-21);
+      oval(17,-15,1.6,1.5,'#9f536d');
+      oval(-10,-9,3,3,'#f2a3b8');
+    }else if(name==='tideling'){
+      poly([[-8,-13],[-20,-22+flap*3],[-17,-10],[-22,-3+flap*3],[-9,-7]],'#3b8aa4');
+      poly([[-19,-21+flap*3],[-16,-12],[-19,-7]],'#96eadc');
+      feet('#34869b',action==='run'?2:1);
+      oval(0,-11,12,9,'#409bb0');oval(2,-9,8,5,'#afe6d6');
+      poly([[5,-20],[4,-30],[10,-24],[16,-29],[14,-18]],'#328ca1');
+      oval(8,-19,9,7,'#64b8bf');oval(13,-15,6,3.8,'#d8f4e6');eye(12,-21);
+      oval(18,-15,1.6,1.6,'#456178');
+      stroke([[3,-17],[-1,-15]],'#e6f6e9',1.2);
+    }else if(name==='skyling'){
+      const wing=flap*(action==='idle'?3:7);
+      poly([[-4,-16],[-17,-25-wing],[-15,-7+wing],[-2,-10]],'#618cc5');
+      poly([[4,-15],[15,-26+wing],[17,-6-wing],[1,-9]],'#83c7d4');
+      poly([[-12,-19-wing],[-8,-12],[-5,-12]],'#b7f1df');
+      oval(0,-13,8,10,'#5a66a9');oval(2,-10,5,7,'#c6dbed');
+      oval(5,-20,8,8,'#9899d5');
+      poly([[10,-21],[15,-19],[10,-17]],'#f4ce85');
+      eye(8,-21);oval(2,-26,2,2,'#f8e7b3');
+      if(jump||happy){oval(-15,-24-wing,2,2,'#e3f8f0');}
+    }else if(name==='mossback'){
+      feet('#648b71',action==='run'?2:1);
+      oval(0,-10,14,11,'#3c6b67');
+      oval(-2,-15,13,11,'#75a17b');
+      oval(-2,-16,10,7,'#a8d59b');
+      for(let i=0;i<4;i++)poly([[-11+i*6,-20],[-9+i*6,-29-i%2*3],[-6+i*6,-21]],i%2?'#96c986':'#60a88c');
+      oval(10,-13,8,7,'#c0df9d');eye(13,-14);
+      oval(16,-10,2,2,'#738d61');
+    }else if(name==='prismtail'){
+      poly([[-7,-11],[-16,-16+flap*3],[-23,-23],[-19,-13],[-23,-8],[-10,-7]],'#f5a277');
+      poly([[-21,-22],[-16,-15],[-22,-10]],'#ffe4a2');
+      feet('#aa607e',action==='run'?3.5:2);
+      oval(-1,-12,12,7.5,'#cf759b');
+      poly([[5,-18],[7,-28],[12,-22],[18,-26],[16,-17]],'#b9618e');
+      oval(9,-17,9,7,'#f3a98c');oval(14,-14,5,3,'#ffe0b5');eye(12,-19);
+      poly([[2,-18],[1,-22],[6,-19]],'#ffe79b');
+    }else if(name==='glimmermoth'){
+      const w=flap*3.5;
+      poly([[-1,-15],[-16,-29-w],[-15,-10],[0,-8]],'#f3b0e6');
+      poly([[0,-17],[12,-30+w],[16,-9],[1,-8]],'#c5b6ee');
+      poly([[-1,-10],[-11,-5],[-7,-2],[1,-7]],'#91d1dd');
+      oval(1,-15,5,10,'#7d6aa9');oval(6,-21,6,6,'#b397d3');eye(9,-22);
+      stroke([[5,-26],[3,-31]],'#a9e9db',1);
+      oval(3,-31,2,2,'#ffeeb4');
+      oval(-9,-17-w,2.5,2.5,'#fff2bb');
+    }else if(name==='cloudwhisp'){
+      oval(-10,-12+flap*2,8,7,'#a79bd9');
+      oval(9,-12-flap*2,8,8,'#bcb1e7');
+      oval(-2,-17,12,11,'#e0d2f5');oval(3,-12,13,8,'#f3e9f7');
+      poly([[-7,-7],[-13,0],[-1,-3]],'#b1a0e7');
+      poly([[4,-7],[10,1],[15,-10]],'#a5b7de');
+      eye(6,-18);oval(10,-14,1.5,1.2,'#dc9bb9');
+      oval(-11,-23,3,2,'#dcf1f4');
+    }else if(name==='emberkit'){
+      poly([[-8,-12],[-19,-22+flap*3],[-16,-11],[-23,-6],[-10,-6]],'#ff996b');
+      poly([[-19,-22+flap*3],[-14,-15],[-19,-11]],'#ffe1a0');
+      feet('#ab5970',action==='run'?3:1);
+      oval(0,-12,11,9,'#e88b7b');oval(2,-9,7,4,'#ffd6b0');
+      poly([[5,-18],[4,-30],[11,-24],[15,-31],[18,-18]],'#b85e79');
+      oval(9,-19,8,8,'#ffa481');oval(14,-15,6,4,'#ffdfb4');eye(12,-21);
+      poly([[-5,-20],[1,-28],[2,-21]],'#f9ce82');
+      oval(18,-14,1.7,1.4,'#694b61');
+    }else{
+      oval(0,-12,10,9,'#ed9ec4');oval(3,-15,3,3,'#ffe4cc');
+    }
+    if(happy||eat){
+      ctx.globalAlpha=.9;oval(0,-33+Math.sin(time*8)*1.5,2.1,2.1,pink);ctx.globalAlpha=1;
+    }
+  }
+
+  function draw(ctx,name,x,y,frame=0,flip=false,playerId=null,pose={}) {
     const index=Math.max(0,kinds.indexOf(name));
-    ctx.save();ctx.translate(Math.round(x),Math.round(y));
-    if(flip)ctx.scale(-1,1);
-    ctx.imageSmoothingEnabled=false;
+    const action=pose.action||'idle',time=pose.time??(frame/3);
     const snack=name==='snack';
-    ctx.drawImage(sheet,index*sw*frames+(Math.floor(frame)%frames)*sw,0,sw,sh,snack?-13:-18,snack?-25:-40,snack?26:36,snack?28:43);
-    // A distinct scarf/crest for each child, even when they wear animal forms.
+    const explorer=playerId!==null;
+    const sizes={
+      hero:[30,36],springaroo:[29,32],skyling:[31,32],tideling:[30,30],
+      cloudwhisp:[28,27],prismtail:[28,30],mossback:[29,27],
+      glimmermoth:[26,28],emberkit:[30,31],snack:[23,25]
+    };
+    const [w,h]=sizes[name]||sizes.hero;
+    const running=action==='run',jumping=action==='jump',eating=action==='eat';
+    const bounce=running?Math.abs(Math.sin(time*15))*3:
+      jumping?-4:eating?2:Math.sin(time*2.8+index)*.9;
+    const stretch=jumping?1.12:action==='hurt'?.85:running?1+.055*Math.sin(time*15):1;
+    const squash=eating?.9:jumping?.91:running?1-.025*Math.sin(time*15):1;
+    const lean=running?Math.sin(time*15)*.08:action==='hurt'?.22:0;
+    ctx.save();ctx.translate(Math.round(x),Math.round(y+bounce));
+    if(flip)ctx.scale(-1,1);
+    ctx.transform(squash,0,lean,stretch,0,0);
+    if(!snack)ctx.scale(explorer?.91:.82,explorer?.91:.82);
+    ctx.imageSmoothingEnabled=false;
+    const spriteFrame=(Math.floor(frame)%frames+frames)%frames;
+    if(name==='snack')ctx.drawImage(sheet,index*sw*frames+spriteFrame*sw,0,sw,sh,-w/2,-h,w,h);
+    else drawWorldSprite(ctx,name,time,action);
+    // Character-specific secondary animation makes motion readable at small scale.
+    if(name==='skyling'&&action!=='eat'){
+      const flap=Math.sin(time*12)*4;
+      ctx.fillStyle='#a7f4e4';
+      ctx.fillRect(-w/2-2,-19-flap/2,5,3);
+      ctx.fillRect(w/2-3,-17+flap/2,5,3);
+    }
+    if(name==='glimmermoth'){
+      ctx.fillStyle='#fff4be';
+      ctx.globalAlpha=.45+.4*Math.abs(Math.sin(time*7));
+      ctx.fillRect(-w/2-2,-h+9,3,3);ctx.fillRect(w/2,-h+5,3,3);
+      ctx.globalAlpha=1;
+    }
+    if(name==='springaroo'&&jumping){
+      ctx.fillStyle='#fce4aa';ctx.fillRect(-13,-5,5,2);ctx.fillRect(9,-7,4,2);
+    }
     if(playerId!==null){
       ctx.fillStyle=playerId===0?'#ffd57f':'#b4a0ff';ctx.fillRect(-5,-8,10,2);
       ctx.fillStyle=playerId===0?'#fff0ba':'#e5ddff';ctx.fillRect(-2,-8,3,2);
