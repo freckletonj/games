@@ -90,7 +90,7 @@ WW.main = (() => {
     screen='level';panel(`<div class="kicker">For level creators · AI-assisted maps</div><h2>Load your own PNG or compiled JSON map</h2>
       <p>Use the palette from README.md for a semantic PNG, or load level JSON exported by scripts/compile-semantic-level.py. Pixels per tile applies to PNG only.</p>
       <div class="row"><label>PNG <input type="file" id="level-file" accept="image/png,.json"></label><label>Pixels per tile <input id="tile-size" type="number" min="1" max="64" value="1" style="width:70px"></label></div>
-      <p class="hint">A green start marker and a red exit marker are required. Unknown colors become empty terrain and are reported in the console.</p>
+      <p class="hint">Use one color per semantic tile, not a painted scene. Start and exit need solid ground beneath them; masks with too many unknown colors are rejected.</p>
       <div class="buttons">${button('load-level','Use this level','primary')}${button('reset-level','Use built-in level')}${button('home','Back')}</div>`);
   }
   function journal(){

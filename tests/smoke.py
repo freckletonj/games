@@ -83,6 +83,41 @@ with sync_playwright() as playwright:
             WW.scenery.tile(ctx, 'meadow', kind, 0, 0, 0,
                 {n:false,e:false,s:false,w:false,nw:false,ne:false}));
     }""")
+    # A semantic proxy PNG creates gameplay cells; shoreline shape is derived later.
+    parsed = page.evaluate("""() => {
+        const tile = 4, w = 24, h = 12;
+        const canvas = document.createElement('canvas');
+        canvas.width = w * tile; canvas.height = h * tile;
+        const ctx = canvas.getContext('2d');
+        const paint = (kind, x, y, width = 1, height = 1) => {
+            ctx.fillStyle = WW.levels.colors[kind];
+            ctx.fillRect(x*tile, y*tile, width*tile, height*tile);
+        };
+        paint('empty', 0, 0, w, h);
+        paint('ground', 0, 8, w, 4);
+        paint('water', 5, 8, 3, 2);
+        paint('water', 6, 10);
+        paint('platform', 10, 5, 5, 1);
+        paint('p1', 3, 7);
+        paint('exit', 20, 7);
+        const result = WW.levels.parseCanvas(canvas, tile);
+        const invalid = document.createElement('canvas');
+        invalid.width = canvas.width; invalid.height = canvas.height;
+        const bad = invalid.getContext('2d');
+        bad.fillStyle = '#444444';
+        bad.fillRect(0, 0, invalid.width, invalid.height);
+        let rejected = false;
+        try {WW.levels.parseCanvas(invalid, tile);} catch (error) {
+            rejected = error.message.includes('unknown colors');
+        }
+        return {w:result.width, h:result.height, cells:[
+            result.grid[8][5], result.grid[9][6], result.grid[10][6],
+            result.grid[10][5], result.grid[5][10]
+        ],markers:result.objects.map(item => item.kind), rejected};
+    }""")
+    assert parsed == {'w':24,'h':12,
+        'cells':['water','water','water','ground','platform'],
+        'markers':['p1','exit'],'rejected':True}, parsed
     # A compiled level JSON bundle must be loadable without any network access.
     imported = page.evaluate("""async () => {
         const original = WW.worlds.create(WW.chapters[0]);

@@ -64,6 +64,37 @@ class SemanticPipelineTests(unittest.TestCase):
             fixed = Image.open(target.with_suffix(".semantic.png"))
             self.assertEqual(fixed.size, (24, 12))
 
+    def test_water_proxy_corners_preserved(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "semantic.png"
+            target = Path(directory) / "level.json"
+            self.make_mask(source)
+            with Image.open(source) as original:
+                image = original.copy()
+            for x, y in ((5, 8), (6, 8), (7, 8), (5, 9),
+                         (6, 9), (7, 9), (6, 10)):
+                for yy in range(y * 4, y * 4 + 4):
+                    for xx in range(x * 4, x * 4 + 4):
+                        image.putpixel((xx, yy), compiler.PALETTE["water"])
+            image.save(source)
+            level, report = compiler.compile_image(image, pixels_per_tile=4)
+            self.assertTrue(report["valid"], report)
+            self.assertEqual(level["grid"][8][5:8], ["water"] * 3)
+            self.assertEqual(level["grid"][10][5:8], ["ground", "water", "ground"])
+
+    def test_spawn_above_water_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "semantic.png"
+            self.make_mask(source)
+            with Image.open(source) as original:
+                image = original.copy()
+            for y in range(8 * 4, 9 * 4):
+                for x in range(3 * 4, 4 * 4):
+                    image.putpixel((x, y), compiler.PALETTE["water"])
+            level, report = compiler.compile_image(image, pixels_per_tile=4)
+            self.assertFalse(report["valid"])
+            self.assertIn("p1 at (3, 7) has no solid landing surface below", report["errors"])
+
     def test_missing_exit_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             src = Path(directory) / "semantic.png"

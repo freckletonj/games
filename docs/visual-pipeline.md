@@ -109,3 +109,13 @@ world tile; edge and corner artwork is derived automatically at runtime. A
 beauty illustration may be used as the background but must not stand in for
 this mask. Browser regression checks compare the painted pixels across two
 adjacent ground and water cells.
+
+## Consistent in-game bitmap import
+
+The browser loader and the Python compiler both center-sample blocks, classify
+against the exact palette with RGB Euclidean distance <= 36, ignore unknown
+samples during the vote, and reject masks with more than 10% unknown samples.
+Both require exactly one start and exit with a solid landing tile directly below
+and reject keys placed on the bottom row. A proxy is a semantic layout, *not* a
+reference photo or an RGB illustration. A hand-painted beauty plate may be
+composited behind it without changing movement.

@@ -52,6 +52,26 @@ Movement uses acceleration, braking, buffered jumps, coyote time, variable jump 
 - **scripts/build.mjs** — builds the single-file offline game.
 - **scripts/pack-character.py** — aligns eight independently painted PNG poses to one foot pivot and exports a character atlas/manifest.
 
+### Construct a level from a proxy bitmap
+
+Paint a **semantic PNG mask**, not the final illustration: each image pixel is a
+16-unit game tile by default. Use pure RGB colors: white `#ffffff` for air,
+near-black `#101820` for ground, slate `#5f5b85` for platforms, and blue
+`#176ad7` for water. Place exactly one bright-green `#00ed31` player-start
+pixel and one red `#ff152b` exit pixel, each immediately above ground or a
+platform. The full palette (creatures, pickups, powers, thermals) lives in
+`src/platform/levels.js`. For a 4× (or any 1–64×) proxy image, paint solid
+4×4 blocks per tile and set **Pixels per tile** accordingly in the level loader.
+
+Open **Load PNG map** on the title screen to play directly from the mask, or use
+`python scripts/compile-semantic-level.py input.png --pixels-per-tile 4 --out output.json`
+to produce an importable JSON level, a snapped semantic PNG and a diagnostic
+report. Masks must be 8–400 tiles wide and 6–80 tiles tall, have exact divisible
+dimensions, and use recognizable palette colors; unknown pixels are tolerated
+only up to 10% of samples. Neither route interprets painted scenery as
+collision. The renderer derives all terrain edges, corners and waterlines from
+the resulting grid so level art stitches without painting manual corner tiles.
+
 Existing bitmap examples in **src/games/animal-adventure/levels/** remain available for users of the custom Load PNG Map feature, but they are no longer the built-in chapter maps.
 
 Build with Node.js 20+: **node scripts/build.mjs**. The standalone file is generated rather than version-controlled, because the full-resolution artwork makes the compiled HTML large.
