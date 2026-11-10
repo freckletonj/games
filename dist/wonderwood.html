@@ -59,7 +59,7 @@ button:focus-visible, summary:focus-visible, input:focus-visible, select:focus-v
 }
 @keyframes panel-appear { from { opacity: 0; transform: translateY(10px) scale(.987); } to { opacity: 1; transform: none; } }
 .kicker {
-  margin: 0 0 12px; color: var(--mint); font: 800 clamp(10px,1.05vw,13px)/1.4 inherit;
+  margin: 0 0 12px; color: var(--mint); font-size: clamp(10px,1.05vw,13px); font-weight: 800; line-height: 1.4;
   letter-spacing: .28em; text-transform: uppercase;
 }
 h1, h2, h3 { font-family: Georgia, "Palatino Linotype", serif; font-weight: 700; }
@@ -117,8 +117,8 @@ input[type=file] { max-width: 220px; font-size: 12px; }
 .art-orbit::after { content: ""; position: absolute; inset: 12%; border: 1px dashed #c6ebdd55; border-radius: 50%; }
 .art-portrait { position: absolute; width: 29%; aspect-ratio: 1; border: 3px solid #ecdcad; border-radius: 16px; padding: 5px; background: #1d3b4a; box-shadow: 0 12px 22px #091c29aa, 0 0 0 5px #a8cead3b; transform: rotate(var(--tilt)); animation: portrait-float 4.8s ease-in-out infinite alternate; }
 .art-portrait img { width: 100%; height: 100%; object-fit: cover; border-radius: 9px; image-rendering: pixelated; }
-.art-portrait:nth-of-type(1) { left: 10%; top: 19%; --tilt: -12deg; }
-.art-portrait:nth-of-type(2) { right: 10%; top: 24%; --tilt: 11deg; animation-delay: -1.5s; }
+.art-portrait:nth-of-type(5) { left: 10%; top: 19%; --tilt: -12deg; }
+.art-portrait:nth-of-type(6) { right: 10%; top: 24%; --tilt: 11deg; animation-delay: -1.5s; }
 .art-portrait:nth-of-type(3) { left: 20%; bottom: 15%; --tilt: 7deg; animation-delay: -2.2s; }
 .art-portrait:nth-of-type(4) { right: 15%; bottom: 14%; --tilt: -9deg; animation-delay: -.8s; }
 @keyframes portrait-float { to { transform: translateY(-9px) rotate(var(--tilt)); } }
