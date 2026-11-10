@@ -36,6 +36,7 @@ jobs:
           python tests/routes.py
           python tests/game_feel.py
           python tests/creature_mechanics.py
+          python tests/painted_illustrations.py
           python tests/semantic_pipeline.py
           python tests/character_packer.py
       - name: Upload playable offline preview
