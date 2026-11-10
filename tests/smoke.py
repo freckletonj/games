@@ -21,11 +21,11 @@ with sync_playwright() as playwright:
     assert page.evaluate("Boolean(window.WW_EMBEDDED_ATLASES?.hero)")
     assert page.evaluate("Boolean(window.WW_EMBEDDED_SCENES?.backdrop)")
     # Companions and the Emberkit wildlife now load from painted WebP atlases.
-    for kind in ('tideling', 'skyling', 'emberkit'):
+    for kind in ('tideling', 'skyling', 'emberkit', 'mossback', 'prismtail', 'glimmermoth', 'cloudwhisp'):
         assert page.evaluate(
             "(kind) => WW_EMBEDDED_ATLASES[kind].image.startsWith('data:image/webp;base64,')", kind
         )
-    page.wait_for_function("() => ['backdrop','lanternTree','tiles'].every(WW.scenery.ready)")
+    page.wait_for_function("() => ['backdrop','coastBackdrop','summitBackdrop','lanternTree','tiles'].every(WW.scenery.ready)")
     assert page.evaluate("WW.scenery.url('backdrop').startsWith('data:image/webp;base64,')")
     assert page.evaluate("document.querySelector('.home-art').style.backgroundImage.includes('data:image/webp;base64,')")
     page.wait_for_function("""() => ['springaroo','hero'].every(name => WW.spriteAtlas.draw(
@@ -55,7 +55,13 @@ with sync_playwright() as playwright:
     )""")
     assert page.evaluate("WW.spriteAtlas.portrait('hero').startsWith('data:image/png;base64,')")
     assert page.evaluate("WW.spriteAtlas.portrait('springaroo').startsWith('data:image/png;base64,')")
-    # Remaining wildlife retain distinct illustrated silhouettes and states.
+    # All four painted wildlife sheets must be decoded before drawing animations.
+    page.wait_for_function("""() => ['mossback','prismtail','glimmermoth','cloudwhisp'].every(name =>
+        WW.spriteAtlas.draw(document.createElement('canvas').getContext('2d'),
+            name,40,60,0,false,null,{action:'run',time:.2}))""")
+    assert page.evaluate("""() => ['coastBackdrop','summitBackdrop','lanternTree'].every(
+        key => WW.scenery.url(key).startsWith('data:image/webp;base64,'))""")
+    # Newly painted wildlife retain distinct silhouettes and animation states.
     wildlife = page.evaluate("""() => {
         const names = ['mossback', 'prismtail', 'glimmermoth', 'cloudwhisp'];
         const canvas = document.createElement('canvas');
@@ -81,7 +87,7 @@ with sync_playwright() as playwright:
             return [image.naturalWidth, image.naturalHeight];
         }));
     }""")
-    assert portraits == [[96, 96]] * 4, portraits
+    assert portraits == [[128, 128]] * 4, portraits
     # Publish a close-up contact sheet so visual reviews don't have to hunt
     # through authored levels for each of the four still-procedural species.
     page.evaluate("""async () => {
