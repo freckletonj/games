@@ -245,6 +245,36 @@ with sync_playwright() as playwright:
         page.get_by_role('button', name='Explore '+name).click()
         page.locator('#menu').wait_for(state='hidden')
         page.evaluate('for(let i=0;i<30;i++)WW.main.game.update(1/60)')
+        if i == 0:
+            shadow_counts = page.evaluate("""() => {
+                const game=WW.main.game, state=game.state;
+                const animals=state.animals;
+                const active=animals.map(a=>a.alive);
+                function shadowsFor(kind) {
+                    const chosen=animals.find(a=>a.kind===kind);
+                    for(const animal of animals)animal.alive=(animal===chosen);
+                    chosen.x=state.players[0].x+24;
+                    chosen.y=kind==='glimmermoth'
+                        ?state.players[0].y-55:state.players[0].y;
+                    const canvas=document.createElement('canvas');
+                    canvas.width=1440;canvas.height=810;
+                    const ctx=canvas.getContext('2d');
+                    const original=ctx.ellipse.bind(ctx);
+                    let count=0;
+                    ctx.ellipse=(x,y,rx,ry,rotation,start,end)=>{
+                        if(rx>=8&&rx<=11&&ry===2.5)count++;
+                        return original(x,y,rx,ry,rotation,start,end);
+                    };
+                    game.render(ctx,2);
+                    return count;
+                }
+                const flying=shadowsFor('glimmermoth');
+                const grounded=shadowsFor('springaroo');
+                animals.forEach((a,j)=>a.alive=active[j]);
+                return [flying,grounded];
+            }""")
+            assert shadow_counts[0] == 0 and shadow_counts[1] >= 1, shadow_counts
+
         assert page.evaluate('WW.main.game.state.goals.length') == 1
         assert page.evaluate('WW.main.game.state.goals[0].kind') == kind
         assert page.evaluate('WW.main.game.state.items.some(i=>i.kind===WW.main.game.state.goals[0].kind)')
