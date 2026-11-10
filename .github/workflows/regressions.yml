@@ -1,0 +1,37 @@
+name: Wonderwood regressions
+
+on:
+  push:
+    branches:
+      - main
+      - design/storybook-remaster
+      - feature/intentional-gameplay
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser test dependencies
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Rebuild self-contained game
+        run: node scripts/build.mjs
+      - name: Verify bundled artifact is up to date
+        run: git diff --exit-code -- dist/wonderwood.html
+      - name: Run gameplay and browser regressions
+        run: |
+          python tests/smoke.py
+          python tests/playability.py
+          python tests/routes.py
+          python tests/game_feel.py
