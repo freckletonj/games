@@ -36,6 +36,13 @@ jobs:
           python tests/routes.py
           python tests/game_feel.py
           python tests/semantic_pipeline.py
+      - name: Upload playable offline preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wonderwood-playable-preview
+          path: dist/wonderwood.html
+          if-no-files-found: error
       - name: Upload visual previews
         if: always()
         uses: actions/upload-artifact@v4
