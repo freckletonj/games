@@ -551,6 +551,7 @@ WW.games.animals = (() => {
       }
     }
     function sceneryBack(ctx,time){
+      if(chapter.biome==='meadow'&&WW.scenery.ready('backdrop'))return;
       const l=Math.floor((cameraX-180)/172),r=Math.ceil((cameraX+W+180)/172);
       const base=spawn.y+28;
       for(let i=l;i<=r;i++){
@@ -685,6 +686,7 @@ WW.games.animals = (() => {
       }
     }
     function groundDetails(ctx,time){
+      if(chapter.biome==='meadow'&&WW.scenery.ready('tiles'))return;
       const left=Math.max(0,Math.floor(cameraX/TILE)-1),right=Math.min(level.width,Math.ceil((cameraX+W)/TILE)+1);
       for(let x=left;x<right;x++){
         for(let y=1;y<level.height-1;y++){
