@@ -885,22 +885,8 @@ WW.games.animals = (() => {
         }
       });
       lures.forEach(lure=>{
-        const shimmer=.6+.2*Math.sin(now*4+lure.x);
-        ctx.save();ctx.translate(lure.x,lure.y-3);
-        ctx.globalAlpha=shimmer*.35;ctx.fillStyle=FOOD[lure.food].color;
-        ctx.beginPath();ctx.ellipse(0,0,17,5,0,0,Math.PI*2);ctx.fill();
-        ctx.globalAlpha=1;
-        ctx.fillStyle='#213b43';ctx.fillRect(-4,-5,8,7);
-        ctx.fillStyle=FOOD[lure.food].color;ctx.fillRect(-3,-7,6,7);
-        ctx.fillStyle='#fff7db';ctx.fillRect(-2,-6,2,2);
-        ctx.fillStyle='#9bdc9e';ctx.fillRect(1,-9,4,2);
-        for(let n=0;n<2;n++){
-          const pulse=(now*.9+n*.5)%1;
-          ctx.globalAlpha=(1-pulse)*.45;
-          ctx.strokeStyle=FOOD[lure.food].color;ctx.lineWidth=1;
-          ctx.beginPath();ctx.ellipse(0,-4,8+pulse*24,3+pulse*7,0,0,Math.PI*2);ctx.stroke();
-        }
-        ctx.restore();
+        const icon={berry:'berryBush',nectar:'nectarFruit',star:'stardropFruit'}[lure.food];
+        WW.illustrations.draw(ctx,icon,lure.x,lure.y+1,19,20);
       });
       animals.forEach(a=>{
         if(!a.alive)return;
@@ -927,23 +913,19 @@ WW.games.animals = (() => {
             }
           }
         }
-        // Clear status silhouettes and directional warnings on painted sprites.
+        // Illustrated status effects stay bound to the animal's location.
         if(a.trapped>0){
-          ctx.save();ctx.strokeStyle='#c6f6ff';ctx.lineWidth=2;
-          ctx.fillStyle='#9fe7ff2d';ctx.beginPath();ctx.ellipse(a.x,a.y-16,19,28,0,0,Math.PI*2);
-          ctx.fill();ctx.stroke();ctx.restore();
+          WW.illustrations.draw(ctx,'bubbleTrap',a.x,a.y+5,47,57,.85);
         }
         if(a.stuck>0){
-          ctx.fillStyle='#e3a83dbb';ctx.beginPath();ctx.ellipse(a.x,a.y-1,18,4,0,0,Math.PI*2);ctx.fill();
-          ctx.strokeStyle='#fff4a7';ctx.lineWidth=1;ctx.stroke();
+          WW.illustrations.draw(ctx,'honeyPuddle',a.x,a.y+3,42,17,.96);
         }
         WW.art.draw(ctx,a.kind,a.x,a.y,Math.floor(a.frame)%6,a.dir<0,null,{
           action:a.stunned>0?'hurt':a.eating>0?'eat':ready?'happy':a.windup?'alert':a.moving?'run':'idle',time:a.phase
         });
         if(a.stunned>0){
-          ctx.fillStyle='#fff0b5';ctx.font='bold 10px sans-serif';
-          ctx.fillText('✦',a.x-13,a.y-30+2*Math.sin(now*5));
-          ctx.fillText('✦',a.x+9,a.y-35+2*Math.cos(now*5));
+          WW.illustrations.draw(ctx,'spark',a.x-12,a.y-25,17,18,.88);
+          WW.illustrations.draw(ctx,'spark',a.x+11,a.y-31,13,15,.77);
         }
         if(a.windup>0&&!ready){
           ctx.save();ctx.globalAlpha=.5+.4*Math.sin(now*19);
@@ -954,9 +936,11 @@ WW.games.animals = (() => {
           ctx.stroke();ctx.setLineDash([]);ctx.restore();
         }
         if(a.gustTime>0){
-          ctx.strokeStyle='#d0f6ffbd';ctx.lineWidth=2;
-          for(let i=0;i<3;i++){
-            ctx.beginPath();ctx.arc(a.x+a.dir*(20+i*15),a.y-13,8+i*4,-1.2,1.2);ctx.stroke();
+          for(let i=0;i<2;i++){
+            ctx.save();ctx.translate(a.x+a.dir*(24+i*23),a.y-13);
+            ctx.scale(a.dir,1);
+            WW.illustrations.draw(ctx,'gust',0,11,27+i*9,23+i*7,.65);
+            ctx.restore();
           }
         }
         if(a.eating>0||ready){
@@ -1002,36 +986,15 @@ WW.games.animals = (() => {
         ctx.restore();
       });
       projectiles.forEach(pr=>{
-        ctx.save();ctx.translate(pr.x,pr.y);
-        const color=pr.kind==='food'?FOOD[pr.food].color:{
-          orb:'#d8bcff',petal:'#ffb6d8',splash:'#8de9ff',feather:'#f7eec7',
-          bubble:'#9fe4fa',gust:'#c4f4ff',spark:'#ffcbb9',honey:'#e4ac55'
-        }[pr.kind];
-        if(pr.kind==='bubble'||pr.kind==='orb'){
-          ctx.fillStyle=pr.kind==='bubble'?'#9fe4fa3c':'#d8bcff65';
-          ctx.strokeStyle=color;ctx.lineWidth=1.5;
-          ctx.beginPath();ctx.arc(0,0,pr.kind==='bubble'?7:5,0,Math.PI*2);
-          ctx.fill();ctx.stroke();
-          ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(-2,-2,1.7,0,Math.PI*2);ctx.fill();
-        }else if(pr.kind==='gust'||pr.kind==='splash'||pr.kind==='feather'||pr.kind==='petal'){
-          ctx.rotate(Math.atan2(pr.vy,pr.vx));
-          ctx.strokeStyle=color;ctx.lineWidth=2;ctx.globalAlpha=.88;
-          for(let n=0;n<3;n++){
-            ctx.beginPath();ctx.moveTo(-12-n*4,-4+n*4);
-            ctx.quadraticCurveTo(3,-7+n*5,7-n*2,n*2);ctx.stroke();
-          }
-        }else if(pr.kind==='honey'){
-          ctx.fillStyle='#9c642e';ctx.beginPath();ctx.arc(0,1,5,0,Math.PI*2);ctx.fill();
-          ctx.fillStyle=color;ctx.beginPath();ctx.arc(-1,-1,4,0,Math.PI*2);ctx.fill();
-          ctx.fillStyle='#fff2b6';ctx.fillRect(-2,-3,2,2);
-        }else if(pr.kind==='spark'){
-          ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();
-          ctx.moveTo(-6,0);ctx.lineTo(6,0);ctx.moveTo(0,-6);ctx.lineTo(0,6);ctx.stroke();
-        }else{
-          ctx.fillStyle='#28394b';ctx.fillRect(-4,-4,8,8);
-          ctx.fillStyle=color;ctx.fillRect(-3,-3,6,6);
-          ctx.fillStyle='#ffffff';ctx.fillRect(-1,-2,2,2);
-        }
+        const asset=pr.kind==='food'?
+          ({berry:'berryBush',nectar:'nectarFruit',star:'stardropFruit'}[pr.food]):
+          ({orb:'bubble',honey:'honey',bubble:'bubble',gust:'gust',
+            spark:'spark',petal:'petal',feather:'gust',splash:'splash'}[pr.kind]);
+        ctx.save();
+        ctx.translate(pr.x,pr.y);
+        if(pr.vx<0)ctx.scale(-1,1);
+        const wide=['gust','petal','splash','honey'].includes(pr.kind);
+        WW.illustrations.draw(ctx,asset,0,wide?11:9,wide?25:19,wide?22:19);
         ctx.restore();
       });
       players.forEach(p=>{
