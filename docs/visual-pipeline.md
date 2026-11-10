@@ -165,3 +165,18 @@ They still use the same world-space pivots, animations and creature logic;
 the next asset-production pass can replace them by adding normal character
 atlases and manifests. Browser tests check four distinct visible silhouettes
 and that their idle/run states differ.
+
+## Real painted sprite atlas and panorama integration
+
+Mossback, Prismtail, Glimmermoth and Cloudwhisp now use actual transparent
+4-by-2 animation atlases, each containing 128×128 image cells with idle,
+run/flutter, jump and hurt poses. They share the standard animation manifest
+structure of the other painted creatures; there is no new runtime art format.
+The lantern-tree SVG has been replaced by an illustrated WebP landmark.
+Crystal Coast and Starfall Summit each have a separate painted panorama.
+The offline builder embeds all seven new WebP assets.
+
+Airborne Moonwing, Glimmermoth and Cloudwhisp are intentionally shadowless.
+Ground walkers receive a faint cast shadow anchored to the next solid ground
+or platform tile below them, fading as they jump; an airborne body never carries
+its own cast shadow. Sprite frames contain no detached ground-shadow layers.
