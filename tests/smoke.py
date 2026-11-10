@@ -17,7 +17,8 @@ with sync_playwright() as playwright:
     errors = []
     page.on('pageerror', lambda error: errors.append(str(error)))
     page.set_content(source, wait_until='domcontentloaded')
-    assert page.get_by_role('heading', name='WONDERWOOD').is_visible()
+    print('BOOT DIAGNOSTIC:', errors, page.locator('h1').all_inner_texts(), page.locator('body').inner_text()[:250])
+    assert page.locator('h1').count()==1 and page.locator('h1').inner_text()=='WONDERWOOD',errors
     page.get_by_role('button', name='CHOOSE A LEVEL').click()
     assert page.locator('.chapter-card').count() == 3
     for i, (name,kind,size) in enumerate([
