@@ -94,11 +94,12 @@ WW.games.animals = (() => {
     }
     function charm(a,amount,food,owner){
       const favorite=FORM[a.kind].favorite;
+      const wasReady=a.wary<=BOND_THRESHOLD;
       const boost=food===favorite?1.7:1;
       a.wary=Math.max(0,a.wary-amount*boost);
       a.attackCD=Math.max(a.attackCD,.55);
       particles(a.x,a.y-14,FOOD[food].color,food===favorite?16:10);
-      if(a.wary<=BOND_THRESHOLD){
+      if(!wasReady&&a.wary<=BOND_THRESHOLD){
         say(`${titles[a.kind]} trusts you! Aim a capture orb (G / X) to borrow its power.`,1900);
         WW.audio.play('ready');
       } else if(food===favorite){
@@ -735,7 +736,7 @@ WW.games.animals = (() => {
           ctx.fillStyle='#fff2c6';ctx.font='bold 7px sans-serif';ctx.fillText(word,x-12,top+1);
         }
       }
-      items.forEach(it=>{if(it.used)return;const bob=Math.sin(now*3+it.x)*2;
+      items.forEach(it=>{if(it.used&&it.kind!=='checkpoint')return;const bob=Math.sin(now*3+it.x)*2;
         if(it.kind==='snack')WW.art.draw(ctx,'snack',it.x,it.y+8+bob,Math.floor(now*3)%4);
         if(it.kind==='starShard'){
           ctx.save();ctx.translate(it.x,it.y+bob);ctx.rotate(Math.sin(now*3+it.x)*.22);
@@ -755,7 +756,15 @@ WW.games.animals = (() => {
           box(ctx,it.x-12,it.y-28,24,36,'#725771');box(ctx,it.x-8,it.y-25,16,31,goals.every(g=>shared.keys[g.kind])?'#6befc6':'#423c6b');
           box(ctx,it.x-5,it.y-20,10,14,'#af9abb');box(ctx,it.x-3,it.y-19,6,10,'#433f7d');box(ctx,it.x+4,it.y-9,2,2,'#ffdc80');
         }
-        if(it.kind==='checkpoint') {box(ctx,it.x-2,it.y-22,3,27,'#765968');box(ctx,it.x+1,it.y-22,14,9,'#9bf6c9');}
+        if(it.kind==='checkpoint') {
+          box(ctx,it.x-2,it.y-22,3,27,it.used?'#bde5af':'#765968');
+          box(ctx,it.x+1,it.y-22,14,9,it.used?'#f5dfa1':'#9bf6c9');
+          if(it.used){
+            ctx.globalAlpha=.3+.2*Math.sin(now*3);
+            ctx.fillStyle='#fff3aa';ctx.beginPath();ctx.arc(it.x+7,it.y-18,12,0,Math.PI*2);ctx.fill();
+            ctx.globalAlpha=1;
+          }
+        }
       });
       animals.forEach(a=>{
         if(!a.alive)return;
