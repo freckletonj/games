@@ -5,67 +5,223 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Wonderwood · Family Adventure Arcade</title>
   <meta name="theme-color" content="#152736">
-  <style>:root {font-family: ui-rounded, 'Trebuchet MS', system-ui, sans-serif; color:#fff9e6; background:#101d2b; font-synthesis:none;} *{box-sizing:border-box} body{margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(ellipse at 50% 10%,#2d505c,#111c2a 65%); overflow:hidden} button,input{font:inherit} button{border:0;cursor:pointer} #app{position:relative; width:min(100vw, 177.777vh); aspect-ratio:16/9; max-height:100vh; overflow:hidden; background:#75beda; box-shadow:0 22px 90px #08131ce0; image-rendering:pixelated} #game{display:block; width:100%; height:100%;image-rendering:pixelated} .menu{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#071a31a6;backdrop-filter:blur(3px);padding:12px;overflow:auto} .menu[hidden],#hud[hidden]{display:none} .panel{max-width:min(680px,94%);max-height:100%;overflow:auto;background:linear-gradient(140deg,#253c51f0,#182d42f4);padding:clamp(16px,3.8vw,37px);border:3px solid #91d7c7;box-shadow:0 12px 0 #0c1c29,0 24px 60px #071322a0;border-radius:16px;text-align:center} .kicker{font-size:clamp(9px,1.2vw,14px);letter-spacing:.34em;color:#9ff3cc;font-weight:900;text-transform:uppercase;margin-bottom:8px} h1{font-size:clamp(27px,5vw,66px);line-height:1;margin:0 0 6px;text-shadow:4px 5px 0 #123b46;color:#ffdb78;letter-spacing:-.045em} h2{font-size:clamp(19px,2.7vw,32px);margin:0 0 12px;color:#ffdd8c} p{font-size:clamp(11px,1.35vw,16px);line-height:1.5;color:#d3eaf3;margin:10px 0 18px}.buttons{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px} .primary,.secondary{padding:10px 17px;border-radius:8px;transition:transform .12s; font-weight:900; font-size:clamp(12px,1.5vw,17px)}.primary{background:#ffce6a;color:#24334c;box-shadow:0 5px 0 #ac712f}.secondary{background:#3e6070;color:white;box-shadow:0 4px 0 #1a3946}.primary:hover,.secondary:hover{transform:translateY(-2px)} .primary:active,.secondary:active{transform:translateY(3px);box-shadow:none}.instructions{font-size:clamp(9px,1.15vw,13px);color:#b3d5e2;line-height:1.8; margin-top:20px}.instructions b{color:#f5d88a}.chips{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;margin:12px 0}.chip{border:1px solid #82c4b6;color:#c3f3de;border-radius:20px;padding:5px 11px;font-size:12px} label{color:#e3f0ec;font-size:14px} select,input[type=number]{background:#142b3c;color:white;border:1px solid #75a6a0;padding:8px;border-radius:6px}input[type=file]{max-width:210px;font-size:11px}#hud{position:absolute;left:0;right:0;top:0;pointer-events:none;display:flex;align-items:flex-start;justify-content:space-between;padding:11px 17px;font-size:clamp(9px,1.2vw,14px);text-shadow:1px 2px #173544}.hud-player{background:#163747bb;border:1px solid #b1dcc282;border-radius:8px;padding:6px 9px}.hud-center{background:#163747bd;border-radius:8px;padding:7px 12px;text-align:center;color:#fff3b0}.tiny{font-size:.75em;color:#bce4e2}.heart{color:#ff878d;font-size:1.2em}.heart-off{color:#476a78;font-size:1.2em}#message{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);text-align:center;max-width:90%;font-size:clamp(10px,1.8vw,20px);font-weight:900;color:#ffedbd;text-shadow:2px 3px #234556;pointer-events:none;opacity:0;transition:opacity .15s}#message.show{opacity:1}.hint{color:#acd9cf;font-size:12px;line-height:1.5}.row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}.toggle{display:flex;gap:7px;justify-content:center;align-items:center;padding:8px}.warning{color:#ffcb8e}
+  <style>:root {
+  color-scheme: dark;
+  --ink: #0c1d2a;
+  --night: #122b39;
+  --pine: #1c4b4c;
+  --mint: #a6e6c7;
+  --gold: #f6d58b;
+  --cream: #fff4dd;
+  --muted: #bbd4d0;
+  font-family: "Trebuchet MS", "Avenir Next", ui-rounded, system-ui, sans-serif;
+  color: var(--cream);
+  background: var(--ink);
+  font-synthesis: none;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; min-height: 100dvh;
+  display: grid; place-items: center; overflow: hidden;
+  background: radial-gradient(ellipse at 50% 15%, #34535c, #101d2b 66%, #080f1c);
+}
+button, input, select { font: inherit; }
+button { cursor: pointer; border: 0; }
+button:focus-visible, summary:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid #ffe5a2; outline-offset: 3px;
+}
+#app {
+  position: relative; width: min(100vw, 177.7778dvh); max-height: 100dvh;
+  aspect-ratio: 16/9; overflow: hidden; isolation: isolate;
+  background: #2f6173; box-shadow: 0 30px 100px #050b14d9;
+}
+#game { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.menu {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  padding: clamp(10px, 2vw, 25px); overflow: auto;
+  background: linear-gradient(112deg, #091a2be6 0%, #0f263bc7 45%, #10263bb0 100%);
+  backdrop-filter: blur(5px);
+}
+.menu[hidden], #hud[hidden], #ability-callout[hidden] { display: none !important; }
+.panel {
+  --panel-edge: #9cccb5;
+  position: relative; width: min(820px, 96%); max-height: 100%; overflow: auto;
+  padding: clamp(19px, 2.8vw, 36px);
+  border: 1px solid #b9d9c5b3; border-radius: 22px; text-align: center;
+  background: linear-gradient(150deg, #173444f5, #102432f7 62%, #172c39f6);
+  box-shadow: 0 0 0 5px #10253699, 0 0 0 6px #d5bd8d57, 0 26px 75px #03111fd9;
+  scrollbar-width: thin; scrollbar-color: #739c92 transparent;
+  animation: panel-appear .42s cubic-bezier(.2,.7,.1,1) both;
+}
+.panel::before {
+  content: ""; position: absolute; inset: 9px; pointer-events: none; border-radius: 14px;
+  border: 1px solid #a6d5b61f;
+}
+@keyframes panel-appear { from { opacity: 0; transform: translateY(10px) scale(.987); } to { opacity: 1; transform: none; } }
+.kicker {
+  margin: 0 0 12px; color: var(--mint); font: 800 clamp(10px,1.05vw,13px)/1.4 inherit;
+  letter-spacing: .28em; text-transform: uppercase;
+}
+h1, h2, h3 { font-family: Georgia, "Palatino Linotype", serif; font-weight: 700; }
+h1 { margin: 0 0 10px; font-size: clamp(40px,5.1vw,72px); line-height: .98; letter-spacing: -.055em; color: var(--gold); text-shadow: 0 4px 18px #071a26a6; }
+h2 { margin: 0 0 13px; font-size: clamp(21px,2.5vw,33px); line-height: 1.16; color: #fff1d1; }
+h3 { color: var(--gold); }
+p { margin: 12px 0 20px; font-size: clamp(12px,1.17vw,15px); line-height: 1.65; color: #c7dddb; }
+.buttons { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; }
+.primary, .secondary {
+  min-height: 43px; padding: 11px 19px; border-radius: 9px;
+  font-size: clamp(11px,1.08vw,14px); font-weight: 900; letter-spacing: .045em;
+  transition: transform .18s, background-color .18s, box-shadow .18s;
+}
+.primary { background: #f4d28b; color: #203344; box-shadow: inset 0 1px #fff5d3, 0 4px 0 #a77d48, 0 8px 22px #07131d6b; }
+.secondary { background: #254b55; border: 1px solid #83b6a88a; color: #f8f0dc; box-shadow: 0 3px 0 #0a2630; }
+.primary:hover, .secondary:hover { transform: translateY(-3px); filter: brightness(1.07); }
+.primary:active, .secondary:active { transform: translateY(2px); box-shadow: none; }
+.hint { color: #adc9c2; font-size: 12px; line-height: 1.5; }
+.instructions { margin-top: 20px; color: #a9c4c1; font-size: 12px; line-height: 1.8; }
+.instructions b { color: #f1d69b; }
+.row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 14px; margin: 11px 0; }
+label { font-size: 14px; color: #e1eee3; }
+.toggle { display: flex; justify-content: center; align-items: center; gap: 10px; padding: 8px; }
+input[type=checkbox] { accent-color: #aedfc8; }
+select, input[type=number] { padding: 9px 11px; border: 1px solid #76a89e; border-radius: 7px; color: #fff4dc; background: #102c3b; }
+input[type=file] { max-width: 220px; font-size: 12px; }
+.warning { color: #ffb5a5; }
 
-.player-info{padding:4px 8px;margin:3px 0 6px;border-radius:3px;background:#0f334e9c;text-align:left;min-width:155px}.hud-center{line-height:1.45}.hud-player{max-width:45%} .panel button:focus-visible{outline:3px solid #fff1a0;outline-offset:3px}
-/* v3: roomy, readable couch-co-op UI and illustrated inventory portraits */
-#app{background:#7967bc}
-.panel{max-width:min(850px,96%);border:3px solid #cdb9ff;border-radius:20px;background:linear-gradient(140deg,#483a74f2,#203d65f5 70%,#174a58f5);box-shadow:0 12px 0 #12243a,0 30px 75px #0b1537d9}
-h1{color:#ffe89c;text-shadow:3px 4px 0 #8d4386,7px 8px 0 #243b6b}
-h2{color:#ffdfb4}
-.menu-portraits{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0 13px}
-.menu-creature{width:55px;height:55px;padding:3px;background:#284663;border:2px solid #b0eadf;border-radius:11px;box-shadow:0 4px 0 #1b2d50;transition:transform .15s}
-.menu-creature:nth-child(odd){border-color:#e1b2f7}.menu-creature:hover{transform:translateY(-5px)}
-.menu-creature img{width:100%;height:100%;image-rendering:pixelated;border-radius:5px}
-#hud{gap:10px;padding:9px 12px;align-items:flex-start;text-shadow:1px 2px 2px #203b53}
-.hud-player{padding:3px;background:#101e40da;border:2px solid #a1dbd5aa;border-radius:11px;max-width:min(58%,550px);box-shadow:0 4px 10px #0c213080}
-.player-info{padding:6px 8px;margin:3px;border:2px solid #ffe49e;border-radius:8px;background:#172c52e3;min-width:230px}
-.player-info+.player-info{margin-top:5px}.player-top{display:flex;justify-content:space-between;align-items:center;font-size:clamp(10px,1.4vw,16px);color:#fff0c5}
-.player-top span{color:#ff90a3;font-size:1.25em}
-.form-row{display:flex;align-items:center;flex-wrap:wrap;gap:3px;margin:5px 0 4px}
-.form-chip{display:flex;flex-direction:column;align-items:center;padding:2px;border:1px solid #455d83;background:#162846a6;border-radius:5px;filter:saturate(.65);opacity:.7}
-.form-chip img{width:25px;height:25px;object-fit:cover;image-rendering:pixelated}.form-chip small{font-size:8px;line-height:1.2;color:#e7dcff}
-.form-chip.unlocked{filter:none;opacity:1;background:#356574}.form-chip.selected{border:2px solid #ffe88a;padding:1px;box-shadow:0 0 7px #ffe9ab80;opacity:1}
-.form-chip.active{background:#6659a5;box-shadow:0 0 9px #edb6ffbb}
-.hud-caption{font-size:10px;color:#ffe5b0;font-weight:bold;white-space:nowrap}
-.food-caption{display:flex;align-items:center;gap:6px;font-size:10px;color:#b8f6df;margin-top:4px;font-weight:bold}
-.food-caption img{width:24px;height:24px;image-rendering:pixelated;border:1px solid #91e7ce;border-radius:5px}
-.food-caption span{color:#b6b0ee;margin-left:auto}
-.hud-center{background:#17234edb;border:2px solid #dec1ff9c;border-radius:10px;padding:8px 10px;max-width:50%;box-shadow:0 4px 10px #0b203266}
-.quest-title{font-size:clamp(9px,1.3vw,15px);letter-spacing:.13em;font-weight:900;color:#ffefa7}
-.gems{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:5px 0;color:#9ea6c8;font-weight:bold;font-size:clamp(9px,1.25vw,15px)}
-.gems span{padding:3px 6px;background:#28375b;border-radius:5px;border:1px solid #556588}.gems .done{background:#337c84;color:#fff0b8;border-color:#aaecc9}
-.journal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;text-align:left;margin:14px 0}
-.journal-card{display:flex;gap:10px;align-items:center;background:#213857d7;border:1px solid #a7cadd8a;padding:7px;border-radius:9px}
-.journal-card img{width:53px;height:53px;image-rendering:pixelated;border-radius:5px}
-.journal-card b{display:block;color:#fff0b0}.journal-card small{display:block;color:#c7dfee;font-size:11px;line-height:1.4}
-.guide-foods{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}.food-guide{display:inline-flex;align-items:center;gap:6px;background:#344d75;padding:5px 7px;border-radius:7px;font-size:12px}
-.food-guide img{width:25px;height:25px;image-rendering:pixelated}.food-guide small{color:#c2bbdc}
-@media(max-width:760px){.panel{padding:12px}.menu-creature{width:39px;height:39px}.hud-player{max-width:63%}.hud-center{max-width:39%}.player-info{min-width:0}.form-chip img{width:18px;height:18px}.form-chip small{font-size:7px}.food-caption{font-size:8px}.hud-caption{font-size:8px}.journal-grid{grid-template-columns:1fr}.journal-card img{width:40px;height:40px}}
+/* Main menu: a storybook title spread, not a configuration dialog. */
+.panel-home { width: min(1080px, 96%); padding: clamp(25px,3.1vw,43px); text-align: left; overflow: auto; }
+.home-layout { display: grid; grid-template-columns: minmax(0, 1.14fr) minmax(240px, .86fr); align-items: stretch; gap: clamp(10px,2.5vw,36px); }
+.home-copy { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 10px 0; }
+.home-copy .kicker { margin-bottom: 17px; }
+.home-copy h1 { font-size: clamp(56px,6.25vw,91px); letter-spacing: -.065em; white-space: nowrap; }
+.home-copy h1 span { color: #e8f3db; }
+.home-copy h2 { max-width: 570px; margin: 8px 0; font-size: clamp(24px,2.7vw,37px); font-weight: normal; font-style: italic; letter-spacing: -.025em; }
+.home-copy p { max-width: 500px; margin: 15px 0 23px; }
+.home-rule { display: flex; align-items: center; width: 100%; gap: 11px; margin: 0 0 8px; color: #e7c88d; font-size: 13px; letter-spacing: .2em; }
+.home-rule::after { content: ""; height: 1px; flex: 1; background: linear-gradient(90deg,#d5c18b91,transparent); }
+.home-copy .buttons { justify-content: flex-start; }
+.home-copy .primary { padding-inline: 25px; }
+.home-note { margin-top: 19px; color: #b3d5cd; font-size: 11px; letter-spacing: .13em; text-transform: uppercase; }
+.home-art {
+  position: relative; isolation: isolate; min-height: 375px; align-self: stretch;
+  border-radius: 48% 48% 18px 18px / 40% 40% 18px 18px;
+  border: 1px solid #d5c68d75;
+  background: radial-gradient(ellipse at 50% 35%, #8cb4aa 0%, #466f76 30%, #213f50 60%, #112734 85%);
+  box-shadow: inset 0 0 65px #091d2caa, 0 0 0 6px #afc6a10c;
+  overflow: hidden;
+}
+.home-art::before { content: ""; position: absolute; width: 40%; aspect-ratio: 1; top: 12%; left: 30%; border-radius: 50%; background: #f7e5b0; box-shadow: 0 0 32px 12px #f3d8a66e, 0 0 100px 33px #c8e3cc5e; opacity: .82; }
+.home-art::after { content: ""; position: absolute; inset: auto -5% -5%; height: 39%; border-radius: 50% 50% 0 0; background: linear-gradient(180deg, #32665f, #112e3a 70%); box-shadow: 0 -12px 40px #c1e8c135; z-index: -1; }
+.art-stars { position: absolute; inset: 0; background-image: radial-gradient(circle,#fcebbe 1.5px,transparent 2px),radial-gradient(circle,#d5f9e2 1px,transparent 2px); background-position: 19px 35px, 70px 106px; background-size: 86px 99px, 114px 126px; opacity: .6; }
+.art-orbit { position: absolute; inset: 8%; border: 1px solid #f3e4bd51; border-radius: 50%; transform: rotate(-22deg); }
+.art-orbit::after { content: ""; position: absolute; inset: 12%; border: 1px dashed #c6ebdd55; border-radius: 50%; }
+.art-portrait { position: absolute; width: 29%; aspect-ratio: 1; border: 3px solid #ecdcad; border-radius: 16px; padding: 5px; background: #1d3b4a; box-shadow: 0 12px 22px #091c29aa, 0 0 0 5px #a8cead3b; transform: rotate(var(--tilt)); animation: portrait-float 4.8s ease-in-out infinite alternate; }
+.art-portrait img { width: 100%; height: 100%; object-fit: cover; border-radius: 9px; image-rendering: pixelated; }
+.art-portrait:nth-of-type(1) { left: 10%; top: 19%; --tilt: -12deg; }
+.art-portrait:nth-of-type(2) { right: 10%; top: 24%; --tilt: 11deg; animation-delay: -1.5s; }
+.art-portrait:nth-of-type(3) { left: 20%; bottom: 15%; --tilt: 7deg; animation-delay: -2.2s; }
+.art-portrait:nth-of-type(4) { right: 15%; bottom: 14%; --tilt: -9deg; animation-delay: -.8s; }
+@keyframes portrait-float { to { transform: translateY(-9px) rotate(var(--tilt)); } }
+.art-caption { position: absolute; bottom: 6%; left: 0; right: 0; text-align: center; color: #fae6b7; font-size: 10px; font-weight: 900; letter-spacing: .27em; text-shadow: 0 2px 6px #0d2835; }
+.home-bottom { border-top: 1px solid #93b5a65c; margin-top: 21px; padding-top: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.home-bottom .buttons { gap: 8px; }
+.home-bottom .secondary { min-height: 32px; padding: 7px 11px; font-size: 11px; background: transparent; border-color: #8db2a14d; box-shadow: none; }
+.control-guide { margin-top: 11px; font-size: 11px; color: #bad3c9; }
+.control-guide summary { cursor: pointer; color: #edd6a4; width: fit-content; }
+.control-guide .instructions { margin: 8px 0 0; font-size: 11px; }
 
-/* v4: keep the play field visible. Compact top strip and a transient ability card. */
-#hud{position:absolute;top:0;left:0;right:0;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:7px 10px;background:none;font-size:12px;min-height:0;pointer-events:none}
-.compact-players{display:flex;flex-wrap:wrap;gap:5px;max-width:74%}
-.compact-player{display:flex;align-items:center;gap:4px;height:39px;padding:3px 6px;color:#fffbe8;background:#14263ebf;border:1px solid #7dd9cb80;border-radius:8px;box-shadow:0 2px 8px #11192b40;white-space:nowrap}
-.compact-player.p2{border-color:#b2a4ff80}.compact-player b{font-size:12px;color:#ffe6a9}.mini-hearts{font-size:13px;color:#ffadb8;letter-spacing:-2px}
-.mini-form{display:flex;align-items:center;gap:2px;position:relative;background:#243b5acc;border:1px solid #6a7c9e;border-radius:5px;padding:2px}
-.mini-form.morphed{border-color:#ffdf7e;background:#56417b}.mini-form img{width:28px;height:28px;image-rendering:pixelated;border-radius:3px}
-.mini-form span{font-size:10px;min-width:19px;text-align:center;color:#fff4b4}.mini-label{font-size:10px;max-width:120px;overflow:hidden;text-overflow:ellipsis}
-.mini-food{display:flex;align-items:center;gap:2px;color:#c3ffec;font-size:10px}.mini-food img{width:20px;height:20px;image-rendering:pixelated}
-.compact-quest{display:flex;align-items:center;gap:6px;border-radius:8px;padding:6px 9px;color:#ffebc4;background:#172842c7;box-shadow:0 2px 8px #11192b40;white-space:nowrap}
-.compact-quest b{font-size:11px}.quest-gem{color:#526482;font-size:14px;margin-left:3px}.quest-gem.found{color:#ffe28b;text-shadow:0 0 6px #fff2b0}
-.compact-quest small{font-size:10px;color:#bdfff1}
-#ability-callout{position:absolute;top:16%;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;
-  width:min(440px,75%);padding:11px 15px;border:2px solid #ffdc8e;border-radius:13px;background:#182a52eb;
-  box-shadow:0 5px 0 #362b54,0 12px 30px #1a214e8e;color:#ffecbe;pointer-events:none;z-index:2}
-#ability-callout[hidden]{display:none}#ability-callout img{width:57px;height:57px;image-rendering:pixelated;border:2px solid #91e9c7;border-radius:7px}
-#ability-callout strong{display:block;font-size:19px;color:#fff4c2}#ability-callout small{display:block;font-size:13px;color:#c3f1f3;margin-top:3px;line-height:1.35}
-.chapter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
-.chapter-card{padding:17px 12px;border:2px solid #96d7dd;border-radius:13px;background:linear-gradient(155deg,#356d81,#283e6e 70%,#4b3765);box-shadow:0 5px 0 #182d4c}
-.chapter-card.coast{background:linear-gradient(150deg,#236b9f,#2e506e 70%,#1c466e)}.chapter-card.summit{background:linear-gradient(150deg,#7352a9,#3d416f 70%,#252d5f)}
-.chapter-card h2{font-size:clamp(15px,2vw,23px);margin:12px 0}.chapter-card p{font-size:12px;min-height:55px}.chapter-number{color:#bafbe9;font-size:10px;letter-spacing:.12em;font-weight:900}
-.chapter-stats{font-size:11px;color:#f3d9af;margin-bottom:15px}.chapter-card button{font-size:12px;padding:8px 12px;width:100%}
-@media(max-width:800px){#hud{padding:5px;gap:4px}.mini-label{display:none}.compact-player{height:31px;padding:2px 4px}.mini-form img{width:23px;height:23px}.compact-quest b{font-size:9px}.compact-quest{gap:2px;padding:5px}.mini-hearts{font-size:10px}.compact-players{gap:3px}.chapter-grid{grid-template-columns:1fr}.chapter-card p{min-height:0}.panel{max-height:100%}}
+/* Map selection, field guide and utility screens. */
+.chapter-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 13px; margin: 22px 0; text-align: left; }
+.chapter-card { position: relative; display: flex; flex-direction: column; min-width: 0; padding: 16px; border: 1px solid #91bfae9e; border-radius: 14px; background: linear-gradient(150deg,#285b5c,#153b4a 75%,#112f3e); box-shadow: inset 0 1px #f3f1cf24, 0 8px 18px #031b2780; overflow: hidden; }
+.chapter-card.coast { background: linear-gradient(150deg,#2b7180,#164b66 73%,#103b51); }
+.chapter-card.summit { background: linear-gradient(150deg,#645b89,#343f6c 73%,#202b53); }
+.chapter-card::before { content: ""; position: absolute; top: -28px; right: -15px; width: 138px; height: 138px; border: 1px solid #eef5d533; border-radius: 50%; pointer-events: none; }
+.chapter-illustration { align-self: flex-end; width: 80px; height: 80px; margin: -4px 0 -4px; border-radius: 50%; border: 1px solid #e7e9cd75; padding: 9px; background: #153642a6; box-shadow: 0 0 22px #dceebc30; }
+.chapter-illustration img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; image-rendering: pixelated; }
+.chapter-number { color: #cde7d0; font-size: 10px; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
+.chapter-card h2 { margin: 4px 0 8px; font-size: clamp(20px,2vw,27px); }
+.chapter-card p { margin: 0 0 15px; min-height: 72px; font-size: 12px; }
+.chapter-stats { margin-top: auto; margin-bottom: 15px; color: #f1dca7; font-size: 11px; }
+.chapter-card button { width: 100%; }
+.menu-portraits { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 12px 0; }
+.menu-creature { width: 53px; height: 53px; padding: 3px; border: 1px solid #c1dcc9; border-radius: 10px; background: #1d4052; }
+.menu-creature img { width: 100%; height: 100%; border-radius: 6px; image-rendering: pixelated; }
+.journal-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; margin: 18px 0; text-align: left; }
+.journal-card { display: flex; gap: 11px; align-items: center; border: 1px solid #8eb7ac63; border-radius: 11px; padding: 10px; background: #224452ad; }
+.journal-card img { flex: none; width: 56px; height: 56px; border: 1px solid #b5d5b3; border-radius: 8px; image-rendering: pixelated; }
+.journal-card b { display: block; color: #f5dfa9; }
+.journal-card small { display: block; margin-top: 4px; color: #c3d9d5; font-size: 11px; line-height: 1.5; }
+.guide-foods { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+.food-guide { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border: 1px solid #8ab1a15e; border-radius: 9px; background: #20404f; font-size: 12px; }
+.food-guide img { width: 28px; height: 28px; image-rendering: pixelated; }
+.food-guide small { color: #b1c8ce; }
+
+/* In-game information stays out of the way of the landscape. */
+#hud { position: absolute; inset: 0 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 9px; padding: 8px 12px; pointer-events: none; font-size: 12px; text-shadow: 0 1px 2px #0b1b30; }
+.compact-players { display: flex; flex-wrap: wrap; gap: 6px; max-width: 72%; }
+.compact-player { display: flex; align-items: center; gap: 5px; height: 40px; padding: 4px 7px; border: 1px solid #a0d8c6a8; border-radius: 10px; white-space: nowrap; color: #fff6dc; background: #102b3cde; box-shadow: 0 3px 13px #08202c80, inset 0 1px #b2dcc840; backdrop-filter: blur(4px); }
+.compact-player.p2 { border-color: #c3b0f3a8; }
+.compact-player b { color: #f5d58c; font-size: 11px; }
+.mini-hearts { color: #ff9c9f; letter-spacing: -2px; font-size: 15px; }
+.mini-form { display: flex; align-items: center; gap: 3px; border-radius: 6px; padding: 2px; background: #214c58; border: 1px solid #6ba999; }
+.mini-form.morphed { background: #72566c; border-color: #f3db91; }
+.mini-form img { width: 26px; height: 26px; image-rendering: pixelated; border-radius: 4px; }
+.mini-form span { min-width: 20px; text-align: center; color: #fae5b0; font-size: 10px; }
+.mini-label { max-width: 150px; overflow: hidden; text-overflow: ellipsis; font-size: 10px; color: #d9e9dd; }
+.mini-food { display: flex; align-items: center; gap: 3px; color: #dcf9e7; font-size: 10px; }
+.mini-food img { width: 19px; height: 19px; image-rendering: pixelated; }
+.compact-quest { display: flex; align-items: center; gap: 5px; min-height: 39px; padding: 7px 10px; background: #102b3cde; border: 1px solid #b8d6b79e; border-radius: 10px; white-space: nowrap; box-shadow: 0 3px 13px #08202c80; backdrop-filter: blur(4px); }
+.compact-quest b { color: #fff0c7; font: 700 12px Georgia,serif; }
+.quest-gem { margin-left: 3px; color: #547782; font-size: 15px; }
+.quest-gem.found { color: #f7d58f; text-shadow: 0 0 9px #ffe9a8; }
+.compact-quest small { color: #afe4d0; font-size: 10px; }
+#message { position: absolute; left: 50%; bottom: 13%; transform: translateX(-50%); max-width: min(82%,820px); padding: 11px 18px; text-align: center; font: 700 clamp(11px,1.42vw,17px)/1.4 Georgia,serif; letter-spacing: .01em; color: #fff3d3; background: #132b38d9; border: 1px solid #d8ce9c70; border-radius: 10px; box-shadow: 0 8px 30px #051b2d8c; pointer-events: none; opacity: 0; transition: opacity .22s; }
+#message.show { opacity: 1; }
+#ability-callout { position: absolute; top: 13%; left: 50%; z-index: 2; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; width: min(430px,77%); padding: 12px 15px; color: #fff1ce; border: 1px solid #f0d69b; border-radius: 12px; background: #173748f0; box-shadow: 0 12px 32px #071b2a9e, inset 0 1px #fff4d13b; pointer-events: none; }
+#ability-callout img { width: 57px; height: 57px; border: 2px solid #adddc4; border-radius: 8px; image-rendering: pixelated; }
+#ability-callout strong { display: block; color: #ffdfa4; font: bold 19px Georgia,serif; }
+#ability-callout small { display: block; margin-top: 4px; color: #d5eee4; font-size: 12px; line-height: 1.4; }
+
+@media (max-width: 950px) {
+  .panel-home { padding: 23px; }
+  .home-layout { grid-template-columns: minmax(0,1fr) minmax(200px,.7fr); }
+  .home-copy h1 { font-size: clamp(43px,6.5vw,70px); }
+  .home-art { min-height: 310px; }
+  .chapter-illustration { width: 65px; height: 65px; }
+  .chapter-card { padding: 11px; }
+  .chapter-card p { min-height: 83px; }
+}
+@media (max-width: 700px), (max-height: 520px) {
+  .panel { padding: 17px; border-radius: 15px; }
+  .home-layout { grid-template-columns: 1fr; }
+  .home-copy { padding: 0; }
+  .home-copy .kicker { margin-bottom: 9px; }
+  .home-copy h1 { font-size: clamp(39px,8vw,60px); }
+  .home-copy h2 { font-size: clamp(20px,4.2vw,28px); }
+  .home-copy p { margin: 8px 0 14px; }
+  .home-art { display: none; }
+  .home-bottom { margin-top: 12px; padding-top: 10px; }
+  .chapter-grid { grid-template-columns: 1fr; gap: 10px; }
+  .chapter-card { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; }
+  .chapter-card .chapter-number, .chapter-card h2, .chapter-card p, .chapter-card .chapter-stats, .chapter-card button { grid-column: 1; }
+  .chapter-card .chapter-illustration { grid-column: 2; grid-row: 1 / span 3; }
+  .chapter-card p { min-height: 0; margin: 0; }
+  .chapter-card h2 { margin: 0; }
+  .chapter-card button { margin-top: 6px; }
+  .journal-grid { grid-template-columns: 1fr; }
+  .compact-player { height: 32px; gap: 3px; padding: 2px 4px; }
+  .mini-form img { width: 20px; height: 20px; }
+  .mini-label { display: none; }
+  .mini-hearts { font-size: 11px; }
+  .compact-quest { min-height: 31px; gap: 2px; padding: 5px; }
+  .compact-quest b { font-size: 10px; }
+  .compact-quest small { font-size: 9px; }
+  #hud { padding: 5px; gap: 4px; }
+  #ability-callout { width: min(400px,90%); top: 16%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
 </style>
 </head>
 <body>
@@ -1016,7 +1172,8 @@ WW.games.animals = (() => {
       ctx.fillStyle=moon;ctx.fillRect(332,-15,116,116);
       ctx.fillStyle='#fff3bd';ctx.beginPath();ctx.arc(390,43,17,0,Math.PI*2);ctx.fill();
       ctx.fillStyle='#e2e9db';ctx.beginPath();ctx.arc(397,35,12,0,Math.PI*2);ctx.fill();
-      for(let i=0;i<40;i++){
+      // Tiny constellations turn the upper sky into a navigable, living backdrop.
+      for(let i=0;i<65;i++){
         const drift=cameraX*.1+time*1.9;
         const x=((i*129.1-drift)%(W+30)+W+30)%(W+30);
         const y=19+(hash(i,13)%145)+Math.sin(time*1.4+i)*3;
@@ -1024,6 +1181,7 @@ WW.games.animals = (() => {
         ctx.globalAlpha=glow;box(ctx,x,y,2+(i%4===0?1:0),2,i%3?'#e4ffca':'#ffcff2');
       }
       ctx.globalAlpha=1;
+      // Deep atmospheric perspective keeps the detailed foreground legible.
       for(let layer=0;layer<3;layer++){
         const offset=cameraX*(.12+layer*.2);const base=115+layer*39;const colors=tint.mountains;
         ctx.fillStyle=colors[layer];ctx.beginPath();ctx.moveTo(0,H);
@@ -1041,6 +1199,22 @@ WW.games.animals = (() => {
             if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
           ctx.lineTo(W,0);ctx.lineTo(0,0);ctx.fill();
         }ctx.globalAlpha=1;
+      }
+      // Slow luminous ribbons and distant dust establish movement without visual noise.
+      if(chapter.biome!=='coast'){
+        ctx.save();ctx.globalCompositeOperation='screen';
+        for(let band=0;band<3;band++){
+          const glow=ctx.createLinearGradient(0,28+band*23,0,95+band*35);
+          glow.addColorStop(0,'#b6f4db00');glow.addColorStop(.5,chapter.biome==='summit'?'#e7a9ef18':'#a4f9d619');glow.addColorStop(1,'#b6f4db00');
+          ctx.fillStyle=glow;ctx.beginPath();
+          for(let x=0;x<=W;x+=12){
+            const y=34+band*21+Math.sin(x*.017+time*.22+band*1.7)*14;
+            if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+          }
+          for(let x=W;x>=0;x-=12)ctx.lineTo(x,79+band*21+Math.sin(x*.017+time*.22+band*1.7)*12);
+          ctx.closePath();ctx.fill();
+        }
+        ctx.restore();
       }
       for(let n=0;n<8;n++){
         const x=((n*108-cameraX*.14+time*1.7)%(W+120)+W+120)%(W+120)-40;
@@ -1132,6 +1306,7 @@ WW.games.animals = (() => {
             box(ctx,px,py,16,6,tint.grass[0]);box(ctx,px,py+5,16,2,tint.grass[1]);
             box(ctx,px+2,py-2,3,3,'#a4ed96');box(ctx,px+11,py-1,2,3,'#efffa1');
           }
+          // Warm mineral flecks and darker edges give the soil a tactile cut-paper finish.
           if(h%5===0)box(ctx,px+5,py+9,4,2,'#f6ad9b');if(h%7===0)box(ctx,px+12,py+12,2,2,'#c38bd7');
           if(h%23===0){box(ctx,px+8,py+6,3,7,'#7b7bb1');box(ctx,px+9,py+5,1,5,'#b1c9f0');}
         } else if(t==='platform'){
@@ -1148,6 +1323,11 @@ WW.games.animals = (() => {
           box(ctx,px,py,16,16,chapter.biome==='coast'?(y%2?'#2269b0':'#2689cf'):y%2?'#3b89da':'#3f9fde');
           if(y===0||map[y-1][x]!=='water'){box(ctx,px,py,16,3,'#9be5e1');box(ctx,px+(Math.floor(time*9+x*7)%11),py+1,5,1,'#edf9ce');}
           if(h%6===0)box(ctx,px+5,py+8+Math.sin(time*3+x)*2,2,2,'#8fe4e5');
+          if(h%11===0){
+            ctx.globalAlpha=.32+.2*Math.sin(time*2.5+x);
+            box(ctx,px+2,py+5,9,1,'#c3fff1');box(ctx,px+4,py+11,6,1,'#88dbe6');
+            ctx.globalAlpha=1;
+          }
         }
       }
       // tiny foreground blossoms, all procedural and repeatable
@@ -1245,7 +1425,22 @@ WW.games.animals = (() => {
         box(ctx,p.x-8,p.y-43,16,3,'#152e42');box(ctx,p.x-7,p.y-42,14,2,p.id===0?'#ffd782':'#91d2ff');
         ctx.font='bold 8px sans-serif';ctx.fillStyle='#102b41';ctx.fillText(String(p.id+1),p.x-2,p.y-46);
       });
-      effects.forEach(e=>box(ctx,e.x,e.y,3,3,e.color));ctx.restore();
+      effects.forEach(e=>{
+        // A larger faint halo lets spell effects read as light, not confetti.
+        ctx.globalAlpha=Math.min(.22,e.time*.3);
+        box(ctx,e.x-3,e.y-3,9,9,e.color);
+        ctx.globalAlpha=1;
+        box(ctx,e.x,e.y,3,3,e.color);
+      });ctx.restore();
+      // Screen-space light and vignette are atmospheric only: no physics or map semantics change.
+      const sunlight=ctx.createRadialGradient(W*.46,H*.12,5,W*.46,H*.12,W*.85);
+      sunlight.addColorStop(0,chapter.biome==='summit'?'#f6c9ff13':'#fff4c51c');
+      sunlight.addColorStop(.6,'#b8f9dd05');sunlight.addColorStop(1,'#08152652');
+      ctx.fillStyle=sunlight;ctx.fillRect(0,0,W,H);
+      const edge=ctx.createLinearGradient(0,0,0,H);
+      edge.addColorStop(0,'#0c1c2e30');edge.addColorStop(.25,'#0c1c2e00');
+      edge.addColorStop(.8,'#0c1c2e00');edge.addColorStop(1,'#0b1d3138');
+      ctx.fillStyle=edge;ctx.fillRect(0,0,W,H);
       const race=challenges.find(c=>c.type==='sprint'&&c.active);
       if(race){box(ctx,140,32,200,20,'#203252d5');ctx.font='bold 12px sans-serif';ctx.fillStyle='#ffebb9';ctx.fillText(`CRYSTAL DASH: ${race.time.toFixed(1)}s`,164,46);}
       const next=goals.find(g=>!shared.keys[g.kind]);
@@ -1272,24 +1467,40 @@ WW.main = (() => {
   const menu=document.getElementById('menu');const hud=document.getElementById('hud');
   let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,pixelsPerTile=1,menuPadLatch='',currentChapterIndex=0;
   const builtinMaps=window.WONDERWOOD_LEVELS;
-  const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel">${content}</section>`;menu.querySelector('button')?.focus({preventScroll:true});};
+  const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel ${screen==='home'?'panel-home':''}">${content}</section>`;menu.querySelector('button')?.focus({preventScroll:true});};
   const button=(id,label,kind='secondary')=>`<button class="${kind}" data-action="${id}">${label}</button>`;
   function home(){
     if(game){game.stop();game=null;}paused=true;screen='home';cancelCalibration?.();cancelCalibration=null;
-    const portraits=Object.keys(WW.catalog.forms).map(t=>`<span class="menu-creature" title="${WW.catalog.forms[t].name} · ${WW.catalog.forms[t].power}"><img src="${WW.art.portrait(t)}" alt="${WW.catalog.forms[t].name}"></span>`).join('');
-    panel(`<div class="kicker">The enchanted forest is calling</div><h1>WONDERWOOD</h1>
-      <h2>Be kind. Be brave. Become magical.</h2>
-      <div class="menu-portraits">${portraits}</div>
-      <p>Three enormous regions, eight magical creatures, five snacks and secret trails. Win creatures over, catch them, transform into them and use their powers to solve the forest's secrets. You can switch forms and save their remaining time!</p>
-      <div class="buttons">${button('play','▶ PLAY FIRST FOREST','primary')}${button('chapters','✦ CHOOSE A LEVEL')}${button('journal','✦ Creature guide')}${button('settings','⚙ Settings')}${button('calibrate','🎮 Controller setup')}${button('level','▧ Load PNG map')}</div>
-      <div class="instructions"><b>Keyboard P1:</b> A / D move · W jump · F food · E change food · G catch orb · Q choose form · T transform · R wake · C back to camp<br>
-      <b>Keyboard P2:</b> J / L move · I jump · O food · M change food · P catch orb · H choose form · U transform · Y wake · N back to camp<br>
-      <b>Menu:</b> Arrow keys + Enter, or Tab + Enter · Escape pauses · All gems auto-collect on contact</div>
-      <div class="hint">${customMap?'Custom map selected.':'3 chapters · independent quests · unlimited homeward spell'} &nbsp; · &nbsp; ${WW.input.pads().length} controller(s) detected</div>`);
+    const portrait=type=>'<img src="'+WW.art.portrait(type)+'" alt="'+WW.catalog.forms[type].name+'">';
+    panel(`
+    <div class="home-layout">
+      <div class="home-copy">
+        <div class="kicker">✦ &nbsp; An enchanted world awaits &nbsp; ✦</div>
+        <h1>WONDER<span>WOOD</span></h1>
+        <div class="home-rule">A LITTLE MAGIC GOES A LONG WAY</div>
+        <h2>Every creature has a story.<br>Every forest has a secret.</h2>
+        <p>Wander through moonlit meadows, luminous reefs and starlit peaks. Make friends with magical creatures, borrow their extraordinary powers, and find the lost gems together.</p>
+        <div class="buttons">${button('play','▶ BEGIN ADVENTURE','primary')}${button('chapters','✦ CHOOSE A LEVEL')}</div>
+        <div class="home-note">3 enchanted chapters &nbsp; · &nbsp; 8 curious companions &nbsp; · &nbsp; 1–2 explorers</div>
+      </div>
+      <div class="home-art" aria-label="Four magical creatures beneath a glowing moon" role="img">
+        <div class="art-stars"></div><div class="art-orbit"></div>
+        ${['springaroo','skyling','tideling','emberkit'].map(t=>'<div class="art-portrait">'+portrait(t)+'</div>').join('')}
+        <div class="art-caption">THE WOODS ARE WAKING</div>
+      </div>
+    </div>
+    <div class="home-bottom"><span class="hint">${customMap?'Custom map ready.':'Your next adventure begins here.'} &nbsp; · &nbsp; ${WW.input.pads().length} controller(s) connected</span>
+      <div class="buttons">${button('journal','Creature journal')}${button('settings','Settings')}${button('calibrate','Controller setup')}${button('level','Load PNG map')}</div>
+    </div>
+    <details class="control-guide"><summary>View keyboard controls</summary>
+      <div class="instructions"><b>Player 1:</b> A / D move · W jump · F food · E change food · G catch orb · Q choose form · T transform · R revive · C camp<br>
+      <b>Player 2:</b> J / L move · I jump · O food · M change food · P catch orb · H choose form · U transform · Y revive · N camp<br>
+      <b>Menus:</b> Arrow keys + Enter · Escape pauses · Gems collect on contact</div>
+    </details>`);
   }
   function chapters(){
     screen='chapters';
-    const cards=WW.chapters.map((c,i)=>`<div class="chapter-card ${c.biome}"><div class="chapter-number">CHAPTER ${i+1} · ${c.difficulty}</div><h2>${c.name}</h2><p>${c.tagline}</p><div class="chapter-stats">${c.goals.length} relics · ${[260,296,320][i]} tiles · ${Object.hasOwn(WW.storage.data.progress.chapters||{},c.id)?'✓ Completed':'New adventure'}</div>${button('stage-'+i,'Explore '+c.name,i===currentChapterIndex?'primary':'secondary')}</div>`).join('');
+    const cards=WW.chapters.map((c,i)=>`<div class="chapter-card ${c.biome}"><div class="chapter-number">CHAPTER ${i+1} · ${c.difficulty}</div><div class="chapter-illustration"><img src="${WW.art.portrait(['springaroo','tideling','cloudwhisp'][i])}" alt=""></div><h2>${c.name}</h2><p>${c.tagline}</p><div class="chapter-stats">${c.goals.length} relics · ${[260,296,320][i]} tiles · ${Object.hasOwn(WW.storage.data.progress.chapters||{},c.id)?'✓ Completed':'New adventure'}</div>${button('stage-'+i,'Explore '+c.name,i===currentChapterIndex?'primary':'secondary')}</div>`).join('');
     panel(`<div class="kicker">The Wonderwood Atlas</div><h1>CHOOSE YOUR TRAIL</h1><p>Every chapter has a new landscape, different puzzles and magical neighbors. Play in any order.</p><div class="chapter-grid">${cards}</div><div class="buttons">${button('home','Back')}</div>`);
   }
   async function play(index=currentChapterIndex) {
