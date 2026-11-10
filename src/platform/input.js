@@ -32,7 +32,7 @@ WW.input = (() => {
     if (!WW.storage.data.settings.rumble) return;
     const pad = pads().find(p=>p.index===assigned.get(slot));
     const actuator = pad?.vibrationActuator;
-    if (actuator?.effects?.includes('dual-rumble')) actuator.playEffect('dual-rumble',{duration,strongMagnitude:strength,weakMagnitude:strength*.7}).catch(()=>{});
+    if (actuator?.playEffect) actuator.playEffect('dual-rumble',{duration,strongMagnitude:strength,weakMagnitude:strength*.7}).catch(()=>{});
   }
   function snapshot(pad) { return { buttons:pad.buttons.map(b=>b.value), axes:[...pad.axes] }; }
   function changed(pad, baseline) {
@@ -55,5 +55,7 @@ WW.input = (() => {
     onStep(0,actions);frame=requestAnimationFrame(tick);
     return ()=>cancelAnimationFrame(frame);
   }
+  addEventListener('gamepadconnected',syncAssignments);
+  addEventListener('gamepaddisconnected',syncAssignments);
   return {actions,pads,read,reset,rumble,calibrate,syncAssignments,assigned};
 })();

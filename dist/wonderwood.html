@@ -6,16 +6,18 @@
   <title>Wonderwood · Family Adventure Arcade</title>
   <meta name="theme-color" content="#152736">
   <style>:root {font-family: ui-rounded, 'Trebuchet MS', system-ui, sans-serif; color:#fff9e6; background:#101d2b; font-synthesis:none;} *{box-sizing:border-box} body{margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(ellipse at 50% 10%,#2d505c,#111c2a 65%); overflow:hidden} button,input{font:inherit} button{border:0;cursor:pointer} #app{position:relative; width:min(100vw, 177.777vh); aspect-ratio:16/9; max-height:100vh; overflow:hidden; background:#75beda; box-shadow:0 22px 90px #08131ce0; image-rendering:pixelated} #game{display:block; width:100%; height:100%;image-rendering:pixelated} .menu{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#071a31a6;backdrop-filter:blur(3px);padding:12px;overflow:auto} .menu[hidden],#hud[hidden]{display:none} .panel{max-width:min(680px,94%);max-height:100%;overflow:auto;background:linear-gradient(140deg,#253c51f0,#182d42f4);padding:clamp(16px,3.8vw,37px);border:3px solid #91d7c7;box-shadow:0 12px 0 #0c1c29,0 24px 60px #071322a0;border-radius:16px;text-align:center} .kicker{font-size:clamp(9px,1.2vw,14px);letter-spacing:.34em;color:#9ff3cc;font-weight:900;text-transform:uppercase;margin-bottom:8px} h1{font-size:clamp(27px,5vw,66px);line-height:1;margin:0 0 6px;text-shadow:4px 5px 0 #123b46;color:#ffdb78;letter-spacing:-.045em} h2{font-size:clamp(19px,2.7vw,32px);margin:0 0 12px;color:#ffdd8c} p{font-size:clamp(11px,1.35vw,16px);line-height:1.5;color:#d3eaf3;margin:10px 0 18px}.buttons{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px} .primary,.secondary{padding:10px 17px;border-radius:8px;transition:transform .12s; font-weight:900; font-size:clamp(12px,1.5vw,17px)}.primary{background:#ffce6a;color:#24334c;box-shadow:0 5px 0 #ac712f}.secondary{background:#3e6070;color:white;box-shadow:0 4px 0 #1a3946}.primary:hover,.secondary:hover{transform:translateY(-2px)} .primary:active,.secondary:active{transform:translateY(3px);box-shadow:none}.instructions{font-size:clamp(9px,1.15vw,13px);color:#b3d5e2;line-height:1.8; margin-top:20px}.instructions b{color:#f5d88a}.chips{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;margin:12px 0}.chip{border:1px solid #82c4b6;color:#c3f3de;border-radius:20px;padding:5px 11px;font-size:12px} label{color:#e3f0ec;font-size:14px} select,input[type=number]{background:#142b3c;color:white;border:1px solid #75a6a0;padding:8px;border-radius:6px}input[type=file]{max-width:210px;font-size:11px}#hud{position:absolute;left:0;right:0;top:0;pointer-events:none;display:flex;align-items:flex-start;justify-content:space-between;padding:11px 17px;font-size:clamp(9px,1.2vw,14px);text-shadow:1px 2px #173544}.hud-player{background:#163747bb;border:1px solid #b1dcc282;border-radius:8px;padding:6px 9px}.hud-center{background:#163747bd;border-radius:8px;padding:7px 12px;text-align:center;color:#fff3b0}.tiny{font-size:.75em;color:#bce4e2}.heart{color:#ff878d;font-size:1.2em}.heart-off{color:#476a78;font-size:1.2em}#message{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);text-align:center;max-width:90%;font-size:clamp(10px,1.8vw,20px);font-weight:900;color:#ffedbd;text-shadow:2px 3px #234556;pointer-events:none;opacity:0;transition:opacity .15s}#message.show{opacity:1}.hint{color:#acd9cf;font-size:12px;line-height:1.5}.row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}.toggle{display:flex;gap:7px;justify-content:center;align-items:center;padding:8px}.warning{color:#ffcb8e}
+
+.player-info{padding:4px 8px;margin:3px 0 6px;border-radius:3px;background:#0f334e9c;text-align:left;min-width:155px}.hud-center{line-height:1.45}.hud-player{max-width:45%} .panel button:focus-visible{outline:3px solid #fff1a0;outline-offset:3px}
 </style>
 </head>
 <body>
   <main id="app">
-    <canvas id="game" width="480" height="270" aria-label="Wonderwood game world"></canvas>
+    <canvas id="game" width="960" height="540" aria-label="Wonderwood game world"></canvas>
     <div id="hud" hidden></div>
     <div id="message" aria-live="polite"></div>
     <div id="menu" class="menu"></div>
   </main>
-  <script>window.WONDERWOOD_MAP = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGgAAAAYCAIAAACZXC83AAAA9ElEQVR4nGP8//8/wyggHTANtAOGKhgNODLBaMCRCUYDjkwwGnBkgtGAIxPQNeA2Bv+lp3U0BYx0aMcJSipiCr5/fp/W9tIU0CPghiWgfVZN3UNzKwYCsBClKnUPw2wXIk1Ey5hDJUvCnU2kg/FlVcyyibahQEr0DLj5A1/G0SGF0qJ2GviAG6IApXJgfGfEwMAw6X8oTuV3hXHJML7/QC03fWiTppZR+MHq1auJVSqmgybAKCChQF3XUBGwB22nRPvPdZ7UcgkmGO1ykQlGA45MMBpwZIKhHXD/BdcPlNVDO+AY3wcOlNVDO+AGEAzq5shgBgA+eD120/eoZwAAAABJRU5ErkJggg==";</script>
+  <script>window.WONDERWOOD_MAP = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAAZCAIAAAB1rn16AAABCUlEQVR4nGP8//8/wyigPWAaaAeMFDAa0HQCowFNJzAa0HQCowFNJzAa0HQC1Anol7btJKnfGPyXKvYOIcBIz3Z0QkwbpuCCJVV0c8AAAroG9EgGo2U0ncBoQNMJsNDIXMzieISUxbgANcro1D0Ms12o4ZjBAWjjHYoCeji1Imjtl9FWB50A4TJ62CRbCj1CofbRFE0ngGjeMb4zYmBgmPQ/FMq/K8yQuodMU2EaGd9/wKXkQ5s0XNnq1avJtAgvQBhLtkeIAXgMF9OBMxkFJBRo6AhSAHvQdmoZ9XOdJ7WMohYY7bDQCYwGNJ3A0Avo/4LrB9oJ5IChF9CM7wMH2gnkgEFUGQ5vAABZB0moOSmWnQAAAABJRU5ErkJggg==";</script>
   <script>
 window.WW = window.WW || {};
 WW.storage = (() => {
@@ -81,7 +83,7 @@ WW.input = (() => {
     if (!WW.storage.data.settings.rumble) return;
     const pad = pads().find(p=>p.index===assigned.get(slot));
     const actuator = pad?.vibrationActuator;
-    if (actuator?.effects?.includes('dual-rumble')) actuator.playEffect('dual-rumble',{duration,strongMagnitude:strength,weakMagnitude:strength*.7}).catch(()=>{});
+    if (actuator?.playEffect) actuator.playEffect('dual-rumble',{duration,strongMagnitude:strength,weakMagnitude:strength*.7}).catch(()=>{});
   }
   function snapshot(pad) { return { buttons:pad.buttons.map(b=>b.value), axes:[...pad.axes] }; }
   function changed(pad, baseline) {
@@ -104,6 +106,8 @@ WW.input = (() => {
     onStep(0,actions);frame=requestAnimationFrame(tick);
     return ()=>cancelAnimationFrame(frame);
   }
+  addEventListener('gamepadconnected',syncAssignments);
+  addEventListener('gamepaddisconnected',syncAssignments);
   return {actions,pads,read,reset,rumble,calibrate,syncAssignments,assigned};
 })();
 
@@ -112,12 +116,12 @@ WW.input = (() => {
 window.WW = window.WW || {};
 WW.levels = (() => {
   const colors = {
-    empty: '#ffffff', ground: '#101820', water: '#176ad7', p1: '#00ed31', p2: '#91fe54', exit: '#ff152b',
-    rabbit: '#ffdc12', bird: '#00eeef', otter: '#ef851a', snack: '#ff64bb', skyKey: '#b052fc', diveKey: '#167b86', checkpoint: '#aaaaaa'
+    empty: '#ffffff', ground: '#101820', platform: '#5f5b85', water: '#176ad7', p1: '#00ed31', p2: '#91fe54', exit: '#ff152b',
+    springaroo: '#ffdc12', skyling: '#00eeef', tideling: '#ef851a', snack: '#ff64bb', skyKey: '#b052fc', diveKey: '#167b86', springKey: '#e83c86', checkpoint: '#aaaaaa'
   };
   const palette = Object.entries(colors).map(([name,hex])=>({ name, rgb: [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)) }));
-  const kinds = new Set(['ground','water']);
-  const markers = new Set(['p1','p2','exit','rabbit','bird','otter','snack','skyKey','diveKey','checkpoint']);
+  const kinds = new Set(['ground','platform','water']);
+  const markers = new Set(['p1','p2','exit','springaroo','skyling','tideling','snack','skyKey','diveKey','springKey','checkpoint']);
   function classify(r,g,b,a=255) {
     if (a<80) return {kind:'empty',confidence:1};
     const distances=palette.map(({name,rgb})=>({name,d:Math.sqrt((r-rgb[0])**2+(g-rgb[1])**2+(b-rgb[2])**2)})).sort((a,b)=>a.d-b.d);
@@ -173,39 +177,113 @@ WW.levels = (() => {
 <script>
 window.WW = window.WW || {};
 WW.art = (() => {
-  const sprites={
-    hero:[
-      '....HHHH....','...HFFFFH...','..HHFFFFHH..','..HFWFFWFH..','..HFFFFFFH..','...HMMMMH...','....HHHH....','...TTTTTT...','..TTTTTTTT..','..T.TTTT.T..','..A.TTTT.A..','....PPPP....','....P..P....','...PP..PP...','...SS..SS...', '............'
-    ],
-    rabbit:[
-      '...E....E...','...EE..EE...','...EE..EE...','..RRRRRRRR..','..RWRRRWRR..','..RRRNNRRR..','...RRRRRR...','..RRRRRRRR..','..RRRRRRRR..','...RRRRRR...','..RR.RR.RR..','..RR.RR.RR..','...S....S...','............','............','............'
-    ],
-    bird:[
-      '............','.....BBB....','....BBBBB...','...BWBWBB...','...BBBBBC...','....BBBB....','..BBBBBBBB..','BBBBBBBBBBBB','..BBBBBBBB..','....BBBB....','....B..B....','...Y....Y...','............','............','............','............'
-    ],
-    otter:[
-      '............','............','...OOOOOO...','..OOOOOOOO..','..OWOOOWOO..','..OOOOOOOO..','...OONNO....','...OOOOOO...','..OOOOOOOO..','..OOOOOOOOOO','..OOOOOOOOOO','...O....O...','..OO....OO..','............','............','............'
-    ],
-    snack:[
-      '............','.....GG.....','....GGG.....','...PPPPP....','..PPPPPPP...','..PPPPPPP...','..PPPPPPP...','...PPPPP....','....PPP.....','............','............','............','............','............','............','............'
-    ]
-  };
-  const palette={H:'#46344e',F:'#f8c79b',W:'#ffffff',M:'#70424b',T:'#de5e7c',A:'#f5b87d',P:'#4c75c4',S:'#2a4557',E:'#e4a0b6',R:'#d8c6ad',N:'#513e47',B:'#63bfe5',C:'#ffd05e',Y:'#e99e47',O:'#ad7953',G:'#5cae66'};
-  const sheet=document.createElement('canvas');sheet.width=16*5*4;sheet.height=20;const s=sheet.getContext('2d');s.imageSmoothingEnabled=false;
-  Object.entries(sprites).forEach(([name,rows],index)=>{
-    for(let f=0;f<4;f++)rows.forEach((row,y)=>[...row].forEach((ch,x)=>{
-      if(ch==='.')return;
-      let dy=y;
-      if((name==='hero'||name==='rabbit')&&y>10&&f%2===1)dy+=f===1?1:-1;
-      if(name==='bird'&&y>5&&f%2===1)dy-=2;
-      s.fillStyle=palette[ch];s.fillRect(index*64+f*16+x+2,dy+2,1,1);
-    }));
+  // Native 32×40 illustrations, rather than 12×16 colored masks. The canvas
+  // itself renders at 2× logical resolution, keeping the edges crisp.
+  const kinds=['hero','springaroo','skyling','tideling','snack'];
+  const sw=32,sh=40,frames=4;
+  const sheet=document.createElement('canvas');sheet.width=sw*frames*kinds.length;sheet.height=sh;
+  const g=sheet.getContext('2d');g.imageSmoothingEnabled=false;
+  function oval(x,y,rx,ry,color){g.fillStyle=color;g.beginPath();g.ellipse(x,y,rx,ry,0,0,Math.PI*2);g.fill();}
+  function shape(points,color){g.fillStyle=color;g.beginPath();g.moveTo(...points[0]);for(let i=1;i<points.length;i++)g.lineTo(...points[i]);g.closePath();g.fill();}
+  function line(points,color,width=2){g.strokeStyle=color;g.lineWidth=width;g.lineCap='round';g.lineJoin='round';g.beginPath();g.moveTo(...points[0]);for(let i=1;i<points.length;i++)g.lineTo(...points[i]);g.stroke();}
+  function shine(x,y,r=1){oval(x,y,r,r,'#fffce7');}
+  function eyes(x=11,y=19,dx=10,color='#263452'){oval(x,y,1.5,2,color);oval(x+dx,y,1.5,2,color);shine(x-.4,y-.7,.55);shine(x+dx-.4,y-.7,.55);}
+  function feet(color,phase){
+    oval(11,35+(phase?1:0),5,3,color);oval(21,35+(phase?-1:0),5,3,color);
+    oval(11,36+(phase?1:0),2,1,'#fff3dc');oval(21,36+(phase?-1:0),2,1,'#fff3dc');
+  }
+  function hero(f){
+    const bounce=f===1?-1:f===3?1:0;
+    feet('#354d79',f%2);
+    shape([[8,24+bounce],[24,24+bounce],[27,34+bounce],[5,34+bounce]],'#2d547f');
+    oval(16,28+bounce,10,7,'#597ead');
+    line([[9,29],[16,30],[23,28]],'#f9da89',2);
+    oval(16,17+bounce,11,12,'#433755');
+    oval(16,18+bounce,9,10,'#ffd2a6');
+    oval(8,24+bounce,2,4,'#ebac9b');oval(24,24+bounce,2,4,'#ebac9b');
+    oval(10,11+bounce,7,5,'#5b405f');oval(21,10+bounce,7,5,'#5b405f');
+    shape([[5,12+bounce],[9,5+bounce],[23,5+bounce],[27,12+bounce]],'#4c3858');
+    line([[7,12+bounce],[16,9+bounce],[25,12+bounce]],'#76536c',2);
+    eyes(12,19+bounce,8);oval(16,24+bounce,2,1,'#d97785');
+    oval(4,27,3,4,'#d1a1a1');oval(28,27,3,4,'#d1a1a1');
+    shape([[10,27],[16,24],[22,27],[20,31],[12,31]],'#ffcb8d');
+    shine(12,12,1.2);
+  }
+  function springaroo(f){
+    const bounce=f===1?-2:f===3?1:0;
+    shape([[21,29+bounce],[28,25+bounce],[30,28+bounce],[29,33+bounce],[22,35+bounce]],'#8e4979');
+    line([[23,28+bounce],[27,31+bounce],[29,30+bounce]],'#ffca8a',2);
+    feet('#8a4875',f%2);
+    oval(16,27+bounce,11,11,'#bb668d');oval(16,29+bounce,7,6,'#ffd298');
+    shape([[7,17+bounce],[5,2+bounce],[11,5+bounce],[14,16+bounce]],'#9e567e');
+    shape([[21,16+bounce],[24,1+bounce],[29,4+bounce],[25,19+bounce]],'#9e567e');
+    shape([[8,12+bounce],[8,5+bounce],[12,12+bounce]],'#f6abce');
+    shape([[23,12+bounce],[25,5+bounce],[26,13+bounce]],'#f6abce');
+    oval(16,19+bounce,12,10,'#da89a8');
+    oval(16,24+bounce,7,4,'#ffcaac');eyes(11,19+bounce,10);
+    oval(16,24+bounce,2,1.5,'#9a4979');
+    shape([[16,7+bounce],[18,12+bounce],[24,14+bounce],[18,16+bounce],[16,21+bounce],[14,16+bounce],[8,14+bounce],[14,12+bounce]],'#ffe48d');
+    oval(8,27+bounce,3,3,'#eeb9cf');oval(24,27+bounce,3,3,'#eeb9cf');
+    shine(16,14+bounce,1.2);
+  }
+  function skyling(f){
+    const spread=f%2===0?14:10;
+    shape([[14,21],[2,13-(f%2)*3],[3,27],[12,30]],'#6198c7');
+    shape([[18,21],[30,13-(f%2)*3],[29,27],[20,30]],'#6198c7');
+    shape([[13,23],[2,17],[6,29],[13,27]],'#8ce5e4');
+    shape([[19,23],[30,17],[26,29],[19,27]],'#8ce5e4');
+    line([[4,22],[10,23],[14,26]],'#c7f9db',2);line([[28,22],[22,23],[18,26]],'#c7f9db',2);
+    oval(16,25,9,10,'#485baf');oval(16,27,6,8,'#adccef');
+    oval(16,15,11,9,'#8f8acc');
+    shape([[12,8],[16,2],[20,8]],'#f5e7a5');
+    shape([[5,11],[1,8],[5,6],[9,10]],'#c3ebf4');
+    shape([[27,11],[31,8],[27,6],[23,10]],'#c3ebf4');
+    eyes(11,16,10,'#27345c');shape([[14,22],[16,25],[18,22]],'#ffd891');
+    feet('#f1b879',f%2);
+    shine(10,11,1.1);shine(24,12,1);
+  }
+  function tideling(f){
+    const wave=f%2?2:-2;
+    shape([[22,25],[28,24+wave],[30,17+wave],[31,28+wave],[28,34],[21,33]],'#327d92');
+    shape([[25,25],[30,22+wave],[30,29+wave]],'#84e9d4');
+    feet('#3a7f99',f%2);
+    oval(16,28,12,10,'#358ca7');oval(16,29,8,7,'#b1e9dd');
+    shape([[6,17],[4,7],[11,13]],'#328ca7');shape([[26,17],[28,7],[21,13]],'#328ca7');
+    shape([[6,14],[7,10],[11,15]],'#8de5df');shape([[26,14],[25,10],[21,15]],'#8de5df');
+    oval(16,19,12,10,'#58b7bf');oval(16,24,7,4,'#d0f3e2');
+    eyes(11,19,10);oval(16,24,2,1.5,'#33546d');
+    oval(6,24,4,2,'#7cdbc7');oval(26,24,4,2,'#7cdbc7');
+    line([[5,22],[1,20]],'#d5fcfa',1);line([[27,22],[31,20]],'#d5fcfa',1);
+    shape([[13,7],[16,2],[19,7],[16,13]],'#f8e49c');shine(16,7,1.1);
+  }
+  function snack(f){
+    oval(16,25,10,9,'#b14486');oval(16,24,9,8,'#f38ab3');oval(12,21,3,2,'#ffc8d8');
+    oval(21,27,2,2,'#ffe2bf');oval(12,28,1.5,1.5,'#ffe2bf');
+    shape([[15,17],[13,11],[19,15],[22,10],[22,19]],'#4f9b75');line([[16,18],[16,11]],'#356f5a');
+    if(f%2)shine(24,16,1.3);
+  }
+  kinds.forEach((name,index)=>{
+    for(let f=0;f<frames;f++){
+      g.save();g.translate(index*sw*frames+f*sw,0);
+      // soft pixel-glow behind magical creatures; no network assets.
+      if(name!=='hero'&&name!=='snack'){
+        oval(16,27,14,12,'#376b7d22');shine(2+f*2,11+f,1.1);
+      }
+      ({hero,springaroo,skyling,tideling,snack})[name](f);
+      g.restore();
+    }
   });
-  const indexes={hero:0,rabbit:1,bird:2,otter:3,snack:4};
-  function draw(ctx,name,x,y,frame=0,flip=false,tint) {
-    const idx=indexes[name]??0;ctx.save();ctx.translate(Math.round(x),Math.round(y));if(flip)ctx.scale(-1,1);
-    ctx.drawImage(sheet,idx*64+(Math.floor(frame)%4)*16,0,16,20,-8,-17,16,20);
-    if(tint){ctx.globalAlpha=.2;ctx.fillStyle=tint;ctx.fillRect(-7,-15,14,17);}
+  function draw(ctx,name,x,y,frame=0,flip=false,playerId=null) {
+    const index=Math.max(0,kinds.indexOf(name));
+    ctx.save();ctx.translate(Math.round(x),Math.round(y));
+    if(flip)ctx.scale(-1,1);
+    ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(sheet,index*sw*frames+(Math.floor(frame)%frames)*sw,0,sw,sh,-14,-32,28,34);
+    // A distinct scarf/crest for each child, even when they wear animal forms.
+    if(playerId!==null){
+      ctx.fillStyle=playerId===0?'#ffd57f':'#b4a0ff';ctx.fillRect(-5,-8,10,2);
+      ctx.fillStyle=playerId===0?'#fff0ba':'#e5ddff';ctx.fillRect(-2,-8,3,2);
+    }
     ctx.restore();
   }
   return {draw};
@@ -215,9 +293,13 @@ WW.art = (() => {
 <script>
 window.WW = window.WW || {}; WW.games = WW.games || {};
 WW.games.animals = (() => {
-  const TILE=16,W=480,H=270, TYPES=['bird','otter','rabbit'];
-  const titles={bird:'Sky Bird',otter:'River Otter',rabbit:'Jump Rabbit'};
-  const icons={bird:'🪽',otter:'💧',rabbit:'🐇'};
+  const TILE=16,W=480,H=270, TYPES=['springaroo','skyling','tideling'];
+  const titles={springaroo:'Springaroo',skyling:'Moonwing',tideling:'Tidefox'};
+  const icons={springaroo:'✦',skyling:'✧',tideling:'❋'};
+  // One world unit is one source-pixel; frames run at 60 Hz. All map jumps obey these rules.
+  const PHYSICS={run:2.25,jump:5.7,doubleJump:5.5,gravity:.27,maxFall:5.7,
+    bodyHalf:9,bodyHeight:25,waterExposure:.9,leash:W-72};
+  const jumpHeight=PHYSICS.jump**2/(2*PHYSICS.gravity);
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
   const hash=(a,b)=>((a*137+b*991)*(a*17+b*23))>>>0;
@@ -229,11 +311,16 @@ WW.games.animals = (() => {
     const first=(kind)=>level.objects.find(o=>o.kind===kind);
     const location=(o)=>({x:(o.x+.5)*TILE,y:(o.y+1)*TILE});
     const spawn=first('p1')?location(first('p1')):{x:48,y:height-32};
-    const players=Array.from({length:WW.storage.data.settings.players},(_,id)=>({id,...location(first(id===0?'p1':'p2')||first('p1')||{x:3+id*2,y:level.height-3}),vx:0,vy:0,grounded:false,face:1,health:3,sleep:false,invincible:0,selected:0,form:null,until:0,actionCD:0,frame:0}));
+    const players=Array.from({length:WW.storage.data.settings.players},(_,id)=>{
+      const position=location(first(id===0?'p1':'p2')||first('p1')||{x:3+id*2,y:level.height-3});
+      return {id,...position,lastSafe:{...position},vx:0,vy:0,grounded:false,coyote:0,jumpBuffer:0,jumpsUsed:0,
+        waterTime:0,face:1,health:3,sleep:false,invincible:0,selected:0,charges:Object.fromEntries(TYPES.map(t=>[t,0])),
+        form:null,until:0,actionCD:0,frame:0};
+    });
     const animals=level.objects.filter(o=>TYPES.includes(o.kind)).map((o,i)=>({kind:o.kind,...location(o),origin:(o.x+.5)*TILE,vy:0,alive:true,respawn:0,wary:100,attackCD:1+i*.6,dir:i%2?1:-1,phase:i*1.3,frame:0}));
-    const items=level.objects.filter(o=>['snack','skyKey','diveKey','checkpoint','exit'].includes(o.kind)).map(o=>({kind:o.kind,x:(o.x+.5)*TILE,y:(o.y+.5)*TILE,used:false}));
-    const shared={snacks:12,charges:{bird:0,otter:0,rabbit:0},skyKey:false,diveKey:false,checkpoint:{...spawn},won:false};
-    const projectiles=[],effects=[];let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0;
+    const items=level.objects.filter(o=>['snack','skyKey','diveKey','springKey','checkpoint','exit'].includes(o.kind)).map(o=>({kind:o.kind,x:(o.x+.5)*TILE,y:(o.y+.5)*TILE,used:false}));
+    const shared={snacks:14,skyKey:false,diveKey:false,springKey:false,checkpoint:{...spawn},won:false};
+    const projectiles=[],effects=[];let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,lastLeashHint=-10;
     const message=document.getElementById('message');const hud=document.getElementById('hud');
     function say(text,duration=2100) {message.textContent=text;message.classList.add('show');message.dataset.until=String(clock+duration/1000);}
     function particles(x,y,color,count=9){for(let i=0;i<count;i++)effects.push({x,y,vx:(Math.random()-.5)*3.8,vy:(Math.random()-.7)*3.3,color,time:.55+Math.random()*.6});}
@@ -246,67 +333,118 @@ WW.games.animals = (() => {
     function hitPlayer(player){
       if(player.invincible>0||player.sleep||shared.won)return;
       player.health--;player.invincible=1.5;shake=6; WW.input.rumble(player.id,.95,220);particles(player.x,player.y-10,'#ffb8a4',10);
-      if(player.health===0){player.sleep=true;player.vx=0;say(player.id===0?'Leader fainted! Press R / Revive to wake up.':'A friend fainted! Leader: go close and press Revive.',3000);}
+      if(player.health===0){player.sleep=true;player.vx=0;say(player.id===0?'You fainted! Press Revive to wake up.':'A friend fainted! Move close and press Revive.',3000);}
     }
-    function revive(player,by){player.sleep=false;player.health=2;player.invincible=2;player.vy=-2;particles(player.x,player.y-10,'#aafae3',14); WW.input.rumble(by.id,.45,180);say('Back on your feet!');}
+    function revive(player,by){player.sleep=false;player.health=3;player.invincible=2;player.vy=-2;player.waterTime=0;particles(player.x,player.y-10,'#aafae3',14); WW.input.rumble(by.id,.45,180);say('Back on your feet!');}
     function movePlayer(p,controls,dt){
-      if(p.sleep){if(p.id===0&&controls.pressed.revive)revive(p,p);return;}
-      p.invincible=Math.max(0,p.invincible-dt);p.actionCD=Math.max(0,p.actionCD-dt);
+      const step=dt*60;
+      if(p.sleep){
+        if(p.id===0&&controls.pressed.revive)revive(p,p);
+        return;
+      }
+      p.invincible=Math.max(0,p.invincible-dt);
+      p.actionCD=Math.max(0,p.actionCD-dt);
       const direction=Number(controls.right)-Number(controls.left);
       if(direction)p.face=direction;
-      const swimmer=p.form==='otter'&&liquid(p.x,p.y-5);
-      const fly=p.form==='bird';
-      const speed=p.form==='rabbit'?2.45:swimmer?2.4:1.75;
-      p.vx=direction*speed;
-      if(swimmer){p.vy=(Number(controls.down)-Number(controls.jump))*2.25;if(!controls.down&&!controls.jump)p.vy*=.3;}
-      else {
-        if(controls.pressed.jump&&p.grounded){p.vy=p.form==='rabbit'?-6.1:-4.5;p.grounded=false;}
-        if(fly&&controls.jump)p.vy=Math.max(-2.35,p.vy-.6);
-        p.vy=Math.min(5,p.vy+.23);
+      const swimming=p.form==='tideling' && (liquid(p.x,p.y-8)||liquid(p.x,p.y+2));
+      const flying=p.form==='skyling';
+      const run=p.form==='springaroo'?2.6:swimming?2.45:PHYSICS.run;
+      const water=liquid(p.x,p.y-9)||liquid(p.x,p.y-1);
+      p.vx=direction*run*(water&&!swimming?.42:1);
+      if(swimming){
+        p.vy=(Number(controls.down)-Number(controls.jump))*2.45;
+        p.coyote=0;p.jumpBuffer=0;p.jumpsUsed=0;
+      }else if(water){
+        p.vy=Math.min(2.4,p.vy+.14*step);
+        p.coyote=0;p.jumpBuffer=0;
+      }else{
+        p.coyote=p.grounded?.105:Math.max(0,p.coyote-dt);
+        p.jumpBuffer=controls.pressed.jump?.12:Math.max(0,p.jumpBuffer-dt);
+        if(p.jumpBuffer>0 && (p.coyote>0 || (p.form==='springaroo' && p.jumpsUsed<2))){
+          const second=p.coyote<=0;
+          p.vy=-(second?PHYSICS.doubleJump:PHYSICS.jump);
+          p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumpsUsed++;
+          if(second){particles(p.x,p.y-5,'#f6e190',13);WW.input.rumble(p.id,.25,80);}
+        }
+        if(flying && controls.jump) p.vy=Math.max(-2.95,p.vy-.52*step);
+        p.vy=Math.min(PHYSICS.maxFall,p.vy+PHYSICS.gravity*step);
       }
-      let nx=p.x+p.vx*dt*60;
-      if(p.vx>0&&(solid(nx+5,p.y-3)||solid(nx+5,p.y-13)))nx=Math.floor((nx+5)/TILE)*TILE-6;
-      if(p.vx<0&&(solid(nx-5,p.y-3)||solid(nx-5,p.y-13)))nx=(Math.floor((nx-5)/TILE)+1)*TILE+6;
-      p.x=clamp(nx,6,width-7);
-      let ny=p.y+p.vy*dt*60;
-      if(p.vy>=0&&(solid(p.x-4,ny)||solid(p.x+4,ny))){ny=Math.floor(ny/TILE)*TILE;p.vy=0;p.grounded=true;}else p.grounded=false;
-      if(p.vy<0&&(solid(p.x-4,ny-16)||solid(p.x+4,ny-16))){ny=(Math.floor((ny-16)/TILE)+1)*TILE+16;p.vy=0;}
-      if(!swimmer&&liquid(p.x,ny-1)){
-        const waterSurface=Math.floor((ny-1)/TILE)*TILE;
-        // Water is walkable at its surface; only an otter form can dive.
-        if(p.form!=='otter'){let surface=waterSurface;while(surface>0&&liquid(p.x,surface-1))surface-=TILE;ny=Math.min(ny,surface);p.vy=0;p.grounded=true;}
+      let nx=p.x+p.vx*step;
+      const half=PHYSICS.bodyHalf, upper=PHYSICS.bodyHeight;
+      if(p.vx>0&&(solid(nx+half,p.y-3)||solid(nx+half,p.y-upper)))nx=Math.floor((nx+half)/TILE)*TILE-half-1;
+      if(p.vx<0&&(solid(nx-half,p.y-3)||solid(nx-half,p.y-upper)))nx=(Math.floor((nx-half)/TILE)+1)*TILE+half+1;
+      // Shared-camera co-op: neither player may strand another outside the viewport.
+      for(const other of players)if(other!==p){
+        const limited=clamp(nx,other.x-PHYSICS.leash,other.x+PHYSICS.leash);
+        if(limited!==nx&&clock-lastLeashHint>3){say('Stay together! Wait for your teammate.',1200);lastLeashHint=clock;}
+        nx=limited;
       }
-      p.y=clamp(ny,16,height-8);
+      p.x=clamp(nx,half+1,width-half-1);
+      let ny=p.y+p.vy*step;
+      // Floating platforms are one-way: jump through from below, land from above.
+      const platformAt=(x)=>at(x,ny)==='platform' && p.y<=Math.floor(ny/TILE)*TILE;
+      if(p.vy>=0&&(solid(p.x-half+2,ny)||solid(p.x+half-2,ny)||platformAt(p.x-half+2)||platformAt(p.x+half-2))){
+        ny=Math.floor(ny/TILE)*TILE;p.vy=0;p.grounded=true;p.jumpsUsed=0;
+      }else p.grounded=false;
+      if(p.vy<0&&(solid(p.x-half+2,ny-upper)||solid(p.x+half-2,ny-upper))){
+        ny=(Math.floor((ny-upper)/TILE)+1)*TILE+upper;p.vy=0;
+      }
+      p.y=clamp(ny,upper+1,height-8);
+      const nowWater=liquid(p.x,p.y-8)||liquid(p.x,p.y-1);
+      if(nowWater && p.form!=='tideling'){
+        p.waterTime+=dt;
+        if(p.waterTime>=PHYSICS.waterExposure){
+          p.waterTime=0;
+          p.x=p.lastSafe.x;p.y=p.lastSafe.y;p.vx=p.vy=0;
+          hitPlayer(p);
+          say('Deep water! Catch a Tidefox to swim and dive.',2400);
+        }
+      } else {
+        p.waterTime=0;
+        if(p.grounded&&!nowWater)p.lastSafe={x:p.x,y:p.y};
+      }
       if(controls.pressed.snack)throwThing(p,'snack');
       if(controls.pressed.orb)throwThing(p,'orb');
-      if(controls.pressed.cycle){p.selected=(p.selected+1)%TYPES.length; say(`Selected ${titles[TYPES[p.selected]]} (${shared.charges[TYPES[p.selected]]} charges)`,900);}
-      if(controls.pressed.transform){const type=TYPES[p.selected];if(shared.charges[type]>0){shared.charges[type]--;p.form=type;p.until=clock+22;WW.input.rumble(p.id,.5,280);particles(p.x,p.y-10,'#e1b4ff',18);say(`${titles[type]}! 22 seconds — one chance!`);}else say(`Catch a ${titles[type]} first!`,1000);}
-      if(p.form&&clock>=p.until){p.form=null;particles(p.x,p.y-9,'#ffffff',12);say('Transformation ended. Catch another animal!');}
-      if(p.id===0&&controls.pressed.revive)for(const other of players)if(other!==p&&other.sleep&&distance(other,p)<46)revive(other,p);
-      p.frame += Math.abs(p.vx)*dt*7;
+      if(controls.pressed.cycle){p.selected=(p.selected+1)%TYPES.length;const type=TYPES[p.selected];say(`P${p.id+1}: ${titles[type]} · ${p.charges[type]} charge(s)`,1150);}
+      if(controls.pressed.transform){
+        const type=TYPES[p.selected];
+        if(p.form)say(`P${p.id+1}: Your current magic must finish first.`,1000);
+        else if(p.charges[type]>0){
+          p.charges[type]--;p.form=type;p.until=clock+22;
+          WW.input.rumble(p.id,.5,280);particles(p.x,p.y-10,'#e1b4ff',22);
+          say(`P${p.id+1} becomes ${titles[type]} for 22 seconds!`,2800);
+        }else say(`P${p.id+1}: Catch a ${titles[type]} first!`,1350);
+      }
+      if(p.form&&clock>=p.until){
+        p.form=null;
+        if(nowWater){p.x=p.lastSafe.x;p.y=p.lastSafe.y;p.vy=0;}
+        particles(p.x,p.y-9,'#ffffff',12);say(`P${p.id+1}: Magic faded. Catch another creature!`,1800);
+      }
+      if(controls.pressed.revive)for(const other of players)if(other!==p&&other.sleep&&distance(other,p)<48)revive(other,p);
+      p.frame+=Math.abs(p.vx)*dt*6;
     }
     function targetFor(animal){return players.filter(p=>!p.sleep).sort((a,b)=>distance(a,animal)-distance(b,animal))[0];}
     function updateAnimals(dt){
       animals.forEach(a=>{
         if(!a.alive){a.respawn-=dt;if(a.respawn<=0){a.alive=true;a.wary=100;a.attackCD=2;}return;}
         a.phase+=dt;
-        if(a.kind==='bird'){a.x=a.origin+Math.sin(a.phase*.7)*16;a.y+=Math.sin(a.phase*2)*.12;}
+        if(a.kind==='skyling'){a.x=a.origin+Math.sin(a.phase*.7)*16;a.y+=Math.sin(a.phase*2)*.12;}
         else {a.dir=Math.sin(a.phase*.85)>0?1:-1;a.x=a.origin+Math.sin(a.phase*.85)*13;}
         const target=targetFor(a); a.attackCD-=dt;
         if(a.wary>0&&target&&distance(target,a)<105&&a.attackCD<=0){
           const dx=target.x-a.x,dy=(target.y-9)-(a.y-9),len=Math.hypot(dx,dy)||1;
-          const kind=a.kind==='bird'?'feather':a.kind==='otter'?'bubble':'thorn';
+          const kind=a.kind==='skyling'?'feather':a.kind==='tideling'?'bubble':'thorn';
           projectiles.push({kind,owner:-1,x:a.x,y:a.y-12,vx:dx/len*2.1,vy:dy/len*2.1,ttl:2.3});
-          a.attackCD=a.kind==='rabbit'?2.3:1.65;
+          a.attackCD=a.kind==='springaroo'?2.3:1.9;
         }
         if(a.wary<=0) a.frame+=dt*3;else a.frame+=dt*6;
       });
     }
     function capture(animal,owner){
-      const chance=.08+.88*Math.pow(1-animal.wary/100,1.55);
+      const chance=.12+.86*Math.pow(1-animal.wary/100,1.55);
       if(Math.random()<chance){
-        animal.alive=false;animal.respawn=8;shared.charges[animal.kind]++;particles(animal.x,animal.y-8,'#fff2a0',24);
-        WW.input.rumble(owner,.55,290);say(`Caught ${titles[animal.kind]}! +1 transformation. Select with Q, use with T.`,3000);
+        animal.alive=false;animal.respawn=7;players[owner].charges[animal.kind]++;particles(animal.x,animal.y-8,'#fff2a0',24);
+        WW.input.rumble(owner,.55,290);say(`P${owner+1} caught ${titles[animal.kind]}! One 22-second transformation earned.`,2900);
       } else {particles(animal.x,animal.y-8,'#f4b0dd',7);say(`The orb missed! Catch chance ${Math.round(chance*100)}%.`,1200);}
     }
     function updateProjectiles(dt){
@@ -326,16 +464,18 @@ WW.games.animals = (() => {
     }
     function updateItems(){
       items.forEach(item=>{
+        if(item.used&&item.kind==='snack'&&clock>=item.respawn)item.used=false;
         if(item.used)return;
         const p=players.find(p=>!p.sleep&&Math.hypot(p.x-item.x,(p.y-9)-item.y)<14);
         if(!p)return;
-        if(item.kind==='snack'){item.used=true;shared.snacks+=5;say('+5 yummy snacks!');WW.input.rumble(p.id,.25,100);particles(item.x,item.y,'#ffb7ce');}
-        else if(item.kind==='skyKey'&&p.form==='bird'){item.used=true;shared.skyKey=true;say('Sky key found! The river key is still below.');WW.input.rumble(p.id,.7,380);particles(item.x,item.y,'#f7de83',21);}
-        else if(item.kind==='diveKey'&&p.form==='otter'){item.used=true;shared.diveKey=true;say('River key found! Both keys open the gate.');WW.input.rumble(p.id,.7,380);particles(item.x,item.y,'#88f6ff',21);}
+        if(item.kind==='snack'){item.used=true;item.respawn=clock+13;shared.snacks+=5;say('+5 yummy snacks!');WW.input.rumble(p.id,.25,100);particles(item.x,item.y,'#ffb7ce');}
+        else if(item.kind==='springKey'&&p.form==='springaroo'){item.used=true;shared.springKey=true;say('Canopy gem found! A perfect double jump!');WW.input.rumble(p.id,.7,380);particles(item.x,item.y,'#ffb6e7',24);}
+        else if(item.kind==='skyKey'&&p.form==='skyling'){item.used=true;shared.skyKey=true;say('Sky key found! The river key is still below.');WW.input.rumble(p.id,.7,380);particles(item.x,item.y,'#f7de83',21);}
+        else if(item.kind==='diveKey'&&p.form==='tideling'){item.used=true;shared.diveKey=true;say('River key found! Both keys open the gate.');WW.input.rumble(p.id,.7,380);particles(item.x,item.y,'#88f6ff',21);}
         else if(item.kind==='checkpoint'){shared.checkpoint={x:item.x,y:item.y+8};item.used=true;say('Checkpoint activated!');}
         else if(item.kind==='exit'){
-          if(shared.skyKey&&shared.diveKey){shared.won=true;WW.storage.data.progress.wins++;WW.storage.save();WW.main.win(WW.storage.data.progress.wins);}
-          else if(clock>(item.lastHint||0)+2){item.lastHint=clock;say(`Gate needs both keys! Sky ${shared.skyKey?'✓':'✗'} · River ${shared.diveKey?'✓':'✗'}`);}
+          if(shared.skyKey&&shared.diveKey&&shared.springKey){shared.won=true;WW.storage.data.progress.wins++;WW.storage.save();WW.main.win(WW.storage.data.progress.wins);}
+          else if(clock>(item.lastHint||0)+2){item.lastHint=clock;say(`Gate needs 3 gems: Canopy ${shared.springKey?'✓':'✗'} · Sky ${shared.skyKey?'✓':'✗'} · River ${shared.diveKey?'✓':'✗'}`);}
         }
       });
     }
@@ -347,17 +487,36 @@ WW.games.animals = (() => {
       effects.forEach(e=>{e.x+=e.vx*dt*60;e.y+=e.vy*dt*60;e.vy+=.09*dt*60;e.time-=dt;});
       for(let i=effects.length-1;i>=0;i--)if(effects[i].time<=0)effects.splice(i,1);
       const active=players.filter(p=>!p.sleep);const focus=active.length?active:players;
-      const mid=focus.reduce((n,p)=>n+p.x,0)/focus.length;
-      cameraX=clamp(mid-W*.45,0,Math.max(0,width-W));
-      const midY=focus.reduce((n,p)=>n+p.y,0)/focus.length;
-      cameraY=clamp(midY-H*.65,0,Math.max(0,height-H));
+      const xs=players.map(p=>p.x);
+      const minX=Math.min(...xs),maxX=Math.max(...xs);
+      // The desired camera position must contain *all* players plus a margin.
+      const targetX=clamp((minX+maxX)/2-W/2,maxX-(W-30),minX-30);
+      cameraX=clamp(targetX,0,Math.max(0,width-W));
+      const minY=Math.min(...players.map(p=>p.y)),maxY=Math.max(...players.map(p=>p.y));
+      cameraY=clamp((minY+maxY)/2-H*.55,0,Math.max(0,height-H));
       if(clock>+(message.dataset.until||0))message.classList.remove('show');
-      if(clock-hudTime>.13){hudTime=clock;hud.innerHTML=`<div class="hud-player">${players.map(p=>`<div><b style="color:${p.id?'#98d7ff':'#ffc977'}">P${p.id+1}</b> ${p.sleep?'💤':Array.from({length:3},(_,i)=>`<span class="${i<p.health?'heart':'heart-off'}">♥</span>`).join('')} ${p.form?`<span class="tiny">${titles[p.form]} ${Math.ceil(p.until-clock)}s</span>`:''}</div>`).join('')}</div><div class="hud-center">🍓 ${shared.snacks} &nbsp; 🗝️ Sky ${shared.skyKey?'✓':'○'} · River ${shared.diveKey?'✓':'○'}<div class="tiny">Selected: ${titles[TYPES[players[0].selected]]} · ${TYPES.map(k=>`${icons[k]} ${shared.charges[k]}`).join('  ')} · Esc to pause</div></div>`;}
+      if(clock-hudTime>.13){
+        hudTime=clock;
+        hud.innerHTML=`<div class="hud-player">${players.map(p=>`<div class="player-info" style="border-left:4px solid ${p.id?'#9ad8ff':'#ffd782'}"><b>P${p.id+1}</b> ${p.sleep?'SLEEPING':Array.from({length:3},(_,i)=>`<span class="${i<p.health?'heart':'heart-off'}">♥</span>`).join('')}<div class="tiny">${titles[TYPES[p.selected]]}: ${p.charges[TYPES[p.selected]]} charge${p.charges[TYPES[p.selected]]===1?'':'s'} ${p.form?'· '+titles[p.form]+' '+Math.max(0,Math.ceil(p.until-clock))+'s':''}</div></div>`).join('')}</div><div class="hud-center">✦ ${shared.snacks} snacks &nbsp; Canopy ${shared.springKey?'✓':'◇'} · Sky ${shared.skyKey?'✓':'◇'} · River ${shared.diveKey?'✓':'◇'}<div class="tiny">Select your form · Transform yourself · Esc pauses</div></div>`;
+      }
     }
     function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
     function background(ctx,time){
       const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#76bcd6');sky.addColorStop(.75,'#bee8d3');sky.addColorStop(1,'#eef3bd');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
-      box(ctx,370,27,32,32,'#fce6a5');box(ctx,366,31,40,24,'#fce6a5');
+      // Layered glowing moon and drifting fireflies make the biome feel enchanted.
+      const moon=ctx.createRadialGradient(390,43,5,390,43,56);
+      moon.addColorStop(0,'#fff6c9ab');moon.addColorStop(.5,'#e8d5ff45');moon.addColorStop(1,'#e8d5ff00');
+      ctx.fillStyle=moon;ctx.fillRect(332,-15,116,116);
+      ctx.fillStyle='#fff3bd';ctx.beginPath();ctx.arc(390,43,17,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#e2e9db';ctx.beginPath();ctx.arc(397,35,12,0,Math.PI*2);ctx.fill();
+      for(let i=0;i<40;i++){
+        const drift=cameraX*.1+time*1.9;
+        const x=((i*129.1-drift)%(W+30)+W+30)%(W+30);
+        const y=19+(hash(i,13)%145)+Math.sin(time*1.4+i)*3;
+        const glow=.35+.4*(.5+.5*Math.sin(time*2.4+i*8));
+        ctx.globalAlpha=glow;box(ctx,x,y,2+(i%4===0?1:0),2,i%3?'#e4ffca':'#ffcff2');
+      }
+      ctx.globalAlpha=1;
       for(let layer=0;layer<3;layer++){
         const offset=cameraX*(.12+layer*.2);const base=115+layer*39;const colors=['#a6cbbf','#6daca8','#477f84'];
         ctx.fillStyle=colors[layer];ctx.beginPath();ctx.moveTo(0,H);
@@ -386,6 +545,12 @@ WW.games.animals = (() => {
             box(ctx,px+2,py-2,3,3,'#8dd26e');box(ctx,px+11,py-1,2,3,'#a4d86b');
           }
           if(h%5===0)box(ctx,px+5,py+9,4,2,'#b38b66');if(h%7===0)box(ctx,px+12,py+12,2,2,'#573e45');
+          if(h%23===0){box(ctx,px+8,py+6,3,7,'#7b7bb1');box(ctx,px+9,py+5,1,5,'#b1c9f0');}
+        } else if(t==='platform'){
+          box(ctx,px,py,16,7,'#6966ab');box(ctx,px,py,16,3,'#a4e9bf');
+          box(ctx,px+2,py+7,12,3,'#555583');
+          box(ctx,px+5,py+10,6,3,'#7f7dba');
+          if(h%3===0){box(ctx,px+5,py-3,2,4,'#aeefcf');box(ctx,px+3,py-5,6,3,'#f4a0cf');}
         } else if(t==='water'){
           box(ctx,px,py,16,16,y%2?'#368cc9':'#329ed3');
           if(y===0||map[y-1][x]!=='water'){box(ctx,px,py,16,3,'#9be5e1');box(ctx,px+(Math.floor(time*9+x*7)%11),py+1,5,1,'#edf9ce');}
@@ -398,16 +563,17 @@ WW.games.animals = (() => {
       }
     }
     function render(ctx,now){
+      ctx.setTransform(2,0,0,2,0,0);
       background(ctx,now);
       ctx.save();ctx.translate(Math.round((Math.random()-.5)*shake),Math.round((Math.random()-.5)*shake));ctx.translate(-Math.round(cameraX),-Math.round(cameraY));
       terrain(ctx,now);
       items.forEach(it=>{if(it.used)return;const bob=Math.sin(now*3+it.x)*2;
         if(it.kind==='snack')WW.art.draw(ctx,'snack',it.x,it.y+8+bob,Math.floor(now*3)%4);
-        if(it.kind==='skyKey'||it.kind==='diveKey'){
-          box(ctx,it.x-4,it.y-4+bob,8,8,it.kind==='skyKey'?'#ffe7a0':'#adfafa');box(ctx,it.x-2,it.y-7+bob,4,4,'#ffffff');box(ctx,it.x+3,it.y+2+bob,7,2,'#ffde7e');
+        if(it.kind==='skyKey'||it.kind==='diveKey'||it.kind==='springKey'){
+          box(ctx,it.x-4,it.y-4+bob,8,8,it.kind==='skyKey'?'#ffe7a0':it.kind==='springKey'?'#ff94d5':'#adfafa');box(ctx,it.x-2,it.y-7+bob,4,4,'#ffffff');box(ctx,it.x+3,it.y+2+bob,7,2,'#ffde7e');
         }
         if(it.kind==='exit'){
-          box(ctx,it.x-12,it.y-28,24,36,'#725771');box(ctx,it.x-8,it.y-25,16,31,shared.skyKey&&shared.diveKey?'#6befc6':'#423c6b');
+          box(ctx,it.x-12,it.y-28,24,36,'#725771');box(ctx,it.x-8,it.y-25,16,31,shared.skyKey&&shared.diveKey&&shared.springKey?'#6befc6':'#423c6b');
           box(ctx,it.x-5,it.y-20,10,14,'#af9abb');box(ctx,it.x-3,it.y-19,6,10,'#433f7d');box(ctx,it.x+4,it.y-9,2,2,'#ffdc80');
         }
         if(it.kind==='checkpoint') {box(ctx,it.x-2,it.y-22,3,27,'#765968');box(ctx,it.x+1,it.y-22,14,9,'#9bf6c9');}
@@ -418,6 +584,10 @@ WW.games.animals = (() => {
         WW.art.draw(ctx,a.kind,a.x,a.y,frame,a.dir<0);
         const wary=a.wary;box(ctx,a.x-11,a.y-23,22,4,'#263f46');box(ctx,a.x-10,a.y-22,20*(wary/100),2,wary>40?'#fa8c82':'#a1eaa2');
         if(!wary){box(ctx,a.x-2,a.y-28,4,3,'#ff9eb6');box(ctx,a.x-4,a.y-26,8,3,'#ff9eb6');}
+        const chance=Math.round((.12+.86*Math.pow(1-a.wary/100,1.55))*100);
+        ctx.fillStyle='#f4fbef';ctx.font='bold 7px sans-serif';
+        ctx.fillText(titles[a.kind],a.x-17,a.y-39);
+        if(a.wary<100){ctx.fillStyle='#fceab0';ctx.fillText(`Catch ${chance}%`,a.x-17,a.y-30);}
       });
       projectiles.forEach(pr=>{
         const color={snack:'#fe92b7',orb:'#d8bcff',feather:'#f7eec7',bubble:'#9fe4fa',thorn:'#f5ae7a'}[pr.kind];
@@ -425,19 +595,19 @@ WW.games.animals = (() => {
       });
       players.forEach(p=>{
         if(p.invincible>0&&Math.floor(now*13)%2)return;
-        if(p.sleep){WW.art.draw(ctx,'hero',p.x,p.y+7,1,p.face<0);box(ctx,p.x+7,p.y-25,4,5,'#ecf6ff');box(ctx,p.x+12,p.y-31,5,6,'#ecf6ff');}
-        else WW.art.draw(ctx,p.form||'hero',p.x,p.y,Math.floor(p.frame)%4,p.face<0);
-        // Player-colored hats keep identical forms identifiable in co-op.
-        box(ctx,p.x-5,p.y-18,10,2,p.id===0?'#fdd17d':'#a8bbff');
-        box(ctx,p.x-3,p.y-24,6,4,p.id===0?'#f9d77e':'#a8bbff');
+        if(p.sleep){WW.art.draw(ctx,'hero',p.x,p.y+7,1,p.face<0,p.id);box(ctx,p.x+7,p.y-25,4,5,'#ecf6ff');box(ctx,p.x+12,p.y-31,5,6,'#ecf6ff');}
+        else WW.art.draw(ctx,p.form||'hero',p.x,p.y,Math.floor(p.frame)%4,p.face<0,p.id);
+        // Colored player markers remain clear even while transformed.
+        box(ctx,p.x-8,p.y-35,16,3,'#152e42');box(ctx,p.x-7,p.y-34,14,2,p.id===0?'#ffd782':'#91d2ff');
+        ctx.font='bold 8px sans-serif';ctx.fillStyle='#102b41';ctx.fillText(String(p.id+1),p.x-2,p.y-38);
       });
       effects.forEach(e=>box(ctx,e.x,e.y,3,3,e.color));ctx.restore();
-      if(!shared.skyKey||!shared.diveKey){
-        box(ctx,9,H-24,226,16,'#233d50cf');ctx.font='9px monospace';ctx.fillStyle='#fff2c6';ctx.fillText(!shared.skyKey?'Find a bird to reach the SKY key!':'Dive as an otter to find the RIVER key!',15,H-13);
+      if(!shared.skyKey||!shared.diveKey||!shared.springKey){
+        box(ctx,9,H-24,355,16,'#233d50cf');ctx.font='9px monospace';ctx.fillStyle='#fff2c6';ctx.fillText(!shared.springKey?'Double jump as a SPRINGAROO for the canopy gem!':!shared.skyKey?'Fly as a MOONWING to the sky gem!':'Dive as a TIDEFOX for the river gem!',15,H-13);
       }
     }
-    hud.hidden=false;say('Feed animals → toss orbs → transform! Find both keys.',3500);
-    return {update,render,stop(){hud.hidden=true;message.classList.remove('show');},get state(){return {players,shared,animals,cameraX,cameraY}}};
+    hud.hidden=false;say('Catch three magical creatures. Their powers unlock three gems!',3600);
+    return {update,render,stop(){hud.hidden=true;message.classList.remove('show');},get state(){return {players,shared,animals,items,cameraX,cameraY,physics:PHYSICS,jumpHeight}}};
   }
   return {start};
 })();
@@ -448,34 +618,36 @@ window.WW = window.WW || {};
 WW.main = (() => {
   const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
   const menu=document.getElementById('menu');const hud=document.getElementById('hud');
-  let game=null,last=0,paused=true,cancelCalibration=null,customMap=null,pixelsPerTile=1;
+  let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,pixelsPerTile=1;
   const builtinMap=window.WONDERWOOD_MAP.startsWith('data:')?window.WONDERWOOD_MAP:'src/games/animal-adventure/levels/first-forest.png';
   const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel">${content}</section>`;};
   const button=(id,label,kind='secondary')=>`<button class="${kind}" data-action="${id}">${label}</button>`;
   function home(){
-    if(game){game.stop();game=null;}paused=true;cancelCalibration?.();cancelCalibration=null;
+    if(game){game.stop();game=null;}paused=true;screen='home';cancelCalibration?.();cancelCalibration=null;
     panel(`<div class="kicker">An adventure arcade for the whole family</div><h1>WONDERWOOD</h1>
-      <h2>Little friends. Big adventures.</h2><p>Feed grumpy forest friends, earn their trust, catch them with magic orbs, and borrow their special powers to unlock the forest's secrets.</p>
+      <h2>Three magical powers. Three hidden gems.</h2><p>Befriend and catch fantasy creatures! Springaroo double-jumps, Moonwing flies, Tidefox dives. Each capture gives that player one timed transformation. The deep lake is dangerous unless you become a Tidefox.</p>
       <div class="chips"><span class="chip">Local co-op</span><span class="chip">USB gamepads</span><span class="chip">Offline play</span><span class="chip">Pixel-art world</span></div>
       <div class="buttons">${button('play','▶ PLAY THE FOREST','primary')}${button('settings','⚙ Settings')}${button('calibrate','🎮 Map controller')}${button('level','🗺 Load PNG level')}</div>
       <div class="instructions"><b>P1:</b> A / D move, W jump, S dive, F snack, G magic orb, Q choose animal, T transform, R revive<br>
       <b>P2:</b> J / L move, I jump, K dive, O snack, P orb, H choose, U transform, Y revive<br>
       <b>Controllers:</b> left stick / D-pad move · A jump · B snack · X orb · Y transform · RB choose · LB revive</div>
-      <div class="hint">${customMap?'Custom level loaded for this session.':'Built-in first level: Sky Key + River Key.'} &nbsp; · &nbsp; ${WW.input.pads().length} controller(s) detected</div>`);
+      <div class="hint">${customMap?'Custom level loaded for this session.':'First Forest: Canopy Gem + Sky Gem + River Gem.'} &nbsp; · &nbsp; ${WW.input.pads().length} controller(s) detected</div>`);
   }
   async function play() {
     const url=customMap||builtinMap;
+    if(game){game.stop();game=null;}
+    paused=true;screen='loading';
     panel('<div class="kicker">Unfolding the forest map</div><h2>Loading adventure…</h2>');
     try{
       const level=await WW.levels.load(url,pixelsPerTile);
       if(level.warnings.some(w=>w.startsWith('No ')))throw Error(level.warnings.join(' · '));
-      menu.hidden=true;paused=false;WW.input.reset();game=WW.games.animals.start(level);
+      WW.input.reset();game=WW.games.animals.start(level);menu.hidden=true;paused=false;screen='playing';last=0;
       if(level.warnings.length)game && console.warn('Level warnings:',level.warnings);
       if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
-    }catch(error){panel(`<h2>Couldn't read this level</h2><p class="warning" id="error"></p><div class="buttons">${button('home','Back to menu')}</div>`);document.getElementById('error').textContent=error.message;}
+    }catch(error){screen='error';panel(`<h2>Couldn't read this level</h2><p class="warning" id="error"></p><div class="buttons">${button('home','Back to menu')}</div>`);document.getElementById('error').textContent=error.message;}
   }
   function settings(){
-    const settings=WW.storage.data.settings;
+    screen='settings';const settings=WW.storage.data.settings;
     panel(`<div class="kicker">Wonderwood Arcade</div><h2>Game settings</h2>
       <p>Controls and progress are stored in this browser. Export a save to keep a backup when you move the HTML file.</p>
       <div class="row"><label for="players">Players</label><select id="players"><option value="1" ${settings.players===1?'selected':''}>1 player</option><option value="2" ${settings.players===2?'selected':''}>2 players</option></select></div>
@@ -490,7 +662,7 @@ WW.main = (() => {
     });
   }
   function calibration(){
-    const pads=WW.input.pads();if(!pads.length){panel(`<div class="kicker">Controller setup</div><h2>No gamepad detected</h2><p>Connect a USB controller, then press any button on it while Firefox is focused. The browser only exposes gamepads after interaction.</p><div class="buttons">${button('calibrate','Try again','primary')}${button('home','Back')}</div>`);return;}
+    screen='calibration';const pads=WW.input.pads();if(!pads.length){panel(`<div class="kicker">Controller setup</div><h2>No gamepad detected</h2><p>Connect a USB controller, then press any button on it while Firefox is focused. The browser only exposes gamepads after interaction.</p><div class="buttons">${button('calibrate','Try again','primary')}${button('home','Back')}</div>`);return;}
     const p=pads[0];
     panel(`<div class="kicker">Controller setup · ${p.index+1}</div><h2>Press the requested control</h2><p id="calibration-step"></p><p class="hint">Release each control before the next step. Saves automatically by controller name.</p><div class="buttons">${button('home','Cancel')}</div>`);
     const display={left:'MOVE LEFT',right:'MOVE RIGHT',down:'MOVE / DIVE DOWN',jump:'JUMP / SWIM UP',snack:'THROW SNACK',orb:'THROW MAGIC ORB',cycle:'CHOOSE ANIMAL FORM',transform:'TRANSFORM',revive:'REVIVE'};
@@ -500,14 +672,14 @@ WW.main = (() => {
     },()=>{cancelCalibration=null;WW.input.rumble(0,.6,220);panel(`<h2>Controller saved!</h2><p>The mapping will load automatically whenever this controller connects.</p><div class="buttons">${button('home','Back to menu','primary')}</div>`);});
   }
   function level(){
-    panel(`<div class="kicker">For level creators · AI-assisted maps</div><h2>Load your own PNG map</h2>
+    screen='level';panel(`<div class="kicker">For level creators · AI-assisted maps</div><h2>Load your own PNG map</h2>
       <p>Use the palette from README.md. One pixel is one tile by default; for an AI-generated image with large color blocks, enter the number of image pixels per tile. The parser uses center sampling and approximate colors.</p>
       <div class="row"><label>PNG <input type="file" id="level-file" accept="image/png"></label><label>Pixels per tile <input id="tile-size" type="number" min="1" max="64" value="1" style="width:70px"></label></div>
       <p class="hint">A green start marker and a red exit marker are required. Unknown colors become empty terrain and are reported in the console.</p>
       <div class="buttons">${button('load-level','Use this level','primary')}${button('reset-level','Use built-in level')}${button('home','Back')}</div>`);
   }
-  function pause(){if(!game)return;paused=true;panel(`<div class="kicker">Adventure on hold</div><h2>Paused</h2><p>Snack time? Your forest friends will still be here.</p><div class="buttons">${button('resume','Resume','primary')}${button('restart','Restart level')}${button('home','Main menu')}</div>`);}
-  function win(wins){paused=true;panel(`<div class="kicker">A forest full of friends</div><h1>YOU DID IT!</h1><h2>Both keys found. The gate is open!</h2><p>Your teamwork saved the day. Adventures completed: ${wins}. The animals are already getting up to more mischief.</p><div class="buttons">${button('restart','Play again','primary')}${button('home','Arcade menu')}</div>`);}
+  function pause(){if(!game||screen!=='playing')return;paused=true;screen='paused';panel(`<div class="kicker">Adventure on hold</div><h2>Paused</h2><p>Snack time? Your forest friends will still be here.</p><div class="buttons">${button('resume','Resume','primary')}${button('restart','Restart level')}${button('home','Main menu')}</div>`);}
+  function win(wins){paused=true;screen='won';panel(`<div class="kicker">A forest full of friends</div><h1>YOU DID IT!</h1><h2>All three gems found. The gate is open!</h2><p>Your teamwork saved the day. Adventures completed: ${wins}. The animals are already getting up to more mischief.</p><div class="buttons">${button('restart','Play again','primary')}${button('home','Arcade menu')}</div>`);}
   menu.addEventListener('click',async e=>{
     const id=e.target.closest('button')?.dataset.action;
     if(!id)return;
@@ -516,7 +688,7 @@ WW.main = (() => {
     if(id==='settings')settings();
     if(id==='calibrate')calibration();
     if(id==='level')level();
-    if(id==='resume'){paused=false;menu.hidden=true;WW.input.reset();}
+    if(id==='resume'&&screen==='paused'){paused=false;screen='playing';menu.hidden=true;WW.input.reset();last=0;}
     if(id==='save-settings'){WW.storage.data.settings.players=Number(document.getElementById('players').value);WW.storage.data.settings.rumble=document.getElementById('rumble').checked;WW.storage.save();home();}
     if(id==='export')WW.storage.exportSave();
     if(id==='import')document.getElementById('save-file').click();
@@ -528,8 +700,9 @@ WW.main = (() => {
       customMap=URL.createObjectURL(file);pixelsPerTile=size;await play();
     }
   });
-  addEventListener('keydown',e=>{if(e.code==='Escape'&&game){e.preventDefault();if(paused&&menu.hidden===false){paused=false;menu.hidden=true;WW.input.reset();}else pause();}});
+  addEventListener('keydown',e=>{if(e.code!=='Escape')return;if(screen==='playing'){e.preventDefault();pause();}else if(screen==='paused'){e.preventDefault();paused=false;screen='playing';menu.hidden=true;WW.input.reset();last=0;}});
   function idle(now){
+    ctx.setTransform(2,0,0,2,0,0);
     const t=now*.001;const sky=ctx.createLinearGradient(0,0,0,270);sky.addColorStop(0,'#73b6cf');sky.addColorStop(1,'#dbedcf');ctx.fillStyle=sky;ctx.fillRect(0,0,480,270);
     for(let layer=0;layer<3;layer++){
       const h=135+layer*38;ctx.fillStyle=['#aacfc1','#77b0a9','#427e7a'][layer];ctx.beginPath();ctx.moveTo(0,270);
@@ -538,7 +711,7 @@ WW.main = (() => {
     for(let i=0;i<25;i++){const x=i*24+(Math.sin(i*2)*8);ctx.fillStyle='#285963';ctx.fillRect(x,201,5,60);ctx.fillStyle=i%2?'#478b79':'#57987b';ctx.fillRect(x-9,178+Math.sin(i)*12,24,28);}
     ctx.fillStyle='#89bd71';ctx.fillRect(0,244,480,26);
     for(let x=0;x<480;x+=16){ctx.fillStyle='#528b69';ctx.fillRect(x,243,16,3);ctx.fillStyle='#a0d181';ctx.fillRect(x+4,240,3,4);}
-    WW.art.draw(ctx,'rabbit',85,244,Math.floor(t*3)%4);WW.art.draw(ctx,'bird',375,183+Math.sin(t*2)*5,Math.floor(t*6)%4);WW.art.draw(ctx,'hero',235,242,Math.floor(t*2)%4);
+    WW.art.draw(ctx,'springaroo',85,244,Math.floor(t*3)%4);WW.art.draw(ctx,'skyling',375,183+Math.sin(t*2)*5,Math.floor(t*6)%4);WW.art.draw(ctx,'tideling',135,244,Math.floor(t*3)%4);WW.art.draw(ctx,'hero',235,242,Math.floor(t*2)%4);
   }
   function frame(now){const dt=last?Math.min((now-last)/1000,.05):0;last=now;if(game){if(!paused)game.update(dt);game.render(ctx,now/1000);}else idle(now);requestAnimationFrame(frame);}
   WW.storage.load();WW.input.syncAssignments();home();requestAnimationFrame(frame);

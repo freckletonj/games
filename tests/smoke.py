@@ -21,7 +21,7 @@ with sync_playwright() as playwright:
     page.set_content(source, wait_until='domcontentloaded')
     assert page.locator('h1').inner_text() == 'WONDERWOOD'
     page.get_by_role('button', name='PLAY THE FOREST').click()
-    assert page.locator('#menu').is_hidden(), page.locator('#menu').inner_text()
+    page.locator('#menu').wait_for(state='hidden')
     assert page.locator('#hud').is_visible()
     page.keyboard.down('d')
     page.evaluate('for (let i=0;i<45;i++) WW.main.game.update(1/60)')

@@ -1,84 +1,112 @@
-# Wonderwood — family adventure arcade
+# Wonderwood — magical family co-op adventure
 
-A self-contained, offline-friendly 2D co-op game. Feed grumpy animals to reduce their wariness, catch them with magic orbs, and spend **one timed transformation charge** to borrow each animal's ability. Fly as a bird to find the sky key; dive as an otter to retrieve the river key. Both keys open the forest gate.
+**Playable prototype, second iteration.** A self-contained, offline 2D side-scroller about befriending fantasy creatures and borrowing their powers to solve traversal puzzles.
 
-## Run and build
+Feed wary creatures with snacks, throw a magic orb to attempt a catch, then **spend your own single-use transformation charge** for 22 seconds of magic. More snacks make captures likelier; at maximum wariness the odds are 12%, and at zero wariness they are 98%. Each captured creature respawns after seven seconds so a missed or expired transformation never soft-locks the level. Snack bushes replenish after 13 seconds.
 
-No npm packages, browser libraries, or internet are required. Node.js 20+ is needed only to build the one-file release:
+### First Forest: the three-gem puzzle
+
+- **Springaroo** (pink, star-crowned marsupial): jump again in midair. Reach the **Canopy Gem** above the ordinary ledge path; it cannot be collected with just one jump.
+- **Moonwing** (luminous lunar bird): hold jump to fly. Reach the **Sky Gem** on the otherwise inaccessible high cloud ledge.
+- **Tidefox** (aquatic fox-otter spirit): swim and dive. Retrieve the **River Gem** from the flooded lake, then swim through to the far bank.
+
+The gate opens only when all three gems have been found. Non-swimmers sink in deep water, lose one heart and return to their last safe foothold. Players sleep when they lose all hearts; player 1 can revive themselves, and either player can revive a nearby teammate without spending anything. Both players are kept visible with a shared-camera leash; moving too far ahead displays a reminder.
+
+## Play and build
+
+**For playing, open `dist/wonderwood.html` directly in Firefox**; no server, internet connection, or installation is necessary. All graphics, JS, CSS, and the level are embedded. The canvas renders internally at **960×540**, twice the previous resolution, with new 32×40 procedural sprite originals and extra parallax/glow details.
+
+To rebuild from the editable source, use Node.js 20+ (no npm dependencies):
 
 ```sh
 node scripts/build.mjs
 ```
 
-Open **`dist/wonderwood.html`** directly in Firefox or Chromium. All scripts, CSS, sprites, and the level PNG are embedded in the file. No Python launcher is needed. For local development of the separate source files (including `src/games/.../levels/first-forest.png`):
+For local development with source files, from the repository root:
 
 ```sh
 python3 -m http.server 8000
-# Open http://localhost:8000/
+# Visit http://localhost:8000/ after building, or /dist/wonderwood.html
 ```
 
-The source `index.html` is deliberately an unbuilt template and cannot run directly. Serve the built file or the source with `python -m http.server`. A Chromium smoke test is provided in `tests/smoke.py` (requires Python Playwright).
+`index.html` is a build template; do not open it unbuilt. `dist/wonderwood.html` is the complete self-contained game.
 
 ## Controls
 
-| Action | Player 1 keyboard | Player 2 keyboard | Standard gamepad |
-|---|---|---|---|
+| Action | Player 1 | Player 2 | Standard gamepad |
+| --- | --- | --- | --- |
 | Move | A / D | J / L | Left stick / D-pad |
-| Dive down | S | K | Down |
-| Jump / swim up / fly | W or Space | I | A / Cross |
+| Jump, double-jump, swim up, fly | W / Space | I | A / Cross |
+| Swim down | S | K | Stick down |
 | Throw snack | F | O | B / Circle |
-| Throw capture orb | G | P | X / Square |
-| Cycle selected form | Q | H | RB |
-| Activate selected form | T | U | Y / Triangle |
-| Revive | R | Y | LB |
+| Throw magic orb | G | P | X / Square |
+| Change selected form | Q | H | RB |
+| Transform yourself | T | U | Y / Triangle |
+| Revive yourself (player 1) or nearby teammate | R | Y | LB |
 | Pause | Escape | Escape | Escape |
 
-Gamepads are assigned to player slots automatically as detected. Keyboard input always remains available. Use **Map controller** from the menu once per controller model for unusual layouts. Each action is learned from a button or axis movement and saved by the controller ID. The menu is intentionally simple. Rumble on hits, pickups and captures uses Gamepad vibration haptics when supported; some Linux/Firefox/controller combinations don't support rumble.
+Select a type with Q/H or RB before transforming; each player's selected type and available charges appear separately in the HUD. Use **Map controller** in the menu for unusual USB layouts; mappings and vibration preferences are saved locally. Rumble requires Gamepad API haptic support from the controller, driver and browser, so it may not be available on every Linux/Firefox combination.
 
-**Parent-safe recovery:** Player 1 may revive themselves with Revive even when fainted; player 1 can revive any fainted teammate by moving close and pressing Revive. No consumable required. Players lose no collected forms or keys when they faint.
+## Physics and level-design contract
 
-## Level PNG format
+The simulation uses a 16-world-pixel tile grid and 60 Hz normalized frame units. These constants in `src/games/animal-adventure/game.js` describe the ordinary player:
 
-The source map is an actual **104 × 24 pixel PNG** in `src/games/animal-adventure/levels/first-forest.png`. A pixel represents a 16 × 16 world tile. It is parsed at runtime and embedded in the release by the build script. The game also supports loading your own PNG files from the main menu.
+| Property | Value |
+| --- | ---: |
+| Run velocity | 2.25 world px/frame (135 px/s) |
+| Jump launch velocity | 5.7 px/frame upward |
+| Gravity | 0.27 px/frame² downward |
+| Normal jump peak | ~60 world px (~3.7 tiles) |
+| Normal jump air-time on level ground | ~42 frames |
+| Normal full-jump horizontal reach | ~95 world px (~6 tiles) |
+| Springaroo's second upward launch | 5.5 px/frame |
+| Shared-camera maximum player separation | 408 world px |
+| Non-swimmer exposure before water rescue | 0.9 seconds |
 
-| RGB hex | Meaning |
-|---|---|
-| `#FFFFFF` | Empty / sky |
-| `#101820` | Solid grass/dirt tile |
-| `#176AD7` | Water |
-| `#00ED31` | Player 1 spawn (required) |
+The map's ordinary ledges are **one-way**: players jump through them from below and land on top. The first three ledges have been checked with automated traversal inputs, not merely placed by eye. The magical puzzles are deliberately *outside* the ordinary jump envelope. The canopy gem can be reached on the second Springaroo jump from the lower platform. The lake is not a walkable floor.
+
+### AI-friendly level PNGs
+
+Each bitmap pixel is a **semantic tile**, not a rendered picture. The built-in level is `src/games/animal-adventure/levels/first-forest.png` (120×25 cells). The menu can import a PNG; for an enlarged AI-generated tile map, set the *Pixels per tile* option. The parser tolerates approximate colors and uses a center-region vote to reduce blurred edges and compression noise. Unknown colors become empty, with warnings; missing required start or exit markers stop the launch. Generate an explicit tile palette map first and produce decorative imagery separately.
+
+| Color | Meaning |
+| --- | --- |
+| `#FFFFFF` | Empty |
+| `#101820` | Solid ground |
+| `#5F5B85` | Jump-through platform |
+| `#176AD7` | Deep water |
+| `#00ED31` | Player 1 spawn |
 | `#91FE54` | Player 2 spawn |
-| `#FF152B` | Exit gate (required) |
-| `#FFDC12` | Rabbit spawn |
-| `#00EEEF` | Bird spawn |
-| `#EF851A` | Otter spawn |
-| `#FF64BB` | Snack pickup (+5) |
-| `#B052FC` | Sky key (requires bird) |
-| `#167B86` | River key (requires otter) |
+| `#FF152B` | Exit |
+| `#FFDC12` | Springaroo spawn |
+| `#00EEEF` | Moonwing spawn |
+| `#EF851A` | Tidefox spawn |
+| `#FF64BB` | Regenerating snack bush |
+| `#E83C86` | Canopy Gem |
+| `#B052FC` | Sky Gem |
+| `#167B86` | River Gem |
 | `#AAAAAA` | Checkpoint marker |
 
-The parser does **not** expect exact color matches. It tolerates moderate RGB drift, blur and some anti-aliasing using nearest-palette matching. For generated images that use blocks larger than a pixel, enter **Pixels per tile** in the import menu; a center-region weighted vote determines each tile. Completely unknown hues resolve to empty terrain and are logged rather than arbitrarily becoming walls/enemies. Image dimensions must yield an 8–400 tile wide, 6–80 tile high grid. Missing player start or exit prevents launching.
+## Architecture
 
-For reliable AI-generated maps, ask for a **flat-color, orthogonal tile grid using only the hex palette**, zero labels, no gradients, and no decorations. An AI-created *illustration* of a map cannot be unambiguously reconstructed as gameplay metadata; create a semantic map first and use artistic generation for the visuals separately. Thin isolated markers may disappear under block voting, so spawn/goal markers should fill their entire grid cell.
+- `src/platform/input.js` — reusable action-based keyboard/gamepad mapping, calibration, vibration and re-connection.
+- `src/platform/storage.js` — settings, controller profiles, win count, JSON save export/import.
+- `src/platform/levels.js` — tolerant semantic-PNG parser.
+- `src/platform/art.js` — larger animated sprite atlas generated from vector/pixel drawing primitives; magical creature appearances live here.
+- `src/games/animal-adventure/game.js` — rules, physics, camera, captures, transformations, combat, level win condition and renderer.
+- `src/main.js` — shared menu and game lifecycle.
+- `scripts/build.mjs` — zero-dependency single-HTML builder.
+- `tests/smoke.py` and `tests/playability.py` — browser tests (Python Playwright + Chromium).
 
-In the first iteration a single PNG encodes terrain and objects. Later we can support `terrain.png` + `objects.png` layers for stacking objects on terrain, without changing the renderer.
+```sh
+python tests/smoke.py
+python tests/playability.py
+```
 
-## Code organization
+The playability test checks menu flow, 2× resolution, ordinary jump, double jump, reachable ledges, a genuine orb catch, per-player transformations, camera leash, water rescue, underwater key, sky key, canopy key, completed level, and post-win Escape behavior.
 
-- `src/platform/input.js` — reusable action-based keyboard/gamepad mapping, calibration and optional rumble.
-- `src/platform/storage.js` — settings, controller profiles and progress; JSON export/import.
-- `src/platform/levels.js` — robust color-based PNG parser and validation.
-- `src/platform/art.js` — generated pixel sprite atlas with four animation frames per creature.
-- `src/games/animal-adventure/game.js` — game rules, animals, collisions, projectiles, camera, renderer and win condition.
-- `src/main.js` — arcade menu, settings, level import and game lifecycle.
-- `scripts/build.mjs` — zero-dependency single-HTML build.
+## Saves, limitations and next steps
 
-The shared `WW` namespace is kept deliberately small. Additional games can live under `src/games/<game-name>/` and register their own `start(level)` function. The menu can select a registered game when added. A future 3D renderer does not need to inherit the 2D game's physics.
+`localStorage` behavior for a directly opened `file://` game varies by browser and may differ between file paths. Use Settings → Export Save / Import Save before moving or renaming a build; a fixed `localhost` origin is still the most reliable option for persistence.
 
-## Saves and direct HTML launch
-
-Settings and win count live in browser `localStorage`. On `file://` URLs, storage isolation/persistence is browser-dependent, and different paths/renames can create different save origins. Use **Settings → Export save** periodically, especially before replacing a release file; **Import save** restores it. To keep a stable origin, run the built file from a fixed `http://localhost` address with `python3 -m http.server` in the `dist` directory.
-
-## Known limitations
-
-This is the first playable vertical slice. Artwork is generated by code rather than external sprite-sheet PNGs, audio is not implemented, there is one puzzle level, the water/ground physics are intentionally simple, and controller vibration needs hardware testing on your Linux setup. The color parser tolerates imperfect semantic tile maps; it is not a general-purpose image segmentation AI.
+This is an **early playable prototype**, not a finished content-rich game. Art is still procedural rather than hand-drawn spritesheet animation; there is one handcrafted level; audio, controller rumble, and Linux Firefox behavior have not been physically verified. The automated playability checks run in headless Chromium and do not replace real hardware or family playtesting. Next improvements should follow observations from actually playing, especially tuning throw aim, enemy attack difficulty, water traversal timing and camera feel.
