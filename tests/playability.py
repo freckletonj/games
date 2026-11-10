@@ -8,7 +8,7 @@ source=source.replace('<script>window.WONDERWOOD_LEVELS',
  '<script>Object.defineProperty(window,"localStorage",{value:{getItem:()=>null,setItem:()=>{}}});</script><script>window.WONDERWOOD_LEVELS')
 
 with sync_playwright() as pw:
-    browser=pw.chromium.launch(headless=True, executable_path='/usr/bin/chromium', args=['--no-sandbox'])
+    browser=pw.chromium.launch(headless=True, args=['--no-sandbox'])
     page=browser.new_page(viewport={'width':1440,'height':810});errors=[]
     page.on('pageerror',lambda e:errors.append(str(e)))
     page.set_content(source,wait_until='domcontentloaded')
