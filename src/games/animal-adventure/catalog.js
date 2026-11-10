@@ -12,14 +12,14 @@ WW.catalog = {
     emberkit: {name:'Emberkit',power:'Gentle spark stun',color:'#ffad79',favorite:'berry'}
   },
   creatures: {
-    springaroo: {name:'Springaroo',role:'gentle hopper',favorite:'berry',color:'#ff98bc',capturable:true},
-    tideling: {name:'Tidefox',role:'curious swimmer',favorite:'nectar',color:'#75eddf',capturable:true},
-    skyling: {name:'Moonwing',role:'moonlit flier',favorite:'star',color:'#a4e9ff',capturable:true},
-    mossback: {name:'Mossback',role:'slow wanderer',favorite:'berry',color:'#b0e18b',capturable:true},
-    glimmermoth: {name:'Glimmermoth',role:'skittish flutterer',favorite:'star',color:'#f9adfa',capturable:true},
-    prismtail: {name:'Prismtail',role:'swift runner',favorite:'berry',color:'#ffc18b',capturable:true},
-    cloudwhisp: {name:'Cloudwhisp',role:'gentle drifter',favorite:'nectar',color:'#d5c7ff',capturable:true},
-    emberkit: {name:'Emberkit',role:'territorial chaser',favorite:'berry',color:'#ffad79',capturable:true}
+    springaroo: {name:'Springaroo',role:'gentle hopper',favorite:'berry',color:'#ff98bc',capturable:true,tactic:'Hops in a steady rhythm. Jump over, stomp from above, or feed berries.'},
+    tideling: {name:'Tidefox',role:'curious swimmer',favorite:'nectar',color:'#75eddf',capturable:true,tactic:'Patrols the shore. Lure with nectar; transformed Tidefox can dive.'},
+    skyling: {name:'Moonwing',role:'moonlit flier',favorite:'star',color:'#a4e9ff',capturable:true,tactic:'Drifts in predictable arcs. Offer Stardrops to slow it for an orb.'},
+    mossback: {name:'Mossback',role:'slow wanderer',favorite:'berry',color:'#b0e18b',capturable:true,tactic:'Slow grounded wanderer. Run past, hop over, or distract with berries.'},
+    glimmermoth: {name:'Glimmermoth',role:'skittish flutterer',favorite:'star',color:'#f9adfa',capturable:true,tactic:'Flees from close explorers. Set out Stardrops and stay back.'},
+    prismtail: {name:'Prismtail',role:'swift runner',favorite:'berry',color:'#ffc18b',capturable:true,tactic:'Pauses, then dashes in a straight line when threatened. Jump above the dash or distract it.'},
+    cloudwhisp: {name:'Cloudwhisp',role:'gentle drifter',favorite:'nectar',color:'#d5c7ff',capturable:true,tactic:'Flashes a warning line, then blows a gust. Move behind it or stun it.'},
+    emberkit: {name:'Emberkit',role:'territorial chaser',favorite:'berry',color:'#ffad79',capturable:true,tactic:'Approaches and telegraphs a damaging dash. Jump, head-stomp, feed, or stun it.'}
   },
   foods: {
     berry: {name:'Blushberry',method:'lob',affection:1,color:'#fa73aa',speed:3.2},
