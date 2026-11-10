@@ -20,9 +20,14 @@ WW.games.animals = (() => {
     };
     const goals=chapter.goals,goalKinds=new Set(goals.map(g=>g.kind));
     const abilityHelp={
-      springaroo:'Press Jump again in midair for a second jump',
-      tideling:'In water, hold Jump to rise or Down to dive',
-      skyling:'Hold Jump to fly upward; release to glide down'
+      springaroo:'Double jump with Jump; F blows a short petal puff',
+      tideling:'Swim with Jump / Down; F launches a small splash',
+      skyling:'Hold Jump to fly; F sends a gentle feather gust',
+      mossback:'F launches honey that sticks a creature in place briefly',
+      prismtail:'F catches a creature in a floating bubble',
+      glimmermoth:'Press F in the air to hover briefly, without gaining height',
+      cloudwhisp:'F sends a wind blast that knocks creatures back and stuns them',
+      emberkit:'F sends a short-range, harmless stunning spark'
     };
     const callout=document.getElementById('ability-callout');let abilityUntil=0;
     const terrainTint={meadow:{sky:['#5e4fa8','#a078da','#7cdbd5','#fff0a9'],mountains:['#a69eda','#6bb0cb','#368a93'],tree:['#2b6484','#499aa2','#6be1aa'],soil:['#634a74','#795781','#8e6484'],grass:['#68cf8d','#378e80']},
@@ -45,13 +50,14 @@ WW.games.animals = (() => {
       const position=location(first(id===0?'p1':'p2')||first('p1')||{x:3+id*2,y:level.height-3});
       return {id,...position,lastSafe:{...position},vx:0,vy:0,grounded:false,coyote:0,jumpBuffer:0,jumpsUsed:0,
         waterTime:0,face:1,health:3,sleep:false,invincible:0,selected:0,selectedFood:0,energy:Object.fromEntries(TYPES.map(t=>[t,0])),
-        form:null,actionCD:0,frame:0,hurt:0,
+        form:null,caught:null,hover:0,actionCD:0,frame:0,hurt:0,
         unlocked:Object.fromEntries(TYPES.map(kind=>[kind,false]))};
     });
     const animals=level.objects.filter(o=>CREATURE[o.kind]).map((o,i)=>({
       kind:o.kind,...location(o),homeX:(o.x+.5)*TILE,homeY:(o.y+1)*TILE,
       dir:i%2?1:-1,alive:true,respawn:0,trust:0,distractedUntil:0,
-      eating:0,windup:0,dashTime:0,dashDir:1,chargeCooldown:1+i*.3,phase:i*.9,frame:0,homeDir:i%2?1:-1
+      eating:0,windup:0,dashTime:0,dashDir:1,chargeCooldown:1+i*.3,phase:i*.9,frame:0,homeDir:i%2?1:-1,
+      stunned:0,stuck:0,trapped:0,gustTime:0,gustHit:[],moving:false
     }));
     const items=level.objects.filter(o=>(['snack','starShard','checkpoint','exit'].includes(o.kind)||goalKinds.has(o.kind))).map(o=>({kind:o.kind,x:(o.x+.5)*TILE,y:(o.y+.5)*TILE,used:false}));
     const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),keys:Object.fromEntries(goals.map(g=>[g.kind,false])),checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,won:false};
@@ -90,6 +96,34 @@ WW.games.animals = (() => {
         x:player.x+player.face*11,y:player.y-14,vx:player.face*food.speed,vy:-2.2,
         ttl:4,age:0});
     }
+    function usePower(player){
+      if(!player.form||player.actionCD>0||player.sleep)return;
+      const kind=player.form;
+      if(kind==='glimmermoth'){
+        player.hover=.72;
+        player.actionCD=1.35;
+        particles(player.x,player.y-12,FORM[kind].color,9);
+        return;
+      }
+      // Every creature has an F-action. These are modest encounter tools;
+      // only Springaroo, Tidefox and Moonwing alter major traversal physics.
+      const spells={
+        springaroo:['petal',4.0,.65,1.0],
+        tideling:['splash',4.0,.70,1.1],
+        skyling:['feather',4.2,.80,1.2],
+        mossback:['honey',3.3,1.25,1.35],
+        prismtail:['bubble',3.6,1.30,1.45],
+        cloudwhisp:['gust',5.1,.52,1.6],
+        emberkit:['spark',4.4,.58,1.0]
+      };
+      const [projectile,speed,ttl,cooldown]=spells[kind];
+      projectiles.push({kind:projectile,owner:player.id,
+        x:player.x+player.face*13,y:player.y-14,vx:player.face*speed,
+        vy:projectile==='bubble'?-.15:0,age:0,ttl});
+      player.actionCD=cooldown;
+      particles(player.x+player.face*12,player.y-14,FORM[kind].color,7);
+      WW.audio.play('orb');
+    }
     function placeFood(pr){
       const heightAt=liquid(pr.x,pr.y)?Math.floor(pr.y/TILE)*TILE:pr.y;
       lures.push({x:pr.x,y:heightAt,food:pr.food,age:0,ttl:24,used:false});
@@ -101,7 +135,7 @@ WW.games.animals = (() => {
       animal.trust=Math.min(TRUST_TARGET,animal.trust+(favorite?60:36));
       WW.audio.play('munch');
       particles(animal.x,animal.y-17,FOOD[lure.food].color,9);
-      if(animal.trust>=TRUST_TARGET&&CREATURE[animal.kind].capturable){
+      if(animal.trust>=TRUST_TARGET){
         animal.distractedUntil=clock+DISTRACTION_SECONDS;
         WW.audio.play('ready');
         particles(animal.x,animal.y-19,'#ffeab3',20);
@@ -137,7 +171,8 @@ WW.games.animals = (() => {
       p.invincible=Math.max(0,p.invincible-dt);
       p.actionCD=Math.max(0,p.actionCD-dt);
       p.hurt=Math.max(0,p.hurt-dt);
-      p.previousX=p.x;
+      p.previousX=p.x;p.previousY=p.y;
+      p.hover=Math.max(0,p.hover-dt);
       const direction=Number(controls.right)-Number(controls.left);
       if(direction)p.face=direction;
       const swimming=p.form==='tideling' && (liquid(p.x,p.y-8)||liquid(p.x,p.y+2));
@@ -169,6 +204,7 @@ WW.games.animals = (() => {
         if(flying && controls.jump) p.vy=Math.max(-2.95,p.vy-.52*step);
 
         p.vy=Math.min(PHYSICS.maxFall,p.vy+PHYSICS.gravity*step);
+        if(p.form==='glimmermoth'&&p.hover>0&&p.vy>1.45)p.vy=1.45;
       }
       let nx=p.x+p.vx*step;
       const half=PHYSICS.bodyHalf, upper=PHYSICS.bodyHeight;
@@ -211,16 +247,19 @@ WW.games.animals = (() => {
         p.waterTime=0;
         if(p.grounded&&!nowWater&&!liquid(p.x+14,p.y-8)&&!liquid(p.x-14,p.y-8))p.lastSafe={x:p.x,y:p.y};
       }
-      if(controls.pressed.snack)throwThing(p,'food');
+      if(controls.pressed.snack){if(p.form)usePower(p);else throwThing(p,'food');}
       if(controls.pressed.orb)throwThing(p,'orb');
       if(controls.pressed.foodCycle){p.selectedFood=(p.selectedFood+1)%FOODS.length;const food=FOODS[p.selectedFood];say(`P${p.id+1}: ${FOOD[food].name} · ${shared.foods[food]} left`,1350);}
-      if(controls.pressed.cycle){p.selected=(p.selected+1)%TYPES.length;const type=TYPES[p.selected];say(`${titles[type]} · ${p.unlocked[type]?'Ready to transform':'Find and befriend one first'}`,1400);}
+      if(controls.pressed.cycle){
+        say(p.caught?'Only your latest friend, '+titles[p.caught]+', can transform. Press T.':'Befriend a creature with food and an orb first.',1800);
+      }
       if(controls.pressed.transform){
-        const type=TYPES[p.selected];
-        if(p.form===type){p.form=null;callout.hidden=true;say('Back to explorer form.',1200);}
-        else if(p.unlocked[type]){p.form=type;WW.audio.play('morph');WW.input.rumble(p.id,.35,180);particles(p.x,p.y-10,FORM[type].color,24);
-          showAbility(p);say(`${titles[type]} power! ${FORM[type].power}.`,1700);}
-        else say(`Leave ${FOOD[FORM[type].favorite].name} for a ${titles[type]} to befriend one.`,1750);
+        if(p.form){p.form=null;p.hover=0;callout.hidden=true;say('Back to explorer form. F throws food again.',1500);}
+        else if(p.caught){
+          p.form=p.caught;p.hover=0;WW.audio.play('morph');WW.input.rumble(p.id,.35,180);
+          particles(p.x,p.y-10,FORM[p.form].color,24);
+          showAbility(p);say(titles[p.form]+' power! '+FORM[p.form].power+'.',1900);
+        }else say('Offer fruit, then catch a distracted creature with G to gain its power.',1800);
       }
       if(controls.pressed.recall)recallParty();
       if(controls.pressed.revive)for(const other of players)if(other!==p&&other.sleep&&distance(other,p)<48)revive(other,p);
@@ -239,85 +278,145 @@ WW.games.animals = (() => {
       const row=map.findIndex(line=>line[tileX]==='ground');
       return row>=0?row*TILE:fallback;
     }
+    function knockOut(animal,player){
+      animal.alive=false;animal.respawn=7;animal.windup=0;animal.dashTime=0;
+      player.vy=-4.7;player.grounded=false;player.coyote=0;player.jumpsUsed=0;
+      player.invincible=Math.max(player.invincible,.2);
+      WW.audio.play('jump');
+      particles(animal.x,animal.y-22,'#fff0bc',13);
+    }
     function updateAnimals(dt){
       const step=dt*60;
       for(const a of animals){
         if(!a.alive){
           a.respawn-=dt;
-          if(a.respawn<=0){a.alive=true;a.trust=0;a.distractedUntil=0;a.eating=0;}
+          if(a.respawn<=0){
+            a.alive=true;a.trust=0;a.distractedUntil=0;a.eating=0;
+            a.stunned=0;a.stuck=0;a.trapped=0;a.x=a.homeX;a.y=a.homeY;
+          }
           continue;
         }
-        a.phase+=dt;a.chargeCooldown=Math.max(0,a.chargeCooldown-dt);
+        a.phase+=dt;
+        a.chargeCooldown=Math.max(0,a.chargeCooldown-dt);
+        a.stunned=Math.max(0,a.stunned-dt);
+        a.stuck=Math.max(0,a.stuck-dt);
+        a.trapped=Math.max(0,a.trapped-dt);
+        a.eating=Math.max(0,a.eating-dt);
         const target=targetFor(a),food=nearbyFood(a);
-        const distract=a.distractedUntil>clock,feeding=a.eating>0;
-        if(feeding)a.eating=Math.max(0,a.eating-dt);
-        const range=a.kind==='emberkit'?102:75;
-        const near=target&&distance(a,target)<range;
-        let desiredX=a.homeX+Math.sin(a.phase*.48+a.homeX)*35;
-        let speed=.48;
-        if(a.kind==='mossback'){speed=.34;desiredX=a.homeX+Math.sin(a.phase*.48)*62;}
-        if(a.kind==='prismtail'){
-          speed=1.8;
-          desiredX=near?a.x+(a.x-target.x>0?90:-90):a.homeX+Math.sin(a.phase*.9)*75;
-        }
-        if(a.kind==='glimmermoth'){
-          speed=1.25;
-          if(near)desiredX=a.x+(a.x-target.x>0?85:-85);
-        }
-        if(a.kind==='emberkit'){
-          if(food||feeding||distract){a.windup=0;a.dashTime=0;}
-          if(a.dashTime>0){
-            a.dashTime=Math.max(0,a.dashTime-dt);
-            desiredX=a.x+a.dashDir*100;speed=3.5;
-          }else if(a.windup>0){
-            a.windup=Math.max(0,a.windup-dt);desiredX=a.x;speed=0;
-            if(a.windup<=0){
-              a.dashTime=.31;a.dashDir=target&&target.x<a.x?-1:1;
-              a.chargeCooldown=2.6;particles(a.x,a.y-8,'#ffc197',8);
+        const distracted=a.distractedUntil>clock,peaceful=!!food||a.eating>0||distracted;
+        const incapacitated=a.stunned>0||a.stuck>0||a.trapped>0;
+        const near=target&&Math.abs(target.x-a.x)<100&&Math.abs(target.y-a.y)<44;
+        const flying=['skyling','glimmermoth','cloudwhisp'].includes(a.kind);
+        const speed={
+          springaroo:.88,tideling:.71,skyling:.83,mossback:.39,
+          prismtail:1.45,glimmermoth:1.18,cloudwhisp:.56,emberkit:.68
+        }[a.kind];
+        const patrol={
+          springaroo:49,tideling:48,skyling:64,mossback:38,
+          prismtail:73,glimmermoth:62,cloudwhisp:56,emberkit:46
+        }[a.kind];
+        let desiredX=a.homeX+a.dir*patrol,rate=speed;
+        // Fixed patrol bounds and visible windups make hazards learnable.
+        if(!peaceful&&!incapacitated){
+          if(a.kind==='emberkit'||a.kind==='prismtail'){
+            if(a.dashTime>0){
+              a.dashTime=Math.max(0,a.dashTime-dt);
+              desiredX=a.x+a.dashDir*100;rate=a.kind==='emberkit'?3.45:3.05;
+            }else if(a.windup>0){
+              a.windup=Math.max(0,a.windup-dt);desiredX=a.x;rate=0;
+              if(a.windup===0){
+                a.dashDir=a.kind==='emberkit'?(target&&target.x<a.x?-1:1):
+                  (target&&target.x<a.x?1:-1);
+                a.dashTime=a.kind==='emberkit'?.36:.4;
+                a.chargeCooldown=a.kind==='emberkit'?2.65:2.9;
+                particles(a.x,a.y-17,CREATURE[a.kind].color,9);
+              }
+            }else if(near&&a.chargeCooldown===0){
+              a.windup=a.kind==='emberkit'?.52:.43;desiredX=a.x;rate=0;
+              a.dir=target.x<a.x?-1:1;
+            }else if(a.kind==='emberkit'&&near){
+              desiredX=target.x;rate=.83;
+            }else if(a.kind==='prismtail'&&near){
+              desiredX=a.x+(a.x<target.x?-75:75);
+              rate=1.55;
             }
-          }else if(near&&a.chargeCooldown<=0){
-            a.windup=.48;desiredX=a.x;speed=0;
-          }else{
-            speed=near?.85:.53;
-            desiredX=near?target.x:a.homeX+Math.sin(a.phase*.9)*45;
+          }
+          if(a.kind==='cloudwhisp'){
+            if(a.windup>0){
+              a.windup=Math.max(0,a.windup-dt);desiredX=a.x;rate=0;
+              if(a.windup===0){a.gustTime=.35;a.gustHit=[];a.chargeCooldown=3.1;}
+            }else if(near&&a.chargeCooldown===0){
+              a.windup=.65;desiredX=a.x;rate=0;
+              a.dir=target.x<a.x?-1:1;
+            }
+          }
+          if(a.kind==='glimmermoth'&&near){
+            desiredX=a.x+(a.x<target.x?-80:80);rate=1.45;
           }
         }
-        if(a.kind==='springaroo')speed=.73;
-        if(a.kind==='tideling')speed=.63;
-        if(a.kind==='skyling'||a.kind==='cloudwhisp')speed=.8;
-        if(food){desiredX=food.x;speed=a.kind==='mossback'?.72:a.kind==='glimmermoth'?.95:1.22;}
-        if(feeding||distract){desiredX=a.x;speed=0;}
+        if(peaceful){a.windup=0;a.dashTime=0;a.gustTime=0;}
+        if(food&&!distracted&&a.eating===0){
+          desiredX=food.x;rate=a.kind==='mossback'?.78:1.18;
+        }
+        if(a.eating>0||distracted||incapacitated){desiredX=a.x;rate=0;a.windup=0;a.dashTime=0;}
+        // Turn at a known leash bound; do not walk over water, cliffs or into walls.
+        if(!food&&!near&&Math.abs(a.x-a.homeX)>=patrol-1){
+          a.dir=a.x>=a.homeX?-1:1;
+          desiredX=a.homeX+a.dir*patrol;
+        }
         const beforeX=a.x;
-        const dx=clamp(desiredX-a.x,-speed*step,speed*step);
+        const dx=clamp(desiredX-a.x,-rate*step,rate*step);
         const candidate=clamp(a.x+dx,a.homeX-125,a.homeX+125);
-        // Ground walkers turn away from pools and ledges. Flyers can approach their snacks.
-        const flying=['skyling','glimmermoth','cloudwhisp'].includes(a.kind);
         const floor=standingHeight(candidate,a.homeY);
-        if(flying||!liquid(candidate,floor-6)){
+        const blocked=!flying&&(!Number.isFinite(floor)||liquid(candidate,floor-6)||
+          Math.abs(floor-a.homeY)>33||solid(candidate,a.y-16));
+        if(!blocked){
           a.x=candidate;
-          if(dx)a.dir=dx>0?1:-1;
-        }else a.dir*=-1;
+          if(dx&&(!food||!incapacitated))a.dir=dx>0?1:-1;
+        }else if(!food){a.dir*=-1;a.windup=0;a.dashTime=0;}
         a.moving=Math.abs(a.x-beforeX)>.1;
-        if(flying){
-          const floatY=a.homeY+Math.sin(a.phase*(a.kind==='skyling'?2.4:1.6))*8;
+        if(a.trapped>0){
+          a.y=Math.max(a.homeY-47,a.y-.82*step);
+          a.moving=false;
+        }else if(flying){
+          const floatY=a.homeY+Math.sin(a.phase*(a.kind==='skyling'?2.2:1.45))*7;
           const wanted=food?food.y-16:floatY;
-          a.y+=(wanted-a.y)*Math.min(1,dt*(food?3.8:2.8));
+          a.y+=(wanted-a.y)*Math.min(1,dt*3.6);
         }else{
           const groundY=Math.min(floor,a.homeY+20);
-          const bounce=a.kind==='springaroo'?Math.abs(Math.sin(a.phase*5))*12:
-            a.kind==='emberkit'?Math.abs(Math.sin(a.phase*3.8))*5:
-            a.kind==='prismtail'?Math.abs(Math.sin(a.phase*11))*4:1.5*Math.abs(Math.sin(a.phase*2));
-          a.y=groundY-bounce;
+          const bounce=a.kind==='springaroo'?Math.abs(Math.sin(a.phase*4.9))*11:
+            a.kind==='prismtail'?Math.abs(Math.sin(a.phase*8))*3:
+            a.kind==='emberkit'?Math.abs(Math.sin(a.phase*3.4))*4:1.2*Math.abs(Math.sin(a.phase*2));
+          a.y+=(groundY-bounce-a.y)*Math.min(1,dt*18);
         }
-        a.frame+=dt*(speed>1?12:6);
-        if(food&&!distract&&!feeding&&Math.abs(a.x-food.x)<18&&Math.abs(a.y-12-food.y)<37){
+        a.frame+=dt*(a.moving?11:5);
+        if(food&&!distracted&&a.eating===0&&a.trapped===0&&
+            Math.abs(a.x-food.x)<18&&Math.abs(a.y-12-food.y)<37){
           eatFood(a,food);
         }
-        // Only the territorial Emberkit is dangerous. Body overlap checks both axes
-        // every update, including airborne frames; there is no arbitrary bullet spam.
-        if(a.kind==='emberkit'&&!food&&!feeding&&!distract){
+        // A precise descending head stomp is safe, rewards a bounce, and
+        // sends the animal to rest for a few seconds rather than harming it.
+        const stomp=players.find(p=>!p.sleep&&p.vy>0.6&&
+          Math.abs(p.x-a.x)<17&&p.previousY<=a.y-19&&p.y>=a.y-22&&p.y<a.y-8);
+        if(stomp&&!incapacitated){knockOut(a,stomp);continue;}
+        if(incapacitated||peaceful)continue;
+        if(a.kind==='cloudwhisp'&&a.gustTime>0){
+          a.gustTime=Math.max(0,a.gustTime-dt);
           for(const p of players){
-            if(!p.sleep&&Math.abs(p.x-a.x)<19&&p.y>a.y-27&&p.y-25<a.y+1){
+            if(!p.sleep&&!a.gustHit.includes(p.id)&&
+                (p.x-a.x)*a.dir>0&&(p.x-a.x)*a.dir<87&&Math.abs(p.y-a.y)<37){
+              p.vx=a.dir*3.8;p.vy=Math.min(p.vy,-1.4);
+              a.gustHit.push(p.id);
+              particles(p.x,p.y-13,'#c4f4ff',8);
+            }
+          }
+        }
+        // Charge and dash are the only damaging animal contact. Other
+        // species are obstacles or skittish wildlife, never random bullets.
+        const danger=a.kind==='emberkit'||(a.kind==='prismtail'&&a.dashTime>0);
+        if(danger){
+          for(const p of players){
+            if(!p.sleep&&Math.abs(p.x-a.x)<18&&p.y>a.y-27&&p.y-25<a.y+1){
               hitPlayer(p,a.x);
             }
           }
@@ -326,45 +425,64 @@ WW.games.animals = (() => {
     }
     function capture(animal,owner){
       const species=CREATURE[animal.kind];
-      if(!species.capturable){
-        WW.audio.play('miss');
-        say(species.name+' is part of the wild. Only Springaroo, Tidefox and Moonwing share powers.',2100);
-        return;
-      }
       if(animal.distractedUntil<=clock){
         WW.audio.play('miss');
         say(species.name+' is not distracted. Leave two '+FOOD[species.favorite].name+' treats nearby.',2100);
         return;
       }
-      animal.alive=false;animal.respawn=17;
-      players[owner].unlocked[animal.kind]=true;
-      players[owner].selected=TYPES.indexOf(animal.kind);
+      animal.alive=false;animal.respawn=17;animal.windup=0;animal.dashTime=0;
+      const player=players[owner];
+      // Only the MOST RECENTLY captured species may be selected.
+      for(const type of TYPES)player.unlocked[type]=false;
+      player.unlocked[animal.kind]=true;
+      player.caught=animal.kind;player.selected=TYPES.indexOf(animal.kind);
+      player.form=null;player.hover=0;
       captures.push({x:animal.x,y:animal.y-16,age:0,color:species.color,kind:animal.kind});
       WW.audio.play('catch');
       WW.input.rumble(owner,.55,270);shake=2.5;
       particles(animal.x,animal.y-15,species.color,30);
-      say(species.name+' befriended! Power unlocked for this whole chapter. Press Transform (T / Y).',3100);
+      say(species.name+' befriended! Your latest friend replaces the previous one. Press T to transform.',3100);
+    }
+    function affectAnimal(a,pr){
+      if(pr.kind==='honey')a.stuck=Math.max(a.stuck,3.4);
+      else if(pr.kind==='bubble')a.trapped=Math.max(a.trapped,2.8);
+      else if(pr.kind==='gust'){
+        a.stunned=Math.max(a.stunned,1.45);
+        a.x=clamp(a.x+Math.sign(pr.vx)*29,a.homeX-125,a.homeX+125);
+      }else if(pr.kind==='spark')a.stunned=Math.max(a.stunned,.9);
+      else {
+        a.stunned=Math.max(a.stunned,.32);
+        a.x=clamp(a.x+Math.sign(pr.vx)*12,a.homeX-125,a.homeX+125);
+      }
+      a.windup=0;a.dashTime=0;a.gustTime=0;
+      WW.audio.play('hit');
+      particles(a.x,a.y-16,CREATURE[a.kind].color,12);
     }
     function updateProjectiles(dt){
       const step=dt*60;
       for(let i=projectiles.length-1;i>=0;i--){
-        const pr=projectiles[i],oldX=pr.x,oldY=pr.y;
+        const pr=projectiles[i],oldY=pr.y;
         pr.age+=dt;pr.ttl-=dt;
         pr.x+=pr.vx*step;pr.y+=pr.vy*step;
-        pr.vy+=(pr.kind==='food'?.20:.045)*step;
+        pr.vy+=(pr.kind==='food'?.20:pr.kind==='orb'?.045:
+          pr.kind==='bubble'?-.012:0)*step;
         if(pr.kind==='food'&&FOOD[pr.food].method==='float'){
           pr.vy=Math.min(pr.vy,2.2);pr.x+=Math.sin(pr.age*9)*.5;
         }
-        const floorHit=solid(pr.x,pr.y)||at(pr.x,pr.y)==='platform'&&oldY<=Math.floor(pr.y/TILE)*TILE;
+        const floorHit=solid(pr.x,pr.y)||
+          (at(pr.x,pr.y)==='platform'&&oldY<=Math.floor(pr.y/TILE)*TILE);
         const waterHit=pr.kind==='food'&&liquid(pr.x,pr.y);
         if(pr.ttl<=0||floorHit||waterHit){
           if(pr.kind==='food'&&pr.ttl>0)placeFood(pr);
           projectiles.splice(i,1);continue;
         }
-        if(pr.kind==='orb'){
-          const a=animals.find(a=>a.alive&&
-            Math.abs(pr.x-a.x)<17&&Math.abs(pr.y-(a.y-14))<22);
-          if(a){capture(a,pr.owner);projectiles.splice(i,1);}
+        if(pr.kind!=='food'){
+          const a=animals.find(a=>a.alive&&Math.abs(pr.x-a.x)<18&&Math.abs(pr.y-(a.y-14))<23);
+          if(a){
+            if(pr.kind==='orb')capture(a,pr.owner);
+            else affectAnimal(a,pr);
+            projectiles.splice(i,1);
+          }
         }
       }
       for(let i=lures.length-1;i>=0;i--){
