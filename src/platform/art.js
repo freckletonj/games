@@ -377,12 +377,41 @@ WW.art = (() => {
     ctx.restore();
   }
 
+  // Portraits for the remaining wildlife use the SAME illustrated silhouettes
+  // as the stage, rather than unrelated blocky 64x80 field-guide drawings.
+  const portraitColors={mossback:'#a8d59b',prismtail:'#ffc18b',
+    glimmermoth:'#e8b5f9',cloudwhisp:'#d5c7ff'};
   const portraits = Object.fromEntries(kinds.map(name=>{
-    const canvas=document.createElement('canvas');canvas.width=56;canvas.height=56;
-    const context=canvas.getContext('2d');context.imageSmoothingEnabled=false;
-    context.fillStyle='#203c55';context.fillRect(0,0,56,56);
-    const i=kinds.indexOf(name);
-    context.drawImage(sheet,i*sw*frames,0,sw,sh,2,0,52,56);
+    const illustrated=Object.hasOwn(portraitColors,name);
+    const canvas=document.createElement('canvas');
+    canvas.width=illustrated?96:56;canvas.height=illustrated?96:56;
+    const context=canvas.getContext('2d');
+    if(illustrated){
+      const color=portraitColors[name];
+      const bg=context.createRadialGradient(35,24,3,48,48,70);
+      bg.addColorStop(0,'#517d82');
+      bg.addColorStop(.58,'#294c68');
+      bg.addColorStop(1,'#192a46');
+      context.fillStyle=bg;context.fillRect(0,0,96,96);
+      context.strokeStyle=color;context.globalAlpha=.6;context.lineWidth=2;
+      context.beginPath();context.arc(48,48,43,0,Math.PI*2);context.stroke();
+      context.globalAlpha=1;
+      for(let i=0;i<10;i++){
+        const x=12+i*9%74,y=14+i*17%68;
+        context.fillStyle=i%3?'#eafbd2':'#ffe5b5';
+        context.globalAlpha=.3+.1*(i%4);
+        context.beginPath();context.arc(x,y,i%4===0?1.6:.8,0,Math.PI*2);context.fill();
+      }
+      context.globalAlpha=1;
+      context.save();context.translate(51,79);context.scale(2.05,2.05);
+      drawWorldSprite(context,name,.16,'idle');
+      context.restore();
+    }else{
+      context.imageSmoothingEnabled=false;
+      context.fillStyle='#203c55';context.fillRect(0,0,56,56);
+      const i=kinds.indexOf(name);
+      context.drawImage(sheet,i*sw*frames,0,sw,sh,2,0,52,56);
+    }
     return [name,canvas.toDataURL()];
   }));
   const foodColors={berry:['#ff91c2','#bc427d'],star:['#fff5b5','#d3a755'],nectar:['#a2fff0','#5ba9cd'],honey:['#ffd187','#d17f55'],marshmallow:['#ecdaff','#a197de']};
