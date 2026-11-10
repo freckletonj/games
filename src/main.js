@@ -177,7 +177,7 @@ WW.main = (() => {
   function idle(now){
     ctx.setTransform(3,0,0,3,0,0);
     if(WW.scenery.background(ctx,'meadow',0)){
-      for(let x=0;x<480;x+=16)WW.scenery.tile(ctx,'meadow','ground',x,244,x, true);
+      for(let x=0;x<480;x+=16)WW.scenery.tile(ctx,'meadow','ground',x,244,x,{n:false,e:x<464,w:x>0,s:true},now*.001);
       WW.art.draw(ctx,'springaroo',85,244,Math.floor(now/300)%4,false,null,{action:'run',time:now*.001});
       WW.art.draw(ctx,'hero',235,244,Math.floor(now/300)%4,false,null,{action:'idle',time:now*.001});
       return;

@@ -29,6 +29,12 @@ WW.games.animals = (() => {
       coast:{sky:['#236b9b','#69b6d7','#72e7db','#fcebbd'],mountains:['#87cfdf','#44a9cc','#2d72a3'],tree:['#2a7393','#3ba3b5','#81e5e1'],soil:['#325477','#387c9f','#598bac'],grass:['#8ad9c3','#4eb1a9']},
       summit:{sky:['#192859','#684caa','#d284cc','#e8b5f7'],mountains:['#7776c4','#6760aa','#424b8c'],tree:['#465b97','#7b7ec4','#c9aef0'],soil:['#4e4779','#66629b','#8178ac'],grass:['#a6a5f4','#827cce']}}[chapter.biome]||null;
     const tint=terrainTint||{sky:['#5e4fa8','#a078da','#7cdbd5','#fff0a9'],mountains:['#a69eda','#6bb0cb','#368a93'],tree:['#2b6484','#499aa2','#6be1aa'],soil:['#634a74','#795781','#8e6484'],grass:['#68cf8d','#378e80']};
+    // Precompute eight-neighbor autotile relationships once per immutable level.
+    const terrainNeighbors = map.map((row, y) => row.map((kind, x) => {
+      const same = (dx, dy) => map[y + dy]?.[x + dx] === kind;
+      return {n:same(0,-1),ne:same(1,-1),e:same(1,0),se:same(1,1),
+        s:same(0,1),sw:same(-1,1),w:same(-1,0),nw:same(-1,-1)};
+    }));
     const at=(x,y)=>map[Math.floor(y/TILE)]?.[Math.floor(x/TILE)]||'empty';
     const solid=(x,y)=>y>=height||x<0||x>=width||at(x,y)==='ground';
     const liquid=(x,y)=>at(x,y)==='water';
@@ -715,7 +721,7 @@ WW.games.animals = (() => {
       for(let y=top;y<bottom;y++)for(let x=left;x<right;x++){
         const t=map[y][x];if(t==='empty')continue;
         const px=x*TILE,py=y*TILE,h=hash(x,y);
-        if(WW.scenery.tile(ctx,chapter.biome,t,px,py,h,y===0||map[y-1][x]!=='ground'))continue;
+        if(WW.scenery.tile(ctx,chapter.biome,t,px,py,h,terrainNeighbors[y][x],time))continue;
         if(t==='ground'){
           box(ctx,px,py,16,16,tint.soil[0]);box(ctx,px,py+4,16,12,tint.soil[h%2?1:2]);
           if(y===0||map[y-1][x]!=='ground'){

@@ -91,3 +91,21 @@ The compiler writes the gameplay JSON, `generated/meadow-01.level.semantic.png` 
 Generated painted sheets are now committed as `src/assets/characters/hero/sheet.png` and `src/assets/characters/springaroo/sheet.png`, each in a 4×2 grid with eight animation frames and explicit foot anchors. Painted terrain is in `src/assets/tiles/meadow/tiles.png` and the background is `src/assets/scenes/meadow/backdrop.webp`. The renderer and `scripts/build.mjs` use these image files directly. Unused vector prototype sheets, backdrop and terrain have been removed; the lantern-tree landmark is the last SVG still used at runtime and needs a painted replacement. New character atlases are discovered automatically from their manifest and PNG on each build, with frame-grid validation. This is a first art integration, not a guarantee of perfectly seamless tiles or frame registration.
 
 The compiled `dist/wonderwood.html` is generated instead of tracked: full-resolution embedded images make it large. Run `node scripts/build.mjs` locally or download the **wonderwood-playable-preview** artifact from the PR's passing GitHub Actions run.
+
+## Seam-aware terrain rendering
+
+The 4×2 Meadow painting is a **source swatch atlas**, not a collection of eight
+interchangeable complete tiles. The runtime samples the *interior* of the painted
+ground, platform and water cells, mirrors neighboring samples at fixed world-grid
+boundaries, then overlays only those cliffs, grass caps, platform ends and
+shorelines that the eight neighboring **semantic** cells expose. This avoids
+repeating a baked waterline down every row, and keeps the interior of long pools
+continuous. Both convex and concave corners are handled. Variants no longer
+randomly substitute incompatible border art.
+
+The semantic PNG still specifies collision, not visual corners. One palette
+pixel (or an N×N block when using --pixels-per-tile) describes one 16-unit
+world tile; edge and corner artwork is derived automatically at runtime. A
+beauty illustration may be used as the background but must not stand in for
+this mask. Browser regression checks compare the painted pixels across two
+adjacent ground and water cells.
