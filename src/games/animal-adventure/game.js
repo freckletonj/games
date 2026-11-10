@@ -644,6 +644,71 @@ WW.games.animals = (() => {
         const px=x*TILE+6,py=y*TILE-2;box(ctx,px,py-4,2,5,'#3e8269');box(ctx,px-2,py-6,6,3,'#f39cc3');box(ctx,px,py-7,2,2,'#ffea9f');
       }
     }
+    function objective(){
+      const seeker=players[0];
+      const remaining=goals.filter(goal=>!shared.keys[goal.kind]);
+      const choices=remaining.map(goal=>{
+        const pending=challenges.find(c=>c.goal===goal.kind&&!c.completed);
+        const gem=items.find(item=>item.kind===goal.kind);
+        if(pending?.type==='sprint')return {
+          x:(pending.active?pending.finish:pending.start)*TILE,y:seeker.y,
+          name:pending.active?'REACH THE FINISH':'FIND THE STARTING ARCH',
+          hint:pending.active?'Keep sprinting!':'Use Prismtail for the crystal speed trial',
+          goal:goal.kind
+        };
+        if(pending?.type==='befriend'){
+          const creature=animals.filter(a=>a.kind===pending.kind&&a.alive).sort((a,b)=>distance(a,seeker)-distance(b,seeker))[0];
+          return {x:creature?.x??gem.x,y:creature?.y??gem.y,
+            name:'BEFRIEND EMBERKITS',
+            hint:`${pending.catches||0}/${pending.count} befriended · offer Honeybombs`,
+            goal:goal.kind};
+        }
+        return {x:gem.x,y:gem.y,name:goal.name.toUpperCase(),hint:goal.hint,goal:goal.kind};
+      });
+      choices.sort((a,b)=>Math.abs(a.x-seeker.x)-Math.abs(b.x-seeker.x));
+      if(choices.length)return choices[0];
+      const gate=items.find(item=>item.kind==='exit');
+      return {x:gate.x,y:gate.y,name:'THE ANCIENT GATE',hint:'All relics found · reach the gate to finish!',goal:'exit'};
+    }
+    function trailGuide(ctx,now){
+      const current=objective(),p=players[0],delta=current.x-p.x;
+      const miles=Math.round(Math.abs(delta)/TILE);
+      const direction=Math.abs(delta)<TILE*2?'HERE':delta>0?'RIGHT':'LEFT';
+      const goalLabel=current.name.length>30?current.name.slice(0,28)+'…':current.name;
+      // A two-line compass replaces the tiny, long-form debug string.
+      box(ctx,9,H-34,311,26,'#102b3ce7');
+      box(ctx,9,H-34,3,26,'#e7cb89');
+      ctx.textAlign='left';ctx.fillStyle='#f5db9d';ctx.font='bold 9px sans-serif';
+      ctx.fillText(`✦ ${goalLabel} · ${direction} ${miles} TILES`,16,H-23,295);
+      ctx.fillStyle='#d4e9df';ctx.font='8px sans-serif';
+      ctx.fillText(current.hint,16,H-12,292);
+      // A compact trail atlas communicates overall chapter scale and explored distance.
+      const left=W-147,top=H-34,bar=119;
+      box(ctx,left,top,138,26,'#102b3ce7');
+      ctx.fillStyle='#e5d9ad';ctx.font='bold 8px sans-serif';
+      ctx.fillText('TRAIL',left+8,top+9);
+      box(ctx,left+8,top+16,bar,3,'#49636b');
+      box(ctx,left+8,top+16,bar*clamp(p.x/width,0,1),3,'#a6dbbd');
+      for(const gem of items.filter(item=>goalKinds.has(item.kind))){
+        const gx=left+8+bar*gem.x/width;
+        box(ctx,gx-1,top+13,3,9,shared.keys[gem.kind]?'#f4d18c':'#7797a0');
+      }
+      for(const player of players){
+        const px=left+8+bar*clamp(player.x/width,0,1);
+        box(ctx,px-2,top+13,5,9,player.id===0?'#ffefd2':'#c9bdff');
+      }
+      // Offscreen arrows anchor navigation without moving the camera or blocking play.
+      if(Math.abs(delta)>W*.42){
+        const right=delta>0,x=right?W-19:19,y=H*.51;
+        ctx.globalAlpha=.6+.4*Math.sin(now*3.4);
+        ctx.fillStyle='#f5da9d';ctx.beginPath();
+        ctx.moveTo(x+(right?7:-7),y);
+        ctx.lineTo(x+(right?-4:4),y-7);
+        ctx.lineTo(x+(right?-4:4),y+7);
+        ctx.closePath();ctx.fill();
+        ctx.globalAlpha=1;
+      }
+    }
     function render(ctx,now){
       ctx.setTransform(3,0,0,3,0,0);
       background(ctx,now);
@@ -710,12 +775,25 @@ WW.games.animals = (() => {
           ctx.fillStyle='#543e65';ctx.font='bold 10px sans-serif';ctx.fillText('!',a.x-1,a.y-61);
           ctx.restore();
         }
-        const wary=a.wary;box(ctx,a.x-13,a.y-49,26,4,'#263f46');box(ctx,a.x-12,a.y-48,24*(wary/100),2,wary>40?'#fa8c82':'#a1eaa2');
-        if(!wary){box(ctx,a.x-2,a.y-52,4,3,'#ff9eb6');box(ctx,a.x-4,a.y-50,8,3,'#ff9eb6');}
-        const chance=Math.round((.12+.86*Math.pow(1-a.wary/100,1.55))*100);
-        ctx.fillStyle='#f4fbef';ctx.font='bold 7px sans-serif';
-        ctx.fillText(titles[a.kind],a.x-17,a.y-59);
-        if(a.wary<100){ctx.fillStyle='#fceab0';ctx.fillText(`Catch ${chance}%`,a.x-17,a.y-51);}
+        const near=players.some(p=>!p.sleep&&Math.abs(p.x-a.x)<115&&Math.abs(p.y-a.y)<82);
+        if(near){
+          const ready=a.wary<=BOND_THRESHOLD;
+          box(ctx,a.x-15,a.y-49,30,4,'#193c4a');
+          box(ctx,a.x-14,a.y-48,28*(1-a.wary/100),2,ready?'#f8d990':'#99e5c3');
+          ctx.fillStyle=ready?'#ffe5a4':'#f6f5e8';
+          ctx.font='bold 8px sans-serif';
+          ctx.fillText(titles[a.kind],a.x-18,a.y-60);
+          ctx.font='bold 7px sans-serif';
+          if(ready){
+            ctx.fillText('♥ READY · G',a.x-18,a.y-52);
+            ctx.globalAlpha=.35+.2*Math.sin(now*5);
+            ctx.strokeStyle='#e6f4ac';ctx.lineWidth=1.2;ctx.beginPath();
+            ctx.ellipse(a.x,a.y-18,22,26,0,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+          }else{
+            ctx.fillStyle='#deefcc';
+            ctx.fillText('♥ '+FOOD[FORM[a.kind].favorite].name,a.x-18,a.y-52);
+          }
+        }
       });
       projectiles.forEach(pr=>{
         const color=pr.kind==='food'?FOOD[pr.food].color:({orb:'#d8bcff',feather:'#f7eec7',bubble:'#9fe4fa',thorn:'#f5ae7a',gust:'#c4f4ff',spark:'#ffcbb9',seed:'#b4eb98',starlight:'#edc9ff',ember:'#ffb675'}[pr.kind]||'#ffffff');
@@ -752,18 +830,10 @@ WW.games.animals = (() => {
       ctx.fillStyle=edge;ctx.fillRect(0,0,W,H);
       const race=challenges.find(c=>c.type==='sprint'&&c.active);
       if(race){box(ctx,140,32,200,20,'#203252d5');ctx.font='bold 12px sans-serif';ctx.fillStyle='#ffebb9';ctx.fillText(`CRYSTAL DASH: ${race.time.toFixed(1)}s`,164,46);}
-      const next=goals.find(g=>!shared.keys[g.kind]);
-      if(next){
-        const target=items.find(it=>it.kind===next.kind);
-        const distanceTiles=Math.round(Math.abs(target.x-players[0].x)/TILE);
-        const direction=target.x>players[0].x?'→':'←';
-        const guidance=distanceTiles>20?`${next.name.toUpperCase()} ${direction} ${distanceTiles} tiles · Seek ${titles[next.form]||'clues'}`:`${next.name.toUpperCase()} · ${next.hint}`;
-        box(ctx,12,H-20,455,14,'#14243cbe');ctx.font='bold 8px sans-serif';ctx.fillStyle='#fff3c6';
-        ctx.fillText(guidance,19,H-11,W-35);
-      } 
+      trailGuide(ctx,now);
     }
     hud.hidden=false;callout.hidden=true;say(`${chapter.name} · ${chapter.intro}`,4200);
-    return {update,render,recallParty,recallCheckpoint(){recallParty(shared.checkpoint);},stop(){hud.hidden=true;callout.hidden=true;message.classList.remove('show');},get state(){return {chapter,goals,challenges,players,shared,animals,items,projectiles,cameraX,cameraY,physics:PHYSICS,jumpHeight}}};
+    return {update,render,recallParty,recallCheckpoint(){recallParty(shared.checkpoint);},stop(){hud.hidden=true;callout.hidden=true;message.classList.remove('show');},get state(){return {chapter,goals,challenges,players,shared,animals,items,projectiles,cameraX,cameraY,objective:objective(),physics:PHYSICS,jumpHeight}}};
   }
   return {start};
 })();
