@@ -307,6 +307,7 @@ WW.art = (() => {
     ctx.save();ctx.translate(Math.round(x),Math.round(y+bounce));
     if(flip)ctx.scale(-1,1);
     ctx.transform(squash,0,lean,stretch,0,0);
+    if(!snack)ctx.scale(explorer?.91:.82,explorer?.91:.82);
     ctx.imageSmoothingEnabled=false;
     const spriteFrame=(Math.floor(frame)%frames+frames)%frames;
     if(name==='snack')ctx.drawImage(sheet,index*sw*frames+spriteFrame*sw,0,sw,sh,-w/2,-h,w,h);
