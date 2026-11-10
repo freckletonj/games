@@ -17,6 +17,7 @@ with sync_playwright() as playwright:
     errors = []
     page.on('pageerror', lambda error: errors.append(str(error)))
     page.set_content(source, wait_until='domcontentloaded')
+    page.screenshot(path=str(html.parent / 'preview-home.png'))
     print('BOOT DIAGNOSTIC:', errors, page.locator('h1').all_inner_texts(), page.locator('body').inner_text()[:250])
     assert page.locator('h1').count()==1 and page.locator('h1').inner_text()=='WONDERWOOD',errors
     page.get_by_role('button', name='CHOOSE A LEVEL').click()
@@ -35,6 +36,7 @@ with sync_playwright() as playwright:
         assert page.evaluate('WW.worlds.summary[WW.main.game.state.chapter.id].width') == size
         assert page.locator('#hud').bounding_box()['height'] < 65
         page.evaluate('WW.main.game.render(document.querySelector("#game").getContext("2d"), 3)')
+        page.screenshot(path=str(html.parent / ("preview-"+["meadow","coast","summit"][i]+".png")))
         page.keyboard.press('Escape')
         page.get_by_role('button', name='Main menu').click()
         page.get_by_role('button', name='CHOOSE A LEVEL').click()
