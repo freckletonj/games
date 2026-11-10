@@ -70,41 +70,36 @@ WW.games.animals = (() => {
     function particles(x,y,color,count=9){for(let i=0;i<count;i++)effects.push({x,y,vx:(Math.random()-.5)*3.8,vy:(Math.random()-.7)*3.3,color,time:.55+Math.random()*.6});}
     function throwThing(player,kind){
       if(player.actionCD>0||player.sleep)return;
-      if(kind==='orb'){WW.audio.play('orb');
-        projectiles.push({kind,owner:player.id,x:player.x+player.face*10,y:player.y-12,vx:player.face*5.4,vy:-.45,ttl:1.25});
-        player.actionCD=.45;
+      if(kind==='orb'){
+        WW.audio.play('orb');
+        projectiles.push({kind:'orb',owner:player.id,x:player.x+player.face*12,y:player.y-15,
+          vx:player.face*6.1,vy:-.35,ttl:1.2,age:0});
+        player.actionCD=.33;
         return;
       }
       const choice=FOODS[player.selectedFood],food=FOOD[choice];
-      if(shared.foods[choice]<=0){say(`Out of ${food.name}! Try another treat or find a snack bush.`);return;}
-      shared.foods[choice]--;WW.audio.play('food');
-      player.actionCD=food.method==='spray'?.48:.3;
-      if(food.method==='spray'){
-        let touched=0;
-        for(const a of animals)if(a.alive&&Math.abs(player.x-a.x)<74&&Math.abs(player.y-10-(a.y-10))<38&&player.face*(a.x-player.x)>-8){
-          charm(a,food.affection,choice,player.id);touched++;
-        }
-        for(let i=0;i<16;i++)effects.push({x:player.x+player.face*10,y:player.y-14,vx:player.face*(1+Math.random()*3),vy:(Math.random()-.5)*2,color:'#85fbe7',time:.45});
-        if(!touched)say('Nectar mist sparkles ahead. Try near a creature!',1100);
-        WW.input.rumble(player.id,.18,90);
-        return;
-      }
-      projectiles.push({kind:'food',food:choice,owner:player.id,x:player.x+player.face*10,y:player.y-11,
-        vx:player.face*food.speed,vy:food.method==='straight'?-0.2:food.method==='float'?-2.3:-2.0,
-        ttl:food.method==='float'?2.5:1.7,age:0,hit:[]});
+      if(!shared.foods[choice]){say('Your basket is empty. Look for a picnic basket.',1800);return;}
+      shared.foods[choice]--;WW.audio.play('food');player.actionCD=.28;
+      projectiles.push({kind:'food',food:choice,owner:player.id,
+        x:player.x+player.face*11,y:player.y-14,vx:player.face*food.speed,vy:-2.5,
+        ttl:4,age:0});
     }
-    function charm(a,amount,food,owner){
-      const favorite=FORM[a.kind].favorite;
-      const wasReady=a.wary<=BOND_THRESHOLD;
-      const boost=food===favorite?1.7:1;
-      a.wary=Math.max(0,a.wary-amount*boost);
-      a.attackCD=Math.max(a.attackCD,.55);
-      particles(a.x,a.y-14,FOOD[food].color,food===favorite?16:10);
-      if(!wasReady&&a.wary<=BOND_THRESHOLD){
-        say(`${titles[a.kind]} trusts you! Aim a capture orb (G / X) to borrow its power.`,1900);
+    function placeFood(pr){
+      const heightAt=liquid(pr.x,pr.y)?Math.floor(pr.y/TILE)*TILE:pr.y;
+      lures.push({x:pr.x,y:heightAt,food:pr.food,age:0,ttl:24,used:false});
+      particles(pr.x,heightAt-2,FOOD[pr.food].color,6);
+    }
+    function eatFood(animal,lure){
+      lure.used=true;animal.eating=.8;
+      const favorite=CREATURE[animal.kind].favorite===lure.food;
+      animal.trust=Math.min(TRUST_TARGET,animal.trust+(favorite?60:36));
+      WW.audio.play('munch');
+      particles(animal.x,animal.y-17,FOOD[lure.food].color,9);
+      if(animal.trust>=TRUST_TARGET&&CREATURE[animal.kind].capturable){
+        animal.distractedUntil=clock+DISTRACTION_SECONDS;
         WW.audio.play('ready');
-      } else if(food===favorite){
-        say(`${titles[a.kind]} loves ${FOOD[food].name}! Keep building trust.`,1350);
+        particles(animal.x,animal.y-19,'#ffeab3',20);
+        say(titles[animal.kind]+' is happily distracted! Throw an orb before it looks up.',2500);
       }
     }
     function recallParty(destination=spawn){WW.audio.play('recall');
@@ -112,12 +107,20 @@ WW.games.animals = (() => {
         if(p.sleep){p.sleep=false;p.health=3;}p.invincible=2;particles(p.x,p.y-10,'#b9f6ff',24);});
       cameraX=0;cameraY=0;WW.input.reset();say('Camp portal! Your relics, snacks and transformation time are safe.',2800);
     }
-    function hitPlayer(player){
+    function hitPlayer(player,sourceX=player.x-player.face*20){
       if(player.invincible>0||player.sleep||shared.won)return;
-      player.health--;WW.audio.play('hit');player.invincible=1.5;shake=6; WW.input.rumble(player.id,.95,220);particles(player.x,player.y-10,'#ffb8a4',10);
-      if(player.health===0){WW.audio.play('sleep');player.sleep=true;player.vx=0;say(player.id===0?'You fainted! Press Revive to wake up.':'A friend fainted! Move close and press Revive.',3000);}
+      player.health--;WW.audio.play('hit');player.invincible=1.2;
+      player.hurt=.23;player.grounded=false;
+      player.vx=sourceX<player.x?3.3:-3.3;
+      player.vy=-3.6;shake=6;
+      WW.input.rumble(player.id,.78,180);
+      particles(player.x,player.y-14,'#ffb8a4',15);
+      if(player.health<=0){
+        WW.audio.play('sleep');player.sleep=true;player.vx=0;
+        say('A little rest! Press Revive to return to your last safe spot.',2600);
+      }
     }
-    function revive(player,by){WW.audio.play('revive');player.sleep=false;player.health=3;player.invincible=2;player.vy=-2;player.waterTime=0;player.x=player.lastSafe.x;player.y=player.lastSafe.y;particles(player.x,player.y-10,'#aafae3',14); WW.input.rumble(by.id,.45,180);say('Back on your feet!');}
+    function revive(player,by){WW.audio.play('revive');player.sleep=false;player.hurt=0;player.health=3;player.invincible=2;player.vy=-2;player.waterTime=0;player.x=player.lastSafe.x;player.y=player.lastSafe.y;particles(player.x,player.y-10,'#aafae3',14); WW.input.rumble(by.id,.45,180);say('Back on your feet!');}
     function movePlayer(p,controls,dt){
       const step=dt*60;
       if(p.sleep){
@@ -127,18 +130,19 @@ WW.games.animals = (() => {
       }
       p.invincible=Math.max(0,p.invincible-dt);
       p.actionCD=Math.max(0,p.actionCD-dt);
+      p.hurt=Math.max(0,p.hurt-dt);
       p.previousX=p.x;
       const direction=Number(controls.right)-Number(controls.left);
       if(direction)p.face=direction;
       const swimming=p.form==='tideling' && (liquid(p.x,p.y-8)||liquid(p.x,p.y+2));
       const flying=p.form==='skyling';
-      const run=p.form==='prismtail'?4.0:p.form==='springaroo'?2.6:swimming?2.45:PHYSICS.run;
+      const run=p.form==='springaroo'?2.65:swimming?2.55:PHYSICS.run;
       const water=liquid(p.x,p.y-9)||liquid(p.x,p.y-1);
       // Acceleration gives movement weight without sacrificing the sprint trial.
       const targetSpeed=direction*run*(water&&!swimming?.42:1);
       const traction=direction?(p.grounded?.52:.34):(p.grounded?.65:.32);
-      p.vx+=clamp(targetSpeed-p.vx,-traction*step,traction*step);
-      if(!direction&&Math.abs(p.vx)<.08)p.vx=0;
+      if(!p.hurt)p.vx+=clamp(targetSpeed-p.vx,-traction*step,traction*step);
+      if(!direction&&!p.hurt&&Math.abs(p.vx)<.08)p.vx=0;
       if(swimming){
         p.vy=(Number(controls.down)-Number(controls.jump))*2.45;
         p.coyote=0;p.jumpBuffer=0;p.jumpsUsed=0;
@@ -157,12 +161,7 @@ WW.games.animals = (() => {
         // Releasing early makes a short hop; holding yields full jump height.
         if(controls.released.jump&&p.vy< -1&&!flying)p.vy*=.56;
         if(flying && controls.jump) p.vy=Math.max(-2.95,p.vy-.52*step);
-        if(p.form==='cloudwhisp'&&controls.jump&&p.vy>0)p.vy=Math.min(p.vy,.78);
-        // Starfall thermals lift gliding creatures; other forms cross without being carried.
-        if(p.form==='cloudwhisp'&&(at(p.x,p.y-12)==='thermal'||at(p.x,p.y-25)==='thermal')){
-          p.vy=Math.max(-2.7,p.vy-.45*step);
-          if(Math.floor(clock*8)!==Math.floor((clock-dt)*8))particles(p.x,p.y-15,'#b8f9ff',3);
-        }
+
         p.vy=Math.min(PHYSICS.maxFall,p.vy+PHYSICS.gravity*step);
       }
       let nx=p.x+p.vx*step;
@@ -209,30 +208,17 @@ WW.games.animals = (() => {
       if(controls.pressed.snack)throwThing(p,'food');
       if(controls.pressed.orb)throwThing(p,'orb');
       if(controls.pressed.foodCycle){p.selectedFood=(p.selectedFood+1)%FOODS.length;const food=FOODS[p.selectedFood];say(`P${p.id+1}: ${FOOD[food].name} · ${shared.foods[food]} left`,1350);}
-      if(controls.pressed.cycle){p.selected=(p.selected+1)%TYPES.length;const type=TYPES[p.selected];say(`P${p.id+1}: ${titles[type]} · ${Math.ceil(p.energy[type])}s stored · ${FORM[type].power}`,1450);}
+      if(controls.pressed.cycle){p.selected=(p.selected+1)%TYPES.length;const type=TYPES[p.selected];say(`${titles[type]} · ${p.unlocked[type]?'Ready to transform':'Find and befriend one first'}`,1400);}
       if(controls.pressed.transform){
         const type=TYPES[p.selected];
-        if(p.form===type){p.form=null;callout.hidden=true;say(`P${p.id+1}: Returned to explorer. Remaining magic saved!`,1450);}
-        else if(p.energy[type]>.02){p.form=type;WW.audio.play('morph');WW.input.rumble(p.id,.35,180);particles(p.x,p.y-10,FORM[type].color,24);
-          showAbility(p);say(`P${p.id+1} becomes ${titles[type]}! ${FORM[type].power}.`,1700);}
-        else say(`P${p.id+1}: Befriend a ${titles[type]} to earn transformation time.`,1500);
-      }
-      if(p.form){
-        p.energy[p.form]=Math.max(0,p.energy[p.form]-dt);
-        if(p.energy[p.form]<=0){p.form=null;callout.hidden=true;particles(p.x,p.y-9,'#ffffff',15);say(`P${p.id+1}: Time's up! Catch another creature.`,1850);
-          if(nowWater){const safe=liquid(p.lastSafe.x,p.lastSafe.y-9)?spawn:p.lastSafe;p.x=safe.x;p.y=safe.y;p.vy=0;p.invincible=1;}
-        }
-      }
-      if(p.form==='glimmermoth' && Math.floor(clock*5)!==Math.floor((clock-dt)*5)){
-        for(const a of animals)if(a.alive&&a.wary>0&&distance(p,a)<76){a.wary=Math.max(0,a.wary-2.7);a.attackCD=Math.max(a.attackCD,.3);particles(a.x,a.y-14,'#f2b8ff',2);}
-      }
-      if(p.form==='emberkit'&&controls.pressed.down&&p.grounded&&p.actionCD<=0){
-        for(const a of animals)if(a.alive&&distance(p,a)<90){a.wary=Math.max(0,a.wary-27);particles(a.x,a.y-14,'#ffc28b',15);}
-        p.actionCD=2.2;WW.input.rumble(p.id,.3,120);say('Emberkit released a warmth wave!',1350);
+        if(p.form===type){p.form=null;callout.hidden=true;say('Back to explorer form.',1200);}
+        else if(p.unlocked[type]){p.form=type;WW.audio.play('morph');WW.input.rumble(p.id,.35,180);particles(p.x,p.y-10,FORM[type].color,24);
+          showAbility(p);say(`${titles[type]} power! ${FORM[type].power}.`,1700);}
+        else say(`Leave ${FOOD[FORM[type].favorite].name} for a ${titles[type]} to befriend one.`,1750);
       }
       if(controls.pressed.recall)recallParty();
       if(controls.pressed.revive)for(const other of players)if(other!==p&&other.sleep&&distance(other,p)<48)revive(other,p);
-      p.frame+=Math.abs(p.vx)*dt*6;
+      p.frame+=dt*(p.grounded?Math.abs(p.vx)*5+1:7);
     }
     function targetFor(animal){return players.filter(p=>!p.sleep).sort((a,b)=>distance(a,animal)-distance(b,animal))[0];}
     function fireAnimalAttack(a,target){
