@@ -334,7 +334,6 @@ WW.games.animals = (() => {
         players[owner].energy[animal.kind]+=FORM[animal.kind].seconds;players[owner].selected=TYPES.indexOf(animal.kind);
         particles(animal.x,animal.y-8,FORM[animal.kind].color,28);
         WW.input.rumble(owner,.55,290);say(`P${owner+1} befriended ${titles[animal.kind]}! +${FORM[animal.kind].seconds}s of ${FORM[animal.kind].power.toLowerCase()}. Press Transform!`,2800);
-      }
     }
     function updateProjectiles(dt){
       for(let i=projectiles.length-1;i>=0;i--){
