@@ -2,8 +2,8 @@ window.WW = window.WW || {};
 WW.main = (() => {
   const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
   const menu=document.getElementById('menu');const hud=document.getElementById('hud');
-  let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,pixelsPerTile=1,menuPadLatch='';
-  const builtinMap=window.WONDERWOOD_MAP.startsWith('data:')?window.WONDERWOOD_MAP:'src/games/animal-adventure/levels/first-forest.png';
+  let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,pixelsPerTile=1,menuPadLatch='',currentChapterIndex=0;
+  const builtinMaps=window.WONDERWOOD_LEVELS;
   const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel">${content}</section>`;menu.querySelector('button')?.focus({preventScroll:true});};
   const button=(id,label,kind='secondary')=>`<button class="${kind}" data-action="${id}">${label}</button>`;
   function home(){
@@ -12,20 +12,28 @@ WW.main = (() => {
     panel(`<div class="kicker">The enchanted forest is calling</div><h1>WONDERWOOD</h1>
       <h2>Be kind. Be brave. Become magical.</h2>
       <div class="menu-portraits">${portraits}</div>
-      <p>Eight whimsical creatures, five magical snacks and three ancient gems. Win creatures over, catch them, transform into them and use their powers to solve the forest's secrets. You can switch forms and save their remaining time!</p>
-      <div class="buttons">${button('play','▶ PLAY FIRST FOREST','primary')}${button('journal','✦ Creature guide')}${button('settings','⚙ Settings')}${button('calibrate','🎮 Controller setup')}${button('level','▧ Load PNG map')}</div>
+      <p>Three enormous regions, eight magical creatures, five snacks and secret trails. Win creatures over, catch them, transform into them and use their powers to solve the forest's secrets. You can switch forms and save their remaining time!</p>
+      <div class="buttons">${button('play','▶ PLAY FIRST FOREST','primary')}${button('chapters','✦ CHOOSE A LEVEL')}${button('journal','✦ Creature guide')}${button('settings','⚙ Settings')}${button('calibrate','🎮 Controller setup')}${button('level','▧ Load PNG map')}</div>
       <div class="instructions"><b>Keyboard P1:</b> A / D move · W jump · F food · E change food · G catch orb · Q choose form · T transform · R wake · C back to camp<br>
       <b>Keyboard P2:</b> J / L move · I jump · O food · M change food · P catch orb · H choose form · U transform · Y wake · N back to camp<br>
       <b>Menu:</b> Arrow keys + Enter, or Tab + Enter · Escape pauses · All gems auto-collect on contact</div>
-      <div class="hint">${customMap?'Custom map selected.':'First Forest · three gems · unlimited homeward spell'} &nbsp; · &nbsp; ${WW.input.pads().length} controller(s) detected</div>`);
+      <div class="hint">${customMap?'Custom map selected.':'3 chapters · independent quests · unlimited homeward spell'} &nbsp; · &nbsp; ${WW.input.pads().length} controller(s) detected</div>`);
   }
-  async function play() {
-    const url=customMap||builtinMap;
+  function chapters(){
+    screen='chapters';
+    const cards=WW.chapters.map((c,i)=>`<div class="chapter-card ${c.biome}"><div class="chapter-number">CHAPTER ${i+1} · ${c.difficulty}</div><h2>${c.name}</h2><p>${c.tagline}</p><div class="chapter-stats">${c.goals.length} relics · ${[260,296,320][i]} tiles · ${Object.hasOwn(WW.storage.data.progress.chapters||{},c.id)?'✓ Completed':'New adventure'}</div>${button('stage-'+i,'Explore '+c.name,i===currentChapterIndex?'primary':'secondary')}</div>`).join('');
+    panel(`<div class="kicker">The Wonderwood Atlas</div><h1>CHOOSE YOUR TRAIL</h1><p>Every chapter has a new landscape, different puzzles and magical neighbors. Play in any order.</p><div class="chapter-grid">${cards}</div><div class="buttons">${button('home','Back')}</div>`);
+  }
+  async function play(index=currentChapterIndex) {
+    currentChapterIndex=index;
+    const chapter=customMap?null:WW.chapters[index];
+    const url=customMap||builtinMaps[chapter.id];
     if(game){game.stop();game=null;}
     paused=true;screen='loading';
     panel('<div class="kicker">Unfolding the forest map</div><h2>Loading adventure…</h2>');
     try{
-      const level=await WW.levels.load(url,pixelsPerTile);
+      const level=await WW.levels.load(url,customMap?pixelsPerTile:1);
+      level.chapter=chapter;
       if(level.warnings.some(w=>w.startsWith('No ')))throw Error(level.warnings.join(' · '));
       WW.input.reset();game=WW.games.animals.start(level);menu.hidden=true;paused=false;screen='playing';last=0;
       if(level.warnings.length)game && console.warn('Level warnings:',level.warnings);
@@ -66,24 +74,33 @@ WW.main = (() => {
   }
   function journal(){
     screen='journal';
-    const creatures=Object.entries(WW.catalog.forms).map(([kind,c])=>`<div class="journal-card"><img src="${WW.art.portrait(kind)}" alt=""><div><b>${c.name}</b><small>${c.power} · ${c.seconds}s per catch<br>Loves ${WW.catalog.foods[c.favorite].name}</small></div></div>`).join('');
+    const temperaments={springaroo:'Playful hopper',skyling:'Swooping aerial hunter',tideling:'Quick bubble-shooter',cloudwhisp:'Orbiting wind caster',prismtail:'Telegraphed lightning dash',mossback:'Territorial sentinel',glimmermoth:'Shy and evasive',emberkit:'Stalking pouncer'};
+    const creatures=Object.entries(WW.catalog.forms).map(([kind,c])=>`<div class="journal-card"><img src="${WW.art.portrait(kind)}" alt=""><div><b>${c.name}</b><small>${c.power} · ${c.seconds}s per catch<br>${temperaments[kind]} · Loves ${WW.catalog.foods[c.favorite].name}</small></div></div>`).join('');
     const foods=Object.entries(WW.catalog.foods).map(([kind,c])=>`<span class="food-guide"><img src="${WW.art.foodIcon(kind)}" alt="">${c.name} <small>(${c.method})</small></span>`).join('');
     panel(`<div class="kicker">Forest field guide</div><h2>Meet the magical neighbors</h2><p>Every catch gives the catching player more time in that form. Transform again to switch or return to explorer; unused time is always saved.</p>
       <div class="journal-grid">${creatures}</div><h3>Picnic powers</h3><div class="guide-foods">${foods}</div><p>Favorite snacks calm creatures faster. Nectar mist reaches several nearby creatures; honeybombs charm groups in a splash.</p>
       <div class="buttons">${button('home','Back to menu','primary')}</div>`);
   }
-  function pause(){if(!game||screen!=='playing')return;paused=true;screen='paused';panel(`<div class="kicker">Adventure on hold</div><h2>Paused</h2><p>Snack time? Your forest friends will still be here.</p><div class="buttons">${button('resume','Resume','primary')}${button('camp','Return everyone to camp')}${button('restart','Restart level')}${button('home','Main menu')}</div>`);}
-  function win(wins,shards=0,total=0){paused=true;screen='won';panel(`<div class="kicker">A forest full of friends</div><h1>YOU DID IT!</h1><h2>You gathered all three gems. The enchanted gate is open!</h2><p>Your teamwork saved the day. Bonus star shards: ${shards}/${total}. Adventures completed: ${wins}. The animals are already getting up to more mischief.</p><div class="buttons">${button('restart','Play again','primary')}${button('home','Arcade menu')}</div>`);}
+  function pause(){if(!game||screen!=='playing')return;paused=true;screen='paused';panel(`<div class="kicker">Adventure on hold</div><h2>Paused</h2><p>Snack time? Your forest friends will still be here.</p><div class="buttons">${button('resume','Resume','primary')}${button('camp','Return everyone to camp')}${button('checkpoint','Warp to last checkpoint')}${button('restart','Restart level')}${button('home','Main menu')}</div>`);}
+  function win(wins,shards=0,total=0){
+    paused=true;screen='won';const chapter=customMap?null:WW.chapters[currentChapterIndex];
+    const next=chapter&&currentChapterIndex<WW.chapters.length-1;
+    panel(`<div class="kicker">Chapter complete · ${chapter?.name||'Custom adventure'}</div><h1>YOU DID IT!</h1><h2>The ancient gate has awakened!</h2><p>You collected ${chapter?.goals.length||'all'} magical relics and ${shards}/${total} secret stars. The forest remembers your teamwork. Completed adventures: ${wins}.</p><div class="buttons">${next?button('next','▶ Next: '+WW.chapters[currentChapterIndex+1].name,'primary'):''}${button('restart','Replay chapter')}${button('chapters','Chapter select')}${button('home','Arcade menu')}</div>`);
+  }
   menu.addEventListener('click',async e=>{
     const id=e.target.closest('button')?.dataset.action;
     if(!id)return;
     if(id==='play'||id==='restart')await play();
+    if(id==='chapters')chapters();
+    if(id==='next'){customMap=null;await play(currentChapterIndex+1);}
+    if(id.startsWith('stage-')){customMap=null;await play(Number(id.slice(6)));}
     if(id==='home')home();
     if(id==='settings')settings();
     if(id==='journal')journal();
     if(id==='calibrate')calibration();
     if(id==='level')level();
     if(id==='camp'&&screen==='paused'){game.recallParty();paused=false;screen='playing';menu.hidden=true;last=0;}
+    if(id==='checkpoint'&&screen==='paused'){game.recallCheckpoint();paused=false;screen='playing';menu.hidden=true;last=0;}
     if(id==='resume'&&screen==='paused'){paused=false;screen='playing';menu.hidden=true;WW.input.reset();last=0;}
     if(id==='save-settings'){WW.storage.data.settings.players=Number(document.getElementById('players').value);WW.storage.data.settings.rumble=document.getElementById('rumble').checked;WW.storage.data.settings.sound=document.getElementById('sound').checked;WW.storage.save();home();}
     if(id==='export')WW.storage.exportSave();

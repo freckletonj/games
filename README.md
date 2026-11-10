@@ -1,112 +1,97 @@
-# Wonderwood — family-friendly magical creature adventure
+# Wonderwood — Magical Adventure Arcade
 
-**Version 3: playable forest build.** A two-player, offline 2D platformer about charming magical animals, catching them, and borrowing their abilities to solve puzzles. One HTML file contains the complete game, assets, and map. No npm packages, CDN, Python server, or network access needed to play.
+A two-player-capable, **single-file offline** magical animal platformer. Befriend imaginative creatures with treats, capture their one-player-owned transformation time, and use their powers to solve puzzles across **three large playable chapters**. Eight species have distinct behaviors. The game defaults to **solo** so an idle second player never holds back exploration.
 
-## Play
+## Play it
 
-Open **`dist/wonderwood.html`** in Firefox or another browser. Use arrow keys + Enter on menus. Click **PLAY FIRST FOREST** or select it with the keyboard. To rebuild after editing the source, install Node.js 20+ and run:
+Open [`dist/wonderwood.html`](dist/wonderwood.html) in Firefox or Chromium. **No server, Node, downloads or internet connection are required to play the release file.** Select **Choose a Level** from the first menu; all three chapters are immediately accessible. You can complete one and continue to the next from its victory screen. Each completed chapter is tracked in the browser's save.
+
+To rebuild after editing source (Node.js 20+):
 
 ```sh
 node scripts/build.mjs
 ```
 
-The output is a standalone **1440×810 pixel-art canvas** bundled as `dist/wonderwood.html`. Source sprite frames are 64×80 pixels with original illustrated fantasy creature designs. Visual layers include moonlit skies, enchanted trees, lanterns, flowerbeds, glowing gems, particle effects and parallax. SFX are synthesized locally by the Web Audio API.
+The output is a single bundled 1440×810 HTML canvas adventure containing the pixel artwork, sounds, JS and all three lossless semantic PNG maps. No npm dependencies or external requests. If browser storage is unstable for `file://` pages, open the file from a constant local address instead, or **Export Save** before moving it.
 
-The first forest is a single 120×25 semantic pixel map, with three mandatory gems and eight optional star shards. Collecting all three opens the gate; star shards reward extra Stardrop snacks and a record of your collection, but are never required to finish.
+## Three chapters, different challenges
+
+| Level | Map size | Adventure |
+| --- | --- | --- |
+| **Mosslight Meadow** | **260×42 tiles** | Learn the three core creature powers: **Springaroo double jump** for the Canopy Gem, **Moonwing flight** for the Moon Gem, **Tidefox diving** for the River Gem |
+| **Crystal Coast** | **296×44 tiles** | Cross the luminous reefs. Win a **2.6-second Prismtail speed trial**, survive the crystal sentinels, and dive for the Pearl Gem |
+| **Starfall Summit** | **320×46 tiles** | Reach the Zephyr Gem via **Cloudwhisp thermals**, befriend **two Emberkits** to awaken the Hearth Gem, then fly to the upper Aurora Gem |
+
+Every chapter contains varied terrain, stepped and floating one-way ledges, water hazards, magical creature spawns, signposted areas, repeatable snack baskets, checkpoints, and hidden star shards. The mission objective and remaining shards appear discreetly in the compact upper-right HUD. A small prompt identifies the next relic. There is no penalty for revisiting an area.
+
+**No soft locks:** creature spawns, food, and catch orbs are replenishable. Gems stay collected even after a transformation expires. `C` (P1) or `N` (P2) returns your party to the beginning without losing anything. **Escape → Warp to last checkpoint** skips replaying a long route. Fainted players sleep on solid ground and can wake themselves instantly.
 
 ## Controls
 
 | Action | Player 1 | Player 2 | Standard controller |
 | --- | --- | --- | --- |
-| Move | A / D | J / L | D-pad or left stick |
-| Jump / swim up / fly | W or Space | I | A / Cross |
-| Swim down | S | K | Stick down |
-| Throw selected food | F | O | B / Circle |
-| Change food type | E | M | Right trigger |
-| Throw catch orb | G | P | X / Square |
-| Choose creature | Q | H | Right shoulder |
-| Switch to selected creature / return to explorer | T | U | Y / Triangle |
+| Move | A / D | J / L | Left stick or D-pad |
+| Jump / fly / swim up | W / Space | I | South / A button |
+| Swim down / use Emberkit warmth | S | K | Stick down |
+| Throw selected treat | F | O | East / B button |
+| Change treat | E | M | Right trigger |
+| Throw capture orb | G | P | West / X button |
+| Cycle selected creature | Q | H | Right shoulder |
+| Transform / switch back | T | U | North / Y button |
 | Wake / revive | R | Y | Left shoulder |
-| **Return party to camp (never loses progress)** | **C** | **N** | Back / Select |
+| Return everyone to camp | C | N | Back / Select |
 | Pause / menu | Escape | Escape | Keyboard Escape |
 
-All eight captured forms appear as character portraits in each player's HUD. The highlighted portrait is the one selected for transformation; active forms have a different highlight. Press T or U to transform, switch to another unlocked creature, or toggle back to explorer. **Time remaining is saved separately for each player and creature** whenever that creature isn't active. Capturing more of the same kind adds more time to its bank.
+Menus work with arrow keys + Enter, mouse or standard gamepad. The built-in **Controller Setup** reads arbitrary USB button/axis layouts and stores the mappings. Gamepad vibration is sent when supported by the browser, controller and driver.
 
-The keyboard menu is fully operable with arrows and Enter, and connected standard controllers can navigate it with a D-pad/stick and confirm with A. The **Controller setup** menu lets you train arbitrary USB layouts, including independent buttons for cycling foods and returning to camp. Vibration works only when the Gamepad API, operating system, driver and controller support it.
+## Creature behaviors and borrowed abilities
 
-## Magical forms
+| Magical creature | What it does in the world | Transformation |
+| --- | --- | --- |
+| **Springaroo** | Hops toward visitors and fires thorn darts | A second midair jump |
+| **Moonwing** | Swoops from the sky and spreads feathers | Hold Jump to fly |
+| **Tidefox** | Darts through the tides and releases bubbles | Swim upward or dive freely |
+| **Cloudwhisp** | Drifts in circling currents and releases gusts | Glide when holding Jump; ride sky thermals |
+| **Prismtail** | Alerts, then dashes in a colored streak | Sprint much faster |
+| **Mossback** | Defends its perch with seed volleys | Armor blocks enemy projectiles |
+| **Glimmermoth** | Runs away from explorers; tosses starlight | Passive friendship aura |
+| **Emberkit** | Stalks its territory, pounces and releases embers | Press Down on the ground for a calming burst |
 
-| Creature | Ability | Time from a capture | Favorite snack |
-| --- | --- | ---: | --- |
-| Springaroo | Midair double-jump | 36 s | Blushberry |
-| Moonwing | Hold jump to fly | 30 s | Stardrop |
-| Tidefox | Swim freely, ascend and dive | 42 s | Nectar mist |
-| Cloudwhisp | Hold jump to float slowly | 34 s | Cloudmallow |
-| Prismtail | Sprint at extraordinary speed | 32 s | Stardrop |
-| Mossback | Deflect hostile attacks with armor | 45 s | Honeybomb |
-| Glimmermoth | Passively calm nearby creatures | 32 s | Nectar mist |
-| Emberkit | Press down on dry ground for a calming warmth burst | 30 s | Honeybomb |
+Enemies signal their attacks with a clear **!** before throwing projectiles or dashing. Each has a wariness meter; reducing wariness with its favorite food makes capturing easier. Capture chance rises from 12% to 98%. Captures grant **time in that one form to the catching player**. Switching saves any unused time for later. The active transformation shows its **portrait, ability instructions and timer**, then contracts into a small HUD indicator.
 
-Each animal has a **wariness meter**. Each successful snack hit lowers wariness. Favorite foods are 70% more effective. The catch probability ranges from 12% at maximum wariness to 98% at zero wariness. All animals respawn after five seconds, allowing retrying as often as desired.
+The five foods have distinct trajectories: Blushberries arc, Stardrops shoot straight, Nectar sprays a calming cloud, Honeybombs splash in an area, and Cloudmallows float. Favorite foods are 70% more effective.
 
-### Five different snacks
+## Level authoring and AI-generated maps
 
-- **Blushberry:** forgiving arcing throw; a great basic treat.
-- **Stardrop:** faster, straight-shooting candy.
-- **Nectar mist:** short-range spray that calms several creatures at once.
-- **Honeybomb:** slow lob with an area-of-effect splash.
-- **Cloudmallow:** gently floating treat for airborne creatures.
+The levels are lossless semantic bitmaps: **one pixel represents one tile** (16 world units). To inspect or edit existing maps, open:
 
-Snack baskets regenerate and replenish all five kinds. There are no ammo charges for magical catch orbs. Creatures attack using different patterns, including bursts of feathers, drifting bubbles, thorn arcs, gusts, sparks, seeds, star-light and embers. Being hit costs a heart. When health reaches zero, the explorer **lies asleep with drifting Zs** instead of blinking. A player can wake themselves with their revive key, or be revived by a teammate. The player is always placed on safe, dry ground before fainting from water.
+- `src/games/animal-adventure/levels/first-forest.png`
+- `src/games/animal-adventure/levels/crystal-coast.png`
+- `src/games/animal-adventure/levels/starfall-summit.png`
 
-## Puzzle route and anti-softlock rules
+The palette is exported as `WW.levels.colors` in `src/platform/levels.js`; the primary swatches include `#101820` ground, `#5f5b85` one-way platform, `#176ad7` water, `#8af1f9` Cloudwhisp thermal, `#00ed31` player start and `#ff152b` level exit. Distinct colors mark creature spawns, food, checkpoints, optional stars and relics.
 
-**The Canopy Gem** requires Springaroo's second jump. **The Sky Gem** requires Moonwing flight. **The River Gem** is underwater and best reached with Tidefox. Once the explorer physically touches a gem, it is picked up **regardless of their current form**; you never have to time the pickup to the final moment of a transformation. A forgiving rectangular pickup zone accommodates sprite size and jump animation.
+The in-game **Load PNG Map** option accepts imperfect AI-generated color maps. The parser handles image scaling and moderate pixel/color noise by taking majority votes in each logical tile, snapping to the nearest semantic color and reporting unknown colors. It avoids brittle exact-color-only matching; level structures still need a start and an exit. For custom maps, any supported relic markers become goals automatically.
 
-Water is a hazard for non-swimmers: after a short exposure, they lose a heart and are returned to a previously recorded safe dry foothold. Even if the last heart is lost, they remain on shore asleep, and may revive immediately. A powered form that expires in water also rescues the explorer to shore.
+The three shipped maps are authored deterministically with `scripts/make-levels.py` (uses Python Pillow **only if you regenerate the maps**, not to build or play the game). Keeping the image source means new chapters can be edited with GIMP, Krita, Aseprite or generated by other software.
 
-The entire party can use the unlimited **Homeward spell** (`C` / `N`, controller Back, or Pause → Return everyone to camp) at **any time**. All gems, star shards, food, unlocked forms and remaining transformation times are preserved. This prevents becoming trapped on the far bank if a creature's magic expires. Creature spawns and snack baskets also replenish indefinitely. A camera leash prevents one co-op player disappearing beyond the screen while the other stays behind.
+## Architecture
 
-## AI-friendly level PNGs
+- `src/platform/`: controller abstraction, calibration, rumble, tolerant bitmap levels, procedural pixel sprites, SFX, and persistent settings
+- `src/games/animal-adventure/catalog.js`: form/food properties
+- `src/games/animal-adventure/chapters.js`: chapter names, goals, scripted events, hints and scenery themes
+- `src/games/animal-adventure/game.js`: world physics, distinct creature AI, challenges, pickups, camera, rendering and small HUD
+- `src/main.js`: reusable game menu, chapter selection, keyboard navigation, pause, level lifecycle, save controls
+- `scripts/build.mjs`: packages all code and PNGs in one HTML file without dependencies
 
-Each pixel is a semantic tile, not rendered artwork. `src/games/animal-adventure/levels/first-forest.png` is the supplied map. The in-game **Load PNG map** option accepts imported maps. For an AI-generated grid with larger blocks, specify image pixels per logical tile. The parser takes a central majority vote of approximate palette colors, tolerating anti-aliasing and moderately imperfect output; unknown colors become empty and emit warnings. A green start and red exit are required. Use lossless PNG and clear color blocks for best results.
-
-| Hex | Meaning | Hex | Meaning |
-| --- | --- | --- | --- |
-| `#FFFFFF` | Empty | `#101820` | Ground |
-| `#5F5B85` | Jump-through ledge | `#176AD7` | Water |
-| `#00ED31` | Player 1 | `#91FE54` | Player 2 |
-| `#FF152B` | Exit | `#AAAAAA` | Checkpoint |
-| `#FFDC12` | Springaroo | `#00EEEF` | Moonwing |
-| `#EF851A` | Tidefox | `#9480ED` | Cloudwhisp |
-| `#FF895D` | Prismtail | `#6B9C42` | Mossback |
-| `#CE6DFF` | Glimmermoth | `#FC5D3E` | Emberkit |
-| `#FF64BB` | Snack basket | `#F2F28A` | Optional star shard |
-| `#E83C86` | Canopy Gem | `#B052FC` | Sky Gem |
-| `#167B86` | River Gem | | |
-
-The physics source of truth is `src/games/animal-adventure/game.js`: 16 world pixels/tile, 2.25 px/frame ordinary run speed, upward jump impulse 5.7 px/frame, downward gravity .27 px/frame², and normal jump apex ~60 world pixels (about 3.7 tiles). The level's ordinary ledge chain is tested with simulated keyboard jumps; exceptional gem routes require their associated creature powers. One-way platforms can be jumped through from below and landed on from above.
-
-## Source architecture
-
-- `src/platform/input.js`: action-based keyboard/gamepad, calibration, rumble, menu gamepad support.
-- `src/platform/storage.js`: settings, profiles, local progress, portable save import/export.
-- `src/platform/levels.js`: tolerant semantic PNG parser.
-- `src/platform/art.js`: original 64×80 sprite frames, HD portraits, food icons.
-- `src/platform/audio.js`: synthesized sound effects, no downloads.
-- `src/games/animal-adventure/catalog.js`: creature and food data.
-- `src/games/animal-adventure/game.js`: state, physics, puzzles, camera, combat, HUD, rendering.
-- `src/main.js`: game selection menu, controller setup, settings, creature guide, pause and lifecycle.
-- `scripts/build.mjs`: bundles HTML with all source and PNG data; no external requests.
-- `tests/smoke.py`, `tests/playability.py`: headless Chromium browser regression checks using Playwright.
+### Browser regression tests
 
 ```sh
 python tests/smoke.py
 python tests/playability.py
+python tests/routes.py
 ```
 
-## Browser persistence and testing limitations
+These require Python Playwright and Chromium (`/usr/bin/chromium` in the reference environment). They cover all three chapters, reduced HUD, controller-independent keyboard menus, unique AI behaviors, transform help cards, time preservation, rescue, loot and goal gating, the sprint trial, Cloudwhisp lift, the Emberkit ritual, winning and progression. The routes test uses actual physics to show **normal jumps do not bypass the first chapter's key power challenges**, while double jump, flight and swimming do reach the relics.
 
-Settings and wins use `localStorage`. The behavior of `localStorage` on `file://` URLs can differ across browsers and when a file is moved/renamed. Export your save before changing the path or use a stable `localhost` address if you need reliable save continuity. The self-contained game runs without a server; an optional local server is useful during development.
-
-The automated tests exercise menus, real keyboard events, ordinary platform traversal, jump envelope, camera containment, creature capture ownership, per-form saved time, food switching, water rescue, gem collection, optional shards, win screen and return to menu. They ran under headless Chromium in the development environment. **Real Firefox/Linux USB input and rumble still require device-level testing.** The game is a substantial playable prototype with original procedural art, not a fully produced commercial title; it has one designed level and synthesized SFX rather than a full soundtrack.
+**Known limitations:** This is a larger playable prototype with original procedural pixel art, not a fully art-directed commercial production. The build and input behavior were tested in headless Chromium; Linux/Firefox USB controllers and vibration still need on-device verification. Levels are designed and ability-tested, but actual family playtesting is essential to tune difficulty, fun, readability and pace. Single-file `file://` browser storage is browser-dependent; exported saves are strongly recommended.

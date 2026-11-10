@@ -1,7 +1,7 @@
 window.WW = window.WW || {};
 WW.storage = (() => {
   const KEY = 'wonderwood-save-v1';
-  const initial = () => ({ settings: { rumble: true, sound: true, players: 2 }, profiles: {}, progress: { wins: 0 } });
+  const initial = () => ({ settings: { rumble: true, sound: true, players: 1 }, profiles: {}, progress: { wins: 0 } });
   let data = initial();
   function load() {
     const stored = localStorage.getItem(KEY);

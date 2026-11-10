@@ -12,6 +12,20 @@ WW.games.animals = (() => {
   const hash=(a,b)=>((a*137+b*991)*(a*17+b*23))>>>0;
   function start(level) {
     const map=level.grid;const width=level.width*TILE,height=level.height*TILE;
+    const chapter=level.chapter||{
+      id:'custom',name:'Your Own Wonderwood',biome:'meadow',intro:'Explore the map you created!',
+      goals:level.objects.filter(o=>o.kind.endsWith('Key')).map(o=>({kind:o.kind,name:o.kind.replace('Key',' Gem'),hint:'Find the glowing gem.'})),signs:[]
+    };
+    const goals=chapter.goals,goalKinds=new Set(goals.map(g=>g.kind));
+    const abilityHelp={springaroo:'Press Jump again while airborne · Double jump',skyling:'Hold Jump to fly upward',
+      tideling:'In water: Jump swims up · Down dives',cloudwhisp:'Hold Jump while falling to glide',
+      prismtail:'Run to sprint through long crossings',mossback:'Your armor blocks incoming magic',
+      glimmermoth:'Stand near wary creatures to calm them',emberkit:'Press Down on the ground for a warmth burst'};
+    const callout=document.getElementById('ability-callout');let abilityUntil=0;
+    const terrainTint={meadow:{sky:['#5e4fa8','#a078da','#7cdbd5','#fff0a9'],mountains:['#a69eda','#6bb0cb','#368a93'],tree:['#2b6484','#499aa2','#6be1aa'],soil:['#634a74','#795781','#8e6484'],grass:['#68cf8d','#378e80']},
+      coast:{sky:['#236b9b','#69b6d7','#72e7db','#fcebbd'],mountains:['#87cfdf','#44a9cc','#2d72a3'],tree:['#2a7393','#3ba3b5','#81e5e1'],soil:['#325477','#387c9f','#598bac'],grass:['#8ad9c3','#4eb1a9']},
+      summit:{sky:['#192859','#684caa','#d284cc','#e8b5f7'],mountains:['#7776c4','#6760aa','#424b8c'],tree:['#465b97','#7b7ec4','#c9aef0'],soil:['#4e4779','#66629b','#8178ac'],grass:['#a6a5f4','#827cce']}}[chapter.biome]||null;
+    const tint=terrainTint||{sky:['#5e4fa8','#a078da','#7cdbd5','#fff0a9'],mountains:['#a69eda','#6bb0cb','#368a93'],tree:['#2b6484','#499aa2','#6be1aa'],soil:['#634a74','#795781','#8e6484'],grass:['#68cf8d','#378e80']};
     const at=(x,y)=>map[Math.floor(y/TILE)]?.[Math.floor(x/TILE)]||'empty';
     const solid=(x,y)=>y>=height||x<0||x>=width||at(x,y)==='ground';
     const liquid=(x,y)=>at(x,y)==='water';
@@ -24,12 +38,32 @@ WW.games.animals = (() => {
         waterTime:0,face:1,health:3,sleep:false,invincible:0,selected:0,selectedFood:0,energy:Object.fromEntries(TYPES.map(t=>[t,0])),
         form:null,actionCD:0,frame:0,windup:0};
     });
-    const animals=level.objects.filter(o=>TYPES.includes(o.kind)).map((o,i)=>({kind:o.kind,...location(o),origin:(o.x+.5)*TILE,vy:0,alive:true,respawn:0,wary:100,attackCD:1+i*.6,dir:i%2?1:-1,phase:i*1.3,frame:0}));
-    const items=level.objects.filter(o=>['snack','skyKey','diveKey','springKey','starShard','checkpoint','exit'].includes(o.kind)).map(o=>({kind:o.kind,x:(o.x+.5)*TILE,y:(o.y+.5)*TILE,used:false}));
-    const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),skyKey:false,diveKey:false,springKey:false,checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,won:false};
-    const projectiles=[],effects=[];let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,lastLeashHint=-10;
+    const animals=level.objects.filter(o=>TYPES.includes(o.kind)).map((o,i)=>({
+      kind:o.kind,...location(o),origin:(o.x+.5)*TILE,homeY:(o.y+1)*TILE,
+      vy:0,alive:true,respawn:0,wary:100,attackCD:1.4+i*.28,dir:i%2?1:-1,
+      phase:i*1.3,frame:0,windup:0,dashTime:0,dashDir:1,hop:0,homeX:(o.x+.5)*TILE,
+      behavior:({springaroo:'hopper',skyling:'swooper',tideling:'swimmer',cloudwhisp:'orbiter',prismtail:'sprinter',
+        mossback:'guardian',glimmermoth:'shy',emberkit:'stalker'})[o.kind]
+    }));
+    const items=level.objects.filter(o=>(['snack','starShard','checkpoint','exit'].includes(o.kind)||goalKinds.has(o.kind))).map(o=>({kind:o.kind,x:(o.x+.5)*TILE,y:(o.y+.5)*TILE,used:false}));
+    const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),keys:Object.fromEntries(goals.map(g=>[g.kind,false])),checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,won:false};
+    const challenges=(chapter.events||[]).map(e=>({...e,completed:false,active:false,time:0,owner:null}));
+    const projectiles=[],effects=[];let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,lastLeashHint=-10,signIndex=-1;
     const message=document.getElementById('message');const hud=document.getElementById('hud');
     function say(text,duration=2100) {message.textContent=text;message.classList.add('show');message.dataset.until=String(clock+duration/1000);}
+    function showAbility(p){
+      if(!p.form){callout.hidden=true;return;}
+      callout.innerHTML=`<img src="${WW.art.portrait(p.form)}" alt=""><span><strong>P${p.id+1} · ${titles[p.form]}</strong><small>${abilityHelp[p.form]} · ${Math.ceil(p.energy[p.form])}s remaining</small></span>`;
+      callout.hidden=false;abilityUntil=clock+3.7;
+    }
+    function chapterHint(){
+      const closest=players[0];if(!chapter.signs)return;
+      chapter.signs.forEach((sign,i)=>{
+        if(Math.abs(closest.x-sign.x*TILE)<35 && signIndex!==i){
+          signIndex=i;say(`${sign.title}: ${sign.hint}`,4100);
+        }
+      });
+    }
     function particles(x,y,color,count=9){for(let i=0;i<count;i++)effects.push({x,y,vx:(Math.random()-.5)*3.8,vy:(Math.random()-.7)*3.3,color,time:.55+Math.random()*.6});}
     function throwThing(player,kind){
       if(player.actionCD>0||player.sleep)return;
@@ -65,10 +99,10 @@ WW.games.animals = (() => {
       if(food===favorite)say(`${titles[a.kind]} LOVES ${FOOD[food].name}! +${Math.round(amount*boost)} friendship`,1400);
       else if(a.wary===0)say(`${titles[a.kind]} is friendly! Your orb has a 98% chance.`,1600);
     }
-    function recallParty(){WW.audio.play('recall');
-      players.forEach((p,i)=>{p.x=spawn.x+i*25;p.y=spawn.y;p.vx=p.vy=0;p.waterTime=0;p.lastSafe={x:p.x,y:p.y};p.grounded=false;
+    function recallParty(destination=spawn){WW.audio.play('recall');
+      players.forEach((p,i)=>{p.x=destination.x+i*25;p.y=destination.y;p.vx=p.vy=0;p.waterTime=0;p.lastSafe={x:p.x,y:p.y};p.grounded=false;
         if(p.sleep){p.sleep=false;p.health=3;}p.invincible=2;particles(p.x,p.y-10,'#b9f6ff',24);});
-      cameraX=0;cameraY=0;WW.input.reset();say('Homeward spell! Your gems, snacks and transformation time are safe.',2800);
+      cameraX=0;cameraY=0;WW.input.reset();say('Camp portal! Your relics, snacks and transformation time are safe.',2800);
     }
     function hitPlayer(player){
       if(player.invincible>0||player.sleep||shared.won)return;
@@ -85,6 +119,7 @@ WW.games.animals = (() => {
       }
       p.invincible=Math.max(0,p.invincible-dt);
       p.actionCD=Math.max(0,p.actionCD-dt);
+      p.previousX=p.x;
       const direction=Number(controls.right)-Number(controls.left);
       if(direction)p.face=direction;
       const swimming=p.form==='tideling' && (liquid(p.x,p.y-8)||liquid(p.x,p.y+2));
@@ -109,6 +144,11 @@ WW.games.animals = (() => {
         }
         if(flying && controls.jump) p.vy=Math.max(-2.95,p.vy-.52*step);
         if(p.form==='cloudwhisp'&&controls.jump&&p.vy>0)p.vy=Math.min(p.vy,.78);
+        // Starfall thermals lift gliding creatures; other forms cross without being carried.
+        if(p.form==='cloudwhisp'&&(at(p.x,p.y-12)==='thermal'||at(p.x,p.y-25)==='thermal')){
+          p.vy=Math.max(-2.7,p.vy-.45*step);
+          if(Math.floor(clock*8)!==Math.floor((clock-dt)*8))particles(p.x,p.y-15,'#b8f9ff',3);
+        }
         p.vy=Math.min(PHYSICS.maxFall,p.vy+PHYSICS.gravity*step);
       }
       let nx=p.x+p.vx*step;
@@ -153,14 +193,14 @@ WW.games.animals = (() => {
       if(controls.pressed.cycle){p.selected=(p.selected+1)%TYPES.length;const type=TYPES[p.selected];say(`P${p.id+1}: ${titles[type]} · ${Math.ceil(p.energy[type])}s stored · ${FORM[type].power}`,1450);}
       if(controls.pressed.transform){
         const type=TYPES[p.selected];
-        if(p.form===type){p.form=null;say(`P${p.id+1}: Returned to explorer. Remaining magic saved!`,1450);}
+        if(p.form===type){p.form=null;callout.hidden=true;say(`P${p.id+1}: Returned to explorer. Remaining magic saved!`,1450);}
         else if(p.energy[type]>.02){p.form=type;WW.audio.play('morph');WW.input.rumble(p.id,.35,180);particles(p.x,p.y-10,FORM[type].color,24);
-          say(`P${p.id+1} becomes ${titles[type]}! ${Math.ceil(p.energy[type])}s of magic available.`,2200);}
+          showAbility(p);say(`P${p.id+1} becomes ${titles[type]}! ${FORM[type].power}.`,1700);}
         else say(`P${p.id+1}: Befriend a ${titles[type]} to earn transformation time.`,1500);
       }
       if(p.form){
         p.energy[p.form]=Math.max(0,p.energy[p.form]-dt);
-        if(p.energy[p.form]<=0){p.form=null;particles(p.x,p.y-9,'#ffffff',15);say(`P${p.id+1}: Time's up! Catch another creature.`,1850);
+        if(p.energy[p.form]<=0){p.form=null;callout.hidden=true;particles(p.x,p.y-9,'#ffffff',15);say(`P${p.id+1}: Time's up! Catch another creature.`,1850);
           if(nowWater){const safe=liquid(p.lastSafe.x,p.lastSafe.y-9)?spawn:p.lastSafe;p.x=safe.x;p.y=safe.y;p.vy=0;p.invincible=1;}
         }
       }
@@ -176,34 +216,101 @@ WW.games.animals = (() => {
       p.frame+=Math.abs(p.vx)*dt*6;
     }
     function targetFor(animal){return players.filter(p=>!p.sleep).sort((a,b)=>distance(a,animal)-distance(b,animal))[0];}
+    function fireAnimalAttack(a,target){
+      const dx=target.x-a.x,dy=(target.y-9)-(a.y-9),len=Math.hypot(dx,dy)||1;
+      const attacks={skyling:'feather',tideling:'bubble',springaroo:'thorn',cloudwhisp:'gust',
+        prismtail:'spark',mossback:'seed',glimmermoth:'starlight',emberkit:'ember'};
+      const kind=attacks[a.kind],base=kind==='spark'?3.3:kind==='gust'?1.4:2.0;
+      const spreads={feather:[-.4,0,.4],ember:[-.25,.25],seed:[-.22,.22],starlight:[0],thorn:[0],gust:[0],spark:[0],bubble:[-.18,.18]};
+      for(const offset of spreads[kind]){
+        const c=Math.cos(offset),si=Math.sin(offset);
+        projectiles.push({kind,owner:-1,x:a.x,y:a.y-12,
+          vx:(dx/len*c-dy/len*si)*base,vy:(dy/len*c+dx/len*si)*base,
+          ttl:kind==='gust'?1.7:2.0,age:0});
+      }
+      particles(a.x,a.y-13,FORM[a.kind].color,5);
+    }
     function updateAnimals(dt){
-      animals.forEach(a=>{
-        if(!a.alive){a.respawn-=dt;if(a.respawn<=0){a.alive=true;a.wary=100;a.attackCD=2;}return;}
-        a.phase+=dt;
-        if(a.kind==='skyling'||a.kind==='cloudwhisp'||a.kind==='glimmermoth'){a.x=a.origin+Math.sin(a.phase*.7)*16;a.y+=Math.sin(a.phase*2)*.12;}
-        else {a.dir=Math.sin(a.phase*.85)>0?1:-1;a.x=a.origin+Math.sin(a.phase*.85)*13;}
-        const target=targetFor(a); a.attackCD-=dt;
-        if(a.wary>0&&target&&distance(target,a)<105&&a.attackCD<=0){
-          const dx=target.x-a.x,dy=(target.y-9)-(a.y-9),len=Math.hypot(dx,dy)||1;
-          const attacks={skyling:'feather',tideling:'bubble',springaroo:'thorn',cloudwhisp:'gust',prismtail:'spark',mossback:'seed',glimmermoth:'starlight',emberkit:'ember'};
-          const kind=attacks[a.kind];
-          const base=kind==='spark'?3.5:kind==='gust'?1.5:2.1;
-          const bursts=kind==='feather'?[-.36,0,.36]:kind==='ember'?[-.22,.22]:[0];
-          for(const offset of bursts){
-            const c=Math.cos(offset),si=Math.sin(offset);
-            const vx=(dx/len*c-dy/len*si)*base;
-            const vy=(dy/len*c+dx/len*si)*base;
-            projectiles.push({kind,owner:-1,x:a.x,y:a.y-12,vx,vy,ttl:kind==='gust'?1.3:2.1,age:0});
+      const step=dt*60;
+      for(const a of animals){
+        if(!a.alive){a.respawn-=dt;if(a.respawn<=0){a.alive=true;a.wary=100;a.attackCD=2;a.windup=0;a.dashTime=0;}continue;}
+        a.phase+=dt;a.frame+=dt*(a.wary>0?6:3);
+        const target=targetFor(a),near=target&&distance(target,a)<175&&a.wary>0;
+        const dx=target?target.x-a.x:0;
+        const home=a.homeX,baseY=a.homeY;
+        // The eight magical species have distinct movement and combat patterns.
+        switch(a.behavior){
+          case 'hopper':{
+            const hopping=near?Math.abs(Math.sin(a.phase*3.1)):Math.abs(Math.sin(a.phase*1.7));
+            a.y=baseY-hopping*(near?23:9);
+            a.x=clamp(a.x+(near?Math.sign(dx)*.78:Math.sin(a.phase)*.4)*step,home-47,home+47);
+            break;
           }
-          a.attackCD=a.kind==='skyling'?2.9:a.kind==='springaroo'?2.3:2.1;
+          case 'swooper':{
+            a.x=clamp(a.x+(near?Math.sign(dx)*1.0:Math.cos(a.phase*1.4)*.46)*step,home-85,home+85);
+            const dive=near?clamp((target.y-45-baseY)*.4,-22,20):0;
+            a.y=baseY+Math.sin(a.phase*2.8)*13+dive;
+            break;
+          }
+          case 'swimmer':
+            a.x=home+Math.sin(a.phase*1.35)*35;a.y=baseY+Math.sin(a.phase*3.7)*7;break;
+          case 'orbiter':
+            a.x=home+Math.cos(a.phase*1.22)*28;a.y=baseY+Math.sin(a.phase*1.8)*21;break;
+          case 'sprinter':{
+            if(a.dashTime>0){
+              a.x=clamp(a.x+a.dashDir*3.6*step,home-89,home+89);
+              a.dashTime=Math.max(0,a.dashTime-dt);
+              if(target&&Math.abs(target.x-a.x)<21&&Math.abs(target.y-a.y)<24)hitPlayer(target);
+            }else if(!near)a.x=home+Math.sin(a.phase*.9)*15;
+            else a.x+=clamp(dx*.012,-.6,.6)*step;
+            a.y=baseY-2-Math.abs(Math.sin(a.phase*6))*4;
+            break;
+          }
+          case 'guardian':
+            a.x=home+Math.sin(a.phase*.65)*4;a.y=baseY;break;
+          case 'shy':{
+            // Glimmermoths avoid confrontation: approach carefully or use nectar mist.
+            if(target&&distance(target,a)<115) a.x=clamp(a.x-Math.sign(dx)*1.25*step,home-67,home+67);
+            else a.x+=(home-a.x)*Math.min(.04*step,1);
+            a.y=baseY+Math.sin(a.phase*3.2)*12;
+            break;
+          }
+          case 'stalker':{
+            a.x=clamp(a.x+(near?Math.sign(dx)*.55:Math.sin(a.phase)*.28)*step,home-52,home+52);
+            a.y=baseY-Math.abs(Math.sin(a.phase*2.1))*(near?19:8);
+            if(near&&Math.abs(dx)<15&&Math.abs(target.y-a.y)<20)hitPlayer(target);
+            break;
+          }
         }
-        if(a.wary<=0) a.frame+=dt*3;else a.frame+=dt*6;
-      });
+        a.dir=target&&near?(dx>=0?1:-1):(Math.cos(a.phase)>=0?1:-1);
+        if(a.wary<=0){a.windup=0;continue;}
+        if(a.windup>0){
+          a.windup-=dt;
+          if(a.windup<=0){
+            a.windup=0;
+            if(target&&distance(target,a)<220){
+              fireAnimalAttack(a,target);
+              if(a.behavior==='sprinter'){a.dashTime=.33;a.dashDir=dx>=0?1:-1;}
+            }
+            a.attackCD=a.behavior==='guardian'?3.4:a.behavior==='shy'?4.8:a.behavior==='swooper'?3.6:2.7;
+          }
+        }else{
+          a.attackCD-=dt;
+          if(near&&distance(target,a)<(a.behavior==='guardian'?166:130)&&a.attackCD<=0){
+            a.windup=a.behavior==='sprinter'?.72:.48;
+          }
+        }
+      }
     }
     function capture(animal,owner){
       const chance=.12+.86*Math.pow(1-animal.wary/100,1.55);
       if(Math.random()<chance){
-        WW.audio.play('catch');animal.alive=false;animal.respawn=5;players[owner].energy[animal.kind]+=FORM[animal.kind].seconds;players[owner].selected=TYPES.indexOf(animal.kind);
+        WW.audio.play('catch');animal.alive=false;animal.respawn=5;
+        for(const c of challenges)if(c.type==='befriend'&&c.kind===animal.kind&&!c.completed){
+          c.catches=(c.catches||0)+1;
+          if(c.catches>=c.count){c.completed=true;say('Hearth ritual complete! The Ember Gem can now be collected.',3200);}
+        }
+        players[owner].energy[animal.kind]+=FORM[animal.kind].seconds;players[owner].selected=TYPES.indexOf(animal.kind);
         particles(animal.x,animal.y-8,FORM[animal.kind].color,28);
         WW.input.rumble(owner,.55,290);say(`P${owner+1} befriended ${titles[animal.kind]}! +${FORM[animal.kind].seconds}s of ${FORM[animal.kind].power.toLowerCase()}. Press Transform!`,2800);
       } else {WW.audio.play('miss');particles(animal.x,animal.y-8,'#f4b0dd',7);say(`The orb missed! Catch chance ${Math.round(chance*100)}%.`,1200);}
@@ -241,6 +348,27 @@ WW.games.animals = (() => {
     }
     function splash(pr){for(const a of animals)if(a.alive&&Math.hypot(a.x-pr.x,a.y-11-pr.y)<46)charm(a,FOOD.honey.affection,'honey',pr.owner);
       particles(pr.x,pr.y,'#ffcd75',20);}
+    function updateChallenges(dt){
+      for(const c of challenges){
+        if(c.type!=='sprint'||c.completed)continue;
+        if(c.active){
+          c.time=Math.max(0,c.time-dt);
+          if(c.time<=0){c.active=false;c.owner=null;say('The crystal timer expired. Run through the starting arch to retry!',2100);}
+        }
+        for(const p of players){
+          if(p.sleep)continue;
+          if(!c.active&&p.previousX<c.start*TILE&&p.x>=c.start*TILE){
+            c.active=true;c.owner=p.id;c.time=c.seconds;
+            say(`SPEED TRIAL! Reach the glowing arch in ${c.seconds}s!`,2300);
+          }
+          if(c.active&&p.id===c.owner&&p.previousX<c.finish*TILE&&p.x>=c.finish*TILE){
+            c.completed=true;c.active=false;WW.audio.play('gem');WW.input.rumble(p.id,.55,200);
+            particles(p.x,p.y-12,'#ffd78e',32);
+            say('SPEED TRIAL COMPLETE! The Prism Gem has awakened.',3000);
+          }
+        }
+      }
+    }
     function updateItems(){
       items.forEach(item=>{
         if(item.used&&item.kind==='snack'&&clock>=item.respawn)item.used=false;
@@ -252,10 +380,17 @@ WW.games.animals = (() => {
           for(const food of FOODS)shared.foods[food]+=food==='berry'?4:2;
           say('Picnic basket! Restocked every kind of magic treat.');WW.input.rumble(p.id,.25,100);particles(item.x,item.y,'#ffb7ce',18);
         }
-        else if(item.kind==='springKey'||item.kind==='skyKey'||item.kind==='diveKey'){
-          WW.audio.play('gem');item.used=true;shared[item.kind]=true;
-          const names={springKey:'Canopy',skyKey:'Sky',diveKey:'River'};
-          say(`${names[item.kind]} gem collected! It stays yours, even if you return to camp.`,2750);
+        else if(goalKinds.has(item.kind)){
+          const challenge=challenges.find(c=>c.goal===item.kind&&!c.completed);
+          if(challenge){
+            if(clock>(item.lastHint||0)+2){
+              item.lastHint=clock;say(challenge.type==='sprint'?'Run the crystal speed trial first!':'Befriend two Emberkits to awaken this gem!',2500);
+            }
+            return;
+          }
+          WW.audio.play('gem');item.used=true;shared.keys[item.kind]=true;
+          const goal=goals.find(g=>g.kind===item.kind);
+          say(`${goal.name} found! ${goals.filter(g=>shared.keys[g.kind]).length}/${goals.length} relics collected.`,2600);
           WW.input.rumble(p.id,.8,340);particles(item.x,item.y,'#ffec94',32);
         }
         else if(item.kind==='starShard'){
@@ -265,8 +400,13 @@ WW.games.animals = (() => {
         }
         else if(item.kind==='checkpoint'){shared.checkpoint={x:item.x,y:item.y+8};item.used=true;say('Checkpoint activated!');}
         else if(item.kind==='exit'){
-          if(shared.skyKey&&shared.diveKey&&shared.springKey){shared.won=true;WW.storage.data.progress.wins++;WW.storage.data.progress.bestShards=Math.max(WW.storage.data.progress.bestShards||0,shared.shards);WW.storage.save();WW.audio.play('win');WW.main.win(WW.storage.data.progress.wins,shared.shards,shared.totalShards);}
-          else if(clock>(item.lastHint||0)+2){item.lastHint=clock;say(`Gate needs 3 gems: Canopy ${shared.springKey?'✓':'✗'} · Sky ${shared.skyKey?'✓':'✗'} · River ${shared.diveKey?'✓':'✗'}`);}
+          if(goals.every(g=>shared.keys[g.kind])){
+            shared.won=true;const progress=WW.storage.data.progress;
+            progress.wins=(progress.wins||0)+1;progress.bestShards=Math.max(progress.bestShards||0,shared.shards);
+            progress.chapters||={};progress.chapters[chapter.id]=Math.max(progress.chapters[chapter.id]||0,shared.shards);
+            WW.storage.save();WW.audio.play('win');WW.main.win(progress.wins,shared.shards,shared.totalShards);
+          }
+          else if(clock>(item.lastHint||0)+2){item.lastHint=clock;say(`Gate locked: ${goals.filter(g=>!shared.keys[g.kind]).map(g=>g.name).join(' · ')||'All relics ready!'}`,2600);}
         }
       });
     }
@@ -274,7 +414,8 @@ WW.games.animals = (() => {
       if(shared.won)return;
       dt=Math.min(dt,.045);clock+=dt; shake=Math.max(0,shake-dt*18);
       for(let i=0;i<players.length;i++)movePlayer(players[i],WW.input.read(i),dt);
-      updateAnimals(dt);updateProjectiles(dt);updateItems();
+      updateAnimals(dt);updateProjectiles(dt);updateChallenges(dt);updateItems();chapterHint();
+      if(clock>abilityUntil)callout.hidden=true;
       effects.forEach(e=>{e.x+=e.vx*dt*60;e.y+=e.vy*dt*60;e.vy+=.09*dt*60;e.time-=dt;});
       for(let i=effects.length-1;i>=0;i--)if(effects[i].time<=0)effects.splice(i,1);
       const active=players.filter(p=>!p.sleep);const focus=active.length?active:players;
@@ -284,23 +425,26 @@ WW.games.animals = (() => {
       const targetX=clamp((minX+maxX)/2-W/2,maxX-(W-30),minX-30);
       cameraX=clamp(targetX,0,Math.max(0,width-W));
       const minY=Math.min(...players.map(p=>p.y)),maxY=Math.max(...players.map(p=>p.y));
-      cameraY=clamp((minY+maxY)/2-H*.55,0,Math.max(0,height-H));
+      cameraY=clamp((minY+maxY)/2-H*.73,0,Math.max(0,height-H));
       if(clock>+(message.dataset.until||0))message.classList.remove('show');
       if(clock-hudTime>.16){
         hudTime=clock;
-        const pic=(type)=>`<img class="portrait" alt="${titles[type]}" src="${WW.art.portrait(type)}">`;
-        hud.innerHTML=`<div class="hud-player">${players.map(p=>{
+        // Only the current and selected forms appear in the permanent HUD. The full roster lives in the guide.
+        const portrait=t=>`<img src="${WW.art.portrait(t)}" alt="${t}">`;
+        hud.innerHTML=`<div class="compact-players">${players.map(p=>{
           const chosen=TYPES[p.selected],food=FOODS[p.selectedFood];
-          return `<div class="player-info" style="border-color:${p.id?'#93d8ff':'#ffe094'}"><div class="player-top"><strong>P${p.id+1} ${p.sleep?'ASLEEP':''}</strong><span>${Array.from({length:3},(_,i)=>i<p.health?'♥':'♡').join('')}</span></div>
-            <div class="form-row">${TYPES.map(t=>`<span class="form-chip ${p.selected===TYPES.indexOf(t)?'selected':''} ${p.form===t?'active':''} ${p.energy[t]>.1?'unlocked':''}" title="${titles[t]} – ${FORM[t].power}">${pic(t)}<small>${p.energy[t]>0?Math.ceil(p.energy[t])+'s':'·'}</small></span>`).join('')}</div>
-            <div class="hud-caption">${p.form?'Playing as '+titles[p.form]+' · '+Math.ceil(p.energy[p.form])+'s left':`Selected ${titles[chosen]} · ${Math.ceil(p.energy[chosen])}s stored`}</div>
-            <div class="food-caption"><img src="${WW.art.foodIcon(food)}" alt=""> ${FOOD[food].name} × ${shared.foods[food]} <span>⟳ E / M</span></div></div>`;}).join('')}</div>
-          <div class="hud-center"><div class="quest-title">THE THREE GEMS · ✧ ${shared.shards}/${shared.totalShards} STARS</div><div class="gems"><span class="${shared.springKey?'done':''}">✿ Canopy</span><span class="${shared.skyKey?'done':''}">✧ Sky</span><span class="${shared.diveKey?'done':''}">❖ River</span></div><div class="tiny">Q/H choose form · T/U morph · C/N return to camp</div></div>`;
+          return `<div class="compact-player p${p.id+1}">
+              <b>P${p.id+1}</b><span class="mini-hearts">${Array.from({length:3},(_,i)=>i<p.health?'♥':'♡').join('')}</span>
+              <span class="mini-form ${p.form?'morphed':''}" title="${p.form?abilityHelp[p.form]:FORM[chosen].power}">${portrait(p.form||chosen)}<span>${p.form?Math.ceil(p.energy[p.form])+'s':Math.ceil(p.energy[chosen])+'s'}</span></span>
+              <span class="mini-label">${p.sleep?'ASLEEP':p.form?titles[p.form]+' · '+FORM[p.form].power:titles[chosen]}</span>
+              <span class="mini-food"> <img src="${WW.art.foodIcon(food)}" alt="">${shared.foods[food]}</span>
+            </div>`;}).join('')}</div>
+          <div class="compact-quest"><b>${chapter.name}</b><span>${goals.map(g=>`<span class="quest-gem ${shared.keys[g.kind]?'found':''}" title="${g.name}">◆</span>`).join('')}</span><small>✦ ${shared.shards}/${shared.totalShards}</small></div>`;
       }
     }
     function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
     function background(ctx,time){
-      const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#625cba');sky.addColorStop(.30,'#9586e2');sky.addColorStop(.72,'#78d8d5');sky.addColorStop(1,'#d3f6ae');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+      const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,tint.sky[0]);sky.addColorStop(.30,tint.sky[1]);sky.addColorStop(.72,tint.sky[2]);sky.addColorStop(1,tint.sky[3]);ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
       // Layered glowing moon and drifting fireflies make the biome feel enchanted.
       const moon=ctx.createRadialGradient(390,43,5,390,43,56);
       moon.addColorStop(0,'#fff6c9ab');moon.addColorStop(.5,'#e8d5ff45');moon.addColorStop(1,'#e8d5ff00');
@@ -316,7 +460,7 @@ WW.games.animals = (() => {
       }
       ctx.globalAlpha=1;
       for(let layer=0;layer<3;layer++){
-        const offset=cameraX*(.12+layer*.2);const base=115+layer*39;const colors=['#c4aee6','#87bad4','#448ca2'];
+        const offset=cameraX*(.12+layer*.2);const base=115+layer*39;const colors=tint.mountains;
         ctx.fillStyle=colors[layer];ctx.beginPath();ctx.moveTo(0,H);
         for(let x=-40;x<W+90;x+=25){const world=x+offset;const height=Math.sin(world*.018+layer)*15+Math.sin(world*.047)*11;ctx.lineTo(x,base+height);}
         ctx.lineTo(W,H);ctx.fill();
@@ -325,30 +469,69 @@ WW.games.animals = (() => {
           box(ctx,xx+8,yy,5,70,'#356d82');box(ctx,xx-7,yy-15,34,23,'#4baaa1');box(ctx,xx-2,yy-27,24,19,'#6cc7b4');
         }}
       }
+      if(chapter.biome==='summit'){
+        for(let stripe=0;stripe<5;stripe++){
+          ctx.globalAlpha=.10;ctx.fillStyle=stripe%2?'#bbf9ef':'#f8a3f6';ctx.beginPath();
+          for(let x=0;x<=W;x+=8){const y=16+stripe*12+Math.sin(x*.017+time*.35+stripe)*13;
+            if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
+          ctx.lineTo(W,0);ctx.lineTo(0,0);ctx.fill();
+        }ctx.globalAlpha=1;
+      }
       for(let n=0;n<8;n++){
         const x=((n*108-cameraX*.14+time*1.7)%(W+120)+W+120)%(W+120)-40;
         const y=27+n%3*17;box(ctx,x,y,32,8,'#ede6ff');box(ctx,x+8,y-6,20,11,'#fff7ea');
       }
     }
     function sceneryBack(ctx,time){
-      // Large overlapping silhouettes give the world a sense of scale and depth.
-      const l=Math.floor((cameraX-80)/100),r=Math.ceil((cameraX+W+80)/100);
+      const l=Math.floor((cameraX-120)/110),r=Math.ceil((cameraX+W+120)/110);
+      const base=spawn.y+28;
       for(let i=l;i<=r;i++){
-        const x=i*102+(hash(i,29)%32),bottom=308;
-        const sway=Math.sin(time*.7+i)*2;
-        ctx.fillStyle=i%2?'#286479':'#316878';
-        ctx.beginPath();ctx.moveTo(x-8,bottom);ctx.lineTo(x-3,166+(i%3)*12);ctx.lineTo(x+7,164+(i%3)*12);ctx.lineTo(x+13,bottom);ctx.closePath();ctx.fill();
-        const y=153+(i%3)*13;
-        for(const [dx,dy,radius,color] of [[-22,6,20,'#357f91'],[19,6,22,'#378fa1'],[0,-13,24,'#3ba5aa'],[-9,-19,16,'#57bcb6']]){
-          ctx.fillStyle=color;ctx.beginPath();ctx.arc(x+dx+sway,y+dy,radius,0,Math.PI*2);ctx.fill();
+        const x=i*110+(hash(i,29)%23),wind=Math.sin(time*.66+i)*2;
+        const high=base-130-(i%3)*8;
+        if(chapter.biome==='coast'){
+          // Glassy mineral spires with sharp colored facets and teal reef anemones.
+          const y=high-5+(i%2)*15;
+          ctx.fillStyle='#23588a';ctx.beginPath();ctx.moveTo(x-28,base);ctx.lineTo(x-10,y+23);
+          ctx.lineTo(x+8,y-23);ctx.lineTo(x+30,y+27);ctx.lineTo(x+46,base);ctx.fill();
+          ctx.fillStyle='#7be1e2';ctx.beginPath();ctx.moveTo(x+8,y-23);ctx.lineTo(x+30,y+27);ctx.lineTo(x+10,y+12);ctx.fill();
+          ctx.fillStyle='#b3f9ef';ctx.beginPath();ctx.moveTo(x-10,y+23);ctx.lineTo(x+8,y-23);ctx.lineTo(x+2,y+30);ctx.fill();
+          for(let j=0;j<8;j++){
+            const xx=x-33+(hash(i,j)%75),yy=base-22+(hash(j,i)%19);
+            box(ctx,xx,yy,3,8,j%2?'#94ffe3':'#d59cf3');box(ctx,xx-3,yy-3,9,4,'#67c9e7');
+          }
+        }else if(chapter.biome==='summit'){
+          // Cliffs, shards and floating islets under the aurora.
+          ctx.fillStyle='#3f4c92';ctx.beginPath();ctx.moveTo(x-38,base);ctx.lineTo(x-9,high+15);
+          ctx.lineTo(x+6,high-38);ctx.lineTo(x+28,high+28);ctx.lineTo(x+48,base);ctx.fill();
+          ctx.fillStyle='#b2a3f4';ctx.beginPath();ctx.moveTo(x+6,high-38);ctx.lineTo(x+28,high+28);
+          ctx.lineTo(x+6,high+19);ctx.fill();
+          ctx.fillStyle='#8dbad9';ctx.beginPath();ctx.ellipse(x+31,high-49,17,6,-.15,0,Math.PI*2);ctx.fill();
+          box(ctx,x+12,high-53,33,4,'#c4c2ff');
+          for(let j=0;j<5;j++){
+            box(ctx,x-14+(hash(i,j)%52),high-28+(hash(j,i)%40),2,2,'#f0dcff');
+          }
+        }else{
+          // Monumental lantern trees and mushroom terraces (all original procedural pixels).
+          box(ctx,x-9,high+33,21,base-high-33,'#285978');
+          box(ctx,x-5,high+35,5,base-high-35,'#3986a0');
+          const clusters=[[-20,9,24,tint.tree[0]],[19,8,25,tint.tree[1]],[-1,-11,31,tint.tree[2]],[-12,-30,17,'#83e7bb']];
+          for(const [dx,dy,rad,color] of clusters){
+            ctx.fillStyle=color;ctx.beginPath();ctx.arc(x+dx+wind,high+dy,rad,0,Math.PI*2);ctx.fill();
+          }
+          for(let j=0;j<10;j++){
+            const xx=x-31+(hash(i,j)%65),yy=high-30+(hash(j,i)%52);
+            box(ctx,xx,yy,3,3,j%2?'#ffe4af':'#b9ffee');
+          }
+          if(i%3===0){
+            box(ctx,x+18,high+17,2,29,'#62b49c');
+            const glow=ctx.createRadialGradient(x+19,high+47,1,x+19,high+47,23);
+            glow.addColorStop(0,'#ffe8a68a');glow.addColorStop(1,'#ffe8a600');
+            ctx.fillStyle=glow;ctx.fillRect(x-4,high+24,46,46);
+            box(ctx,x+15,high+44,9,10,'#ffe8a6');
+          }
+          box(ctx,x-26,base-10,18,7,'#cc8ecb');box(ctx,x-23,base-17,12,9,'#f8b6e3');
+          box(ctx,x+20,base-13,15,8,'#86d8d1');box(ctx,x+22,base-22,11,12,'#9dffda');
         }
-        for(let j=0;j<7;j++){const xx=x-24+(hash(i,j)%50),yy=y-23+(hash(j,i)%33);
-          box(ctx,xx,yy,2,3,hash(i,j)%2?'#8befc9':'#d2d2ff');}
-        // Hanging lanterns bloom gently, but don't obscure traversal geometry.
-        if(i%3===0){box(ctx,x+16,y+7,1,24,'#6fd3ae');
-          const glow=ctx.createRadialGradient(x+16,y+31,0,x+16,y+31,14);
-          glow.addColorStop(0,'#fff7acb5');glow.addColorStop(1,'#fff7ac00');ctx.fillStyle=glow;ctx.fillRect(x+2,y+17,28,28);
-          box(ctx,x+13,y+27,7,7,'#fff2b1');}
       }
     }
     function groundDetails(ctx,time){
@@ -379,20 +562,25 @@ WW.games.animals = (() => {
         const t=map[y][x];if(t==='empty')continue;
         const px=x*TILE,py=y*TILE,h=hash(x,y);
         if(t==='ground'){
-          box(ctx,px,py,16,16,'#634a74');box(ctx,px,py+4,16,12,(h%2?'#795781':'#8e6484'));
+          box(ctx,px,py,16,16,tint.soil[0]);box(ctx,px,py+4,16,12,tint.soil[h%2?1:2]);
           if(y===0||map[y-1][x]!=='ground'){
-            box(ctx,px,py,16,6,'#68cf8d');box(ctx,px,py+5,16,2,'#378e80');
+            box(ctx,px,py,16,6,tint.grass[0]);box(ctx,px,py+5,16,2,tint.grass[1]);
             box(ctx,px+2,py-2,3,3,'#a4ed96');box(ctx,px+11,py-1,2,3,'#efffa1');
           }
           if(h%5===0)box(ctx,px+5,py+9,4,2,'#f6ad9b');if(h%7===0)box(ctx,px+12,py+12,2,2,'#c38bd7');
           if(h%23===0){box(ctx,px+8,py+6,3,7,'#7b7bb1');box(ctx,px+9,py+5,1,5,'#b1c9f0');}
         } else if(t==='platform'){
-          box(ctx,px,py,16,7,'#6659a1');box(ctx,px,py,16,3,'#b2ffd1');
+          box(ctx,px,py,16,7,chapter.biome==='summit'?'#7a66b8':'#6659a1');box(ctx,px,py,16,3,chapter.biome==='coast'?'#a9faff':'#b2ffd1');
           box(ctx,px+2,py+7,12,3,'#555583');
           box(ctx,px+5,py+10,6,3,'#7f7dba');
           if(h%3===0){box(ctx,px+5,py-3,2,4,'#aeefcf');box(ctx,px+3,py-5,6,3,'#f4a0cf');}
+        } else if(t==='thermal'){
+          ctx.globalAlpha=.3+.16*Math.sin(time*3+x*.3);
+          box(ctx,px+4+Math.sin(time*4+y)*3,py,7,16,'#7fe1ff');
+          box(ctx,px+7+Math.sin(time*6+x)*3,py+4,3,7,'#fff5fc');
+          ctx.globalAlpha=1;
         } else if(t==='water'){
-          box(ctx,px,py,16,16,y%2?'#3b89da':'#3f9fde');
+          box(ctx,px,py,16,16,chapter.biome==='coast'?(y%2?'#2269b0':'#2689cf'):y%2?'#3b89da':'#3f9fde');
           if(y===0||map[y-1][x]!=='water'){box(ctx,px,py,16,3,'#9be5e1');box(ctx,px+(Math.floor(time*9+x*7)%11),py+1,5,1,'#edf9ce');}
           if(h%6===0)box(ctx,px+5,py+8+Math.sin(time*3+x)*2,2,2,'#8fe4e5');
         }
@@ -407,6 +595,27 @@ WW.games.animals = (() => {
       background(ctx,now);
       ctx.save();ctx.translate(Math.round((Math.random()-.5)*shake),Math.round((Math.random()-.5)*shake));ctx.translate(-Math.round(cameraX),-Math.round(cameraY));
       sceneryBack(ctx,now);terrain(ctx,now);groundDetails(ctx,now);
+      for(const sign of chapter.signs||[]){
+        const x=sign.x*TILE;if(x<cameraX-65||x>cameraX+W+65)continue;
+        const ground=Array.from({length:level.height},(_,y)=>y).find(y=>map[y]?.[sign.x]==='ground');
+        if(ground===undefined)continue;
+        const y=ground*TILE;
+        box(ctx,x-1,y-57,4,59,'#57476f');box(ctx,x-23,y-59,48,17,chapter.biome==='coast'?'#2a82a0':'#654a90');
+        box(ctx,x-19,y-56,40,3,'#d4f5dd');
+        ctx.font='bold 6px sans-serif';ctx.fillStyle='#fff4d1';ctx.textAlign='center';
+        ctx.fillText(sign.title.slice(0,16),x,y-48);ctx.textAlign='left';
+        box(ctx,x-2,y-37,8,6,'#ffd6a8');
+      }
+      for(const c of challenges){
+        if(c.type!=='sprint')continue;
+        for(const [x,word] of [[c.start*TILE,'START'],[c.finish*TILE,'FINISH']]){
+          const top=players[0].y-61;
+          if(x<cameraX-50||x>cameraX+W+50)continue;
+          box(ctx,x-4,top,8,61,c.completed?'#85d5ac':'#9b7ae8');
+          box(ctx,x-16,top-7,33,12,c.completed?'#4eaa94':'#6b4eab');
+          ctx.fillStyle='#fff2c6';ctx.font='bold 7px sans-serif';ctx.fillText(word,x-12,top+1);
+        }
+      }
       items.forEach(it=>{if(it.used)return;const bob=Math.sin(now*3+it.x)*2;
         if(it.kind==='snack')WW.art.draw(ctx,'snack',it.x,it.y+8+bob,Math.floor(now*3)%4);
         if(it.kind==='starShard'){
@@ -416,15 +625,15 @@ WW.games.animals = (() => {
             ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);
           }ctx.closePath();ctx.fill();box(ctx,-1,-3,2,4,'#ffffff');ctx.restore();
         }
-        if(it.kind==='skyKey'||it.kind==='diveKey'||it.kind==='springKey'){
-          const tint=it.kind==='skyKey'?'#fff0a3':it.kind==='springKey'?'#ff94d5':'#91f5ff';
+        if(goalKinds.has(it.kind)){
+          const tint=({springKey:'#ff94d5',skyKey:'#f5dfa9',diveKey:'#91f5ff',prismKey:'#ffaf68',mossKey:'#a7f8a0',cloudKey:'#d9bfff',emberKey:'#ff8d6d'})[it.kind]||'#ffe79f';
           ctx.save();ctx.translate(it.x,it.y+bob);ctx.rotate(now*.65);
           box(ctx,-5,-5,10,10,tint);box(ctx,-2,-10,4,5,'#ffffff');box(ctx,6,-2,5,4,tint);box(ctx,-9,-1,4,3,tint);ctx.restore();
           ctx.globalAlpha=.65+.3*Math.sin(now*5);box(ctx,it.x-2,it.y-13+bob,4,2,'#fffcef');box(ctx,it.x+12,it.y+bob,3,3,tint);ctx.globalAlpha=1;
           ctx.fillStyle='#fff4dd';ctx.font='bold 8px sans-serif';ctx.fillText('GEM',it.x-9,it.y-19+bob);
         }
         if(it.kind==='exit'){
-          box(ctx,it.x-12,it.y-28,24,36,'#725771');box(ctx,it.x-8,it.y-25,16,31,shared.skyKey&&shared.diveKey&&shared.springKey?'#6befc6':'#423c6b');
+          box(ctx,it.x-12,it.y-28,24,36,'#725771');box(ctx,it.x-8,it.y-25,16,31,goals.every(g=>shared.keys[g.kind])?'#6befc6':'#423c6b');
           box(ctx,it.x-5,it.y-20,10,14,'#af9abb');box(ctx,it.x-3,it.y-19,6,10,'#433f7d');box(ctx,it.x+4,it.y-9,2,2,'#ffdc80');
         }
         if(it.kind==='checkpoint') {box(ctx,it.x-2,it.y-22,3,27,'#765968');box(ctx,it.x+1,it.y-22,14,9,'#9bf6c9');}
@@ -432,7 +641,21 @@ WW.games.animals = (() => {
       animals.forEach(a=>{
         if(!a.alive)return;
         const frame=Math.floor(a.frame)%4;
+        if(a.dashTime>0){
+          ctx.globalAlpha=.3;for(let j=1;j<4;j++)WW.art.draw(ctx,a.kind,a.x-a.dashDir*j*9,a.y,frame,a.dir<0);
+          ctx.globalAlpha=1;
+        }
+        if(a.behavior==='guardian'){
+          ctx.strokeStyle='#c7f1a8';ctx.lineWidth=2;ctx.globalAlpha=.4+.2*Math.sin(now*2);
+          ctx.beginPath();ctx.ellipse(a.x,a.y-17,21,25,0,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+        }
         WW.art.draw(ctx,a.kind,a.x,a.y,frame,a.dir<0);
+        if(a.windup>0){
+          const pulse=.65+.35*Math.sin(now*19);ctx.save();ctx.globalAlpha=pulse;
+          ctx.fillStyle='#ffcc8a';ctx.fillRect(a.x-4,a.y-70,9,11);
+          ctx.fillStyle='#543e65';ctx.font='bold 10px sans-serif';ctx.fillText('!',a.x-1,a.y-61);
+          ctx.restore();
+        }
         const wary=a.wary;box(ctx,a.x-13,a.y-49,26,4,'#263f46');box(ctx,a.x-12,a.y-48,24*(wary/100),2,wary>40?'#fa8c82':'#a1eaa2');
         if(!wary){box(ctx,a.x-2,a.y-52,4,3,'#ff9eb6');box(ctx,a.x-4,a.y-50,8,3,'#ff9eb6');}
         const chance=Math.round((.12+.86*Math.pow(1-a.wary/100,1.55))*100);
@@ -458,12 +681,20 @@ WW.games.animals = (() => {
         ctx.font='bold 8px sans-serif';ctx.fillStyle='#102b41';ctx.fillText(String(p.id+1),p.x-2,p.y-46);
       });
       effects.forEach(e=>box(ctx,e.x,e.y,3,3,e.color));ctx.restore();
-      if(!shared.skyKey||!shared.diveKey||!shared.springKey){
-        box(ctx,8,H-23,453,16,'#14243cda');ctx.font='bold 8px sans-serif';ctx.fillStyle='#fff3c6';ctx.fillText(!shared.springKey?'SPRINGAROO ➜ double-jump to the canopy gem':!shared.skyKey?'MOONWING ➜ fly to the sky gem':'TIDEFOX ➜ dive to the river gem · C to return to camp',15,H-12);
-      }
+      const race=challenges.find(c=>c.type==='sprint'&&c.active);
+      if(race){box(ctx,140,32,200,20,'#203252d5');ctx.font='bold 12px sans-serif';ctx.fillStyle='#ffebb9';ctx.fillText(`CRYSTAL DASH: ${race.time.toFixed(1)}s`,164,46);}
+      const next=goals.find(g=>!shared.keys[g.kind]);
+      if(next){
+        const target=items.find(it=>it.kind===next.kind);
+        const distanceTiles=Math.round(Math.abs(target.x-players[0].x)/TILE);
+        const direction=target.x>players[0].x?'→':'←';
+        const guidance=distanceTiles>20?`${next.name.toUpperCase()} ${direction} ${distanceTiles} tiles · Seek ${titles[next.form]||'clues'}`:`${next.name.toUpperCase()} · ${next.hint}`;
+        box(ctx,12,H-20,455,14,'#14243cbe');ctx.font='bold 8px sans-serif';ctx.fillStyle='#fff3c6';
+        ctx.fillText(guidance,19,H-11,W-35);
+      } 
     }
-    hud.hidden=false;say('Catch three magical creatures. Their powers unlock three gems!',3600);
-    return {update,render,recallParty,stop(){hud.hidden=true;message.classList.remove('show');},get state(){return {players,shared,animals,items,projectiles,cameraX,cameraY,physics:PHYSICS,jumpHeight}}};
+    hud.hidden=false;callout.hidden=true;say(`${chapter.name} · ${chapter.intro}`,4200);
+    return {update,render,recallParty,recallCheckpoint(){recallParty(shared.checkpoint);},stop(){hud.hidden=true;callout.hidden=true;message.classList.remove('show');},get state(){return {chapter,goals,challenges,players,shared,animals,items,projectiles,cameraX,cameraY,physics:PHYSICS,jumpHeight}}};
   }
   return {start};
 })();
