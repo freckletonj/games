@@ -44,8 +44,8 @@ const illustrations = Object.fromEntries(await Promise.all(
     name,await dataUrl(`src/assets/illustrations/${name}.png`,'image/png')
   ])
 ));
-const assetScript = '<script>\\nwindow.WW_EMBEDDED_ILLUSTRATIONS=' +
-  JSON.stringify(illustrations) + ';\\nwindow.WW_EMBEDDED_ATLASES=' +
+const assetScript = '<script>\nwindow.WW_EMBEDDED_ILLUSTRATIONS=' +
+  JSON.stringify(illustrations) + ';\nwindow.WW_EMBEDDED_ATLASES=' +
   JSON.stringify(atlases).replaceAll('</script>','<\\/script>') + ';\nwindow.WW_EMBEDDED_SCENES=' +
   JSON.stringify(scenes).replaceAll('</script>','<\\/script>') + ';\n</script>\n';
 const js=(await Promise.all(scripts.map(read))).map(code=>`<script>\n${code.replaceAll('</script>','<\\/script>')}\n</script>`).join('\n');
