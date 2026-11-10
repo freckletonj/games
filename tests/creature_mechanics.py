@@ -52,7 +52,7 @@ with sync_playwright() as pw:
         }""", kind)
         advance()
         assert state('players[0].caught') == kind, kind
-        assert state('Object.entries(players[0].unlocked).filter(([k,v])=>v).map(([k])=>k)') == [kind]
+        assert sorted(k for k, v in state('players[0].unlocked').items() if v) == [kind]
         assert state('players[0].form') is None
         key('t')
         assert state('players[0].form') == kind, kind
@@ -72,7 +72,7 @@ with sync_playwright() as pw:
             }""", kind)
             advance()
             assert state('players[0].caught') == kind, kind
-            assert state('Object.values(players[0].unlocked).filter(Boolean).length') == 1
+            assert sum(state('players[0].unlocked').values()) == 1
             key('t')
             assert state('players[0].form') == kind, kind
 
