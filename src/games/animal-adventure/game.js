@@ -394,7 +394,7 @@ WW.games.animals = (() => {
         // A precise descending head stomp is safe, rewards a bounce, and
         // sends the animal to rest for a few seconds rather than harming it.
         const stomp=players.find(p=>!p.sleep&&p.vy>0.6&&
-          Math.abs(p.x-a.x)<17&&p.previousY<=a.y-19&&p.y>=a.y-22&&p.y<a.y-8);
+          Math.abs(p.x-a.x)<17&&p.previousY<=a.y-23&&p.y>=a.y-27&&p.y<a.y-12);
         if(stomp&&!incapacitated){knockOut(a,stomp);continue;}
         if(incapacitated||peaceful)continue;
         if(a.kind==='cloudwhisp'&&a.gustTime>0){
