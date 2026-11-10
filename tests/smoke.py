@@ -21,6 +21,16 @@ with sync_playwright() as playwright:
     page.wait_for_function("""() => WW.spriteAtlas.draw(
         document.querySelector('#game').getContext('2d'), 'springaroo', 40, 80, 0
     )""")
+    # A compiled level JSON bundle must be loadable without any network access.
+    imported = page.evaluate("""async () => {
+        const original = WW.worlds.create(WW.chapters[0]);
+        const blob = new Blob([JSON.stringify(original)], {type:'application/json'});
+        const url = URL.createObjectURL(blob);
+        const result = await WW.levels.loadJSON(url);
+        URL.revokeObjectURL(url);
+        return [result.width, result.objects.length];
+    }""")
+    assert imported[0] == 144 and imported[1] > 0
     page.screenshot(path=str(html.parent / 'preview-home.png'))
     print('BOOT DIAGNOSTIC:', errors, page.locator('h1').all_inner_texts(), page.locator('body').inner_text()[:250])
     assert page.locator('h1').count()==1 and page.locator('h1').inner_text()=='WONDERWOOD',errors
