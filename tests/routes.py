@@ -20,11 +20,11 @@ with sync_playwright() as pw:
  p.evaluate('WW.main.game.state.animals.forEach(a=>{a.alive=false;a.respawn=99999})')
  # Canopy puzzle: a plain single jump from the top ledge cannot reach the gem.
  setp(47*16,19*16)
- key('w');advance(48)
+ key('w',12);advance(48)
  assert not got('springKey'),'Canopy Gem accidentally reachable without double jump'
  # Springaroo makes a genuinely different vertical route possible.
  setp(47*16,19*16,'springaroo')
- key('w');advance(12);key('w');advance(27)
+ key('w',10);advance(3);key('w',12);advance(27)
  assert got('springKey'),'Springaroo double jump did not reach the gem'
  # Sky puzzle: an ordinary jump cannot, Moonwing flight does.
  setp(167*16,14*16)
