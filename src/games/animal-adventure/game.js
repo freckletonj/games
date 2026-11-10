@@ -451,7 +451,8 @@ WW.games.animals = (() => {
       ctx.fillStyle=moon;ctx.fillRect(332,-15,116,116);
       ctx.fillStyle='#fff3bd';ctx.beginPath();ctx.arc(390,43,17,0,Math.PI*2);ctx.fill();
       ctx.fillStyle='#e2e9db';ctx.beginPath();ctx.arc(397,35,12,0,Math.PI*2);ctx.fill();
-      for(let i=0;i<40;i++){
+      // Tiny constellations turn the upper sky into a navigable, living backdrop.
+      for(let i=0;i<65;i++){
         const drift=cameraX*.1+time*1.9;
         const x=((i*129.1-drift)%(W+30)+W+30)%(W+30);
         const y=19+(hash(i,13)%145)+Math.sin(time*1.4+i)*3;
@@ -459,6 +460,7 @@ WW.games.animals = (() => {
         ctx.globalAlpha=glow;box(ctx,x,y,2+(i%4===0?1:0),2,i%3?'#e4ffca':'#ffcff2');
       }
       ctx.globalAlpha=1;
+      // Deep atmospheric perspective keeps the detailed foreground legible.
       for(let layer=0;layer<3;layer++){
         const offset=cameraX*(.12+layer*.2);const base=115+layer*39;const colors=tint.mountains;
         ctx.fillStyle=colors[layer];ctx.beginPath();ctx.moveTo(0,H);
@@ -476,6 +478,22 @@ WW.games.animals = (() => {
             if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
           ctx.lineTo(W,0);ctx.lineTo(0,0);ctx.fill();
         }ctx.globalAlpha=1;
+      }
+      // Slow luminous ribbons and distant dust establish movement without visual noise.
+      if(chapter.biome!=='coast'){
+        ctx.save();ctx.globalCompositeOperation='screen';
+        for(let band=0;band<3;band++){
+          const glow=ctx.createLinearGradient(0,28+band*23,0,95+band*35);
+          glow.addColorStop(0,'#b6f4db00');glow.addColorStop(.5,chapter.biome==='summit'?'#e7a9ef18':'#a4f9d619');glow.addColorStop(1,'#b6f4db00');
+          ctx.fillStyle=glow;ctx.beginPath();
+          for(let x=0;x<=W;x+=12){
+            const y=34+band*21+Math.sin(x*.017+time*.22+band*1.7)*14;
+            if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+          }
+          for(let x=W;x>=0;x-=12)ctx.lineTo(x,79+band*21+Math.sin(x*.017+time*.22+band*1.7)*12);
+          ctx.closePath();ctx.fill();
+        }
+        ctx.restore();
       }
       for(let n=0;n<8;n++){
         const x=((n*108-cameraX*.14+time*1.7)%(W+120)+W+120)%(W+120)-40;
@@ -567,6 +585,7 @@ WW.games.animals = (() => {
             box(ctx,px,py,16,6,tint.grass[0]);box(ctx,px,py+5,16,2,tint.grass[1]);
             box(ctx,px+2,py-2,3,3,'#a4ed96');box(ctx,px+11,py-1,2,3,'#efffa1');
           }
+          // Warm mineral flecks and darker edges give the soil a tactile cut-paper finish.
           if(h%5===0)box(ctx,px+5,py+9,4,2,'#f6ad9b');if(h%7===0)box(ctx,px+12,py+12,2,2,'#c38bd7');
           if(h%23===0){box(ctx,px+8,py+6,3,7,'#7b7bb1');box(ctx,px+9,py+5,1,5,'#b1c9f0');}
         } else if(t==='platform'){
@@ -583,6 +602,11 @@ WW.games.animals = (() => {
           box(ctx,px,py,16,16,chapter.biome==='coast'?(y%2?'#2269b0':'#2689cf'):y%2?'#3b89da':'#3f9fde');
           if(y===0||map[y-1][x]!=='water'){box(ctx,px,py,16,3,'#9be5e1');box(ctx,px+(Math.floor(time*9+x*7)%11),py+1,5,1,'#edf9ce');}
           if(h%6===0)box(ctx,px+5,py+8+Math.sin(time*3+x)*2,2,2,'#8fe4e5');
+          if(h%11===0){
+            ctx.globalAlpha=.32+.2*Math.sin(time*2.5+x);
+            box(ctx,px+2,py+5,9,1,'#c3fff1');box(ctx,px+4,py+11,6,1,'#88dbe6');
+            ctx.globalAlpha=1;
+          }
         }
       }
       // tiny foreground blossoms, all procedural and repeatable
@@ -680,7 +704,22 @@ WW.games.animals = (() => {
         box(ctx,p.x-8,p.y-43,16,3,'#152e42');box(ctx,p.x-7,p.y-42,14,2,p.id===0?'#ffd782':'#91d2ff');
         ctx.font='bold 8px sans-serif';ctx.fillStyle='#102b41';ctx.fillText(String(p.id+1),p.x-2,p.y-46);
       });
-      effects.forEach(e=>box(ctx,e.x,e.y,3,3,e.color));ctx.restore();
+      effects.forEach(e=>{
+        // A larger faint halo lets spell effects read as light, not confetti.
+        ctx.globalAlpha=Math.min(.22,e.time*.3);
+        box(ctx,e.x-3,e.y-3,9,9,e.color);
+        ctx.globalAlpha=1;
+        box(ctx,e.x,e.y,3,3,e.color);
+      });ctx.restore();
+      // Screen-space light and vignette are atmospheric only: no physics or map semantics change.
+      const sunlight=ctx.createRadialGradient(W*.46,H*.12,5,W*.46,H*.12,W*.85);
+      sunlight.addColorStop(0,chapter.biome==='summit'?'#f6c9ff13':'#fff4c51c');
+      sunlight.addColorStop(.6,'#b8f9dd05');sunlight.addColorStop(1,'#08152652');
+      ctx.fillStyle=sunlight;ctx.fillRect(0,0,W,H);
+      const edge=ctx.createLinearGradient(0,0,0,H);
+      edge.addColorStop(0,'#0c1c2e30');edge.addColorStop(.25,'#0c1c2e00');
+      edge.addColorStop(.8,'#0c1c2e00');edge.addColorStop(1,'#0b1d3138');
+      ctx.fillStyle=edge;ctx.fillRect(0,0,W,H);
       const race=challenges.find(c=>c.type==='sprint'&&c.active);
       if(race){box(ctx,140,32,200,20,'#203252d5');ctx.font='bold 12px sans-serif';ctx.fillStyle='#ffebb9';ctx.fillText(`CRYSTAL DASH: ${race.time.toFixed(1)}s`,164,46);}
       const next=goals.find(g=>!shared.keys[g.kind]);
