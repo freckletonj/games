@@ -9,7 +9,7 @@ WW.worlds = (() => {
       water: [[98,109]], bridges: [[97,29,7],[105,29,7]],
       ledges: [[21,27,8],[32,26,9],[42,25,8],[52,26,8],[62,24,8],
         [69,21,7],[74,26,8],[83,27,8],[117,26,9]],
-      relic: ['springKey',72,16],
+      relic: ['springKey',72,12],
       creatures: [
         ['springaroo',17],['glimmermoth',31],['prismtail',46],['springaroo',57],
         ['mossback',85],['emberkit',115],['glimmermoth',130]
@@ -43,7 +43,7 @@ WW.worlds = (() => {
       ledges: [[17,31,8],[28,28,8],[38,25,8],[50,24,8],
         [64,29,7],[87,29,9],[96,26,8],[106,23,8],
         [113,20,8],[122,17,8],[130,14,8],[139,11,7],[147,26,8]],
-      relic: ['skyKey',143,6],
+      relic: ['skyKey',143,2],
       creatures: [
         ['skyling',23],['cloudwhisp',42],['glimmermoth',53],['emberkit',64],
         ['skyling',102],['prismtail',116],['cloudwhisp',133],['mossback',154]
