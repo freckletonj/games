@@ -1144,7 +1144,7 @@ WW.games.animals = (() => {
         if((span.x+span.length)*TILE<cameraX-24||
             span.x*TILE>cameraX+W+24||span.y*TILE<cameraY-48||
             span.y*TILE>cameraY+H+26)continue;
-        WW.scenery.platformSpan(ctx,chapter.biome,span,now);
+        WW.scenery.platformSpan(ctx,chapter.biome,span,now,level);
       }
       WW.scenery.paintLayers(ctx,level.art?.foreground,cameraX,cameraY);
       groundDetails(ctx,now);
