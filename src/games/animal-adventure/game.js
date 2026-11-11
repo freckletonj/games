@@ -79,12 +79,13 @@ WW.games.animals = (() => {
         waterTime:0,face:1,health:3,sleep:false,invincible:0,selected:0,selectedFood:0,energy:Object.fromEntries(TYPES.map(t=>[t,0])),
         form:null,caught:null,hover:0,flapCooldown:0,flapBuffer:0,flaps:4,flapRecharge:0,wingbeat:0,actionCD:0,frame:0,hurt:0,
         bloomBoostWindow:0,lastJumpPress:-100,
-        bubble:false,bubbleGrace:0,breachCooldown:0,
+        bubble:false,bubbleGrace:0,breachCooldown:0,windPush:0,
         unlocked:Object.fromEntries(TYPES.map(kind=>[kind,false]))};
     });
     const animals=level.objects.filter(o=>CREATURE[o.kind]).map((o,i)=>({
       kind:o.kind,...location(o),homeX:(o.x+.5)*TILE,homeY:location(o).y,
-      dir:i%2?1:-1,alive:true,respawn:0,trust:0,distractedUntil:0,
+      id:i,dir:i%2?1:-1,alive:true,respawn:0,trust:0,distractedUntil:0,
+      turnCooldown:0,aggroUntil:0,
       eating:0,windup:0,dashTime:0,dashDir:1,chargeCooldown:1+i*.3,phase:i*.9,frame:0,homeDir:i%2?1:-1,
       stunned:0,stuck:0,trapped:0,gustTime:0,gustHit:[],moving:false
     }));
@@ -275,6 +276,7 @@ WW.games.animals = (() => {
       p.flapCooldown=Math.max(0,p.flapCooldown-dt);
       p.flapBuffer=Math.max(0,p.flapBuffer-dt);
       p.bloomBoostWindow=Math.max(0,p.bloomBoostWindow-dt);
+      p.windPush=Math.max(0,p.windPush-dt);
       let bloomBoosted=false;
       if(controls.pressed.jump){
         p.lastJumpPress=clock;
@@ -299,7 +301,7 @@ WW.games.animals = (() => {
       // Acceleration gives movement weight without sacrificing the sprint trial.
       const targetSpeed=direction*run*(water&&!swimming?.42:1);
       const traction=direction?(p.grounded?.52:.34):(p.grounded?.65:.32);
-      if(!p.hurt)p.vx+=clamp(targetSpeed-p.vx,-traction*step,traction*step);
+      if(!p.hurt&&p.windPush===0)p.vx+=clamp(targetSpeed-p.vx,-traction*step,traction*step);
       if(!direction&&!p.hurt&&Math.abs(p.vx)<.08)p.vx=0;
       if(swimming){
         // Water resistance preserves momentum; without strokes Tidefox sinks slowly.
@@ -420,8 +422,8 @@ WW.games.animals = (() => {
       return players.filter(p=>!p.sleep&&!p.bubble).sort((a,b)=>distance(a,animal)-distance(b,animal))[0];
     }
     function nearbyFood(animal){
-      return lures.filter(food=>!food.used&&food.ttl>0&&Math.abs(food.x-animal.homeX)<180)
-        .filter(food=>Math.abs(food.x-animal.x)<170&&Math.abs(food.y-animal.y)<100)
+      return lures.filter(food=>!food.used&&food.ttl>0)
+        .filter(food=>Math.abs(food.x-animal.x)<200&&Math.abs(food.y-animal.y)<100)
         .sort((a,b)=>Math.hypot(a.x-animal.x,a.y-animal.y)-Math.hypot(b.x-animal.x,b.y-animal.y))[0];
     }
     function standingHeight(x,fallback){
@@ -445,6 +447,7 @@ WW.games.animals = (() => {
           if(a.respawn<=0){
             a.alive=true;a.trust=0;a.distractedUntil=0;a.eating=0;
             a.stunned=0;a.stuck=0;a.trapped=0;a.x=a.homeX;a.y=a.homeY;
+            a.turnCooldown=0;a.aggroUntil=0;
           }
           continue;
         }
@@ -454,10 +457,15 @@ WW.games.animals = (() => {
         a.stuck=Math.max(0,a.stuck-dt);
         a.trapped=Math.max(0,a.trapped-dt);
         a.eating=Math.max(0,a.eating-dt);
+        a.turnCooldown=Math.max(0,a.turnCooldown-dt);
         const target=targetFor(a),food=nearbyFood(a);
         const distracted=a.distractedUntil>clock,peaceful=!!food||a.eating>0||distracted;
         const incapacitated=a.stunned>0||a.stuck>0||a.trapped>0;
-        const near=target&&Math.abs(target.x-a.x)<100&&Math.abs(target.y-a.y)<44;
+        const near=target&&Math.abs(target.x-a.x)<(a.kind==='cloudwhisp'?170:100)&&
+          Math.abs(target.y-a.y)<(a.kind==='cloudwhisp'?72:44);
+        if(near) a.aggroUntil=clock+3;
+        const pursuing=target&&!peaceful&&!incapacitated&&a.aggroUntil>clock&&
+          ['emberkit','prismtail','cloudwhisp'].includes(a.kind);
         const flying=['skyling','glimmermoth','cloudwhisp'].includes(a.kind);
         const aquatic=a.kind==='tideling'&&liquid(a.x,a.y-10);
         const speed={
@@ -487,7 +495,7 @@ WW.games.animals = (() => {
             }else if(near&&a.chargeCooldown===0){
               a.windup=a.kind==='emberkit'?.52:.43;desiredX=a.x;rate=0;
               a.dir=target.x<a.x?-1:1;
-            }else if(a.kind==='emberkit'&&near){
+            }else if(a.kind==='emberkit'&&pursuing){
               desiredX=target.x;rate=.83;
             }else if(a.kind==='prismtail'&&near){
               desiredX=a.x+(a.x<target.x?-75:75);
@@ -497,9 +505,9 @@ WW.games.animals = (() => {
           if(a.kind==='cloudwhisp'){
             if(a.windup>0){
               a.windup=Math.max(0,a.windup-dt);desiredX=a.x;rate=0;
-              if(a.windup===0){a.gustTime=.35;a.gustHit=[];a.chargeCooldown=3.1;}
+              if(a.windup===0){a.gustTime=.48;a.gustHit=[];a.chargeCooldown=2.7;}
             }else if(near&&a.chargeCooldown===0){
-              a.windup=.65;desiredX=a.x;rate=0;
+              a.windup=.48;desiredX=a.x;rate=0;
               a.dir=target.x<a.x?-1:1;
             }
           }
@@ -513,21 +521,33 @@ WW.games.animals = (() => {
         }
         if(a.eating>0||distracted||incapacitated){desiredX=a.x;rate=0;a.windup=0;a.dashTime=0;}
         // Turn at a known leash bound; do not walk over water, cliffs or into walls.
-        if(!food&&!near&&Math.abs(a.x-a.homeX)>=patrol-1){
-          a.dir=a.x>=a.homeX?-1:1;
+        if(!food&&!pursuing&&Math.abs(a.x-a.homeX)>=patrol-1){
+          const inward=a.x>=a.homeX?-1:1;
+          if(a.dir!==inward){a.dir=inward;a.turnCooldown=.24;}
           desiredX=a.homeX+a.dir*patrol;
         }
         const beforeX=a.x;
         const dx=clamp(desiredX-a.x,-rate*step,rate*step);
-        const candidate=clamp(a.x+dx,a.homeX-125,a.homeX+125);
+        // Real terrain and obstacles constrain enemies, not invisible spawn leashes
+        // during a pursuit. Ordinary patrols still stay near their habitats.
+        const candidate=clamp(a.x+dx,
+          pursuing?9:Math.max(9,a.homeX-125),
+          pursuing?width-9:Math.min(width-9,a.homeX+125));
         const floor=standingHeight(candidate,a.homeY);
+        const previousFloor=standingHeight(a.x,a.homeY);
         const blocked=aquatic?!liquid(candidate,a.y-10):
           !flying&&(!Number.isFinite(floor)||liquid(candidate,floor-6)||
-          Math.abs(floor-a.homeY)>33||solid(candidate,a.y-16));
+          Math.abs(floor-previousFloor)>18||solid(candidate,a.y-16));
         if(!blocked){
           a.x=candidate;
-          if(dx&&(!food||!incapacitated))a.dir=dx>0?1:-1;
-        }else if(!food){a.dir*=-1;a.windup=0;a.dashTime=0;}
+          const nextFacing=dx>0?1:-1;
+          if(Math.abs(dx)>.1 && !a.windup && a.turnCooldown===0 &&
+             a.dir!==nextFacing){
+            a.dir=nextFacing;a.turnCooldown=.24;
+          }
+        }else if(!food&&a.turnCooldown===0){
+          a.dir*=-1;a.turnCooldown=.3;a.windup=0;a.dashTime=0;
+        }
         a.moving=Math.abs(a.x-beforeX)>.1;
         if(a.trapped>0){
           a.y=Math.max(a.homeY-47,a.y-.82*step);
@@ -537,15 +557,17 @@ WW.games.animals = (() => {
           const wanted=food?food.y-16:floatY;
           a.y+=(wanted-a.y)*Math.min(1,dt*3.6);
         }else{
-          const groundY=Math.min(floor,a.homeY+20);
+          const groundY=floor;
           const bounce=a.kind==='springaroo'?Math.abs(Math.sin(a.phase*4.9))*11:
             a.kind==='prismtail'?Math.abs(Math.sin(a.phase*8))*3:
             a.kind==='emberkit'?Math.abs(Math.sin(a.phase*3.4))*4:1.2*Math.abs(Math.sin(a.phase*2));
           a.y+=(groundY-bounce-a.y)*Math.min(1,dt*18);
         }
         a.frame+=dt*(a.moving?11:5);
-        if(food&&!distracted&&a.eating===0&&a.trapped===0&&
+        if(food&&!distracted&&a.trapped===0&&
             Math.abs(a.x-food.x)<18&&Math.abs(a.y-12-food.y)<37){
+          // Accept a second favorite while still chewing the first; don't let
+          // a short animation lockout silently swallow a quick second throw.
           eatFood(a,food);
         }
         // A precise descending head stomp is safe, rewards a bounce, and
@@ -558,8 +580,9 @@ WW.games.animals = (() => {
           a.gustTime=Math.max(0,a.gustTime-dt);
           for(const p of players){
             if(!p.sleep&&!p.bubble&&!a.gustHit.includes(p.id)&&
-                (p.x-a.x)*a.dir>0&&(p.x-a.x)*a.dir<87&&Math.abs(p.y-a.y)<37){
-              p.vx=a.dir*3.8;p.vy=Math.min(p.vy,-1.4);
+                (p.x-a.x)*a.dir>0&&(p.x-a.x)*a.dir<155&&Math.abs(p.y-a.y)<65){
+              p.vx=a.dir*7.2;p.vy=Math.min(p.vy,-2.4);
+              p.windPush=.22;
               a.gustHit.push(p.id);
               particles(p.x,p.y-13,'#c4f4ff',8);
             }
@@ -1289,12 +1312,12 @@ WW.games.animals = (() => {
           ctx.strokeStyle=a.kind==='cloudwhisp'?'#b5edff':'#ffc78a';
           ctx.lineWidth=2;ctx.setLineDash([4,3]);
           ctx.beginPath();ctx.moveTo(a.x,a.y-12);
-          ctx.lineTo(a.x+a.dir*(a.kind==='cloudwhisp'?78:57),a.y-12);
+          ctx.lineTo(a.x+a.dir*(a.kind==='cloudwhisp'?152:57),a.y-12);
           ctx.stroke();ctx.setLineDash([]);ctx.restore();
         }
         if(a.gustTime>0){
-          for(let i=0;i<2;i++){
-            ctx.save();ctx.translate(a.x+a.dir*(24+i*23),a.y-13);
+          for(let i=0;i<3;i++){
+            ctx.save();ctx.translate(a.x+a.dir*(33+i*47),a.y-13);
             ctx.scale(a.dir,1);
             WW.illustrations.draw(ctx,'gust',0,11,27+i*9,23+i*7,.65);
             ctx.restore();
