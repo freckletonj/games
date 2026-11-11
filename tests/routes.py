@@ -44,8 +44,9 @@ with sync_playwright() as pw:
     # The underwater light cannot be reached without Tidefox's dive.
     page.evaluate('WW.main.play(1)')
     page.locator('#menu').wait_for(state='hidden')
-    place(43*16)
-    advance(70)
+    # Start at the actual waterline, not already halfway down the lagoon.
+    place(35*16)
+    advance(90)
     assert not got('diveKey')
     place(43*16,'tideling')
     page.keyboard.down('s');advance(70);page.keyboard.up('s');advance(1)
