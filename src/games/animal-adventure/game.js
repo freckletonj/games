@@ -872,7 +872,7 @@ WW.games.animals = (() => {
       });
       animals.forEach(a=>{
         if(!a.alive)return;
-        const near=players.some(p=>!p.sleep&&Math.abs(p.x-a.x)<105&&Math.abs(p.y-a.y)<105);
+        const near=players.some(p=>!p.sleep&&Math.abs(p.x-a.x)<55&&Math.abs(p.y-a.y)<45);
         const species=CREATURE[a.kind],ready=a.distractedUntil>clock;
         // Shadows belong on supporting terrain; flying wildlife cast none.
         if(!['skyling','glimmermoth','cloudwhisp'].includes(a.kind)){
@@ -932,14 +932,18 @@ WW.games.animals = (() => {
         if(a.windup&&!a.eating){ctx.fillStyle='#ffd6a2';ctx.font='bold 11px sans-serif';ctx.fillText('!',a.x-3,a.y-32);}
         if(!near)return;
         if(species.capturable){
-          box(ctx,a.x-19,a.y-39,38,4,'#183a46');
-          box(ctx,a.x-18,a.y-38,36*a.trust/TRUST_TARGET,2,ready?'#f7dc94':'#b0e2b5');
-          ctx.fillStyle=ready?'#ffe9b3':'#f4f2df';ctx.font='bold 8px sans-serif';
-          ctx.fillText(ready?'♥ DISTRACTED · G':a.windup>0?'! WINDING UP':a.stunned>0?'✦ STUNNED':titles[a.kind],a.x-28,a.y-45);
-          if(!ready&&a.trust<100){
-            ctx.fillStyle='#a9d9c5';ctx.font='7px sans-serif';
-            ctx.fillText(FOOD[species.favorite].name+' ♥',a.x-25,a.y-31);
+          if(a.trust>0){
+            box(ctx,a.x-19,a.y-39,38,4,'#183a46');
+            box(ctx,a.x-18,a.y-38,36*a.trust/TRUST_TARGET,2,ready?'#f7dc94':'#b0e2b5');
           }
+          // Keep the illustrated creatures visible; the trail HUD explains food.
+          ctx.save();
+          ctx.fillStyle=ready?'#ffe9b3':'#f4f2df';
+          ctx.font='bold 7px sans-serif';
+          ctx.textAlign='center';ctx.shadowColor='#173342';ctx.shadowBlur=2;
+          ctx.fillText(ready?'♥ DISTRACTED · G':a.windup>0?'! WINDING UP':
+            a.stunned>0?'✦ STUNNED':titles[a.kind],a.x,a.y-45,86);
+          ctx.restore();
         }else if(a.kind==='emberkit'){
           ctx.fillStyle='#ffd6a2';ctx.font='bold 8px sans-serif';
           ctx.fillText(a.eating?'♥ SNACK TIME':'! TERRITORIAL',a.x-27,a.y-34);
