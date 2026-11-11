@@ -187,6 +187,16 @@
         225,
         25,
         7
+      ],
+      [
+        52,
+        29,
+        9
+      ],
+      [
+        186,
+        30,
+        10
       ]
     ],
     "relic": [
@@ -214,6 +224,10 @@
       [
         "emberkit",
         176
+      ],
+      [
+        "springaroo",
+        196
       ],
       [
         "glimmermoth",
@@ -359,10 +373,10 @@
         "id": "picnic-trail-bounce-bloom-1",
         "kind": "bounceBloom",
         "section": "picnic-trail",
-        "x": 52,
+        "x": 51,
         "target": [
-          59,
-          28
+          56,
+          29
         ]
       },
       {
@@ -371,18 +385,19 @@
         "section": "lilypond",
         "x": 137,
         "target": [
-          144,
+          145,
           29
-        ]
+        ],
+        "requires": "springaroo"
       },
       {
         "id": "lantern-grove-bounce-bloom-3",
         "kind": "bounceBloom",
         "section": "lantern-grove",
-        "x": 182,
+        "x": 184,
         "target": [
           189,
-          26
+          30
         ]
       },
       {
@@ -391,7 +406,7 @@
         "section": "lantern-grove",
         "x": 238,
         "target": [
-          245,
+          242,
           25
         ]
       }
@@ -665,6 +680,11 @@
         272,
         34,
         9
+      ],
+      [
+        285,
+        34,
+        8
       ]
     ],
     "relic": [
@@ -864,9 +884,9 @@
         "id": "tideline-bounce-bloom-1",
         "kind": "bounceBloom",
         "section": "tideline",
-        "x": 28,
+        "x": 31,
         "target": [
-          35,
+          38,
           33
         ]
       },
@@ -885,9 +905,9 @@
         "id": "coral-rest-bounce-bloom-3",
         "kind": "bounceBloom",
         "section": "coral-rest",
-        "x": 135,
+        "x": 141,
         "target": [
-          142,
+          146,
           34
         ]
       },
@@ -928,7 +948,7 @@
         "id": "tidal-return-bounce-bloom-7",
         "kind": "bounceBloom",
         "section": "tidal-return",
-        "x": 281,
+        "x": 283,
         "target": [
           288,
           34
@@ -1425,13 +1445,14 @@
     "setpieces": [
       {
         "id": "lower-roost-bounce-bloom-1",
-        "kind": "bounceBloom",
+        "kind": "windRing",
         "section": "lower-roost",
-        "x": 35,
+        "x": 40,
         "target": [
-          42,
+          46,
           45
-        ]
+        ],
+        "y": 51
       },
       {
         "id": "lower-roost-wind-ring-2",
@@ -1490,13 +1511,14 @@
       },
       {
         "id": "aurora-return-bounce-bloom-7",
-        "kind": "bounceBloom",
+        "kind": "windRing",
         "section": "aurora-return",
-        "x": 289,
+        "x": 288,
         "target": [
-          296,
+          294,
           48
-        ]
+        ],
+        "y": 51
       }
     ],
     "vistas": [
@@ -1923,7 +1945,7 @@
         "section": "willow-bank",
         "x": 47,
         "target": [
-          54,
+          51,
           33
         ]
       },
@@ -1953,9 +1975,9 @@
         "id": "reed-island-bounce-bloom-4",
         "kind": "bounceBloom",
         "section": "reed-island",
-        "x": 163,
+        "x": 156,
         "target": [
-          170,
+          162,
           36
         ]
       },
@@ -1998,7 +2020,7 @@
         "section": "home-water",
         "x": 302,
         "target": [
-          309,
+          305,
           31
         ]
       }
@@ -2475,13 +2497,14 @@
     "setpieces": [
       {
         "id": "first-flight-bounce-bloom-1",
-        "kind": "bounceBloom",
+        "kind": "windRing",
         "section": "first-flight",
-        "x": 39,
+        "x": 45,
         "target": [
-          46,
-          53
-        ]
+          51,
+          49
+        ],
+        "y": 55
       },
       {
         "id": "first-flight-wind-ring-2",
@@ -2551,13 +2574,14 @@
       },
       {
         "id": "sky-lantern-bounce-bloom-8",
-        "kind": "bounceBloom",
+        "kind": "windRing",
         "section": "sky-lantern",
-        "x": 302,
+        "x": 310,
         "target": [
-          309,
-          54
-        ]
+          316,
+          42
+        ],
+        "y": 47
       }
     ],
     "vistas": [
