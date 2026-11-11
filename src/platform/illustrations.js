@@ -25,31 +25,26 @@ WW.illustrations = (() => {
   };
   const sheets = Object.fromEntries(
     Object.entries(window.WW_EMBEDDED_ILLUSTRATIONS || {}).map(([key,url]) => {
-      const asset={image:null,ready:false};
-      const image=new Image();
-      image.addEventListener('load',()=>{
-        asset.image=WW.paintCleanup(image);
-        asset.ready=true;
-      });
-      image.src=url;
-      return [key,asset];
+      const image = new Image();
+      image.src = url;
+      return [key,image];
     })
   );
   const dimensions = sheet => sheet === 'states' ? [3,3] : [4,2];
   const ready = name => {
     const source = names[name];
-    const asset = source && sheets[source[0]];
-    if (!asset?.ready) return false;
+    const image = source && sheets[source[0]];
+    if (!image || !image.complete || !image.naturalWidth) return false;
     const [columns,rows] = dimensions(source[0]);
-    return asset.image.width % columns === 0 && asset.image.height % rows === 0;
+    return image.naturalWidth % columns === 0 && image.naturalHeight % rows === 0;
   };
   // The world position is the *bottom center* of the painted sprite.
   // Keep collision geometry in the semantic level; art never changes physics.
   function draw(ctx,name,x,y,w,h,opacity=1) {
     if (!ready(name)) return false;
-    const [sheet,frame]=names[name],image=sheets[sheet].image;
+    const [sheet,frame]=names[name],image=sheets[sheet];
     const [columns,rows]=dimensions(sheet);
-    const cw=image.width/columns,ch=image.height/rows;
+    const cw=image.naturalWidth/columns,ch=image.naturalHeight/rows;
     ctx.save();
     ctx.globalAlpha*=opacity;
     ctx.imageSmoothingEnabled=true;
