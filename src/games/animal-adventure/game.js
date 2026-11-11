@@ -802,7 +802,6 @@ WW.games.animals = (() => {
         const ticks=Math.max(1,Math.ceil(
           Math.max(Math.abs(pr.vx),Math.abs(pr.vy))*step/4));
         const substep=step/ticks;
-        let removed=false;
         for(let n=0;n<ticks;n++){
           const oldY=pr.y;
           pr.x+=pr.vx*substep;pr.y+=pr.vy*substep;
@@ -824,11 +823,11 @@ WW.games.animals = (() => {
               pr.vy=-Math.max(.85,Math.min(2.2,pr.vy*.5));
               pr.vx*=.96;pr.bounces++;
             }else{
-              projectiles.splice(i,1);removed=true;break;
+              projectiles.splice(i,1);break;
             }
           }else if(floorHit||waterHit){
             if(pr.kind==='food')placeFood(pr);
-            projectiles.splice(i,1);removed=true;break;
+            projectiles.splice(i,1);break;
           }
           if(pr.kind!=='food'){
             const a=animals.find(a=>a.alive&&Math.abs(pr.x-a.x)<18&&
@@ -836,11 +835,10 @@ WW.games.animals = (() => {
             if(a){
               if(pr.kind==='orb')capture(a,pr.owner);
               else affectAnimal(a,pr);
-              projectiles.splice(i,1);removed=true;break;
+              projectiles.splice(i,1);break;
             }
           }
         }
-        if(removed)continue;
       }
       for(let i=lures.length-1;i>=0;i--){
         lures[i].age+=dt;lures[i].ttl-=dt;
