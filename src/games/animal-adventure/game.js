@@ -758,6 +758,15 @@ WW.games.animals = (() => {
       for(let x=left;x<right;x++){
         const seed=hash(x,17);
         if(seed%7!==0)continue;
+        if(level.surface){
+          const groundY=surfaceY(x*TILE+8);
+          if(liquid(x*TILE+8,groundY-8))continue;
+          const kind=choices[seed%choices.length];
+          const w=kind==='stones'?23:kind==='shells'?28:20;
+          const h=kind==='reeds'?24:kind==='moonStone'?26:21;
+          WW.illustrations.draw(ctx,kind,x*TILE+8,groundY+2,w,h,.9);
+          continue;
+        }
         for(let y=1;y<level.height;y++){
           if(map[y]?.[x]!=='ground'||map[y-1]?.[x]!=='empty')continue;
           const kind=choices[seed%choices.length];
@@ -774,7 +783,11 @@ WW.games.animals = (() => {
       for(let y=top;y<bottom;y++)for(let x=left;x<right;x++){
         const t=map[y][x];if(t==='empty')continue;
         const px=x*TILE,py=y*TILE,h=hash(x,y);
-        if(WW.scenery.tile(ctx,chapter.biome,t,px,py,h,terrainNeighbors[y][x],time))continue;
+        // The authored slope skin draws one continuous grass line. Suppress
+        // coarse ground-tile caps beneath it to avoid floating bright stripes.
+        const neighbors=level.surface&&t==='ground'&&terrainNeighbors[y][x].north==='empty'
+          ? {...terrainNeighbors[y][x],n:true}:terrainNeighbors[y][x];
+        if(WW.scenery.tile(ctx,chapter.biome,t,px,py,h,neighbors,time))continue;
         if(t==='ground'){
           box(ctx,px,py,16,16,tint.soil[0]);box(ctx,px,py+4,16,12,tint.soil[h%2?1:2]);
           if(y===0||map[y-1][x]!=='ground'){
