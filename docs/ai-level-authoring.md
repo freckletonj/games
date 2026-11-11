@@ -85,8 +85,10 @@ Each chapter is keyed by ID and has:
 - mounts: optional [kind,x,optionalY] rideable spawns, using **unicorn** or
   **pegasus**. Two favorite treats (three other treats) earn trust; land on the
   saddle to ride. Mounts are not capturable transformations. Omitting y
-  places the mount on continuous ground; to perch a Pegasus on an authored
-  platform at row 29, use ["pegasus",276,28]. Keep Pegasus locations on
+  places the mount on continuous dry ground; explicit y must stand
+  immediately above an authored bridge or ledge, not empty air. To perch
+  a Pegasus on a ledge at row 29, use ["pegasus",276,28].
+  The compiler rejects floating or submerged mounts. Keep Pegasus locations on
   meaningful elevated routes beyond the chapter's required Moonwing climb
   so unlimited mounted flight does not invalidate the initial ability puzzle.
 - checkpoints, snacks: arrays of x positions.
