@@ -142,7 +142,7 @@ WW.scenery = (() => {
       const image = images.tiles;
       const tones = materialTones[biome] || materialTones.meadow;
       paints[biome] = {
-        ground: makePaint(image, 1, false, .15, .28, .70, .63, tones.ground),
+        ground: makePaint(image, 1, false, .17, .40, .76, .54, tones.ground),
         groundTop: makePaint(image, 0, true, .12, .19, .76, .28, tones.groundTop),
         // The painted floating-island cell has a transparent silhouette.
         // Sampling it as a repeating rectangle produces black hollow ledges.
