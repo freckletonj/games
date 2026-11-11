@@ -1138,6 +1138,7 @@ WW.games.animals = (() => {
         for(let x=left;x<right;x++)
           WW.scenery.slope(ctx,chapter.biome,x*TILE,level.surface[x]*TILE,level.surface[x+1]*TILE);
       }
+      WW.scenery.terrainRelief(ctx,level,chapter.biome,cameraX,cameraY);
       WW.scenery.waterVolume(ctx,level,cameraX,now);
       for(const span of platformSpans){
         if((span.x+span.length)*TILE<cameraX-24||
