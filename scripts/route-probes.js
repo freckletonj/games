@@ -51,6 +51,26 @@ window.WW_ROUTE_PROBES = (() => {
     player.health=3;player.sleep=false;player.invincible=9999;player.waterTime=0;
     player.form=form;player.caught=form;
     if(form)player.unlocked[form]=true;
+    // For aerial stages the authored route usually begins on an elevated
+    // shelf. A ground-floor spawn below a lake/bridge tests the wrong route.
+    let support='terrain';
+    if(form==='skyling'){
+      const shelf=level.platformSegments.filter(segment=>
+        segment.kind==='platform' &&
+        segment.x < start+4 && segment.x+segment.length > start-3 &&
+        segment.y*tile < surfaceFoot(level,(start+.5)*tile)-24
+      ).sort((a,b)=>
+        Math.abs(a.x+a.length/2-start)-Math.abs(b.x+b.length/2-start))[0];
+      if(shelf){
+        const launchTile=Math.max(section.range[0]+1,
+          Math.min(start+1,Math.max(shelf.x+1,
+            Math.min(start,shelf.x+shelf.length-1))));
+        player.x=(launchTile+.5)*tile;
+        player.y=shelf.y*tile;
+        player.lastSafe={x:player.x,y:player.y};
+        support='platform';
+      }
+    }
     const before=player.x;
     const peakSteps = options.frames ?? Math.min(1400,
       Math.max(240, Math.ceil((goalX-before)/1.7)+140));
@@ -89,7 +109,8 @@ window.WW_ROUTE_PROBES = (() => {
     WW.input.read=oldRead;
     game.stop();
     return {
-      strategy:strategy.id, form:form||'explorer', startTile:start,
+      strategy:strategy.id, form:form||'explorer', support,
+      startTile:Number((before/tile).toFixed(1)),
       targetTile:end, furthestTile:Number((furthestX/tile).toFixed(1)),
       reached:furthestX>=goalX-8, frames:frames+1, jumps:usedJump,
       minimumHealth, relicCollected:touchedGoal,
