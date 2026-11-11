@@ -415,6 +415,112 @@
         "section": "lantern-grove",
         "x": 238
       }
+    ],
+    "vistas": [
+      {
+        "id": "picnic-hollow",
+        "section": "picnic-trail",
+        "kind": "root-arch",
+        "role": "teach",
+        "x": 32,
+        "span": 20
+      },
+      {
+        "id": "elder-canopy",
+        "section": "canopy-ascent",
+        "kind": "elder-tree",
+        "role": "reveal",
+        "x": 108,
+        "span": 29
+      },
+      {
+        "id": "lily-bridge",
+        "section": "lilypond",
+        "kind": "lily-garden",
+        "role": "challenge",
+        "x": 154,
+        "span": 23
+      },
+      {
+        "id": "lantern-ruins",
+        "section": "lantern-grove",
+        "kind": "firefly-ruins",
+        "role": "reward",
+        "x": 216,
+        "span": 23
+      }
+    ],
+    "dressing": [
+      {
+        "x": 17,
+        "asset": "berryBush",
+        "scale": 1.2
+      },
+      {
+        "x": 29,
+        "asset": "flowers",
+        "scale": 1.1
+      },
+      {
+        "x": 37,
+        "asset": "mushrooms",
+        "scale": 0.9
+      },
+      {
+        "x": 54,
+        "asset": "stones",
+        "scale": 1.1
+      },
+      {
+        "x": 80,
+        "asset": "flowers",
+        "scale": 1.1
+      },
+      {
+        "x": 91,
+        "asset": "mushrooms",
+        "scale": 1
+      },
+      {
+        "x": 120,
+        "asset": "flowers",
+        "scale": 0.9
+      },
+      {
+        "x": 131,
+        "asset": "reeds",
+        "scale": 1.2
+      },
+      {
+        "x": 142,
+        "asset": "reeds",
+        "scale": 1
+      },
+      {
+        "x": 171,
+        "asset": "flowers",
+        "scale": 1.3
+      },
+      {
+        "x": 185,
+        "asset": "mushrooms",
+        "scale": 1.1
+      },
+      {
+        "x": 205,
+        "asset": "stones",
+        "scale": 1
+      },
+      {
+        "x": 221,
+        "asset": "flowers",
+        "scale": 1.3
+      },
+      {
+        "x": 246,
+        "asset": "mushrooms",
+        "scale": 1
+      }
     ]
   },
   "crystal-coast": {
@@ -843,6 +949,110 @@
         "kind": "bounceBloom",
         "section": "tidal-return",
         "x": 281
+      }
+    ],
+    "vistas": [
+      {
+        "id": "shell-landing",
+        "section": "tideline",
+        "kind": "shell-cove",
+        "role": "teach",
+        "x": 29,
+        "span": 20
+      },
+      {
+        "id": "reef-window",
+        "section": "shallow-reef",
+        "kind": "reef-arch",
+        "role": "challenge",
+        "x": 82,
+        "span": 29
+      },
+      {
+        "id": "tide-courtyard",
+        "section": "coral-rest",
+        "kind": "tide-temple",
+        "role": "rest",
+        "x": 133,
+        "span": 22
+      },
+      {
+        "id": "sunken-sanctuary",
+        "section": "pearl-depths",
+        "kind": "sunken-ruin",
+        "role": "reveal",
+        "x": 190,
+        "span": 32
+      },
+      {
+        "id": "pearl-terrace",
+        "section": "tidal-return",
+        "kind": "pearl-shrine",
+        "role": "reward",
+        "x": 253,
+        "span": 26
+      }
+    ],
+    "dressing": [
+      {
+        "x": 17,
+        "asset": "shells",
+        "scale": 1.2
+      },
+      {
+        "x": 34,
+        "asset": "stones",
+        "scale": 1
+      },
+      {
+        "x": 48,
+        "asset": "reeds",
+        "scale": 1
+      },
+      {
+        "x": 61,
+        "asset": "shells",
+        "scale": 0.85
+      },
+      {
+        "x": 108,
+        "asset": "shells",
+        "scale": 1.3
+      },
+      {
+        "x": 122,
+        "asset": "reeds",
+        "scale": 0.9
+      },
+      {
+        "x": 139,
+        "asset": "stones",
+        "scale": 1
+      },
+      {
+        "x": 148,
+        "asset": "shells",
+        "scale": 1.1
+      },
+      {
+        "x": 226,
+        "asset": "reeds",
+        "scale": 1.15
+      },
+      {
+        "x": 234,
+        "asset": "shells",
+        "scale": 1.05
+      },
+      {
+        "x": 269,
+        "asset": "stones",
+        "scale": 1.2
+      },
+      {
+        "x": 282,
+        "asset": "shells",
+        "scale": 0.9
       }
     ]
   },
@@ -1304,6 +1514,95 @@
         "section": "aurora-return",
         "x": 289
       }
+    ],
+    "vistas": [
+      {
+        "id": "moon-roost",
+        "section": "lower-roost",
+        "kind": "moon-gate",
+        "role": "teach",
+        "x": 36,
+        "span": 23
+      },
+      {
+        "id": "wind-stair",
+        "section": "ridge-traversal",
+        "kind": "wind-temple",
+        "role": "challenge",
+        "x": 121,
+        "span": 29,
+        "y": 35
+      },
+      {
+        "id": "cloud-sanctuary",
+        "section": "cloud-crossing",
+        "kind": "floating-garden",
+        "role": "challenge",
+        "x": 207,
+        "span": 32,
+        "y": 35
+      },
+      {
+        "id": "aurora-crown",
+        "section": "aurora-return",
+        "kind": "aurora-spire",
+        "role": "reward",
+        "x": 255,
+        "span": 26,
+        "y": 20
+      }
+    ],
+    "dressing": [
+      {
+        "x": 16,
+        "asset": "moonStone",
+        "scale": 0.9
+      },
+      {
+        "x": 33,
+        "asset": "stones",
+        "scale": 1.3
+      },
+      {
+        "x": 59,
+        "asset": "moonStone",
+        "scale": 0.9
+      },
+      {
+        "x": 78,
+        "asset": "stones",
+        "scale": 1
+      },
+      {
+        "x": 115,
+        "asset": "moonStone",
+        "scale": 1.25
+      },
+      {
+        "x": 157,
+        "asset": "stones",
+        "scale": 0.9
+      },
+      {
+        "x": 169,
+        "asset": "moonStone",
+        "scale": 1.1
+      },
+      {
+        "x": 246,
+        "asset": "moonStone",
+        "scale": 1
+      },
+      {
+        "x": 263,
+        "asset": "stones",
+        "scale": 1.1
+      },
+      {
+        "x": 292,
+        "asset": "moonStone",
+        "scale": 1.3
+      }
     ]
   },
   "willow-wetlands": {
@@ -1710,6 +2009,105 @@
         "kind": "bounceBloom",
         "section": "home-water",
         "x": 302
+      }
+    ],
+    "vistas": [
+      {
+        "id": "willow-entrance",
+        "section": "willow-bank",
+        "kind": "willow-arch",
+        "role": "establish",
+        "x": 42,
+        "span": 28
+      },
+      {
+        "id": "reeds-and-shells",
+        "section": "first-lagoon",
+        "kind": "shell-cove",
+        "role": "challenge",
+        "x": 104,
+        "span": 29
+      },
+      {
+        "id": "reed-sanctuary",
+        "section": "reed-island",
+        "kind": "tide-temple",
+        "role": "rest",
+        "x": 159,
+        "span": 24
+      },
+      {
+        "id": "sunken-library",
+        "section": "sunken-path",
+        "kind": "sunken-ruin",
+        "role": "reveal",
+        "x": 239,
+        "span": 32
+      },
+      {
+        "id": "river-lights",
+        "section": "home-water",
+        "kind": "pearl-shrine",
+        "role": "reward",
+        "x": 301,
+        "span": 21
+      }
+    ],
+    "dressing": [
+      {
+        "x": 19,
+        "asset": "reeds",
+        "scale": 1.15
+      },
+      {
+        "x": 36,
+        "asset": "mushrooms",
+        "scale": 1.2
+      },
+      {
+        "x": 56,
+        "asset": "reeds",
+        "scale": 1.3
+      },
+      {
+        "x": 63,
+        "asset": "reeds",
+        "scale": 0.85
+      },
+      {
+        "x": 144,
+        "asset": "shells",
+        "scale": 0.9
+      },
+      {
+        "x": 155,
+        "asset": "reeds",
+        "scale": 1.1
+      },
+      {
+        "x": 175,
+        "asset": "flowers",
+        "scale": 1
+      },
+      {
+        "x": 180,
+        "asset": "reeds",
+        "scale": 1.3
+      },
+      {
+        "x": 280,
+        "asset": "reeds",
+        "scale": 1.2
+      },
+      {
+        "x": 296,
+        "asset": "mushrooms",
+        "scale": 0.9
+      },
+      {
+        "x": 315,
+        "asset": "flowers",
+        "scale": 1.1
       }
     ]
   },
@@ -2168,6 +2566,95 @@
         "kind": "bounceBloom",
         "section": "sky-lantern",
         "x": 302
+      }
+    ],
+    "vistas": [
+      {
+        "id": "first-wing",
+        "section": "first-flight",
+        "kind": "moon-gate",
+        "role": "teach",
+        "x": 54,
+        "span": 23
+      },
+      {
+        "id": "updraft-temple",
+        "section": "sunlit-arches",
+        "kind": "wind-temple",
+        "role": "challenge",
+        "x": 137,
+        "span": 28,
+        "y": 38
+      },
+      {
+        "id": "island-palace",
+        "section": "floating-sanctuary",
+        "kind": "floating-garden",
+        "role": "reveal",
+        "x": 218,
+        "span": 33,
+        "y": 35
+      },
+      {
+        "id": "sky-crown",
+        "section": "sky-lantern",
+        "kind": "aurora-spire",
+        "role": "reward",
+        "x": 285,
+        "span": 27,
+        "y": 17
+      }
+    ],
+    "dressing": [
+      {
+        "x": 16,
+        "asset": "moonStone",
+        "scale": 1.1
+      },
+      {
+        "x": 35,
+        "asset": "stones",
+        "scale": 0.9
+      },
+      {
+        "x": 57,
+        "asset": "moonStone",
+        "scale": 1.3
+      },
+      {
+        "x": 91,
+        "asset": "flowers",
+        "scale": 0.8
+      },
+      {
+        "x": 132,
+        "asset": "moonStone",
+        "scale": 1.15
+      },
+      {
+        "x": 163,
+        "asset": "flowers",
+        "scale": 1.1
+      },
+      {
+        "x": 194,
+        "asset": "moonStone",
+        "scale": 0.95
+      },
+      {
+        "x": 248,
+        "asset": "stones",
+        "scale": 1
+      },
+      {
+        "x": 290,
+        "asset": "moonStone",
+        "scale": 1.2
+      },
+      {
+        "x": 319,
+        "asset": "flowers",
+        "scale": 1
       }
     ]
   }
