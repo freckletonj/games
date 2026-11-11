@@ -35,10 +35,10 @@ with sync_playwright() as pw:
     # In the meadow, the key hangs too high for an ordinary single jump.
     page.evaluate('WW.main.play(0)')
     page.locator('#menu').wait_for(state='hidden')
-    place(27*16)
+    place(24*16)
     key('w',14);advance(62)
     assert not got('springKey')
-    place(27*16,'springaroo')
+    place(24*16,'springaroo')
     key('w',12);advance(3);key('w',24);advance(35)
     assert got('springKey'),'A properly timed double jump must reach the canopy light'
     # The underwater light cannot be reached without Tidefox's dive.
@@ -54,16 +54,40 @@ with sync_playwright() as pw:
     # The summit light is above the reach of any ordinary jump.
     page.evaluate('WW.main.play(2)')
     page.locator('#menu').wait_for(state='hidden')
-    place(17*16)
+    place(14*16)
     key('w',14);advance(62)
     assert not got('skyKey')
-    place(17*16,'skyling')
+    place(14*16,'skyling')
     page.keyboard.down('w');advance(110);page.keyboard.up('w');advance(1)
     assert not got('skyKey'),'Holding Jump must not provide continuous lift'
-    place(17*16,'skyling')
+    place(14*16,'skyling')
     for _ in range(9):
         key('w',8)
     assert got('skyKey'),'Repeated wingbeats must reach the upper light'
+    # The two expanded chapters must have solvable physical light routes too.
+    # Start from the closest supporting ledge for the aerial challenge.
+    page.evaluate('WW.main.play(3)')
+    page.locator('#menu').wait_for(state='hidden')
+    place(35*16)
+    advance(90)
+    assert not got('diveKey'), 'Willow Wetlands pearl must require an underwater dive'
+    place(43*16,'tideling')
+    page.keyboard.down('s');advance(70);page.keyboard.up('s');advance(1)
+    assert got('diveKey'), 'Tidefox must be able to retrieve the Willow Wetlands pearl'
+
+    page.evaluate('WW.main.play(4)')
+    page.locator('#menu').wait_for(state='hidden')
+    place(14*16)
+    key('w',14);advance(62)
+    assert not got('skyKey'), 'A single jump from the top garden ledge must miss the light'
+    place(14*16,'skyling')
+    page.keyboard.down('w');advance(110);page.keyboard.up('w');advance(1)
+    assert not got('skyKey'), 'Holding Jump must not reach the Cloud Gardens lantern'
+    place(14*16,'skyling')
+    for _ in range(12):
+        key('w',8)
+    assert got('skyKey'), 'Repeated Moonwing flaps must reach the Cloud Gardens lantern'
+
     assert not errors, errors
     browser.close()
-    print('PASS: single jump, ordinary swimmer and ordinary jumper blocked; all 3 powers solve their light puzzle')
+    print('PASS: all five chapter lights require and respond to the intended traversal powers')
