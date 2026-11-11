@@ -29,6 +29,8 @@ jobs:
         run: |
           node tests/level-designs.mjs
           node scripts/inspect-levels.mjs
+          node scripts/export-art-guides.mjs
+          node tests/art-guides.mjs
       - name: Verify diffusion scene panels are embedded
         run: node tests/scene-panels.mjs
       - name: Rebuild self-contained game
@@ -68,5 +70,7 @@ jobs:
             dist/level-diagnostics.json
             dist/route-probes.json
             dist/preview-route-probes.svg
+            dist/art-jobs.json
+            dist/art-guides/*.svg
             dist/performance-report.json
           if-no-files-found: ignore
