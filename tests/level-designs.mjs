@@ -25,6 +25,14 @@ for (const [id, design] of Object.entries(designs)) {
   assert.equal(world.waterBodies.length, design.water.length);
   assert.equal(world.diagnostics.metrics.motifs, design.motifs.length);
   assert.equal(world.diagnostics.metrics.terrainFeatures, design.terrainFeatures.length);
+  assert.equal(world.setpieces.length, design.setpieces.length);
+  assert.equal(world.diagnostics.metrics.setpieces, design.setpieces.length);
+  assert.ok(world.setpieces.length >= 4, id + ' needs interactive route choices');
+  for (const piece of world.setpieces) {
+    const section = design.sections.find(s => s.id === piece.section);
+    assert.ok(section && piece.x >= section.range[0] && piece.x < section.range[1]);
+    assert.ok(Number.isFinite(piece.y), piece.id + ' missing compiled height');
+  }
   assert.ok(world.platformSegments.length > design.ledges.length + design.bridges.length);
   assert.ok(world.diagnostics.metrics.waterCells > 0);
   for (const basin of world.waterBodies) {
@@ -68,6 +76,18 @@ assert.ok(compiler.analyze(brokenFeature).errors.some(e => e.includes('Invalid t
 const brokenMotif = structuredClone(original);
 brokenMotif.motifs[0].x = 250;
 assert.ok(compiler.analyze(brokenMotif).errors.some(e => e.includes('Invalid motif')));
+const misplaced = structuredClone(original);
+misplaced.setpieces[0].x = 150;
+assert.ok(compiler.analyze(misplaced).errors.some(e=>e.includes('Invalid setpiece')));
+const floatingBloom = structuredClone(original);
+floatingBloom.setpieces[0].y = 20;
+assert.ok(compiler.analyze(floatingBloom).errors.some(e=>e.includes('omit y')));
+const coast = structuredClone(designs['crystal-coast']);
+coast.setpieces.find(s=>s.kind==='bubbleVent').y = 6;
+assert.ok(compiler.analyze(coast).errors.some(e=>e.includes('deep-water')));
+const summit = structuredClone(designs['starfall-summit']);
+summit.setpieces.find(s=>s.kind==='windRing').y = 70;
+assert.ok(compiler.analyze(summit).errors.some(e=>e.includes('open air')));
 const painted = structuredClone(original);
 painted.art = {foreground:[{asset:'meadow_scene_01',x:0,y:0,width:480,height:270}]};
 assert.equal(compiler.compile(painted).art.foreground[0].asset,'meadow_scene_01');

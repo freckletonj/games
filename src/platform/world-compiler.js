@@ -5,6 +5,7 @@ WW.worldCompiler = (() => {
   const terrainKinds = new Set(['ground', 'platform', 'water', 'thermal']);
   const creatures = new Set(['springaroo', 'tideling', 'skyling', 'mossback',
     'prismtail', 'glimmermoth', 'cloudwhisp', 'emberkit']);
+  const setpieceKinds = new Set(['bounceBloom', 'windRing', 'bubbleVent']);
   const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
   const integer = n => Number.isInteger(n);
   const finite = n => typeof n === 'number' && Number.isFinite(n);
@@ -166,6 +167,43 @@ WW.worldCompiler = (() => {
           ': require a valid section, shape and in-bounds platforms');
       }
     }
+    // Author named playable beats instead of executable arbitrary scripts.
+    if (spec.setpieces !== undefined && !Array.isArray(spec.setpieces))
+      errors.push('setpieces must be an array');
+    const pieces = Array.isArray(spec.setpieces) ? spec.setpieces : [];
+    const ids = new Set();
+    for (const piece of pieces) {
+      const section = spec.sections?.find(s => s.id === piece?.section);
+      if (!piece || typeof piece.id !== 'string' || !piece.id ||
+          ids.has(piece.id) || !setpieceKinds.has(piece.kind) ||
+          !section || !integer(piece.x) ||
+          piece.x < section?.range[0] || piece.x >= section?.range[1] ||
+          piece.x < 2 || piece.x >= width - 2) {
+        errors.push('Invalid setpiece ' + (piece?.id || '?') +
+          ': expected unique id, known kind, section and x inside its section');
+        continue;
+      }
+      ids.add(piece.id);
+      const basin = Array.isArray(spec.water) ? spec.water.find(b =>
+        Array.isArray(b) && piece.x >= b[0] && piece.x < b[1]) : null;
+      if (piece.kind === 'bounceBloom' && (piece.y !== undefined || basin)) {
+        errors.push(piece.id + ': bounceBloom must be on dry ground; omit y');
+      } else if (piece.kind === 'windRing' &&
+                 (!finite(piece.y) || piece.y < 3 || piece.y >= height - 2 ||
+                  (Array.isArray(ridge) && ridge.length > 1 &&
+                   piece.y >= terrainAt(spec, piece.x) - 2))) {
+        errors.push(piece.id + ': windRing must be in open air');
+      } else if (piece.kind === 'bubbleVent' &&
+                 (!basin || !finite(piece.y) || piece.x - basin[0] < 8 ||
+                  basin[1] - piece.x < 8 ||
+                  (Array.isArray(ridge) && ridge.length > 1 &&
+                   piece.y <= Math.max(basin[2], terrainAt(spec, basin[0]),
+                     terrainAt(spec, basin[1])) + 2) ||
+                  piece.y >= basin[2] + basin[3] - 2)) {
+        errors.push(piece.id + ': bubbleVent needs a central deep-water location');
+      }
+    }
+    if (pieces.length > 50) errors.push('Too many setpieces (max 50)');
     if (Array.isArray(spec.water) && Array.isArray(ridge) && ridge.length > 1 &&
         errors.every(error => !error.startsWith('ridge'))) {
       let previousEnd = -1;
@@ -267,6 +305,11 @@ WW.worldCompiler = (() => {
     for (const x of spec.checkpoints) stamp('checkpoint', x, floorAt(x) - 1);
     for (const x of spec.snacks) stamp('snack', x, floorAt(x) - 1);
     for (const [x, y] of spec.stars) stamp('starShard', x, y);
+    const setpieces = (spec.setpieces || []).map(piece => ({
+      id: piece.id, kind: piece.kind, section: piece.section, x: piece.x,
+      y: piece.kind === 'bounceBloom'
+        ? (surface[piece.x] + surface[piece.x + 1]) / 2 : piece.y
+    }));
     const waterCells = grid.reduce((count, row) =>
       count + row.filter(cell => cell === 'water').length, 0);
     // Localized feedback is more useful to an LLM than a global quality score:
@@ -278,8 +321,11 @@ WW.worldCompiler = (() => {
       const checkpoints = spec.checkpoints.filter(within).length;
       const platforms = platformSegments.filter(p => within(p.x)).length;
       const waterRegions = basins.filter(p => p.start < b && p.end > a).length;
+      const interactions = setpieces.filter(piece => within(piece.x));
+      const kinds = Object.fromEntries([...setpieceKinds].map(kind =>
+        [kind, interactions.filter(piece => piece.kind === kind).length]));
       const notes = [];
-      if (b-a >= 65 && encounters === 0 && platforms < 2 && !waterRegions) {
+      if (b-a >= 65 && encounters === 0 && platforms < 2 && !waterRegions && !interactions.length) {
         notes.push('Long section has little authored interaction; consider a choice or encounter');
       }
       if (section.requires && !platforms && !waterRegions) {
@@ -287,7 +333,7 @@ WW.worldCompiler = (() => {
       }
       return {id: section.id, challenge: section.challenge, from: a, to: b,
         requires: section.requires || null, encounters, checkpoints, platforms,
-        waterRegions, notes};
+        waterRegions, interactions: interactions.length, setpieceKinds: kinds, notes};
     });
     for (const section of sectionReports) for (const note of section.notes) {
       report.warnings.push(section.id + ': ' + note);
@@ -296,11 +342,11 @@ WW.worldCompiler = (() => {
       width, height, sections: spec.sections.length, waterCells,
       ledges: spec.ledges.length, motifs: (spec.motifs || []).length,
       terrainFeatures: (spec.terrainFeatures || []).length,
-      creatures: spec.creatures.length
+      setpieces: setpieces.length, creatures: spec.creatures.length
     }};
     return {width, height, grid, objects, chapter, biome: spec.biome,
       landmarks: spec.landmarks, surface, waterBodies: basins,
-      platformSegments,
+      platformSegments, setpieces,
       waterZones: spec.water, sections: spec.sections, art:spec.art,
       decorSeed: spec.id, diagnostics, warnings: report.warnings};
   }
