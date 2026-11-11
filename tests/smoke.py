@@ -277,7 +277,7 @@ with sync_playwright() as playwright:
         URL.revokeObjectURL(url);
         return [result.width, result.objects.length];
     }""")
-    assert imported[0] == 144 and imported[1] > 0
+    assert imported[0] == 260 and imported[1] > 0
     page.screenshot(path=str(html.parent / 'preview-home.png'))
     print('BOOT DIAGNOSTIC:', errors, page.locator('h1').all_inner_texts(), page.locator('body').inner_text()[:250])
     assert page.locator('h1').count()==1 and page.locator('h1').inner_text()=='WONDERWOOD',errors
