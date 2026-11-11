@@ -38,6 +38,27 @@ with sync_playwright() as pw:
         page.evaluate('(n) => {for(let i=0;i<n;i++)WW.main.game.update(1/60)}', n)
 
     play(0)
+    # Ground wildlife and illustrated fixtures use the fractional heightfield,
+    # not the next whole tile row (which can leave a 15px visual gap).
+    anchored = page.evaluate("""() => {
+      const state=WW.main.game.state;
+      const world=WW.worlds.create(state.chapter);
+      const surfaceAt=x=>{
+        const cell=Math.floor(x/16),frac=x/16-cell;
+        return (world.surface[cell]*(1-frac)+world.surface[cell+1]*frac)*16;
+      };
+      const bunny=state.animals.find(a=>a.kind==='springaroo'&&a.homeX>90*16);
+      const props=state.items.filter(i=>['snack','checkpoint','exit'].includes(i.kind))
+        .map(i=>{
+          const source=world.objects.find(o=>o.kind===i.kind&&Math.abs((o.x+.5)*16-i.x)<.01);
+          if(world.grid[source.y+1][source.x]!=='ground')return null;
+          return Math.abs(i.y+(i.kind==='snack'?9:8)-surfaceAt(i.x));
+        }).filter(v=>v!==null);
+      return {wildlife:Math.abs(bunny.homeY-surfaceAt(bunny.homeX)),
+        fixtureCount:props.length,fixtureGap:Math.max(...props)};
+    }""")
+    assert anchored['wildlife'] < .01 and anchored['fixtureCount'] > 5, anchored
+    assert anchored['fixtureGap'] < .01, anchored
     # A single sustained walk must climb a gentle grade, not hit stair-step walls.
     start = page.evaluate("""() => {
       const game=WW.main.game,s=game.state,p=s.players[0],level=WW.worlds.create(s.chapter);
@@ -96,4 +117,4 @@ with sync_playwright() as pw:
     assert panels == {'surface':261,'art':1,'painted':True}, panels
     assert not errors, errors
     browser.close()
-    print('PASS: five expansive worlds, continuous slope walking, aquatic wildlife, offline diffusion-art panels')
+    print('PASS: five expansive worlds, aligned slope props, aquatic wildlife, wingbeat and painted panels')
