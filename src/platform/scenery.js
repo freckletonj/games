@@ -490,17 +490,22 @@ WW.scenery = (() => {
     deep.addColorStop(1,tones[0]+'85');
     ctx.fillStyle=deep;
     ctx.fillRect(x0,cameraY,x1-x0,340);
-    // Irregular strata follow terrain, not horizontal screen-space bands.
+    // Short, world-anchored hairline seams suggest natural layers without
+    // drawing a continuous glowing contour across a whole screen of rock.
     for(const depth of [38,88,145]){
-      ctx.beginPath();
-      for(let x=x0;x<=x1;x+=8){
-        const y=foot(x)+depth+Math.sin(x*.018+depth*.09)*5+
-          Math.sin(x*.053+depth*.14)*2;
-        if(x===x0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      for(let sector=Math.floor(x0/128);sector<=Math.ceil(x1/128);sector++){
+        if((sector*7+depth)%4===0)continue;
+        const left=sector*128+13+(sector*13+depth)%29;
+        const length=24+(sector*17+depth)%34;
+        ctx.beginPath();
+        for(let x=left;x<=left+length;x+=6){
+          const y=foot(x)+depth+Math.sin(x*.031+depth*.12)*3;
+          if(x===left)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+        }
+        ctx.lineWidth=1.1;
+        ctx.strokeStyle=depth===38?tones[1]+'2e':tones[2]+'43';
+        ctx.stroke();
       }
-      ctx.lineWidth=depth===38?1.9:1.1;
-      ctx.strokeStyle=depth===38?tones[1]+'53':tones[2]+'7b';
-      ctx.stroke();
     }
     // Architectural focal points have matching natural root systems and
     // mineral seams below the walkable surface, keeping them grounded.
