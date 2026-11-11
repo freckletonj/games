@@ -56,9 +56,21 @@ text-heavy guide. Each chapter also has a **Wonder Trail**: touch its first glow
 
 Movement uses acceleration, braking, buffered jumps, coyote time, variable jump heights, and camera anticipation. Emberkit contact and Prismtail's active dash can cost hearts, with brief invulnerability; Cloudwhisp gusts cause knockback rather than heart loss. Enemies visibly wind up before their attacks. Controller vibration is optional.
 
+## AI-native level design
+
+Built-in worlds are now authored as versioned JSON in src/games/animal-adventure/designs.json.
+The offline game embeds these declarations and compiles the same definitions
+that the Node-based level inspector validates. Challenge sections express
+intent and shoreline-aware basins avoid unsupported water columns.
+
+Run node tests/level-designs.mjs and node scripts/inspect-levels.mjs
+for machine-readable diagnostics and an SVG atlas, then node scripts/build.mjs
+to produce the single offline HTML. See docs/ai-level-authoring.md for the
+schema, workflow and current limits.
+
 ## Developer guide
 
-- **src/games/animal-adventure/worlds.js** — five authored heightfield profiles, deep-water zones, floating paths, updrafts and wildlife. This is the collision source of truth for built-in levels.
+- **src/games/animal-adventure/designs.json** — AI-editable progression and geometry. **src/platform/world-compiler.js** compiles the canonical declarations into collision and objects; **worlds.js** adapts them to the game.
 - **src/games/animal-adventure/chapters.js** — story, objectives and environmental hints.
 - **src/games/animal-adventure/catalog.js** — companions, wildlife, and foods.
 - **src/games/animal-adventure/game.js** — physics, creature AI, edible lures, capture states, collectibles, camera, rendering and HUD.
