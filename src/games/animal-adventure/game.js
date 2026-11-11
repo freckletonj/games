@@ -1080,28 +1080,11 @@ WW.games.animals = (() => {
     }
     function trailGuide(ctx,now){
       const current=objective(),p=players[0],delta=current.x-p.x;
-      // A quiet progress rail replaces constant prose and tile-count readouts.
-      const left=W/2-68,top=H-13,bar=124;
-      box(ctx,left-5,top-6,bar+10,14,'#102b3c9a');
-      box(ctx,left,top,bar,3,'#577476');
-      box(ctx,left,top,bar*clamp(p.x/width,0,1),3,'#d9dab7');
-      for(const gem of items.filter(item=>goalKinds.has(item.kind))){
-        const gx=left+bar*gem.x/width;
-        box(ctx,gx-1,top-3,3,9,shared.keys[gem.kind]?'#ffd68b':'#92afb3');
-      }
-      // A tiny marker on the existing progress rail makes optional routes discoverable.
-      for(const c of challenges){
-        if(c.type!=='trail')continue;
-        const tx=left+bar*clamp(c.nodes[0][0]*TILE/width,0,1);
-        box(ctx,tx-2,top-4,5,8,c.completed?'#96ddb4':'#f4d98a');
-      }
-      for(const player of players){
-        const px=left+bar*clamp(player.x/width,0,1);
-        box(ctx,px-2,top-2,5,7,player.id===0?'#fff2d7':'#c8b6f4');
-      }
+      // The world itself teaches navigation. Only an unobtrusive direction
+      // cue appears when the next goal is beyond the camera.
       if(Math.abs(delta)>W*.37){
         const right=delta>0,x=right?W-19:19,y=H*.51;
-        ctx.globalAlpha=.48+.25*Math.sin(now*3.4);
+        ctx.globalAlpha=.35+.18*Math.sin(now*3.4);
         ctx.fillStyle='#f6dfa4';ctx.beginPath();
         ctx.moveTo(x+(right?7:-7),y);
         ctx.lineTo(x+(right?-4:4),y-7);
@@ -1344,9 +1327,14 @@ WW.games.animals = (() => {
               time:now,grounded:p.grounded
             });
         }
-        // Colored player markers remain clear even while transformed.
-        box(ctx,p.x-8,p.y-43,16,3,'#152e42');box(ctx,p.x-7,p.y-42,14,2,p.id===0?'#ffd782':'#91d2ff');
-        ctx.font='bold 8px sans-serif';ctx.fillStyle='#102b41';ctx.fillText(String(p.id+1),p.x-2,p.y-46);
+        // Solo play needs no floating number over the protagonist. Keep
+        // distinct team colors only when two explorers share the screen.
+        if(players.length>1){
+          box(ctx,p.x-8,p.y-43,16,3,'#152e42');
+          box(ctx,p.x-7,p.y-42,14,2,p.id===0?'#ffd782':'#91d2ff');
+          ctx.font='bold 8px sans-serif';ctx.fillStyle='#102b41';
+          ctx.fillText(String(p.id+1),p.x-2,p.y-46);
+        }
       });
       effects.forEach(e=>{
         // A larger faint halo lets spell effects read as light, not confetti.
