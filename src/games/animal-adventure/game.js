@@ -239,7 +239,8 @@ WW.games.animals = (() => {
         }else if(s.kind==='bubbleVent' && liquid(p.x,p.y-8) &&
                  Math.abs(p.x-s.x)<20 && Math.abs(p.y-11-s.y)<38){
           // A vent is an upward current even when the swimmer is not paddling.
-          p.vy=Math.max(-3.75,p.vy-(swimming?.68:.38));
+          p.vy=swimming&&controls.jump?Math.min(p.vy,-3.75):
+            Math.max(-3.75,p.vy-(swimming?.68:.38));
         }
       }
     }
