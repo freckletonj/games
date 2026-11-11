@@ -9,7 +9,10 @@ sandbox.window = sandbox;
 vm.createContext(sandbox);
 vm.runInContext(readFileSync('src/platform/world-compiler.js', 'utf8'), sandbox);
 const compiler = sandbox.WW.worldCompiler;
-const designs = JSON.parse(readFileSync('src/games/animal-adventure/designs.json', 'utf8'));
+// Pass an individual design file, or omit the argument to inspect the entire campaign.
+const input = process.argv[2] || 'src/games/animal-adventure/designs.json';
+const parsed = JSON.parse(readFileSync(input, 'utf8'));
+const designs = parsed.version === 1 && parsed.id ? {[parsed.id]:parsed} : parsed;
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;')
   .replaceAll('"', '&quot;');
 const colors = {meadow: ['#bfe9d7', '#476b5d'], coast: ['#aedfe9', '#5c7c86'],
