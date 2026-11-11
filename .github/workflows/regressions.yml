@@ -37,6 +37,7 @@ jobs:
         run: |
           python tests/smoke.py
           python tests/playability.py
+          python tests/controller_and_coop.py
           python tests/routes.py
           python tests/terrain_and_flight.py
           python tests/game_feel.py
