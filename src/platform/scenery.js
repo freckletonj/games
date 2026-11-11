@@ -82,7 +82,7 @@ WW.scenery = (() => {
     const cw=image.naturalWidth/4,ch=image.naturalHeight/2;
     // A single generous painted crop with feathered *outer* wrap edges avoids
     // the centerline/kaleidoscope artifacts of mirrored 128px terrain swatches.
-    const px=320,py=top?20:320;
+    const px=320,py=top?16:320;
     const canvas=document.createElement('canvas');
     canvas.width=px;canvas.height=py;
     const g=canvas.getContext('2d',{willReadFrequently:true});
