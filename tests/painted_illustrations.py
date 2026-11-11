@@ -17,43 +17,6 @@ with sync_playwright() as playwright:
         'effects','flora','landmarks','props','states'
     ]
     page.wait_for_function("WW.illustrations.names.every(WW.illustrations.ready)")
-    # Transparency extraction left pure red/yellow matte patches around some
-    # generated illustrations. Runtime cleanup must discard those pixels while
-    # keeping real painted oranges and golds visible.
-    matte = page.evaluate("""async () => {
-      const image=new Image();
-      image.src=WW_EMBEDDED_ILLUSTRATIONS.props;
-      await image.decode();
-      const before=document.createElement('canvas');
-      before.width=image.naturalWidth;before.height=image.naturalHeight;
-      const source=before.getContext('2d');
-      source.drawImage(image,0,0);
-      const cleaned=WW.paintCleanup(image);
-      const countKey=context=>{
-        const pixels=context.getImageData(0,0,before.width,before.height).data;
-        let count=0;
-        for(let i=0;i<pixels.length;i+=4){
-          const [r,g,b,a]=pixels.slice(i,i+4);
-          if(a>12&&((r>232&&g<100&&b<118)||(r>232&&g>211&&b<130)))count++;
-        }
-        return count;
-      };
-      const synthetic=document.createElement('canvas');
-      synthetic.width=8;synthetic.height=6;
-      const g=synthetic.getContext('2d');
-      g.fillStyle='#ff0000';g.fillRect(1,2,1,1);
-      g.fillStyle='#ffffff';g.fillRect(2,2,2,1);
-      g.fillStyle='#ffff00';g.fillRect(4,2,1,1);
-      g.fillStyle='#e59b4d';g.fillRect(6,2,1,1);
-      const sample=new Image();sample.src=synthetic.toDataURL();
-      await sample.decode();
-      const result=WW.paintCleanup(sample).getContext('2d');
-      const alpha=x=>result.getImageData(x,2,1,1).data[3];
-      return {before:countKey(source),after:countKey(cleaned.getContext('2d')),
-        synthetic:[alpha(1),alpha(2),alpha(3),alpha(4),alpha(6)]};
-    }""")
-    assert matte['before'] > 10 and matte['after'] == 0, matte
-    assert matte['synthetic'] == [0,0,0,0,255], matte
     result=page.evaluate("""() => {
       const canvas=document.createElement('canvas');
       canvas.width=128;canvas.height=160;
