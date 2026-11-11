@@ -342,6 +342,23 @@
         "width": 5,
         "rise": 8
       }
+    ],
+    "terrainFeatures": [
+      {
+        "center": 14,
+        "radius": 10,
+        "lift": -3
+      },
+      {
+        "center": 72,
+        "radius": 15,
+        "lift": 4
+      },
+      {
+        "center": 185,
+        "radius": 13,
+        "lift": -3
+      }
     ]
   },
   "crystal-coast": {
@@ -705,6 +722,23 @@
         "dx": 10,
         "width": 6,
         "rise": 3
+      }
+    ],
+    "terrainFeatures": [
+      {
+        "center": 29,
+        "radius": 15,
+        "lift": 4
+      },
+      {
+        "center": 128,
+        "radius": 13,
+        "lift": -4
+      },
+      {
+        "center": 281,
+        "radius": 12,
+        "lift": 3
       }
     ]
   },
@@ -1095,6 +1129,28 @@
         "width": 6,
         "rise": 12
       }
+    ],
+    "terrainFeatures": [
+      {
+        "center": 19,
+        "radius": 14,
+        "lift": 5
+      },
+      {
+        "center": 119,
+        "radius": 18,
+        "lift": -5
+      },
+      {
+        "center": 199,
+        "radius": 16,
+        "lift": 5
+      },
+      {
+        "center": 287,
+        "radius": 14,
+        "lift": -3
+      }
     ]
   },
   "willow-wetlands": {
@@ -1429,6 +1485,23 @@
         "dx": 13,
         "width": 5,
         "rise": 4
+      }
+    ],
+    "terrainFeatures": [
+      {
+        "center": 40,
+        "radius": 16,
+        "lift": 4
+      },
+      {
+        "center": 160,
+        "radius": 12,
+        "lift": -3
+      },
+      {
+        "center": 294,
+        "radius": 12,
+        "lift": 3
       }
     ]
   },
@@ -1814,6 +1887,23 @@
         "dx": 11,
         "width": 6,
         "rise": 11
+      }
+    ],
+    "terrainFeatures": [
+      {
+        "center": 32,
+        "radius": 14,
+        "lift": 5
+      },
+      {
+        "center": 163,
+        "radius": 16,
+        "lift": -4
+      },
+      {
+        "center": 301,
+        "radius": 20,
+        "lift": 5
       }
     ]
   }
