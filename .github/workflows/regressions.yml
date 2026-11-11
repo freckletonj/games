@@ -29,6 +29,8 @@ jobs:
         run: |
           node tests/level-designs.mjs
           node scripts/inspect-levels.mjs
+      - name: Verify diffusion scene panels are embedded
+        run: node tests/scene-panels.mjs
       - name: Rebuild self-contained game
         run: node scripts/build.mjs
       - name: Verify playable standalone bundle was generated
