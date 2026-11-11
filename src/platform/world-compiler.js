@@ -101,6 +101,34 @@ WW.worldCompiler = (() => {
         }
       }
     }
+    // Mounted trials are optional, physics-tested reward routes. Their
+    // first marker must follow a real Unicorn/Pegasus encounter and all rings
+    // belong to one named challenge section.
+    if(spec.mountCourses!==undefined && !Array.isArray(spec.mountCourses))
+      errors.push('mountCourses must be an array');
+    const courseIds=new Set();
+    for(const course of Array.isArray(spec.mountCourses)?spec.mountCourses:[]){
+      const section=spec.sections?.find(s=>s.id===course?.section);
+      const route=course?.nodes;
+      const valid=course&&typeof course.id==='string'&&course.id.length>0&&
+        !courseIds.has(course.id)&&typeof course.name==='string'&&course.name.length>0&&
+        mountKinds.has(course.mount)&&section&&
+        finite(course.seconds)&&course.seconds>=6&&course.seconds<=30&&
+        Array.isArray(route)&&route.length>=4&&route.length<=7&&
+        route.every(p=>Array.isArray(p)&&p.length===2&&
+          integer(p[0])&&integer(p[1])&&p[0]>=section.range[0]&&
+          p[0]<section.range[1]&&p[1]>=3&&p[1]<height-2)&&
+        route.every((p,i)=>i===0||(p[0]>route[i-1][0]&&
+          p[0]-route[i-1][0]<=24&&
+          Math.abs(p[1]-route[i-1][1])<=(course.mount==='unicorn'?11:17)))&&
+        (spec.mounts||[]).some(m=>m[0]===course.mount&&m[1]<=route[0][0]&&
+          route[0][0]-m[1]<=12);
+      if(!valid)errors.push('Invalid mount course '+(course?.id||'?')+
+        ': require 4..7 forward, reachable, section-bound ring markers after a mount');
+      else courseIds.add(course.id);
+    }
+    if(Array.isArray(spec.mountCourses)&&spec.mountCourses.length>6)
+      errors.push('Too many mount courses (max 6)');
     if (!Array.isArray(spec.relic) || spec.relic.length !== 3 ||
         !['springKey', 'diveKey', 'skyKey'].includes(spec.relic[0]) ||
         !finite(spec.relic[1]) || !finite(spec.relic[2])) {
@@ -421,6 +449,7 @@ WW.worldCompiler = (() => {
       y: piece.kind === 'bounceBloom'
         ? (surface[piece.x] + surface[piece.x + 1]) / 2 : piece.y
     }));
+    const mountCourses=(spec.mountCourses||[]).map(c=>({...c,type:'mountCourse'}));
     const waterCells = grid.reduce((count, row) =>
       count + row.filter(cell => cell === 'water').length, 0);
     // Localized feedback is more useful to an LLM than a global quality score:
@@ -435,6 +464,7 @@ WW.worldCompiler = (() => {
       const visualBeats = vistas.filter(vista => within(vista.x));
       const decorations = dressing.filter(prop => within(prop.x)).length;
       const interactions = setpieces.filter(piece => within(piece.x));
+      const rides=mountCourses.filter(course=>course.nodes.some(p=>within(p[0])));
       const kinds = Object.fromEntries([...setpieceKinds].map(kind =>
         [kind, interactions.filter(piece => piece.kind === kind).length]));
       const notes = [];
@@ -465,7 +495,7 @@ WW.worldCompiler = (() => {
       }
       return {id: section.id, challenge: section.challenge, from: a, to: b,
         requires: section.requires || null, encounters, checkpoints, platforms,
-        waterRegions, interactions: interactions.length, setpieceKinds: kinds,
+        waterRegions, interactions: interactions.length, mountCourses:rides.map(c=>c.id), setpieceKinds: kinds,
         intendedRoutes:interactions.map(p=>({from:p.x,to:p.target,mechanic:p.kind})),
         visualBeats: visualBeats.map(v => ({id:v.id,kind:v.kind,role:v.role})),
         decorations, notes};
@@ -479,11 +509,12 @@ WW.worldCompiler = (() => {
       terrainFeatures: (spec.terrainFeatures || []).length,
       setpieces: setpieces.length, vistas: vistas.length,
       dressing: dressing.length, goalWaypoints: (spec.goalRoute||[]).length,
-      creatures: spec.creatures.length, mounts: (spec.mounts||[]).length
+      creatures: spec.creatures.length, mounts: (spec.mounts||[]).length,
+      mountCourses:mountCourses.length
     }};
     return {width, height, grid, objects, chapter, biome: spec.biome,
       landmarks: spec.landmarks, surface, waterBodies: basins,
-      platformSegments, setpieces, vistas, dressing, goalRoute: spec.goalRoute || [],
+      platformSegments, setpieces, mountCourses, vistas, dressing, goalRoute: spec.goalRoute || [],
       thermalVolumes:(spec.thermals||[]).map(([x,y,width,height])=>({x,y,width,height})),
       waterZones: spec.water, sections: spec.sections, art:spec.art,
       decorSeed: spec.id, diagnostics, warnings: report.warnings};
