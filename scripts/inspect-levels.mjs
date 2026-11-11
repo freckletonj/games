@@ -28,7 +28,7 @@ for (const [index, [id, design]] of Object.entries(designs).entries()) {
   }
   const level = compiler.compile(design, {id, biome: design.biome});
   reports.push({id, ...level.diagnostics, sections: design.sections,
-    basins: level.waterBodies});
+    basins: level.waterBodies, goalRoute: level.goalRoute});
   const yBase = 32 + index * 210, scaleX = 920 / level.width, scaleY = 1.65;
   const px = x => 40 + x * scaleX;
   const py = y => yBase + 20 + y * scaleY;
@@ -68,6 +68,17 @@ for (const [index, [id, design]] of Object.entries(designs).entries()) {
   for (const {x, y, length} of level.platformSegments) {
     out.push('<path d="M' + px(x) + ' ' + py(y) + ' H' + px(x + length) +
       '" stroke="#ececd2" stroke-width="3" stroke-linecap="round"/>');
+  }
+  if(level.goalRoute?.length){
+    const points=level.goalRoute.map(([x,y])=>px(x+.5)+','+py(y)).join(' ');
+    out.push('<polyline points="'+points+
+      '" fill="none" stroke="#172e46" stroke-width="4" stroke-linejoin="round"/>');
+    out.push('<polyline points="'+points+
+      '" fill="none" stroke="#ffe397" stroke-width="2.4" '+
+      'stroke-dasharray="4 3" stroke-linejoin="round"/>');
+    for(const [x,y] of level.goalRoute.slice(0,-1))
+      out.push('<circle cx="'+px(x+.5)+'" cy="'+py(y)+
+        '" r="3" fill="#fff5c8" stroke="#172e46" stroke-width=".8"/>');
   }
   for (const v of level.vistas || []) {
     out.push('<ellipse cx="' + px(v.x) + '" cy="' + py(v.y-6) +
