@@ -399,5 +399,98 @@ WW.scenery = (() => {
     return true;
   }
 
-  return {background, paintBackdrop, paintLayers, waterVolume, slope, landmark, tile, url, ready};
+  // A whole semantic span is illustrated as one connected object. Painting
+  // independent 16px blocks made bridges look like detached little squares.
+  // Exact top and horizontal bounds still correspond to real collision.
+  function platformSpan(ctx, biome, segment, time=0) {
+    if(segment.kind!=='platform')return false;
+    const x=segment.x*16,y=segment.y*16,w=segment.length*16;
+    const bridge=segment.style==='bridge';
+    const shelf=segment.style==='shelf';
+    const step=segment.style==='step';
+    const palettes={
+      meadow:{rock:'#455c55',body:'#6d8b6e',cap:'#8dbf8e',highlight:'#d6e9b1',
+        low:'#304b45',accent:'#e8c7a0',root:'#476c59'},
+      coast:{rock:'#426b75',body:'#849d9a',cap:'#c8cfb5',highlight:'#fff0d3',
+        low:'#325767',accent:'#f4b6b1',root:'#6c9798'},
+      summit:{rock:'#565779',body:'#8889ae',cap:'#b9b6d7',highlight:'#f0e3e2',
+        low:'#3b4069',accent:'#d4b9fb',root:'#7886bc'}
+    };
+    const p=palettes[biome]||palettes.meadow;
+    const phase=Math.sin(segment.x*1.7+segment.y*.93);
+    ctx.save();
+    if(bridge){
+      // Real continuous wooden/shell/stone crossing; organic supports only
+      // below the traversable top edge.
+      const rail=ctx.createLinearGradient(0,y,0,y+15);
+      rail.addColorStop(0,p.cap);rail.addColorStop(.3,p.body);
+      rail.addColorStop(1,p.low);
+      ctx.fillStyle=rail;ctx.beginPath();ctx.moveTo(x,y+2);
+      ctx.lineTo(x+w,y+2);ctx.lineTo(x+w-4,y+13);
+      ctx.quadraticCurveTo(x+w/2,y+17,x+4,y+13);
+      ctx.closePath();ctx.fill();
+      ctx.strokeStyle=p.highlight;ctx.lineWidth=3.2;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(x+2,y+1);
+      ctx.quadraticCurveTo(x+w/2,y-.3,x+w-2,y+1);ctx.stroke();
+      ctx.strokeStyle=p.low+'b0';ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(x+2,y+12);
+      ctx.quadraticCurveTo(x+w/2,y+17,x+w-2,y+12);ctx.stroke();
+      if(biome==='meadow'){
+        ctx.strokeStyle=p.root;ctx.lineWidth=2;
+        for(let t=12;t<w-10;t+=24){
+          ctx.beginPath();ctx.moveTo(x+t,y+11);
+          ctx.quadraticCurveTo(x+t-5,y+22,x+t+4,y+28+phase*2);ctx.stroke();
+        }
+      }else if(biome==='coast'){
+        for(let t=11;t<w-8;t+=26){
+          ctx.fillStyle=p.accent+'9c';ctx.beginPath();
+          ctx.ellipse(x+t,y+4,6,2.2,.12,0,Math.PI*2);ctx.fill();
+        }
+      }else{
+        ctx.fillStyle=p.highlight+'ac';
+        for(let t=17;t<w-10;t+=35){
+          ctx.beginPath();ctx.moveTo(x+t-4,y+4);
+          ctx.lineTo(x+t+2,y+8);ctx.lineTo(x+t+9,y+4);ctx.closePath();ctx.fill();
+        }
+      }
+    }else{
+      // A single softly scalloped island of rock/roots/coral, not a rectangle.
+      const base=ctx.createLinearGradient(0,y,0,y+30);
+      base.addColorStop(0,p.cap);base.addColorStop(.32,p.body);
+      base.addColorStop(1,p.rock);
+      ctx.fillStyle=base;ctx.beginPath();ctx.moveTo(x,y+2);
+      ctx.quadraticCurveTo(x+w/2,y-1,x+w,y+2);
+      ctx.quadraticCurveTo(x+w+3,y+9,x+w-8,y+14);
+      ctx.lineTo(x+w*.67,y+21+(step?3:9));
+      ctx.quadraticCurveTo(x+w*.51,y+32+(step?5:11),x+w*.38,y+23);
+      ctx.lineTo(x+8,y+15);
+      ctx.quadraticCurveTo(x-3,y+13,x,y+2);ctx.fill();
+      ctx.strokeStyle=p.highlight;ctx.lineWidth=2.8;
+      ctx.beginPath();ctx.moveTo(x+2,y+1.6);
+      ctx.quadraticCurveTo(x+w/2,y,x+w-2,y+1.6);ctx.stroke();
+      const surface=ctx.createLinearGradient(0,y-2,0,y+7);
+      surface.addColorStop(0,p.highlight+'ac');
+      surface.addColorStop(1,p.cap+'20');
+      ctx.fillStyle=surface;ctx.beginPath();
+      ctx.ellipse(x+w/2,y+3,w*.48,4.5,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=p.low+'88';ctx.lineWidth=1.4;
+      for(let t=15;t<w-9;t+=33){
+        ctx.beginPath();ctx.moveTo(x+t,y+14);
+        ctx.quadraticCurveTo(x+t-5,y+19,x+t+4,y+25);ctx.stroke();
+      }
+      if(!shelf){
+        // Small authored mineral/foliage accents, attached to the same span.
+        for(const i of [0,1]){
+          const px=x+w*(i===0?.18:.82),py=y+1;
+          ctx.fillStyle=i?p.accent:p.highlight;
+          ctx.beginPath();ctx.ellipse(px,py-2.1,3.2,1.8,
+            i?.25:-.25,0,Math.PI*2);ctx.fill();
+        }
+      }
+    }
+    ctx.restore();
+    return true;
+  }
+
+  return {background, paintBackdrop, paintLayers, waterVolume, slope, landmark, tile, platformSpan, url, ready};
 })();
