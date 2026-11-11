@@ -82,13 +82,27 @@ window.WW_ROUTE_PROBES = (() => {
       if(slot>0)return controls(false,false,false,false);
       const swimming=form==='tideling' &&
         (level.grid[Math.floor((player.y-8)/tile)]?.[Math.floor(player.x/tile)]==='water');
-      const jump = strategy.rhythm==='jump' ? frames%43 < 15 :
+      let jump = strategy.rhythm==='jump' ? frames%43 < 15 :
         strategy.rhythm==='power' ? (form==='skyling' ? frames%11 === 0
           : form==='springaroo' ? frames%39 < 13 || frames%39 === 19
             : form==='tideling' ? !swimming && frames%48 < 12
               : frames%43 < 15) : false;
-      const down = form==='tideling' && swimming && section.requires==='tideling'
-        && !!relic && player.y < relic.y+8;
+      let down=false;
+      // Tidefox probes have a simple plan: approach a submerged relic at its
+      // depth, then ascend before hitting the bank. These are real Jump/Down
+      // controls, not teleportation or altered swim physics.
+      if(form==='tideling' && swimming && strategy.rhythm==='power'){
+        const pool=level.waterBodies.find(b=>
+          player.x>=b.start*tile && player.x<b.end*tile);
+        const seekRelic=section.requires==='tideling' && relic && !relic.used &&
+          Math.abs(player.x-relic.x)<90;
+        if(seekRelic){
+          jump=player.y>relic.y+10;
+          down=player.y<relic.y-10;
+        }else if(pool && pool.end*tile-player.x<260){
+          jump=player.y>pool.surface*tile-8;
+        }else jump=false;
+      }
       const input=controls(true,jump,down,previousJump);
       if(input.pressed.jump)usedJump++;
       previousJump=jump;
