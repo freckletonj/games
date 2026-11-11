@@ -123,7 +123,7 @@ const summit = structuredClone(designs['starfall-summit']);
 summit.setpieces.find(s=>s.kind==='windRing').y = 70;
 assert.ok(compiler.analyze(summit).errors.some(e=>e.includes('open air')));
 const floatingGoal=structuredClone(original);
-floatingGoal.goalRoute[0]=[100,7];
+floatingGoal.goalRoute[0]=[101,21];
 assert.ok(compiler.analyze(floatingGoal).errors.some(e=>e.includes('real authored ledge')));
 const brokenGoal=structuredClone(original);
 brokenGoal.goalRoute[2]=[110,20];
