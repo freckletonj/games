@@ -62,7 +62,7 @@ for (const [index, [id, design]] of Object.entries(designs).entries()) {
     ridge + ' ' + px(level.width) + ',' + py(level.height) +
     '" fill="' + soil + '"/>');
   out.push('<polyline points="' + ridge + '" fill="none" stroke="#edffc9" stroke-width="2"/>');
-  for (const [x, y, length] of [...design.bridges, ...design.ledges]) {
+  for (const {x, y, length} of level.platformSegments) {
     out.push('<path d="M' + px(x) + ' ' + py(y) + ' H' + px(x + length) +
       '" stroke="#ececd2" stroke-width="3" stroke-linecap="round"/>');
   }
