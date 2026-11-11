@@ -48,6 +48,11 @@ Each chapter is keyed by ID and has:
   (tideling is Tidefox; skyling is Moonwing).
 - checkpoints, snacks: arrays of x positions.
 - stars: [x,y] optional pickups; landmarks: {x,type} descriptions.
+- motifs: optional, section-bound platform patterns, for example:
+  {"id":"lily-arc","section":"lilypond","type":"arc",
+   "x":131,"y":30,"count":6,"dx":7,"width":5,"rise":8}.
+  Types arc, staircase and ripples generate reusable, non-identical alternate
+  routes; the whole pattern must fit inside its challenge section.
 - sections: contiguous objects with id, range:[start,end], challenge, goal,
   and optionally requires. They cover the entire level. A form required in
   a section must have a creature encounter earlier than its beginning.
