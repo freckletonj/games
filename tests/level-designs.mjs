@@ -21,6 +21,7 @@ for (const [id, design] of Object.entries(designs)) {
   assert.equal(world.objects.filter(o => o.kind === design.relic[0]).length, 1);
   assert.ok(world.diagnostics.valid);
   assert.equal(world.sections.at(-1).range[1], world.width);
+  assert.equal(world.diagnostics.sectionReports.length, design.sections.length);
   assert.equal(world.waterBodies.length, design.water.length);
   assert.equal(world.diagnostics.metrics.motifs, design.motifs.length);
   assert.ok(world.platformSegments.length > design.ledges.length + design.bridges.length);
