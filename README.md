@@ -37,7 +37,7 @@ fractional-height ground profiles and genuine walkable ramps; deep water has
 aquatic wildlife, underwater shelves and multiple routes. Moonwing rises from
 **individual wingbeats**, not by holding Jump; shimmer columns provide updrafts.
 A restrained progress rail and occasional contextual hints replace a permanent
-text-heavy guide. Completed chapters are saved in the browser.
+text-heavy guide. Each chapter also has a **Wonder Trail**: touch its first glowing ring, then reach the remaining rings in order before the light fades. These optional routes reward skillful jumps, diving or wingbeats with three Stardrops and a heart restored. They never block the main story; completed trails are recorded with chapter progress. Five additional hidden star shards in each chapter give curious players more optional routes to seek out. Completed chapters are saved in the browser.
 
 ## Controls
 

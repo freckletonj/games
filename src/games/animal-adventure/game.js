@@ -84,8 +84,8 @@ WW.games.animals = (() => {
       const onGround=level.surface&&paintedFoot&&map[o.y+1]?.[o.x]==='ground';
       return {kind:o.kind,x,y:onGround?surfaceY(x)-paintedFoot:(o.y+.5)*TILE,used:false};
     });
-    const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),keys:Object.fromEntries(goals.map(g=>[g.kind,false])),checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,won:false};
-    const challenges=(chapter.events||[]).map(e=>({...e,completed:false,active:false,time:0,owner:null}));
+    const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),keys:Object.fromEntries(goals.map(g=>[g.kind,false])),checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,trails:0,won:false};
+    const challenges=(chapter.events||[]).map(e=>({...e,completed:false,active:false,time:0,owner:null,next:0,cooldown:0}));
     const projectiles=[],lures=[],captures=[],effects=[];
     let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,lastLeashHint=-10,signIndex=-1;
     const message=document.getElementById('message');const hud=document.getElementById('hud');
@@ -544,6 +544,41 @@ WW.games.animals = (() => {
     }
     function updateChallenges(dt){
       for(const c of challenges){
+        if(c.type==='trail'){
+          if(c.completed)continue;
+          c.cooldown=Math.max(0,c.cooldown-dt);
+          if(c.active){
+            c.time=Math.max(0,c.time-dt);
+            if(c.time===0||players[c.owner].sleep){
+              c.active=false;c.owner=null;c.next=0;c.cooldown=1.2;
+              say('The rings faded. Touch the first glow to retry.',1600);
+              continue;
+            }
+          }
+          for(const p of players){
+            if(p.sleep||c.cooldown>0||(c.active&&c.owner!==p.id))continue;
+            const node=c.nodes[c.active?c.next:0];
+            if(Math.abs(p.x-node[0]*TILE)>17||Math.abs(p.y-13-node[1]*TILE)>22)continue;
+            if(!c.active){
+              c.active=true;c.owner=p.id;c.time=c.seconds;c.next=1;
+              WW.audio.play('ready');particles(node[0]*TILE,node[1]*TILE,'#c9f6ff',12);
+              say(c.name+' — follow the glowing rings!',1650);
+            }else{
+              c.next++;WW.audio.play('gem');
+              particles(node[0]*TILE,node[1]*TILE,'#ffeab1',13);
+              if(c.next===c.nodes.length){
+                c.completed=true;c.active=false;c.owner=null;
+                shared.trails++;shared.foods.star+=3;
+                players.forEach(player=>{if(!player.sleep)player.health=Math.min(3,player.health+1);});
+                WW.input.rumble(p.id,.6,220);
+                particles(node[0]*TILE,node[1]*TILE,'#fff6bd',26);
+                say('Wonder Trail complete! +3 Stardrops and a heart.',2200);
+              }
+            }
+            break;
+          }
+          continue;
+        }
         if(c.type!=='sprint'||c.completed)continue;
         if(c.active){
           c.time=Math.max(0,c.time-dt);
@@ -604,7 +639,8 @@ WW.games.animals = (() => {
             shared.won=true;const progress=WW.storage.data.progress;
             progress.wins=(progress.wins||0)+1;progress.bestShards=Math.max(progress.bestShards||0,shared.shards);
             progress.chapters||={};progress.chapters[chapter.id]=Math.max(progress.chapters[chapter.id]||0,shared.shards);
-            WW.storage.save();WW.audio.play('win');WW.main.win(progress.wins,shared.shards,shared.totalShards);
+            progress.trails||={};progress.trails[chapter.id]=Math.max(progress.trails[chapter.id]||0,shared.trails);
+            WW.storage.save();WW.audio.play('win');WW.main.win(progress.wins,shared.shards,shared.totalShards,shared.trails);
           }
           else if(clock>(item.lastHint||0)+2){item.lastHint=clock;say(`Gate locked: ${goals.filter(g=>!shared.keys[g.kind]).map(g=>g.name).join(' · ')||'All relics ready!'}`,2600);}
         }
@@ -649,7 +685,7 @@ WW.games.animals = (() => {
           }).join('')}</div>
           <div class="compact-quest" title="${chapter.name}">
             <span class="quest-gem ${goals.every(g=>shared.keys[g.kind])?'found':''}">◆</span>
-            <small>✦ ${shared.shards}/${shared.totalShards}</small>
+            <small>✦ ${shared.shards}/${shared.totalShards}${shared.trails?' · ✧':''}</small>
           </div>`;
       }
     }
@@ -908,6 +944,22 @@ WW.games.animals = (() => {
           ctx.fillStyle='#fff2c6';ctx.font='bold 7px sans-serif';ctx.fillText(word,x-12,top+1);
         }
       }
+      // Show only the current ring and a faint preview: skill, not HUD prose.
+      for(const c of challenges){
+        if(c.type!=='trail'||c.completed)continue;
+        for(let i=0;i<c.nodes.length;i++){
+          const current=i===(c.active?c.next:0);
+          if(!current&&i!==(c.active?c.next+1:1))continue;
+          const [tileX,tileY]=c.nodes[i],x=tileX*TILE,y=tileY*TILE;
+          if(x<cameraX-26||x>cameraX+W+26||y<cameraY-26||y>cameraY+H+26)continue;
+          const pulse=Math.sin(now*4+i)*1.2;
+          ctx.save();ctx.globalAlpha=current?.95:.36;
+          ctx.strokeStyle=current?'#ffedaa':'#a4edff';ctx.lineWidth=current?2.5:1.5;
+          ctx.beginPath();ctx.ellipse(x,y,12+pulse,16+pulse,0,0,Math.PI*2);ctx.stroke();
+          WW.illustrations.draw(ctx,'spark',x,y+5,16,16);
+          ctx.restore();
+        }
+      }
       items.forEach(it=>{if(it.used&&it.kind!=='checkpoint')return;const bob=Math.sin(now*3+it.x)*2;
         if(it.kind==='snack')WW.props.snack(ctx,it.x,it.y+8+bob,now);
         if(it.kind==='starShard'){
@@ -1083,6 +1135,14 @@ WW.games.animals = (() => {
       ctx.fillStyle=edge;ctx.fillRect(0,0,W,H);
       const race=challenges.find(c=>c.type==='sprint'&&c.active);
       if(race){box(ctx,140,32,200,20,'#203252d5');ctx.font='bold 12px sans-serif';ctx.fillStyle='#ffebb9';ctx.fillText(`CRYSTAL DASH: ${race.time.toFixed(1)}s`,164,46);}
+      const trail=challenges.find(c=>c.type==='trail'&&c.active);
+      if(trail){
+        const x=W/2-40;
+        box(ctx,x,15,80,4,'#203252b8');
+        box(ctx,x,15,80*trail.time/trail.seconds,4,'#ffe4a3');
+        for(let i=0;i<trail.nodes.length;i++)
+          box(ctx,x+i*25,23,5,5,i<trail.next?'#ffe4a3':'#7097ad');
+      }
       trailGuide(ctx,now);
     }
     hud.hidden=false;callout.hidden=true;say(chapter.name,1500);

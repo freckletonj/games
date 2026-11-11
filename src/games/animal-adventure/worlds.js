@@ -14,7 +14,7 @@ WW.worlds = (() => {
       creatures:[['springaroo',19],['glimmermoth',45],['prismtail',68],['springaroo',96],
         ['mossback',131],['emberkit',176],['springaroo',196],['glimmermoth',220],['mossback',243]],
       checkpoints:[77,174,232],snacks:[10,41,90,130,177,219,246],
-      stars:[[35,29],[62,25],[107,21],[134,28],[158,34],[197,21],[239,22]],
+      stars:[[35,29],[62,25],[107,21],[134,28],[158,34],[197,21],[239,22],[48,26],[103,22],[118,23],[181,28],[227,25]],
       landmarks:[{x:38,type:'tree'},{x:105,type:'tree'},{x:154,type:'pond'},{x:204,type:'tree'},{x:246,type:'lantern'}]
     },
     'crystal-coast': {
@@ -28,7 +28,7 @@ WW.worlds = (() => {
       creatures:[['tideling',27],['prismtail',43],['tideling',72,41],['glimmermoth',114],
         ['tideling',139],['tideling',187,42],['mossback',230],['emberkit',269],['tideling',280]],
       checkpoints:[112,151,228],snacks:[12,44,112,146,228,268,284],
-      stars:[[40,30],[77,44],[134,28],[173,43],[210,48],[249,42],[278,30]],
+      stars:[[40,30],[77,44],[134,28],[173,43],[210,48],[249,42],[278,30],[61,30],[190,47],[206,30],[242,41],[260,30]],
       landmarks:[{x:43,type:'crystal'},{x:84,type:'reef'},{x:133,type:'crystal'},
         {x:182,type:'reef'},{x:243,type:'reef'},{x:273,type:'crystal'}]
     },
@@ -47,7 +47,7 @@ WW.worlds = (() => {
       creatures:[['skyling',25],['cloudwhisp',47],['glimmermoth',88],['emberkit',109],
         ['skyling',143,28],['prismtail',187],['cloudwhisp',214,24],['skyling',239,17],['mossback',288]],
       checkpoints:[102,177,269],snacks:[9,45,97,138,183,224,279,298],
-      stars:[[37,46],[75,35],[124,31],[165,20],[209,19],[245,11],[289,43]],
+      stars:[[37,46],[75,35],[124,31],[165,20],[209,19],[245,11],[289,43],[58,39],[154,23],[224,17],[274,23],[298,45]],
       landmarks:[{x:45,type:'observatory'},{x:91,type:'island'},{x:141,type:'observatory'},
         {x:196,type:'island'},{x:253,type:'observatory'},{x:290,type:'island'}]
     },
@@ -62,7 +62,7 @@ WW.worlds = (() => {
       creatures:[['tideling',25],['mossback',51],['tideling',90,45],['glimmermoth',146],
         ['tideling',171],['tideling',216,46],['prismtail',284],['emberkit',304]],
       checkpoints:[60,161,282],snacks:[12,54,143,175,281,310],
-      stars:[[39,32],[100,49],[132,47],[162,32],[203,49],[259,49],[303,28]],
+      stars:[[39,32],[100,49],[132,47],[162,32],[203,49],[259,49],[303,28],[82,41],[215,44],[236,49],[270,33],[296,28]],
       landmarks:[{x:49,type:'pond'},{x:110,type:'reef'},{x:158,type:'tree'},
         {x:221,type:'reef'},{x:282,type:'pond'},{x:308,type:'lantern'}]
     },
@@ -82,7 +82,7 @@ WW.worlds = (() => {
         ['emberkit',160],['skyling',194,36],['cloudwhisp',241,24],
         ['prismtail',298],['mossback',324]],
       checkpoints:[105,190,302],snacks:[12,49,99,151,201,255,310],
-      stars:[[37,50],[80,39],[137,33],[176,25],[226,24],[266,13],[299,19],[321,37]],
+      stars:[[37,50],[80,39],[137,33],[176,25],[226,24],[266,13],[299,19],[321,37],[69,43],[145,33],[239,22],[283,13],[313,39]],
       landmarks:[{x:53,type:'island'},{x:106,type:'observatory'},{x:164,type:'island'},
         {x:225,type:'observatory'},{x:283,type:'island'},{x:322,type:'observatory'}]
     }

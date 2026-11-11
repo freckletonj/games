@@ -112,10 +112,10 @@ WW.main = (() => {
       '<div class="buttons">'+button('home','Back to menu','primary')+'</div>');
   }
   function pause(){if(!game||screen!=='playing')return;paused=true;screen='paused';panel(`<div class="kicker">Adventure on hold</div><h2>Paused</h2><p>Snack time? Your forest friends will still be here.</p><div class="buttons">${button('resume','Resume','primary')}${button('camp','Return everyone to camp')}${button('checkpoint','Warp to last checkpoint')}${button('restart','Restart level')}${button('home','Main menu')}</div>`);}
-  function win(wins,shards=0,total=0){
+  function win(wins,shards=0,total=0,trails=0){
     paused=true;screen='won';const chapter=customMap?null:WW.chapters[currentChapterIndex];
     const next=chapter&&currentChapterIndex<WW.chapters.length-1;
-    panel(`<div class="kicker">Chapter complete · ${chapter?.name||'Custom adventure'}</div><h1>YOU DID IT!</h1><h2>The ancient gate has awakened!</h2><p>You recovered the chapter's light and found ${shards}/${total} hidden star shards. The forest remembers your teamwork. Completed adventures: ${wins}.</p><div class="buttons">${next?button('next','▶ Next: '+WW.chapters[currentChapterIndex+1].name,'primary'):''}${button('restart','Replay chapter')}${button('chapters','Chapter select')}${button('home','Arcade menu')}</div>`);
+    panel(`<div class="kicker">Chapter complete · ${chapter?.name||'Custom adventure'}</div><h1>YOU DID IT!</h1><h2>The ancient gate has awakened!</h2><p>You recovered the chapter's light and found ${shards}/${total} hidden star shards${trails?' and completed a Wonder Trail':''}. The forest remembers your teamwork. Completed adventures: ${wins}.</p><div class="buttons">${next?button('next','▶ Next: '+WW.chapters[currentChapterIndex+1].name,'primary'):''}${button('restart','Replay chapter')}${button('chapters','Chapter select')}${button('home','Arcade menu')}</div>`);
   }
   menu.addEventListener('click',async e=>{
     const id=e.target.closest('button')?.dataset.action;
