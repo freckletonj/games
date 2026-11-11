@@ -138,6 +138,52 @@ with sync_playwright() as playwright:
         });
     }""")
     assert min(seam_alpha) >= 245, seam_alpha
+    # Painted art should be smoothly scaled in the game and UI, not treated
+    # as pixel art by CSS after the sprite atlases have been antialiased.
+    assert page.evaluate("""() => ['#game','.journal-card img','.art-portrait img']
+        .every(selector => {
+            const element=document.querySelector(selector);
+            if (!element) {
+                const sample=document.createElement('img');
+                sample.className='__image-rendering-check';
+                const parent=document.createElement('div');
+                parent.className=selector.split(' ')[0].slice(1);
+                parent.appendChild(sample);
+                document.body.appendChild(parent);
+                const smooth=getComputedStyle(sample).imageRendering !== 'pixelated';
+                parent.remove();
+                return smooth;
+            }
+            return getComputedStyle(element).imageRendering !== 'pixelated';
+        })"""), 'Painted images must not use nearest-neighbor scaling'
+    # Recoloring material swatches should produce genuinely distinct biomes
+    # without losing painted detail or introducing transparency at tile seams.
+    tones = page.evaluate("""() => {
+        const neighbors={n:true,e:true,s:true,w:true,nw:true,ne:true,sw:true,se:true};
+        return ['meadow','coast','summit'].map(biome => {
+            const c=document.createElement('canvas'); c.width=c.height=32;
+            const ctx=c.getContext('2d');
+            WW.scenery.tile(ctx,biome,'ground',0,0,0,neighbors);
+            const data=ctx.getImageData(0,0,32,32).data;
+            const total=[0,0,0];
+            for(let i=0;i<data.length;i+=4)for(let ch=0;ch<3;ch++)total[ch]+=data[i+ch];
+            return total.map(value=>Math.round(value/(32*32)));
+        });
+    }""")
+    assert len({tuple(tone) for tone in tones}) == 3, tones
+    # A painted cap should have a stable Y origin on ledges at any tile row.
+    consistent_caps = page.evaluate("""() => {
+        const c=document.createElement('canvas');c.width=16;c.height=32;
+        const ctx=c.getContext('2d');
+        const neighbors={n:false,e:true,s:true,w:true,nw:true,ne:true,sw:true,se:true};
+        WW.scenery.tile(ctx,'meadow','ground',0,0,0,neighbors);
+        WW.scenery.tile(ctx,'meadow','ground',0,16,0,neighbors);
+        const data=ctx.getImageData(0,0,16,32).data;
+        for(let y=0;y<3;y++)for(let x=0;x<16;x++)for(let ch=0;ch<4;ch++)
+            if(data[(y*16+x)*4+ch]!==data[((y+16)*16+x)*4+ch])return false;
+        return true;
+    }""")
+    assert consistent_caps, 'Ground caps should not change color between ledge rows'
     assert page.evaluate("""() => ['coast','summit'].every(biome =>
         WW.scenery.background(document.createElement('canvas').getContext('2d'),biome,0))""")
     # Every shape of shoreline, including concave and convex corners, renders.
