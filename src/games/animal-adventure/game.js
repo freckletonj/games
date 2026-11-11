@@ -690,29 +690,6 @@ WW.games.animals = (() => {
         const y=27+n%3*17;box(ctx,x,y,32,8,'#ede6ff');box(ctx,x+8,y-6,20,11,'#fff7ea');
       }
     }
-    function sceneryBack(ctx,time){
-      // Repeat only minor plants and stones here. Story landmarks are placed
-      // explicitly by level.landmarks; duplicating them as ambient clutter
-      // makes the world feel like a row of identical stickers.
-      const themes={
-        meadow:['mushrooms','flowers','stones'],
-        coast:['reeds','stones','moonStone'],
-        summit:['moonStone','stones','mushrooms']
-      };
-      const choices=themes[chapter.biome]||themes.meadow;
-      const first=Math.floor((cameraX-90)/96);
-      const last=Math.ceil((cameraX+W+90)/96);
-      for(let i=first;i<=last;i++){
-        const x=i*96+hash(i,31)%31;
-        const col=Math.floor(x/TILE);
-        if(col<0||col>=level.width)continue;
-        const surface=map.findIndex(row=>row[col]==='ground');
-        if(surface<1||map[surface-1][col]!=='empty')continue;
-        const kind=choices[hash(i,17)%choices.length];
-        const w=29+hash(i,13)%14;
-        WW.illustrations.draw(ctx,kind,x,surface*TILE+3,w,w*1.15,.34);
-      }
-    }
     function drawLandmarks(ctx,time){
       for(const place of level.landmarks||[]){
         const x=place.x*TILE;
@@ -853,7 +830,8 @@ WW.games.animals = (() => {
       ctx.setTransform(3,0,0,3,0,0);
       background(ctx,now);
       ctx.save();ctx.translate(Math.round((Math.random()-.5)*shake),Math.round((Math.random()-.5)*shake));ctx.translate(-Math.round(cameraX),-Math.round(cameraY));
-      sceneryBack(ctx,now);drawLandmarks(ctx,now);terrain(ctx,now);groundDetails(ctx,now);
+      // The panorama is already painted; avoid translucent sprite repeats in mid-air.
+      drawLandmarks(ctx,now);terrain(ctx,now);groundDetails(ctx,now);
       for(const sign of chapter.signs||[]){
         const x=sign.x*TILE;if(x<cameraX-65||x>cameraX+W+65)continue;
         const ground=Array.from({length:level.height},(_,y)=>y).find(y=>map[y]?.[sign.x]==='ground');
