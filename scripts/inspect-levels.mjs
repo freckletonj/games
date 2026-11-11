@@ -69,6 +69,17 @@ for (const [index, [id, design]] of Object.entries(designs).entries()) {
     out.push('<path d="M' + px(x) + ' ' + py(y) + ' H' + px(x + length) +
       '" stroke="#ececd2" stroke-width="3" stroke-linecap="round"/>');
   }
+  const markerColors = {bounceBloom:'#ff91bd',windRing:'#c9a0ff',
+    bubbleVent:'#73fff0'};
+  for (const piece of level.setpieces || []) {
+    out.push('<circle cx="' + px(piece.x) + '" cy="' + py(piece.y) +
+      '" r="5" fill="' + markerColors[piece.kind] +
+      '" stroke="#172e46" stroke-width="1.2"/>');
+    out.push('<text x="' + (px(piece.x) + 7) + '" y="' +
+      (py(piece.y) + 3) + '" font-size="7" fill="#25394c">' +
+      escape({bounceBloom:'B',windRing:'W',bubbleVent:'V'}[piece.kind]) +
+      '</text>');
+  }
   for (const item of level.objects) {
     if (!['p1','exit',design.relic[0],'checkpoint'].includes(item.kind)) continue;
     const fill = {p1:'#40e38e',exit:'#f48b78',checkpoint:'#ffffff'}[item.kind] || '#ffd873';

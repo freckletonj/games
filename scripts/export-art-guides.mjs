@@ -94,7 +94,12 @@ for(const [id,design] of Object.entries(designs)){
           o.x*TILE>=cameraX&&o.x*TILE<cameraX+W&&
           o.y*TILE>=cameraY&&o.y*TILE<cameraY+H)
           .map(o=>({kind:o.kind,x:o.x*TILE+8,y:o.y*TILE+8}));
-        const overlay=anchors.map(o=>
+        // Runtime setpieces are annotated for art direction, not baked into masks.
+        const interactions=(level.setpieces||[]).filter(o=>
+          o.x*TILE>=cameraX&&o.x*TILE<cameraX+W&&
+          o.y*TILE>=cameraY&&o.y*TILE<cameraY+H)
+          .map(o=>({kind:o.kind,id:o.id,x:o.x*TILE+8,y:o.y*TILE}));
+        const overlay=[...anchors,...interactions].map(o=>
           '<circle cx="'+o.x+'" cy="'+o.y+'" r="6" fill="#ffe3aa" stroke="#153a51" stroke-width="2"/>'+
           '<text x="'+(o.x+9)+'" y="'+(o.y+3)+'" fill="#11293b" font-size="9" '+
           'paint-order="stroke" stroke="#fff4d5" stroke-width="3">'+
@@ -107,11 +112,11 @@ for(const [id,design] of Object.entries(designs)){
           biome:design.biome,viewport:{x:cameraX,y:cameraY,width:W,height:H},
           output:{width:960,height:540,aspectRatio:'16:9',overlapWorldUnits:80},
           mask:'art-guides/'+maskFile,annotated:'art-guides/'+annotatedFile,
-          anchors,backgroundAsset:asset+'_background',foregroundAsset:asset+'_foreground',
+          anchors,interactions,backgroundAsset:asset+'_background',foregroundAsset:asset+'_foreground',
           notes:[
             'The semantic mask is a geometry constraint, NOT a texture to copy literally',
             'Ground boundaries, bridges and waterlines must align with the supplied mask',
-            'Characters, UI text, gems, enemies and checkpoints are independent game sprites',
+            'Characters, UI text, gems, enemies, setpieces and checkpoints are independent game sprites',
             'Produce transparent foreground decorations; never paint a hard obstacle into open collision space'
           ],
           backgroundPrompt:'Beautiful hand-painted '+design.biome+' panorama, '+

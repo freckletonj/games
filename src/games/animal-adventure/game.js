@@ -88,6 +88,10 @@ WW.games.animals = (() => {
     const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),keys:Object.fromEntries(goals.map(g=>[g.kind,false])),checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,trails:0,won:false};
     const challenges=(chapter.events||[]).map(e=>({...e,completed:false,active:false,time:0,owner:null,next:0,cooldown:0,lastRunner:null,relay:false}));
     const projectiles=[],lures=[],captures=[],effects=[];
+    // Level-authored interactive landmarks are independent of painted scenery.
+    const setpieces=(level.setpieces||[]).map(piece=>({
+      ...piece,x:(piece.x+.5)*TILE,y:piece.y*TILE,ready:[0,0]
+    }));
     let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,signIndex=-1;
     const message=document.getElementById('message');const hud=document.getElementById('hud');
     function say(text,duration=1800) {
@@ -197,6 +201,28 @@ WW.games.animals = (() => {
       WW.audio.play('recall');
       particles(partner.x,partner.y-14,'#b4eeff',15);
       say('P2 is riding along! Press a button to pop the bubble.',1800);
+    }
+    function touchSetpieces(p,controls,swimming){
+      for(const s of setpieces){
+        if(Math.abs(p.x-s.x)>25)continue;
+        if(s.kind==='bounceBloom' && p.grounded &&
+           Math.abs(p.x-s.x)<16 && Math.abs(p.y-s.y)<11 &&
+           clock>=(s.ready[p.id]||0)){
+          p.vy=-7.35;p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumpsUsed=1;
+          s.ready[p.id]=clock+.65;
+          WW.audio.play('double');WW.input.rumble(p.id,.32,105);
+          particles(s.x,s.y-12,chapter.biome==='summit'?'#d9b4ff':'#ffd3ab',16);
+        }else if(s.kind==='windRing' && p.form==='skyling' &&
+                 Math.abs(p.y-13-s.y)<22 && clock>=(s.ready[p.id]||0)){
+          p.vy=Math.min(p.vy,-4.8);p.flapCooldown=0;p.wingbeat=.28;
+          s.ready[p.id]=clock+2.1;
+          WW.audio.play('double');WW.input.rumble(p.id,.18,90);
+          particles(s.x,s.y,'#d7f6ff',17);
+        }else if(s.kind==='bubbleVent' && swimming && controls.jump &&
+                 Math.abs(p.x-s.x)<20 && Math.abs(p.y-11-s.y)<38){
+          p.vy=Math.min(p.vy,-3.75);
+        }
+      }
     }
     function movePlayer(p,controls,dt){
       const step=dt*60;
@@ -317,6 +343,7 @@ WW.games.animals = (() => {
         p.waterTime=0;
         if(p.grounded&&!nowWater&&!liquid(p.x+14,p.y-8)&&!liquid(p.x-14,p.y-8))p.lastSafe={x:p.x,y:p.y};
       }
+      touchSetpieces(p,controls,swimming);
       if(controls.pressed.snack){if(p.form)usePower(p);else throwThing(p,'food');}
       if(controls.pressed.orb)throwThing(p,'orb');
       if(controls.pressed.foodCycle){p.selectedFood=(p.selectedFood+1)%FOODS.length;const food=FOODS[p.selectedFood];say(`P${p.id+1}: ${FOOD[food].name} · ${shared.foods[food]} left`,1350);}
@@ -844,6 +871,67 @@ WW.games.animals = (() => {
         }
       }
     }
+    function paintSetpieces(ctx,now){
+      const colors={meadow:['#f9b5c5','#f4e49e'],coast:['#80e7dc','#fff0b0'],
+        summit:['#bea5f5','#f6d0f4']}[chapter.biome] || ['#f9b5c5','#fff0b0'];
+      for(const s of setpieces){
+        if(s.x<cameraX-45||s.x>cameraX+W+45||
+           s.y<cameraY-65||s.y>cameraY+H+65)continue;
+        const pulse=Math.sin(now*3+s.x*.05);
+        ctx.save();ctx.translate(s.x,s.y);
+        if(s.kind==='bounceBloom'){
+          // A spring flower communicates launch through upright petals.
+          WW.illustrations.draw(ctx,'flowers',0,7,43,39,.92);
+          ctx.shadowColor=colors[0];ctx.shadowBlur=11;
+          for(let i=0;i<6;i++){
+            const angle=i*Math.PI/3+Math.sin(now*1.7)*.06;
+            ctx.save();ctx.rotate(angle);
+            ctx.fillStyle=i%2?colors[0]:colors[1];
+            ctx.beginPath();ctx.ellipse(0,-9.5,5.5,10.5+pulse,0,0,Math.PI*2);
+            ctx.fill();ctx.restore();
+          }
+          ctx.shadowBlur=0;
+          ctx.fillStyle='#fff7cc';ctx.beginPath();ctx.arc(0,0,5.4,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle='#fff7e2';ctx.lineWidth=1.5;
+          ctx.beginPath();ctx.moveTo(0,-12-pulse*2);ctx.lineTo(0,-23-pulse*2);
+          ctx.moveTo(-4,-19-pulse*2);ctx.lineTo(0,-24-pulse*2);
+          ctx.lineTo(4,-19-pulse*2);ctx.stroke();
+        }else if(s.kind==='windRing'){
+          const glow=ctx.createRadialGradient(0,0,2,0,0,23);
+          glow.addColorStop(0,'#dcffff7a');glow.addColorStop(.6,'#acdaf64d');
+          glow.addColorStop(1,'#c7c7fc00');
+          ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,24,0,Math.PI*2);ctx.fill();
+          ctx.save();ctx.rotate(now*.43);
+          ctx.strokeStyle='#f9eec4';ctx.lineWidth=2.5;
+          ctx.setLineDash([15,5,6,5]);
+          ctx.beginPath();ctx.arc(0,0,14+pulse*.55,0,Math.PI*2);ctx.stroke();
+          ctx.restore();
+          ctx.strokeStyle='#a3e7f2bd';ctx.lineWidth=1.2;
+          ctx.beginPath();ctx.ellipse(0,0,19,7,-.46,0,Math.PI*2);ctx.stroke();
+          ctx.fillStyle='#fff5d0';ctx.beginPath();ctx.arc(0,0,3,0,Math.PI*2);ctx.fill();
+          for(let i=0;i<3;i++){
+            const phase=now*2.1+i*2.09;
+            ctx.fillStyle=i===1?'#f8d8fb':'#d4f9fa';
+            ctx.beginPath();ctx.arc(Math.cos(phase)*20,Math.sin(phase)*16,1.8,0,Math.PI*2);ctx.fill();
+          }
+        }else if(s.kind==='bubbleVent'){
+          WW.illustrations.draw(ctx,'shells',0,13,35,27,.9);
+          const glow=ctx.createRadialGradient(0,0,2,0,0,27);
+          glow.addColorStop(0,'#b5fff7a0');glow.addColorStop(1,'#63d9ee00');
+          ctx.fillStyle=glow;ctx.fillRect(-28,-38,56,52);
+          for(let i=0;i<8;i++){
+            const progress=((now*(.43+i%3*.13)+i*.19)%1+1)%1;
+            const x=Math.sin(now*1.3+i*2.7)*6+(i%3-1)*5;
+            const y=7-progress*52,r=2+(i%3)*1.6;
+            ctx.strokeStyle=i%2?'#e8fff1b8':'#a1f8ffbb';
+            ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();
+            ctx.fillStyle='#f4fff999';ctx.beginPath();
+            ctx.arc(x-r*.3,y-r*.35,.7,0,Math.PI*2);ctx.fill();
+          }
+        }
+        ctx.restore();
+      }
+    }
     function terrain(ctx,time){
       const left=Math.max(0,Math.floor(cameraX/TILE)-1),right=Math.min(level.width,Math.ceil((cameraX+W)/TILE)+1);
       const top=Math.max(0,Math.floor(cameraY/TILE)-1),bottom=Math.min(level.height,Math.ceil((cameraY+H)/TILE)+1);
@@ -956,6 +1044,7 @@ WW.games.animals = (() => {
       WW.scenery.waterVolume(ctx,level,cameraX,now);
       WW.scenery.paintLayers(ctx,level.art?.foreground,cameraX,cameraY);
       groundDetails(ctx,now);
+       paintSetpieces(ctx,now);
       for(const sign of chapter.signs||[]){
         const x=sign.x*TILE;if(x<cameraX-65||x>cameraX+W+65)continue;
         const ground=Array.from({length:level.height},(_,y)=>y).find(y=>map[y]?.[sign.x]==='ground');
@@ -1197,7 +1286,7 @@ WW.games.animals = (() => {
       trailGuide(ctx,now);
     }
     hud.hidden=false;callout.hidden=true;say(chapter.name,1500);
-    return {update,render,recallParty,recallCheckpoint(){recallParty(shared.checkpoint);},stop(){hud.hidden=true;callout.hidden=true;message.classList.remove('show');},get state(){return {chapter,goals,challenges,players,shared,animals,items,projectiles,lures,captures,cameraX,cameraY,objective:objective(),physics:PHYSICS,jumpHeight}}};
+    return {update,render,recallParty,recallCheckpoint(){recallParty(shared.checkpoint);},stop(){hud.hidden=true;callout.hidden=true;message.classList.remove('show');},get state(){return {chapter,goals,challenges,players,shared,animals,items,setpieces,projectiles,lures,captures,cameraX,cameraY,objective:objective(),physics:PHYSICS,jumpHeight}}};
   }
   return {start};
 })();

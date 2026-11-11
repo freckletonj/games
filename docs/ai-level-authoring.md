@@ -83,6 +83,17 @@ Each chapter is keyed by ID and has:
    "x":131,"y":30,"count":6,"dx":7,"width":5,"rise":8}.
   Types arc, staircase and ripples generate reusable, non-identical alternate
   routes; the whole pattern must fit inside its challenge section.
+- setpieces: optional interactive route beats, with id, kind, section, x and
+  (except bounceBloom) y in semantic cells:
+  - bounceBloom (dry ground; omit y): an animated spring flower launches a
+    landing player upward. Springaroo can use its second jump afterward.
+  - windRing (open air; y required): Moonwing gains a wingbeat boost and
+    resets flap cooldown when passing through a luminous ring.
+  - bubbleVent (central deep water; y required): Tidefox holds Jump near
+    the vent to ride a stronger upward current, then releases it to dive.
+  Example: {"id":"reef-rescue","kind":"bubbleVent","section":"shallow-reef",
+  "x":81,"y":44}. The compiler rejects unknown kinds, duplicates, misplaced
+  landmarks and wrong section references, and emits local interaction counts.
 - sections: contiguous objects with id, range:[start,end], challenge, goal,
   and optionally requires. They cover the entire level. A form required in
   a section must have a creature encounter earlier than its beginning.
@@ -128,6 +139,10 @@ renderer center-crops to fit instead of distorting image proportions.
 Foreground panels are world-aligned; for distant atmospheric background
 layers use a parallax value between 0 and 1. Do not bake creatures, keys,
 UI text or fake collision obstacles into scene art.
+
+The *.layout.svg guides and art-jobs.json contain `interactions` anchors.
+Avoid painting static copies of blooms, rings or vents into the diffusion
+panels: runtime animations, physics and player reactions own those landmarks.
 
 A built-in design referencing an asset that isn't bundled now fails the
 build with a specific missing-asset error. CI checks this panel packing
