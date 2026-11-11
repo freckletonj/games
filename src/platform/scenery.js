@@ -462,6 +462,66 @@ WW.scenery = (() => {
     return true;
   }
 
+  // Depth shading and geological seams attach to the actual heightfield,
+  // instead of stamping the same rocky tile for the entire cliff face.
+  // This is visual only. It never creates additional supporting surfaces.
+  function terrainRelief(ctx,level,biome,cameraX,cameraY){
+    if(!level.surface)return;
+    const x0=Math.max(0,Math.floor(cameraX/16)*16-16);
+    const x1=Math.min(level.width*16,Math.ceil((cameraX+480)/16)*16+16);
+    const foot=x=>{
+      const tile=Math.max(0,Math.min(level.width-1,Math.floor(x/16)));
+      const t=x/16-tile;
+      return 16*(level.surface[tile]*(1-t)+level.surface[tile+1]*t);
+    };
+    const tones={
+      meadow:['#254940','#92b28f','#21463d'],
+      coast:['#204e58','#95d0c2','#265767'],
+      summit:['#353653','#ada4d3','#484367']
+    }[biome]||['#254940','#92b28f','#21463d'];
+    ctx.save();
+    ctx.beginPath();ctx.moveTo(x0,foot(x0)+7);
+    for(let x=x0+8;x<=x1;x+=8)ctx.lineTo(x,foot(x)+7);
+    ctx.lineTo(x1,level.height*16);
+    ctx.lineTo(x0,level.height*16);ctx.closePath();ctx.clip();
+    const deep=ctx.createLinearGradient(0,cameraY,0,cameraY+340);
+    deep.addColorStop(0,'#00000000');
+    deep.addColorStop(.55,tones[0]+'29');
+    deep.addColorStop(1,tones[0]+'85');
+    ctx.fillStyle=deep;
+    ctx.fillRect(x0,cameraY,x1-x0,340);
+    // Irregular strata follow terrain, not horizontal screen-space bands.
+    for(const depth of [38,88,145]){
+      ctx.beginPath();
+      for(let x=x0;x<=x1;x+=8){
+        const y=foot(x)+depth+Math.sin(x*.018+depth*.09)*5+
+          Math.sin(x*.053+depth*.14)*2;
+        if(x===x0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      }
+      ctx.lineWidth=depth===38?1.9:1.1;
+      ctx.strokeStyle=depth===38?tones[1]+'53':tones[2]+'7b';
+      ctx.stroke();
+    }
+    // Architectural focal points have matching natural root systems and
+    // mineral seams below the walkable surface, keeping them grounded.
+    for(const vista of level.vistas||[]){
+      const center=(vista.x+.5)*16;
+      if(center<x0-95||center>x1+95)continue;
+      for(const side of [-1,1]){
+        const x=center+side*49,y=foot(x)+10;
+        ctx.beginPath();ctx.moveTo(x,y);
+        ctx.bezierCurveTo(x-side*9,y+18,x+side*17,y+48,
+          x+side*7,y+84);
+        ctx.lineWidth=biome==='meadow'?3.5:2.1;
+        ctx.strokeStyle=tones[2]+'a0';ctx.stroke();
+        ctx.beginPath();ctx.moveTo(x+side*7,y+41);
+        ctx.quadraticCurveTo(x+side*25,y+55,x+side*29,y+68);
+        ctx.lineWidth=1.5;ctx.strokeStyle=tones[1]+'72';ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
   // A whole semantic span is illustrated as one connected object. Painting
   // independent 16px blocks made bridges look like detached little squares.
   // Exact top and horizontal bounds still correspond to real collision.
@@ -571,5 +631,5 @@ WW.scenery = (() => {
     return true;
   }
 
-  return {background, paintBackdrop, paintLayers, waterVolume, slope, landmark, tile, platformSpan, url, ready};
+  return {background, paintBackdrop, paintLayers, waterVolume, slope, landmark, tile, platformSpan, terrainRelief, url, ready};
 })();
