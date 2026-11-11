@@ -180,3 +180,28 @@ Airborne Moonwing, Glimmermoth and Cloudwhisp are intentionally shadowless.
 Ground walkers receive a faint cast shadow anchored to the next solid ground
 or platform tile below them, fading as they jump; an airborne body never carries
 its own cast shadow. Sprite frames contain no detached ground-shadow layers.
+
+
+### Shipped diffusion-painted biome plates
+
+The playable game now packs `src/assets/scenes/panels/painted-biomes.webp`
+as a three-row WebP atlas. The rows are curated from newly generated
+painted concept imagery: Mosslight's illuminated village and waterfalls,
+submerged reef and ruin architecture for the coastal lagoons, and a
+lavender mountain aqueduct for the aerial chapters. HUD, protagonists and
+enemy portraits are cropped out rather than accidentally baking fake
+interactive elements into the backdrop. Its source geometry remains
+purely scenic.
+
+`WW.scenery.background` composites these actual paintings behind terrain,
+interactive objects, and players. It draws each row at a uniform scale
+and mirror-joins the far panorama to avoid squashing art or visible
+repeated seams. Coastal underwater art fades in with actual water-basin
+proximity; shorelines show the original open-air panorama, so beaches
+do not look permanently submerged. The atlas is embedded into the offline
+HTML with all other panels and requires no image server.
+
+These are first-pass painted atmospheric plates, not full camera-locked
+ground/foreground paintings. In a later asset iteration, generated panel
+art can be placed at explicit semantic-mask world coordinates while
+the compiler continues to control collision and traversal.

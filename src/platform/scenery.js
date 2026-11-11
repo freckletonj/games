@@ -11,14 +11,16 @@ WW.scenery = (() => {
   const ready = name => images[name]?.complete && images[name].naturalWidth > 0;
   const url = name => sources[name] || '';
 
-  function background(ctx, biome, cameraX) {
+  function background(ctx, biome, cameraX, level=null) {
     const source={meadow:'backdrop',coast:'coastBackdrop',summit:'summitBackdrop'}[biome];
-    if(!source||!ready(source))return false;
+    const painted=ready('painted-biomes');
+    if(!painted && (!source||!ready(source)))return false;
     ctx.save();
     ctx.imageSmoothingEnabled=true;
     // Alternating mirrored panorama panels join at identical painted edges.
     // Parallax keeps the backdrop moving throughout multi-screen chapters.
     const image=images[source];
+    if(ready(source)){
     // Preserve the painter's aspect ratio; never squash the panorama to a
     // fixed arbitrary width as the camera advances.
     const span=image.naturalWidth*(292/image.naturalHeight),scroll=cameraX*.12;
@@ -29,6 +31,41 @@ WW.scenery = (() => {
       if(Math.abs(i%2)===1){ctx.translate(x+span,0);ctx.scale(-1,1);ctx.drawImage(images[source],0,-8,span,292);}
       else ctx.drawImage(images[source],x,-8,span,292);
       ctx.restore();
+    }
+    }
+    if(painted){
+      const atlas=images['painted-biomes'],index={meadow:0,coast:1,summit:2}[biome];
+      const span=atlas.naturalWidth*(292/(atlas.naturalHeight/3));
+      const scroll=cameraX*.12,first=Math.floor(scroll/span)-1;
+      let strength=.87;
+      if(biome==='coast'){
+        // Dry shores retain the brighter surface panorama. As the camera
+        // approaches a *real* lagoon, blend in the submerged-ruins painting;
+        // no fake pool is positioned independent of level geometry.
+        const center=cameraX+240;
+        strength=0;
+        for(const basin of level?.waterBodies||[]){
+          const a=basin.start*16,b=basin.end*16;
+          const approach=Math.max(0,Math.min(1,(center-a+240)/300));
+          const retreat=Math.max(0,Math.min(1,(b+240-center)/300));
+          strength=Math.max(strength,approach*retreat);
+        }
+        strength*=.9;
+      }
+      ctx.globalAlpha=strength;
+      for(let i=first;i<first+4;i++){
+        const x=i*span-scroll;
+        ctx.save();
+        if(Math.abs(i%2)===1){
+          ctx.translate(x+span,0);ctx.scale(-1,1);
+          ctx.drawImage(atlas,0,index*atlas.naturalHeight/3,
+            atlas.naturalWidth,atlas.naturalHeight/3,0,-8,span,292);
+        }else{
+          ctx.drawImage(atlas,0,index*atlas.naturalHeight/3,
+            atlas.naturalWidth,atlas.naturalHeight/3,x,-8,span,292);
+        }
+        ctx.restore();
+      }
     }
     ctx.restore();
     return true;
