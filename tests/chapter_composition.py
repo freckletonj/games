@@ -86,6 +86,25 @@ with sync_playwright() as pw:
     assert result['mask']['wet']['sky']==result['mask']['dry']['sky'],result
     assert result['mask']['wet']['water']!=result['mask']['dry']['water'],result
     assert result['supportWithWorld']>result['supportWithoutWorld'],result
+    # Wind should form one soft coherent volume, not the old rectangular
+    # rows that made Cloud Gardens look like a glitching wall of pixels.
+    thermal=page.evaluate("""() => {
+      const level=WW.worlds.create(WW.chapters[4]);
+      const current=level.thermalVolumes[0];
+      const c=document.createElement('canvas');c.width=180;c.height=300;
+      const ctx=c.getContext('2d');
+      ctx.translate(30-current.x*16,20-current.y*16);
+      WW.scenery.thermalColumns(ctx,level,current.x*16-30,
+        current.y*16-20,5);
+      const pixels=ctx.getImageData(0,0,180,300).data;
+      let visible=0;
+      for(let i=3;i<pixels.length;i+=4)if(pixels[i]>4)visible++;
+      const edge=ctx.getImageData(10,120,1,1).data[3];
+      return {visible,edge,kind:level.grid[current.y][current.x]};
+    }""")
+    assert thermal['visible']>500 and thermal['edge']==0,thermal
+    assert thermal['kind']=='thermal',thermal
+
     # Capture the real playable waterline in both coastal chapters, not just
     # an offscreen art-only swatch; these screenshots are CI review assets.
     for chapter in [1,3]:
