@@ -1,8 +1,8 @@
 window.WW = window.WW || {};
 WW.input = (() => {
-  const actions = ['left','right','down','jump','snack','orb','cycle','transform','revive','foodCycle','recall'];
-  const defaults = { left:[{type:'axis',index:0,sign:-1},{type:'button',index:14}],right:[{type:'axis',index:0,sign:1},{type:'button',index:15}],down:[{type:'axis',index:1,sign:1},{type:'button',index:13}],jump:[{type:'button',index:0}],snack:[{type:'button',index:1}],orb:[{type:'button',index:2}],cycle:[{type:'button',index:5}],transform:[{type:'button',index:3}],revive:[{type:'button',index:4}],foodCycle:[{type:'button',index:7}],recall:[{type:'button',index:8}] };
-  const keyMaps = [ { left:['KeyA','ArrowLeft'],right:['KeyD','ArrowRight'],down:['KeyS','ArrowDown'],jump:['KeyW','Space','ArrowUp'],snack:['KeyF'],orb:['KeyG'],cycle:['KeyQ'],transform:['KeyT'],revive:['KeyR'],foodCycle:['KeyE'],recall:['KeyC'] }, { left:['KeyJ'],right:['KeyL'],down:['KeyK'],jump:['KeyI'],snack:['KeyO'],orb:['KeyP'],cycle:['KeyH'],transform:['KeyU'],revive:['KeyY'],foodCycle:['KeyM'],recall:['KeyN'] } ];
+  const actions = ['left','right','down','jump','snack','orb','transform','revive','foodCycle','recall'];
+  const defaults = { left:[{type:'axis',index:0,sign:-1},{type:'button',index:14}],right:[{type:'axis',index:0,sign:1},{type:'button',index:15}],down:[{type:'axis',index:1,sign:1},{type:'button',index:13}],jump:[{type:'button',index:0}],snack:[{type:'button',index:1}],orb:[{type:'button',index:2}],transform:[{type:'button',index:3}],revive:[{type:'button',index:4}],foodCycle:[{type:'button',index:7}],recall:[{type:'button',index:8}] };
+  const keyMaps = [ { left:['KeyA','ArrowLeft'],right:['KeyD','ArrowRight'],down:['KeyS','ArrowDown'],jump:['KeyW','Space','ArrowUp'],snack:['KeyF'],orb:['KeyG'],transform:['KeyT'],revive:['KeyR'],foodCycle:['KeyE'],recall:['KeyC'] }, { left:['KeyJ'],right:['KeyL'],down:['KeyK'],jump:['KeyI'],snack:['KeyO'],orb:['KeyP'],transform:['KeyU'],revive:['KeyY'],foodCycle:['KeyM'],recall:['KeyN'] } ];
   const keys = new Set(); const prev = [new Set(), new Set()]; const assigned = new Map();
   addEventListener('keydown', e => {if (/^(Arrow|Space)/.test(e.code) && document.getElementById('menu')?.hidden) e.preventDefault(); keys.add(e.code);});
   addEventListener('keyup', e => keys.delete(e.code));

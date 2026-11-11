@@ -1,0 +1,72 @@
+{
+  "name": "springaroo",
+  "image": "sheet.png",
+  "frameWidth": 444,
+  "frameHeight": 444,
+  "columns": 4,
+  "origin": {
+    "x": 214,
+    "y": 355
+  },
+  "worldScale": 0.1,
+  "animations": {
+    "idle": {
+      "frames": [
+        0,
+        1
+      ],
+      "fps": 2
+    },
+    "run": {
+      "frames": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "fps": 10
+    },
+    "jump": {
+      "frames": [
+        6
+      ],
+      "fps": 1
+    },
+    "fall": {
+      "frames": [
+        6
+      ],
+      "fps": 1
+    },
+    "eat": {
+      "frames": [
+        1
+      ],
+      "fps": 1
+    },
+    "happy": {
+      "frames": [
+        1
+      ],
+      "fps": 2
+    },
+    "alert": {
+      "frames": [
+        2
+      ],
+      "fps": 1
+    },
+    "hurt": {
+      "frames": [
+        7
+      ],
+      "fps": 1
+    },
+    "sleep": {
+      "frames": [
+        0
+      ],
+      "fps": 1
+    }
+  }
+}

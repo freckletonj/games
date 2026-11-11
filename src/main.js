@@ -2,7 +2,7 @@ window.WW = window.WW || {};
 WW.main = (() => {
   const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
   const menu=document.getElementById('menu');const hud=document.getElementById('hud');
-  let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,pixelsPerTile=1,menuPadLatch='',currentChapterIndex=0;
+  let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,customMapJson=false,pixelsPerTile=1,customBiome='meadow',menuPadLatch='',currentChapterIndex=0;
   const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel ${screen==='home'?'panel-home':''}">${content}</section>`;menu.querySelector('button')?.focus({preventScroll:true});};
   const button=(id,label,kind='secondary')=>`<button class="${kind}" data-action="${id}">${label}</button>`;
   function home(){
@@ -11,8 +11,8 @@ WW.main = (() => {
     const nextUnfinished=WW.chapters.findIndex(chapter=>!Object.hasOwn(finished,chapter.id));
     currentChapterIndex=nextUnfinished<0?0:nextUnfinished;
     const completed=WW.chapters.filter(chapter=>Object.hasOwn(finished,chapter.id)).length;
-    const playLabel=currentChapterIndex?'▶ CONTINUE: '+WW.chapters[currentChapterIndex].name:'▶ PLAY FIRST FOREST';
-    const portrait=type=>'<img src="'+WW.art.portrait(type)+'" alt="'+WW.catalog.creatures[type].name+'">';
+    const playLabel=currentChapterIndex?'▶ CONTINUE: '+WW.chapters[currentChapterIndex].name :'▶ PLAY MOSS LIGHT MEADOW';
+    const portrait=type=>'<img data-sprite="'+type+'" src="'+WW.art.portrait(type)+'" alt="'+WW.catalog.creatures[type].name+'">';
     panel(`
     <div class="home-layout">
       <div class="home-copy">
@@ -22,9 +22,9 @@ WW.main = (() => {
         <h2>Every creature has a story.<br>Every forest has a secret.</h2>
         <p>Wander through moonlit meadows, luminous reefs and starlit peaks. Make friends with magical creatures, borrow their extraordinary powers, and find the lost gems together.</p>
         <div class="buttons">${button('play',playLabel,'primary')}${button('chapters','✦ CHOOSE A LEVEL')}</div>
-        <div class="home-note">3 unique powers &nbsp; · &nbsp; 8 living creatures &nbsp; · &nbsp; ${completed}/3 completed</div>
+        <div class="home-note">8 transformations &nbsp; · &nbsp; 3 key traversal powers &nbsp; · &nbsp; ${completed}/${WW.chapters.length} completed</div>
       </div>
-      <div class="home-art" aria-label="Four magical creatures beneath a glowing moon" role="img">
+      <div class="home-art storybook" aria-label="Four magical creatures beneath a glowing moon" role="img">
         <div class="art-stars"></div><div class="art-orbit"></div>
         ${['springaroo','skyling','tideling','emberkit'].map(t=>'<div class="art-portrait">'+portrait(t)+'</div>').join('')}
         <div class="art-caption">THE WOODS ARE WAKING</div>
@@ -34,14 +34,16 @@ WW.main = (() => {
       <div class="buttons">${button('journal','Creature journal')}${button('settings','Settings')}${button('calibrate','Controller setup')}${button('level','Load PNG map')}</div>
     </div>
     <details class="control-guide"><summary>View keyboard controls</summary>
-      <div class="instructions"><b>Player 1:</b> A / D move · W jump · F food · E change food · G catch orb · Q choose form · T transform · R revive · C camp<br>
-      <b>Player 2:</b> J / L move · I jump · O food · M change food · P catch orb · H choose form · U transform · Y revive · N camp<br>
+      <div class="instructions"><b>Player 1:</b> A / D move · W jump / tap to flap · F food / creature power · E change food · G catch orb · T transform · R revive · C camp<br>
+      <b>Player 2:</b> J / L move · I jump / tap to flap · O food / creature power · M change food · P catch orb · U transform · Y revive · N camp<br>
       <b>Menus:</b> Arrow keys + Enter · Escape pauses · Gems collect on contact</div>
     </details>`);
+    const art=menu.querySelector('.home-art');
+    if(art)art.style.backgroundImage=`url("${WW.scenery.url('backdrop')}")`;
   }
   function chapters(){
     screen='chapters';
-    const cards=WW.chapters.map((c,i)=>`<div class="chapter-card ${c.biome}"><div class="chapter-number">CHAPTER ${i+1} · ${c.difficulty}</div><div class="chapter-illustration"><img src="${WW.art.portrait(['springaroo','tideling','cloudwhisp'][i])}" alt=""></div><h2>${c.name}</h2><p>${c.tagline}</p><div class="chapter-stats">1 light · ${WW.worlds.summary[c.id].width} tiles · ${Object.hasOwn(WW.storage.data.progress.chapters||{},c.id)?'✓ Completed':'New adventure'}</div>${button('stage-'+i,'Explore '+c.name,i===currentChapterIndex?'primary':'secondary')}</div>`).join('');
+    const cards=WW.chapters.map((c,i)=>`<div class="chapter-card ${c.biome}"><div class="chapter-number">CHAPTER ${i+1} · ${c.difficulty}</div><div class="chapter-illustration"><img src="${WW.art.portrait(['springaroo','tideling','skyling','tideling','skyling'][i])}" alt=""></div><h2>${c.name}</h2><p>${c.tagline}</p><div class="chapter-stats">1 light · ${WW.worlds.summary[c.id].width} steps · ${Object.hasOwn(WW.storage.data.progress.chapters||{},c.id)?'✓ Completed':'New adventure'}</div>${button('stage-'+i,'Explore '+c.name,i===currentChapterIndex?'primary':'secondary')}</div>`).join('');
     panel(`<div class="kicker">The Wonderwood Atlas</div><h1>CHOOSE YOUR TRAIL</h1><p>Every chapter has a new landscape, different puzzles and magical neighbors. Play in any order.</p><div class="chapter-grid">${cards}</div><div class="buttons">${button('home','Back')}</div>`);
   }
   async function play(index=currentChapterIndex) {
@@ -51,8 +53,9 @@ WW.main = (() => {
     paused=true;screen='loading';
     panel('<div class="kicker">Unfolding the forest map</div><h2>Loading adventure…</h2>');
     try{
-      const level=customMap?await WW.levels.load(customMap,pixelsPerTile):WW.worlds.create(chapter);
+      const level=customMap?(customMapJson?await WW.levels.loadJSON(customMap):await WW.levels.load(customMap,pixelsPerTile,customBiome)):WW.worlds.create(chapter);
       level.chapter=chapter;
+      if(customMap && !customMapJson)level.biome=customBiome;
       if(level.warnings.some(w=>w.startsWith('No ')))throw Error(level.warnings.join(' · '));
       WW.input.reset();game=WW.games.animals.start(level);menu.hidden=true;paused=false;screen='playing';last=0;
       if(level.warnings.length)game && console.warn('Level warnings:',level.warnings);
@@ -78,41 +81,41 @@ WW.main = (() => {
     screen='calibration';const pads=WW.input.pads();if(!pads.length){panel(`<div class="kicker">Controller setup</div><h2>No gamepad detected</h2><p>Connect a USB controller, then press any button on it while Firefox is focused. The browser only exposes gamepads after interaction.</p><div class="buttons">${button('calibrate','Try again','primary')}${button('home','Back')}</div>`);return;}
     const p=pads[0];
     panel(`<div class="kicker">Controller setup · ${p.index+1}</div><h2>Press the requested control</h2><p id="calibration-step"></p><p class="hint">Release each control before the next step. Saves automatically by controller name.</p><div class="buttons">${button('home','Cancel')}</div>`);
-    const display={left:'MOVE LEFT',right:'MOVE RIGHT',down:'DIVE DOWN',jump:'JUMP / FLY',snack:'THROW SELECTED FOOD',orb:'MAGIC CATCH ORB',cycle:'CHOOSE ANIMAL',transform:'SWITCH FORM',revive:'WAKE / REVIVE',foodCycle:'CHANGE FOOD',recall:'RETURN TO CAMP'};
+    const display={left:'MOVE LEFT',right:'MOVE RIGHT',down:'DIVE DOWN',jump:'JUMP / FLAP',snack:'FOOD / CREATURE POWER',orb:'MAGIC CATCH ORB',transform:'SWITCH FORM',revive:'WAKE / REVIVE',foodCycle:'CHANGE FOOD',recall:'RETURN TO CAMP'};
     cancelCalibration=WW.input.calibrate(p.index,(step,actions)=>{
       const element=document.getElementById('calibration-step');
       if(element)element.textContent=`${step+1} / ${actions.length} — ${display[actions[step]]}`;
     },()=>{cancelCalibration=null;WW.input.rumble(0,.6,220);panel(`<h2>Controller saved!</h2><p>The mapping will load automatically whenever this controller connects.</p><div class="buttons">${button('home','Back to menu','primary')}</div>`);});
   }
   function level(){
-    screen='level';panel(`<div class="kicker">For level creators · AI-assisted maps</div><h2>Load your own PNG map</h2>
-      <p>Use the palette from README.md. One pixel is one tile by default; for an AI-generated image with large color blocks, enter the number of image pixels per tile. The parser uses center sampling and approximate colors.</p>
-      <div class="row"><label>PNG <input type="file" id="level-file" accept="image/png"></label><label>Pixels per tile <input id="tile-size" type="number" min="1" max="64" value="1" style="width:70px"></label></div>
-      <p class="hint">A green start marker and a red exit marker are required. Unknown colors become empty terrain and are reported in the console.</p>
+    screen='level';panel(`<div class="kicker">For level creators · AI-assisted maps</div><h2>Load your own PNG or compiled JSON map</h2>
+      <p>Use the palette from README.md for a semantic PNG, or load level JSON exported by scripts/compile-semantic-level.py. Pixels per tile and scenery biome apply to PNG only; compiled JSON may declare its biome.</p>
+      <div class="row"><label>PNG <input type="file" id="level-file" accept="image/png,.json"></label><label>Pixels per tile <input id="tile-size" type="number" min="1" max="64" value="1" style="width:70px"></label><label>Scenery <select id="level-biome"><option value="meadow">Mosslight Meadow</option><option value="coast">Crystal Coast</option><option value="summit">Starfall Summit</option></select></label></div>
+      <p class="hint">Use one color per semantic tile, not a painted scene. Start and exit need solid ground beneath them; masks with too many unknown colors are rejected.</p>
       <div class="buttons">${button('load-level','Use this level','primary')}${button('reset-level','Use built-in level')}${button('home','Back')}</div>`);
   }
   function journal(){
     screen='journal';
     const species=Object.entries(WW.catalog.creatures).map(([kind,c])=> {
       const form=WW.catalog.forms[kind];
-      const role=form?'Companion · '+form.power:'Wildlife · '+c.role;
+      const role=c.role+' · '+form.power;
       return '<div class="journal-card"><img src="'+WW.art.portrait(kind)+'" alt=""><div><b>'+c.name+
         '</b><small>'+role+'<br>Favorite: '+WW.catalog.foods[c.favorite].name+
-        (form?' · Befriend to unlock its power':' · Cannot transform')+'</small></div></div>';
+        ' · Counterplay: '+c.tactic+'</small></div></div>';
     }).join('');
     const foods=Object.entries(WW.catalog.foods).map(([kind,c])=>
       '<span class="food-guide"><img src="'+WW.art.foodIcon(kind)+'" alt="">'+c.name+'</span>').join('');
     panel('<div class="kicker">Wonderwood field notes</div><h2>Creatures have lives of their own</h2>'+
-      '<p>Leave fruit on the ground. Watch creatures approach and eat. Two favorite treats (or three others) will distract a companion for 12 seconds; while it is distracted, throw an orb to befriend it. That power remains yours for the chapter.</p>'+
+      '<p>Leave fruit on the ground. Watch creatures approach and eat. Two favorite treats (or three others) distract any creature for 12 seconds. Throw a G orb to befriend it. Only your latest captured species remains available to transform into; T toggles explorer / creature. F throws food as an explorer but casts your creature power while transformed.</p>'+
       '<div class="journal-grid">'+species+'</div><h3>Picnic basket</h3><div class="guide-foods">'+foods+'</div>'+
-      '<p>Not every animal is a transformation. Some run away, some wander, some guard their territory. Only Springaroo, Tidefox and Moonwing share movement powers.</p>'+
+      '<p>All eight animals can befriend you. Springaroo, Tidefox and Moonwing are essential for the three lights; other powers offer smaller tactical advantages. Run past, time a head stomp for a brief knockout, lure a creature with fruit, or use a borrowed spell. Watch the warning line before a dash or gust.</p>'+
       '<div class="buttons">'+button('home','Back to menu','primary')+'</div>');
   }
   function pause(){if(!game||screen!=='playing')return;paused=true;screen='paused';panel(`<div class="kicker">Adventure on hold</div><h2>Paused</h2><p>Snack time? Your forest friends will still be here.</p><div class="buttons">${button('resume','Resume','primary')}${button('camp','Return everyone to camp')}${button('checkpoint','Warp to last checkpoint')}${button('restart','Restart level')}${button('home','Main menu')}</div>`);}
-  function win(wins,shards=0,total=0){
+  function win(wins,shards=0,total=0,trails=0){
     paused=true;screen='won';const chapter=customMap?null:WW.chapters[currentChapterIndex];
     const next=chapter&&currentChapterIndex<WW.chapters.length-1;
-    panel(`<div class="kicker">Chapter complete · ${chapter?.name||'Custom adventure'}</div><h1>YOU DID IT!</h1><h2>The ancient gate has awakened!</h2><p>You recovered the chapter's light and found ${shards}/${total} hidden star shards. The forest remembers your teamwork. Completed adventures: ${wins}.</p><div class="buttons">${next?button('next','▶ Next: '+WW.chapters[currentChapterIndex+1].name,'primary'):''}${button('restart','Replay chapter')}${button('chapters','Chapter select')}${button('home','Arcade menu')}</div>`);
+    panel(`<div class="kicker">Chapter complete · ${chapter?.name||'Custom adventure'}</div><h1>YOU DID IT!</h1><h2>The ancient gate has awakened!</h2><p>You recovered the chapter's light and found ${shards}/${total} hidden star shards${trails?' and completed a Wonder Trail':''}. The forest remembers your teamwork. Completed adventures: ${wins}.</p><div class="buttons">${next?button('next','▶ Next: '+WW.chapters[currentChapterIndex+1].name,'primary'):''}${button('restart','Replay chapter')}${button('chapters','Chapter select')}${button('home','Arcade menu')}</div>`);
   }
   menu.addEventListener('click',async e=>{
     const id=e.target.closest('button')?.dataset.action;
@@ -132,12 +135,12 @@ WW.main = (() => {
     if(id==='save-settings'){WW.storage.data.settings.players=Number(document.getElementById('players').value);WW.storage.data.settings.rumble=document.getElementById('rumble').checked;WW.storage.data.settings.sound=document.getElementById('sound').checked;WW.storage.save();home();}
     if(id==='export')WW.storage.exportSave();
     if(id==='import')document.getElementById('save-file').click();
-    if(id==='reset-level'){customMap=null;pixelsPerTile=1;home();}
+    if(id==='reset-level'){customMap=null;customMapJson=false;pixelsPerTile=1;customBiome='meadow';home();}
     if(id==='load-level'){
       const file=document.getElementById('level-file').files[0];if(!file){alert('Select a PNG file first.');return;}
       const size=Number(document.getElementById('tile-size').value);
       if(!Number.isInteger(size)||size<1||size>64){alert('Pixels per tile must be 1–64.');return;}
-      customMap=URL.createObjectURL(file);pixelsPerTile=size;await play();
+      customMap=URL.createObjectURL(file);customMapJson=file.name.toLowerCase().endsWith('.json');pixelsPerTile=size;customBiome=document.getElementById('level-biome').value;await play();
     }
   });
   addEventListener('keydown',e=>{
@@ -174,15 +177,16 @@ WW.main = (() => {
   }
   function idle(now){
     ctx.setTransform(3,0,0,3,0,0);
-    const t=now*.001;const sky=ctx.createLinearGradient(0,0,0,270);sky.addColorStop(0,'#73b6cf');sky.addColorStop(1,'#dbedcf');ctx.fillStyle=sky;ctx.fillRect(0,0,480,270);
-    for(let layer=0;layer<3;layer++){
-      const h=135+layer*38;ctx.fillStyle=['#aacfc1','#77b0a9','#427e7a'][layer];ctx.beginPath();ctx.moveTo(0,270);
-      for(let x=0;x<500;x+=16)ctx.lineTo(x,h+Math.sin(x*.023+layer+t*.06)*14+Math.sin(x*.09)*6);ctx.lineTo(480,270);ctx.fill();
+    if(WW.scenery.background(ctx,'meadow',0)){
+      for(let x=0;x<480;x+=16)WW.scenery.tile(ctx,'meadow','ground',x,244,x,{n:false,e:x<464,w:x>0,s:true},now*.001);
+      WW.art.draw(ctx,'springaroo',85,244,Math.floor(now/300)%4,false,null,{action:'run',time:now*.001});
+      WW.art.draw(ctx,'hero',235,244,Math.floor(now/300)%4,false,null,{action:'idle',time:now*.001});
+      return;
     }
-    for(let i=0;i<25;i++){const x=i*24+(Math.sin(i*2)*8);ctx.fillStyle='#285963';ctx.fillRect(x,201,5,60);ctx.fillStyle=i%2?'#478b79':'#57987b';ctx.fillRect(x-9,178+Math.sin(i)*12,24,28);}
-    ctx.fillStyle='#89bd71';ctx.fillRect(0,244,480,26);
-    for(let x=0;x<480;x+=16){ctx.fillStyle='#528b69';ctx.fillRect(x,243,16,3);ctx.fillStyle='#a0d181';ctx.fillRect(x+4,240,3,4);}
-    WW.art.draw(ctx,'springaroo',85,244,Math.floor(t*3)%4);WW.art.draw(ctx,'skyling',375,183+Math.sin(t*2)*5,Math.floor(t*6)%4);WW.art.draw(ctx,'tideling',135,244,Math.floor(t*3)%4);WW.art.draw(ctx,'hero',235,242,Math.floor(t*2)%4);
+    // The first image decode may be asynchronous; use a quiet backdrop until
+    // the painted scene and characters are ready, not a vector placeholder.
+    ctx.fillStyle='#263b56';
+    ctx.fillRect(0,0,480,270);
   }
   function frame(now){const dt=last?Math.min((now-last)/1000,.05):0;last=now;if(game){if(!paused)game.update(dt);game.render(ctx,now/1000);}else idle(now);
     pollMenuGamepad();requestAnimationFrame(frame);}
