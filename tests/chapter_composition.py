@@ -67,7 +67,7 @@ with sync_playwright() as pw:
         g.save();g.translate(35-bridge.x*16,35-bridge.y*16);
         WW.scenery.platformSpan(g,'meadow',bridge,0,withWorld?level:null);
         g.restore();
-        return g.getImageData(44,85,1,1).data[3];
+        return g.getImageData(44,68,1,1).data[3];
       };
       return {initial,distant,coastal,wetland,mask,
         supportWithWorld:paintSupport(true),
