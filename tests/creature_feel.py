@@ -35,7 +35,10 @@ with sync_playwright() as pw:
         p.x=a.x+65;p.y=a.y;p.vx=p.vy=0;p.grounded=true;p.invincible=100;
     }""")
     advance(16)
-    chase=state('animals.find(a=>a.kind==="emberkit").x - animals.find(a=>a.kind==="emberkit").homeX')
+    chase=page.evaluate("""() => {
+        const a=WW.main.game.state.animals.find(a=>a.kind==='emberkit');
+        return a.x-a.homeX;
+    }""")
     assert chase > 125, chase
 
     # When no one is nearby, a fixed patrol boundary must not cause rapid
