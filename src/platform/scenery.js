@@ -136,6 +136,13 @@ WW.scenery = (() => {
     coast: {rim:'#d7e6c091',corner:'#456c7877',left:'#273f5066',right:'#c2e5dd50'},
     summit: {rim:'#d0c8e791',corner:'#3d426677',left:'#20284366',right:'#d2c9f050'}
   };
+  // Atlas crops contain translucent brushstrokes. Opaque solid terrain must
+  // not inherit the backdrop's alpha where two painted cells meet.
+  const materialBases = {
+    meadow: {ground:'#41584c',platform:'#536b5e'},
+    coast: {ground:'#746d5e',platform:'#778b90'},
+    summit: {ground:'#514f69',platform:'#686984'}
+  };
   const paints = {};
   function textures(biome) {
     if (!paints[biome]) {
@@ -168,6 +175,8 @@ WW.scenery = (() => {
     ctx.moveTo(x,y0);ctx.lineTo(x+16,y1);
     ctx.lineTo(x+16,bottom);ctx.lineTo(x,bottom);ctx.closePath();
     ctx.clip();
+    ctx.fillStyle=(materialBases[biome]||materialBases.meadow).ground;
+    ctx.fillRect(x,Math.min(y0,y1),16,bottom-Math.min(y0,y1));
     ctx.fillStyle=p.ground;
     ctx.fillRect(x,Math.min(y0,y1),16,bottom-Math.min(y0,y1));
     if(Math.abs(y0-y1)>0.01){
@@ -205,6 +214,10 @@ WW.scenery = (() => {
     ctx.beginPath();
     ctx.rect(x, y, 16, 16);
     ctx.clip();
+    if(kind!=='water'){
+      ctx.fillStyle=(materialBases[biome]||materialBases.meadow)[kind];
+      ctx.fillRect(x,y,16,16);
+    }
     ctx.fillStyle = p[kind];
     ctx.fillRect(x, y, 16, 16);
 
