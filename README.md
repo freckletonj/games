@@ -8,7 +8,7 @@ A dependency-free, offline 2D creature adventure for one or two players. Five ex
 
 **Explore → leave food as an explorer → catch a distracted creature → transform into your latest friend → use its power to outwit wildlife → retrieve the light → return to the gate.**
 
-Food is not a weapon. While in **explorer form**, press F to toss selected fruit. It arcs, settles on terrain, and remains for up to 24 seconds. Creatures smell food and approach to eat it. Favorites add 60 trust; other food adds 36. At 100 trust (two favorites or three other treats), **any species** becomes DISTRACTED for 12 seconds. An accurately aimed G orb captures it without randomness. Press T to transform into the **last creature you caught**, or revert. Catching a different species replaces the previous form (including an active transformation). While transformed, **F uses that creature's power instead of throwing food**; revert with T to feed again.
+Food is not a weapon. While in **explorer form**, press F to toss selected fruit. Thrown treats are now drawn as individual small fruit rather than whole bushes. It arcs, settles on terrain, and remains for up to 24 seconds. Creatures smell food and approach to eat it. Favorites add 60 trust; other food adds 36. At 100 trust (two favorites or three other treats), **any species** becomes DISTRACTED for 12 seconds. An accurately aimed G orb captures it without randomness. Press T to transform into the **last creature you caught**, or revert. Catching a different species replaces the previous form (including an active transformation). While transformed, **F uses that creature's power instead of throwing food**; revert with T to feed again.
 
 All eight species can be transformed into. Only three are required to reach their chapter's light; unlike the smaller encounter powers, they change major traversal physics:
 
@@ -182,14 +182,14 @@ GitHub Actions runs the same suite on pull requests. The traversal suite checks 
 
 ### Painted eating and knockout states
 
-The additional transparent `src/assets/illustrations/states.webp` 3×3 atlas
-contains eight species-specific eating poses and a knockout pose for the red-scarfed
-explorer. These are **character-only cutouts** without a ground patch or scenery;
-existing collision/ground shadows remain separate. Animals switch to the eating
-illustration while they chew, with a subtle chew motion. When the explorer is
-knocked out, her separate sleeping illustration replaces the ordinary frame;
-three dizzy stars orbit independently in the renderer rather than being baked
-into the artwork. The asset is embedded in the same offline HTML build.
+The transparent `src/assets/illustrations/states.webp` 3×3 atlas contains
+earlier independent eating concepts plus the red-scarfed explorer's knockout
+pose. Because some independent eating paintings do not match the corresponding
+creature identity, **animals now use the eat animation in their own species'
+painted character atlas**, retaining proportions, colors and anchored feet.
+The old eating-state cells remain embedded for asset review but are not drawn in
+play. The explorer still has the separate sleeping illustration, with three
+independently orbiting dizzy stars. No artwork is allowed to change collision.
 
 ### Illustrated scenery, pickups, and powers
 
