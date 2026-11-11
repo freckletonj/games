@@ -933,6 +933,7 @@ WW.games.animals = (() => {
         for(let x=left;x<right;x++)
           WW.scenery.slope(ctx,chapter.biome,x*TILE,level.surface[x]*TILE,level.surface[x+1]*TILE);
       }
+      WW.scenery.waterVolume(ctx,level,cameraX,now);
       WW.scenery.paintLayers(ctx,level.art?.foreground,cameraX,cameraY);
       groundDetails(ctx,now);
       for(const sign of chapter.signs||[]){
