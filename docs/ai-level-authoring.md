@@ -83,6 +83,22 @@ Each chapter is keyed by ID and has:
    "x":131,"y":30,"count":6,"dx":7,"width":5,"rise":8}.
   Types arc, staircase and ripples generate reusable, non-identical alternate
   routes; the whole pattern must fit inside its challenge section.
+- vistas: one major authored composition per section in the included
+  campaign. Each has an id, section, kind, role, x (semantic tile center),
+  span (12–34 tiles), and an optional y anchor (otherwise grounded to the
+  continuous heightfield). Roles establish, teach, challenge, rest, reveal,
+  reward connect visual staging to the player's intended experience.
+  These are detailed procedural storybook illustrations rendered on a
+  dedicated middle-distance layer, never collision objects. The vocabulary
+  includes root arches, elder trees, lily gardens, firefly ruins, reefs,
+  flooded temples, willow groves, moon gates, floating gardens and spires.
+  An LLM should place a distinctive focal composition at the actual
+  gameplay beat, not evenly distribute decorative props.
+- dressing: explicitly positioned and grounded illustrations. Each item has
+  x, asset (flowers, mushrooms, stones, reeds, shells, moonStone, berryBush)
+  and scale (.6–1.65). The built-in worlds no longer use randomly repeated
+  ground decorations or the old landmark stamps. Keep quiet negative space
+  between landmarks so characters and objectives remain readable.
 - setpieces: optional interactive route beats, with id, kind, section, x and
   (except bounceBloom) y in semantic cells:
   - bounceBloom (dry ground; omit y): an animated spring flower launches a
@@ -142,7 +158,10 @@ Foreground panels are world-aligned; for distant atmospheric background
 layers use a parallax value between 0 and 1. Do not bake creatures, keys,
 UI text or fake collision obstacles into scene art.
 
-The *.layout.svg guides and art-jobs.json contain `interactions` anchors.
+The *.layout.svg guides and art-jobs.json contain `interactions` anchors
+and `compositions` with each vista's kind, role, center and world span.
+Painted panels should follow that authored composition rather than
+placing a generic disconnected collage over the collision mask.
 Avoid painting static copies of blooms, rings or vents into the diffusion
 panels: runtime animations, physics and player reactions own those landmarks.
 

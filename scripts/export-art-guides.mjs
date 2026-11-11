@@ -99,12 +99,24 @@ for(const [id,design] of Object.entries(designs)){
           o.x*TILE>=cameraX&&o.x*TILE<cameraX+W&&
           o.y*TILE>=cameraY&&o.y*TILE<cameraY+H)
           .map(o=>({kind:o.kind,id:o.id,x:o.x*TILE+8,y:o.y*TILE}));
+        const compositions=(level.vistas||[]).filter(v=>
+          (v.x+v.span/2)*TILE>=cameraX &&
+          (v.x-v.span/2)*TILE<cameraX+W &&
+          v.y*TILE>=cameraY-180 && v.y*TILE<cameraY+H+240)
+          .map(v=>({id:v.id,kind:v.kind,role:v.role,
+            x:(v.x+.5)*TILE,y:v.y*TILE,span:v.span*TILE}));
         const overlay=[...anchors,...interactions].map(o=>
           '<circle cx="'+o.x+'" cy="'+o.y+'" r="6" fill="#ffe3aa" stroke="#153a51" stroke-width="2"/>'+
           '<text x="'+(o.x+9)+'" y="'+(o.y+3)+'" fill="#11293b" font-size="9" '+
           'paint-order="stroke" stroke="#fff4d5" stroke-width="3">'+
           escape(o.kind)+'</text>').join('\n');
-        writeFileSync(path+'/'+annotatedFile,svg(overlay));
+        const sceneLabels=compositions.map(v=>
+          '<ellipse cx="'+v.x+'" cy="'+(v.y-55)+'" rx="'+(v.span*.5)+
+          '" ry="55" fill="none" stroke="#fff6d9" stroke-dasharray="5 4"/>'+
+          '<text x="'+(v.x-40)+'" y="'+(v.y-115)+
+          '" fill="#192d3d" font-size="12" paint-order="stroke" stroke="#fff9e6" '+
+          'stroke-width="3">'+escape(v.role+': '+v.kind)+'</text>').join('\n');
+        writeFileSync(path+'/'+annotatedFile,svg(overlay+sceneLabels));
         const asset=idPart.replaceAll('-','_');
         jobs.push({
           id:idPart,world:id,section:section.id,challenge:section.challenge,
@@ -112,11 +124,12 @@ for(const [id,design] of Object.entries(designs)){
           biome:design.biome,viewport:{x:cameraX,y:cameraY,width:W,height:H},
           output:{width:960,height:540,aspectRatio:'16:9',overlapWorldUnits:80},
           mask:'art-guides/'+maskFile,annotated:'art-guides/'+annotatedFile,
-          anchors,interactions,backgroundAsset:asset+'_background',foregroundAsset:asset+'_foreground',
+          anchors,interactions,compositions,backgroundAsset:asset+'_background',foregroundAsset:asset+'_foreground',
           notes:[
             'The semantic mask is a geometry constraint, NOT a texture to copy literally',
             'Ground boundaries, bridges and waterlines must align with the supplied mask',
             'Characters, UI text, gems, enemies, setpieces and checkpoints are independent game sprites',
+            'The composition is a scenic silhouette only, never a new walkable obstacle',
             'Produce transparent foreground decorations; never paint a hard obstacle into open collision space'
           ],
           backgroundPrompt:'Beautiful hand-painted '+design.biome+' panorama, '+

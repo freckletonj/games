@@ -27,6 +27,13 @@ for (const [id, design] of Object.entries(designs)) {
   assert.equal(world.diagnostics.metrics.terrainFeatures, design.terrainFeatures.length);
   assert.equal(world.setpieces.length, design.setpieces.length);
   assert.equal(world.diagnostics.metrics.setpieces, design.setpieces.length);
+  assert.equal(world.vistas.length, design.sections.length);
+  assert.equal(world.dressing.length, design.dressing.length);
+  assert.equal(world.diagnostics.metrics.vistas, design.vistas.length);
+  assert.equal(world.diagnostics.metrics.dressing, design.dressing.length);
+  for (const section of world.diagnostics.sectionReports)
+    assert.equal(section.visualBeats.length,1,
+      id + '/' + section.id + ' needs one authored scene composition');
   assert.ok(world.setpieces.length >= 4, id + ' needs interactive route choices');
   for (const piece of world.setpieces) {
     const section = design.sections.find(s => s.id === piece.section);
@@ -88,6 +95,12 @@ assert.ok(compiler.analyze(coast).errors.some(e=>e.includes('deep-water')));
 const summit = structuredClone(designs['starfall-summit']);
 summit.setpieces.find(s=>s.kind==='windRing').y = 70;
 assert.ok(compiler.analyze(summit).errors.some(e=>e.includes('open air')));
+const brokenVista=structuredClone(original);
+brokenVista.vistas[0].section='nowhere';
+assert.ok(compiler.analyze(brokenVista).errors.some(e=>e.includes('Invalid vista')));
+const brokenDressing=structuredClone(original);
+brokenDressing.dressing[0].asset='not-real';
+assert.ok(compiler.analyze(brokenDressing).errors.some(e=>e.includes('Invalid scene dressing')));
 const painted = structuredClone(original);
 painted.art = {foreground:[{asset:'meadow_scene_01',x:0,y:0,width:480,height:270}]};
 assert.equal(compiler.compile(painted).art.foreground[0].asset,'meadow_scene_01');

@@ -69,6 +69,14 @@ for (const [index, [id, design]] of Object.entries(designs).entries()) {
     out.push('<path d="M' + px(x) + ' ' + py(y) + ' H' + px(x + length) +
       '" stroke="#ececd2" stroke-width="3" stroke-linecap="round"/>');
   }
+  for (const v of level.vistas || []) {
+    out.push('<ellipse cx="' + px(v.x) + '" cy="' + py(v.y-6) +
+      '" rx="' + (v.span*scaleX*.48) + '" ry="30" fill="#ffffff24" ' +
+      'stroke="#faf7eb" stroke-width="1.3" stroke-dasharray="3 2"/>');
+    out.push('<text x="' + (px(v.x)-14) + '" y="' + py(v.y-12) +
+      '" fill="#283a47" font-size="7" font-weight="bold">' +
+      escape(v.kind) + '</text>');
+  }
   const markerColors = {bounceBloom:'#ff91bd',windRing:'#c9a0ff',
     bubbleVent:'#73fff0'};
   for (const piece of level.setpieces || []) {
