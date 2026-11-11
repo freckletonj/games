@@ -295,21 +295,23 @@ WW.scenery = (() => {
     }[biome]||['#87bb82','#d4dea3'];
     // Irregular small tufts follow *real* ground coordinates; their spacing
     // is fixed in world space, so no seams appear at tile boundaries.
-    ctx.lineCap='round';
-    for(let px=x+4;px<x+16;px+=8){
-      const yy=y0+(y1-y0)*(px-x)/16;
-      const seed=Math.sin(px*.81)*2;
-      const height=2.3+Math.abs(seed);
-      ctx.strokeStyle=palette[0];ctx.lineWidth=1.15;
-      ctx.beginPath();ctx.moveTo(px,yy+1);
-      ctx.quadraticCurveTo(px-1.8,yy-height*.65,px-2.4,yy-height);
-      ctx.moveTo(px+.4,yy);
-      ctx.quadraticCurveTo(px+1,yy-height*.8,px+2.3,yy-height*.85);
+    // Sparse clumps, not a picket fence of identical V-shaped grass blades.
+    // Use world-space deterministic placement so neighboring tiles join.
+    const seed=Math.abs(Math.sin(x*12.9898+3.476));
+    if(seed>.6){
+      const px=x+4+seed*7,yy=y0+(y1-y0)*(px-x)/16;
+      const height=1.4+seed*2.3;
+      ctx.lineCap='round';ctx.strokeStyle=palette[0];
+      ctx.lineWidth=1.1;ctx.beginPath();
+      ctx.moveTo(px,yy+1);
+      ctx.quadraticCurveTo(px-1,yy-height*.55,px-1.6,yy-height);
+      ctx.moveTo(px+.2,yy+1);
+      ctx.quadraticCurveTo(px+1.6,yy-height*.5,px+2.6,yy-height*.75);
       ctx.stroke();
-      if(px%3<1.7){
+      if(seed>.88){
         ctx.strokeStyle=palette[1];ctx.lineWidth=.7;
-        ctx.beginPath();ctx.moveTo(px+.1,yy);ctx.lineTo(px+1.1,yy-height*.83);
-        ctx.stroke();
+        ctx.beginPath();ctx.moveTo(px,yy);
+        ctx.lineTo(px+.6,yy-height*.88);ctx.stroke();
       }
     }
     ctx.restore();
