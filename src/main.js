@@ -11,7 +11,7 @@ WW.main = (() => {
     const nextUnfinished=WW.chapters.findIndex(chapter=>!Object.hasOwn(finished,chapter.id));
     currentChapterIndex=nextUnfinished<0?0:nextUnfinished;
     const completed=WW.chapters.filter(chapter=>Object.hasOwn(finished,chapter.id)).length;
-    const playLabel=currentChapterIndex?'▶ CONTINUE: '+WW.chapters[currentChapterIndex].name:'▶ PLAY FIRST FOREST';
+    const playLabel=currentChapterIndex?'▶ CONTINUE: '+WW.chapters[currentChapterIndex].name :'▶ PLAY MOSS LIGHT MEADOW';
     const portrait=type=>'<img data-sprite="'+type+'" src="'+WW.art.portrait(type)+'" alt="'+WW.catalog.creatures[type].name+'">';
     panel(`
     <div class="home-layout">
@@ -22,7 +22,7 @@ WW.main = (() => {
         <h2>Every creature has a story.<br>Every forest has a secret.</h2>
         <p>Wander through moonlit meadows, luminous reefs and starlit peaks. Make friends with magical creatures, borrow their extraordinary powers, and find the lost gems together.</p>
         <div class="buttons">${button('play',playLabel,'primary')}${button('chapters','✦ CHOOSE A LEVEL')}</div>
-        <div class="home-note">8 transformations &nbsp; · &nbsp; 3 key traversal powers &nbsp; · &nbsp; ${completed}/3 completed</div>
+        <div class="home-note">8 transformations &nbsp; · &nbsp; 3 key traversal powers &nbsp; · &nbsp; ${completed}/${WW.chapters.length} completed</div>
       </div>
       <div class="home-art storybook" aria-label="Four magical creatures beneath a glowing moon" role="img">
         <div class="art-stars"></div><div class="art-orbit"></div>
@@ -34,8 +34,8 @@ WW.main = (() => {
       <div class="buttons">${button('journal','Creature journal')}${button('settings','Settings')}${button('calibrate','Controller setup')}${button('level','Load PNG map')}</div>
     </div>
     <details class="control-guide"><summary>View keyboard controls</summary>
-      <div class="instructions"><b>Player 1:</b> A / D move · W jump · F food / creature power · E change food · G catch orb · T transform · R revive · C camp<br>
-      <b>Player 2:</b> J / L move · I jump · O food / creature power · M change food · P catch orb · U transform · Y revive · N camp<br>
+      <div class="instructions"><b>Player 1:</b> A / D move · W jump / tap to flap · F food / creature power · E change food · G catch orb · T transform · R revive · C camp<br>
+      <b>Player 2:</b> J / L move · I jump / tap to flap · O food / creature power · M change food · P catch orb · U transform · Y revive · N camp<br>
       <b>Menus:</b> Arrow keys + Enter · Escape pauses · Gems collect on contact</div>
     </details>`);
     const art=menu.querySelector('.home-art');
@@ -43,7 +43,7 @@ WW.main = (() => {
   }
   function chapters(){
     screen='chapters';
-    const cards=WW.chapters.map((c,i)=>`<div class="chapter-card ${c.biome}"><div class="chapter-number">CHAPTER ${i+1} · ${c.difficulty}</div><div class="chapter-illustration"><img src="${WW.art.portrait(['springaroo','tideling','cloudwhisp'][i])}" alt=""></div><h2>${c.name}</h2><p>${c.tagline}</p><div class="chapter-stats">1 light · ${WW.worlds.summary[c.id].width} tiles · ${Object.hasOwn(WW.storage.data.progress.chapters||{},c.id)?'✓ Completed':'New adventure'}</div>${button('stage-'+i,'Explore '+c.name,i===currentChapterIndex?'primary':'secondary')}</div>`).join('');
+    const cards=WW.chapters.map((c,i)=>`<div class="chapter-card ${c.biome}"><div class="chapter-number">CHAPTER ${i+1} · ${c.difficulty}</div><div class="chapter-illustration"><img src="${WW.art.portrait(['springaroo','tideling','skyling','tideling','skyling'][i])}" alt=""></div><h2>${c.name}</h2><p>${c.tagline}</p><div class="chapter-stats">1 light · ${WW.worlds.summary[c.id].width} steps · ${Object.hasOwn(WW.storage.data.progress.chapters||{},c.id)?'✓ Completed':'New adventure'}</div>${button('stage-'+i,'Explore '+c.name,i===currentChapterIndex?'primary':'secondary')}</div>`).join('');
     panel(`<div class="kicker">The Wonderwood Atlas</div><h1>CHOOSE YOUR TRAIL</h1><p>Every chapter has a new landscape, different puzzles and magical neighbors. Play in any order.</p><div class="chapter-grid">${cards}</div><div class="buttons">${button('home','Back')}</div>`);
   }
   async function play(index=currentChapterIndex) {
@@ -81,7 +81,7 @@ WW.main = (() => {
     screen='calibration';const pads=WW.input.pads();if(!pads.length){panel(`<div class="kicker">Controller setup</div><h2>No gamepad detected</h2><p>Connect a USB controller, then press any button on it while Firefox is focused. The browser only exposes gamepads after interaction.</p><div class="buttons">${button('calibrate','Try again','primary')}${button('home','Back')}</div>`);return;}
     const p=pads[0];
     panel(`<div class="kicker">Controller setup · ${p.index+1}</div><h2>Press the requested control</h2><p id="calibration-step"></p><p class="hint">Release each control before the next step. Saves automatically by controller name.</p><div class="buttons">${button('home','Cancel')}</div>`);
-    const display={left:'MOVE LEFT',right:'MOVE RIGHT',down:'DIVE DOWN',jump:'JUMP / FLY',snack:'FOOD / CREATURE POWER',orb:'MAGIC CATCH ORB',transform:'SWITCH FORM',revive:'WAKE / REVIVE',foodCycle:'CHANGE FOOD',recall:'RETURN TO CAMP'};
+    const display={left:'MOVE LEFT',right:'MOVE RIGHT',down:'DIVE DOWN',jump:'JUMP / FLAP',snack:'FOOD / CREATURE POWER',orb:'MAGIC CATCH ORB',transform:'SWITCH FORM',revive:'WAKE / REVIVE',foodCycle:'CHANGE FOOD',recall:'RETURN TO CAMP'};
     cancelCalibration=WW.input.calibrate(p.index,(step,actions)=>{
       const element=document.getElementById('calibration-step');
       if(element)element.textContent=`${step+1} / ${actions.length} — ${display[actions[step]]}`;
