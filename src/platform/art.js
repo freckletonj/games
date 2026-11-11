@@ -63,7 +63,7 @@ WW.art = (() => {
   function drawMount(ctx,kind,x,y,flip=false,pose={}){
     if(WW.spriteAtlas.draw(ctx,kind,x,y,0,flip,null,pose))return true;
     const pegasus=kind==='pegasus',time=pose.time||0;
-    const stride=pose.action==='run'?Math.sin(time*2.2)*4:0;
+    const stride=pose.action==='run'?4:0;
     const wing=Math.sin(time*5.8)*.36;
     ctx.save();ctx.translate(x,y);
     if(flip)ctx.scale(-1,1);
@@ -85,7 +85,7 @@ WW.art = (() => {
     }
     // Animated hooves stay separated from the body and never affect collision.
     for(const [xx,phase] of [[-18,0],[-8,Math.PI],[11,Math.PI],[20,0]]){
-      const swing=stride*Math.sin(phase+time*2.1);
+      const swing=stride*Math.sin(phase+time*6);
       ctx.lineCap='round';ctx.strokeStyle='#8d7aaf';
       ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(xx,-19);
       ctx.lineTo(xx+swing*.45,-8);ctx.lineTo(xx+swing, -2-Math.abs(swing)*.35);ctx.stroke();
