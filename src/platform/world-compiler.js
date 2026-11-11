@@ -19,6 +19,20 @@ WW.worldCompiler = (() => {
     return points[points.length - 1][1];
   }
 
+  // Broad, tapered terrain gestures let authors sculpt a more memorable
+  // silhouette without forcing a model to hand-place hundreds of grid cells.
+  function terrainAt(spec, x) {
+    let y = ridgeAt(spec.ridge, x);
+    for (const feature of spec.terrainFeatures || []) {
+      const distance = Math.abs(x - feature.center);
+      if (distance < feature.radius) {
+        const taper = (1 + Math.cos(Math.PI * distance / feature.radius)) / 2;
+        y -= feature.lift * taper;
+      }
+    }
+    return y;
+  }
+
   function analyze(spec) {
     const errors = [], warnings = [];
     if (!spec || typeof spec !== 'object' || Array.isArray(spec)) {
@@ -98,6 +112,14 @@ WW.worldCompiler = (() => {
       }
       if (last !== width) errors.push('sections must cover the full width');
     }
+    for (const feature of spec.terrainFeatures || []) {
+      if (!feature || !integer(feature.center) || feature.center < 0 ||
+          feature.center > width || !integer(feature.radius) ||
+          feature.radius < 8 || feature.radius > 50 || !finite(feature.lift) ||
+          Math.abs(feature.lift) > 8) {
+        errors.push('Invalid terrain feature: expected center, radius 8..50, lift -8..8');
+      }
+    }
     // High-level platform motifs let an LLM author meaningful traversals
     // without enumerating each tiny physics tile. Every motif belongs to a
     // named challenge section so reports identify the intended experience.
@@ -128,7 +150,7 @@ WW.worldCompiler = (() => {
           errors.push('Invalid or overlapping water basin near x=' + a);
           continue;
         }
-        const waterline = Math.max(top, ridgeAt(ridge, a), ridgeAt(ridge, b));
+        const waterline = Math.max(top, terrainAt(spec, a), terrainAt(spec, b));
         if (top + depth <= waterline + 1) {
           errors.push('Water basin at x=' + a + ' has no depth below its banks');
         }
@@ -146,9 +168,9 @@ WW.worldCompiler = (() => {
     const report = analyze(spec);
     if (!report.valid) throw Error(spec?.id + ': ' + report.errors.join(' | '));
     const {width, height} = spec, points = spec.ridge;
-    const surface = Array.from({length: width + 1}, (_, x) => ridgeAt(points, x));
+    const surface = Array.from({length: width + 1}, (_, x) => terrainAt(spec, x));
     const basins = spec.water.map(([start, end, top, depth]) => ({
-      start, end, surface: Math.max(top, ridgeAt(points, start), ridgeAt(points, end)),
+      start, end, surface: Math.max(top, surface[start], surface[end]),
       bottom: top + depth
     }));
     // Interpolate each shoreline into a bowl instead of stamping a rectangular
@@ -247,6 +269,7 @@ WW.worldCompiler = (() => {
     const diagnostics = {...report, sectionReports, metrics: {
       width, height, sections: spec.sections.length, waterCells,
       ledges: spec.ledges.length, motifs: (spec.motifs || []).length,
+      terrainFeatures: (spec.terrainFeatures || []).length,
       creatures: spec.creatures.length
     }};
     return {width, height, grid, objects, chapter, biome: spec.biome,
