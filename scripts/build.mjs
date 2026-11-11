@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 const root=resolve(import.meta.dirname,'..');
 const read=async name=>readFile(resolve(root,name),'utf8');
 const dataUrl=async (name,mime)=>`data:${mime};base64,${(await readFile(resolve(root,name))).toString('base64')}`;
-const scripts=['src/platform/storage.js','src/platform/input.js','src/platform/levels.js','src/platform/paint-cleanup.js','src/platform/illustrations.js,'src/platform/scenery.js','src/platform/props.js','src/platform/sprite-atlas.js','src/platform/art.js','src/platform/audio.js','src/games/animal-adventure/catalog.js','src/games/animal-adventure/chapters.js','src/games/animal-adventure/worlds.js','src/games/animal-adventure/game.js','src/main.js'];
+const scripts=['src/platform/storage.js','src/platform/input.js','src/platform/levels.js','src/platform/paint-cleanup.js','src/platform/illustrations.js','src/platform/scenery.js','src/platform/props.js','src/platform/sprite-atlas.js','src/platform/art.js','src/platform/audio.js','src/games/animal-adventure/catalog.js','src/games/animal-adventure/chapters.js','src/games/animal-adventure/worlds.js','src/games/animal-adventure/game.js','src/main.js'];
 const source=await read('index.html');
 const css=await read('src/style.css');
 // Every character with a manifest and painted PNG or WebP atlas is embedded automatically.
