@@ -6,6 +6,13 @@ WW.worldCompiler = (() => {
   const creatures = new Set(['springaroo', 'tideling', 'skyling', 'mossback',
     'prismtail', 'glimmermoth', 'cloudwhisp', 'emberkit']);
   const setpieceKinds = new Set(['bounceBloom', 'windRing', 'bubbleVent']);
+  const vistaKinds = new Set(['root-arch', 'elder-tree', 'lily-garden',
+    'firefly-ruins', 'shell-cove', 'reef-arch', 'tide-temple',
+    'sunken-ruin', 'pearl-shrine', 'willow-arch', 'moon-gate',
+    'wind-temple', 'floating-garden', 'aurora-spire']);
+  const vistaRoles = new Set(['establish', 'teach', 'challenge', 'rest', 'reveal', 'reward']);
+  const dressingKinds = new Set(['flowers', 'mushrooms', 'stones', 'reeds',
+    'shells', 'moonStone', 'berryBush']);
   const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
   const integer = n => Number.isInteger(n);
   const finite = n => typeof n === 'number' && Number.isFinite(n);
@@ -167,6 +174,38 @@ WW.worldCompiler = (() => {
           ': require a valid section, shape and in-bounds platforms');
       }
     }
+    // Location-specific scene compositions convey progression and visual
+    // landmarks independently of collision or interaction mechanics.
+    if (spec.vistas !== undefined && !Array.isArray(spec.vistas))
+      errors.push('vistas must be an array');
+    const vistas = Array.isArray(spec.vistas) ? spec.vistas : [];
+    if (vistas.length > 30) errors.push('Too many vistas (max 30)');
+    const vistaIds = new Set();
+    for (const vista of vistas) {
+      const section = spec.sections?.find(s => s.id === vista?.section);
+      if (!vista || typeof vista.id !== 'string' || !vista.id ||
+          vistaIds.has(vista.id) || !vistaKinds.has(vista.kind) ||
+          !vistaRoles.has(vista.role) || !section ||
+          !integer(vista.x) || vista.x < section?.range[0] ||
+          vista.x >= section?.range[1] || vista.x < 4 || vista.x >= width-4 ||
+          !integer(vista.span) || vista.span < 12 || vista.span > 34 ||
+          (vista.y !== undefined &&
+           (!finite(vista.y) || vista.y < 5 || vista.y >= height-2))) {
+        errors.push('Invalid vista ' + (vista?.id || '?') +
+          ': expected unique id, known kind, role, section, x and span');
+      } else vistaIds.add(vista.id);
+    }
+    if (spec.dressing !== undefined && !Array.isArray(spec.dressing))
+      errors.push('dressing must be an array');
+    const dressing = Array.isArray(spec.dressing) ? spec.dressing : [];
+    if (dressing.length > 90) errors.push('Too much scene dressing (max 90)');
+    for (const prop of dressing) {
+      if (!prop || !integer(prop.x) || prop.x < 1 || prop.x >= width-1 ||
+          !dressingKinds.has(prop.asset) || !finite(prop.scale) ||
+          prop.scale < .6 || prop.scale > 1.65) {
+        errors.push('Invalid scene dressing: x, asset and scale must be authored');
+      }
+    }
     // Author named playable beats instead of executable arbitrary scripts.
     if (spec.setpieces !== undefined && !Array.isArray(spec.setpieces))
       errors.push('setpieces must be an array');
@@ -305,6 +344,13 @@ WW.worldCompiler = (() => {
     for (const x of spec.checkpoints) stamp('checkpoint', x, floorAt(x) - 1);
     for (const x of spec.snacks) stamp('snack', x, floorAt(x) - 1);
     for (const [x, y] of spec.stars) stamp('starShard', x, y);
+    const vistas = (spec.vistas || []).map(vista => ({
+      ...vista, y: vista.y === undefined
+        ? (surface[vista.x] + surface[vista.x + 1]) / 2 : vista.y
+    }));
+    const dressing = (spec.dressing || []).map(prop => ({
+      ...prop, y: (surface[prop.x] + surface[prop.x + 1]) / 2
+    }));
     const setpieces = (spec.setpieces || []).map(piece => ({
       id: piece.id, kind: piece.kind, section: piece.section, x: piece.x,
       y: piece.kind === 'bounceBloom'
@@ -321,6 +367,8 @@ WW.worldCompiler = (() => {
       const checkpoints = spec.checkpoints.filter(within).length;
       const platforms = platformSegments.filter(p => within(p.x)).length;
       const waterRegions = basins.filter(p => p.start < b && p.end > a).length;
+      const visualBeats = vistas.filter(vista => within(vista.x));
+      const decorations = dressing.filter(prop => within(prop.x)).length;
       const interactions = setpieces.filter(piece => within(piece.x));
       const kinds = Object.fromEntries([...setpieceKinds].map(kind =>
         [kind, interactions.filter(piece => piece.kind === kind).length]));
@@ -328,12 +376,16 @@ WW.worldCompiler = (() => {
       if (b-a >= 65 && encounters === 0 && platforms < 2 && !waterRegions && !interactions.length) {
         notes.push('Long section has little authored interaction; consider a choice or encounter');
       }
+      if (vistas.length && visualBeats.length === 0)
+        notes.push('Section lacks a distinctive staged visual landmark');
       if (section.requires && !platforms && !waterRegions) {
         notes.push('Ability-gated section has no local traversal features');
       }
       return {id: section.id, challenge: section.challenge, from: a, to: b,
         requires: section.requires || null, encounters, checkpoints, platforms,
-        waterRegions, interactions: interactions.length, setpieceKinds: kinds, notes};
+        waterRegions, interactions: interactions.length, setpieceKinds: kinds,
+        visualBeats: visualBeats.map(v => ({id:v.id,kind:v.kind,role:v.role})),
+        decorations, notes};
     });
     for (const section of sectionReports) for (const note of section.notes) {
       report.warnings.push(section.id + ': ' + note);
@@ -342,11 +394,12 @@ WW.worldCompiler = (() => {
       width, height, sections: spec.sections.length, waterCells,
       ledges: spec.ledges.length, motifs: (spec.motifs || []).length,
       terrainFeatures: (spec.terrainFeatures || []).length,
-      setpieces: setpieces.length, creatures: spec.creatures.length
+      setpieces: setpieces.length, vistas: vistas.length,
+      dressing: dressing.length, creatures: spec.creatures.length
     }};
     return {width, height, grid, objects, chapter, biome: spec.biome,
       landmarks: spec.landmarks, surface, waterBodies: basins,
-      platformSegments, setpieces,
+      platformSegments, setpieces, vistas, dressing,
       waterZones: spec.water, sections: spec.sections, art:spec.art,
       decorSeed: spec.id, diagnostics, warnings: report.warnings};
   }
