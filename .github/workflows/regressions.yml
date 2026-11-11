@@ -40,6 +40,7 @@ jobs:
         run: test -s dist/wonderwood.html
       - name: Run gameplay and browser regressions
         run: |
+          python tests/offline_launch.py
           python tests/smoke.py
           python tests/playability.py
           python tests/controller_and_coop.py
