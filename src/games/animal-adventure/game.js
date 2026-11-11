@@ -77,7 +77,8 @@ WW.games.animals = (() => {
       const position=location(first(id===0?'p1':'p2')||first('p1')||{x:3+id*2,y:level.height-3});
       return {id,...position,lastSafe:{...position},vx:0,vy:0,grounded:false,coyote:0,jumpBuffer:0,jumpsUsed:0,
         waterTime:0,face:1,health:3,sleep:false,invincible:0,selected:0,selectedFood:0,energy:Object.fromEntries(TYPES.map(t=>[t,0])),
-        form:null,caught:null,hover:0,flapCooldown:0,flaps:4,flapRecharge:0,wingbeat:0,actionCD:0,frame:0,hurt:0,
+        form:null,caught:null,hover:0,flapCooldown:0,flapBuffer:0,flaps:4,flapRecharge:0,wingbeat:0,actionCD:0,frame:0,hurt:0,
+        bloomBoostWindow:0,lastJumpPress:-100,
         bubble:false,bubbleGrace:0,breachCooldown:0,
         unlocked:Object.fromEntries(TYPES.map(kind=>[kind,false]))};
     });
@@ -129,7 +130,7 @@ WW.games.animals = (() => {
       if(kind==='orb'){
         WW.audio.play('orb');
         projectiles.push({kind:'orb',owner:player.id,x:player.x+player.face*12,y:player.y-15,
-          vx:player.face*6.1,vy:-.35,ttl:1.2,age:0});
+          vx:player.face*5.3,vy:-.35,ttl:1.55,age:0,bounces:0});
         player.actionCD=.33;
         return;
       }
@@ -218,21 +219,26 @@ WW.games.animals = (() => {
       for(const s of setpieces){
         if(Math.abs(p.x-s.x)>25)continue;
         if(s.kind==='bounceBloom' && p.grounded &&
+           (!s.requires || p.form===s.requires) &&
            Math.abs(p.x-s.x)<16 && Math.abs(p.y-s.y)<11 &&
            clock>=(s.ready[p.id]||0)){
-          p.vy=-7.35;p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumpsUsed=1;
+          const perfect=clock-p.lastJumpPress<=.12;
+          p.vy=perfect?-9.2:-7.35;
+          p.bloomBoostWindow=perfect?0:.14;
+          p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumpsUsed=1;
           s.ready[p.id]=clock+.65;
-          WW.audio.play('double');WW.input.rumble(p.id,.32,105);
-          particles(s.x,s.y-12,chapter.biome==='summit'?'#d9b4ff':'#ffd3ab',16);
+          WW.audio.play('double');WW.input.rumble(p.id,perfect?.48:.32,105);
+          particles(s.x,s.y-12,perfect?'#fff5b0':chapter.biome==='summit'?'#d9b4ff':'#ffd3ab',perfect?24:16);
         }else if(s.kind==='windRing' && p.form==='skyling' &&
                  Math.abs(p.y-13-s.y)<22 && clock>=(s.ready[p.id]||0)){
           p.vy=Math.min(p.vy,-4.8);p.flapCooldown=0;p.flaps=Math.min(4,p.flaps+2);p.wingbeat=.28;
           s.ready[p.id]=clock+2.1;
           WW.audio.play('double');WW.input.rumble(p.id,.18,90);
           particles(s.x,s.y,'#d7f6ff',17);
-        }else if(s.kind==='bubbleVent' && swimming && controls.jump &&
+        }else if(s.kind==='bubbleVent' && liquid(p.x,p.y-8) &&
                  Math.abs(p.x-s.x)<20 && Math.abs(p.y-11-s.y)<38){
-          p.vy=Math.min(p.vy,-3.75);
+          // A vent is an upward current even when the swimmer is not paddling.
+          p.vy=Math.max(-3.75,p.vy-(swimming?.68:.38));
         }
       }
     }
@@ -267,6 +273,17 @@ WW.games.animals = (() => {
       p.previousX=p.x;p.previousY=p.y;
       p.hover=Math.max(0,p.hover-dt);
       p.flapCooldown=Math.max(0,p.flapCooldown-dt);
+      p.flapBuffer=Math.max(0,p.flapBuffer-dt);
+      p.bloomBoostWindow=Math.max(0,p.bloomBoostWindow-dt);
+      if(controls.pressed.jump){
+        p.lastJumpPress=clock;
+        if(p.bloomBoostWindow>0){
+          p.vy=Math.min(p.vy,-9.2);
+          p.bloomBoostWindow=0;p.jumpBuffer=0;
+          WW.audio.play('double');WW.input.rumble(p.id,.48,105);
+          particles(p.x,p.y-5,'#fff5b0',21);
+        }else if(p.form==='skyling'&&!p.grounded) p.flapBuffer=.19;
+      }
       p.wingbeat=Math.max(0,p.wingbeat-dt);
       p.breachCooldown=Math.max(0,p.breachCooldown-dt);
       const direction=Number(controls.right)-Number(controls.left);
@@ -276,13 +293,16 @@ WW.games.animals = (() => {
       if(flying&&p.grounded){p.flaps=4;p.flapRecharge=0;}
       const run=p.form==='springaroo'?2.65:swimming?2.55:PHYSICS.run;
       const water=liquid(p.x,p.y-9)||liquid(p.x,p.y-1);
+      const updraft=!water&&(thermal(p.x,p.y-8)||thermal(p.x,p.y-20));
       // Acceleration gives movement weight without sacrificing the sprint trial.
       const targetSpeed=direction*run*(water&&!swimming?.42:1);
       const traction=direction?(p.grounded?.52:.34):(p.grounded?.65:.32);
       if(!p.hurt)p.vx+=clamp(targetSpeed-p.vx,-traction*step,traction*step);
       if(!direction&&!p.hurt&&Math.abs(p.vx)<.08)p.vx=0;
       if(swimming){
-        p.vy=(Number(controls.down)-Number(controls.jump))*2.45;
+        // Water resistance preserves momentum; without strokes Tidefox sinks slowly.
+        const stroke=controls.down?.23:controls.jump?-.32:.065;
+        p.vy=clamp(p.vy*.92+stroke*step,-2.6,2.6);
         // A Tidefox can breach the surface instead of getting pinned against
         // the bank. Carry its upward momentum through the final underwater frames.
         const pool=(level.waterBodies||[]).find(b=>
@@ -305,29 +325,31 @@ WW.games.animals = (() => {
         if(p.jumpBuffer>0 && (p.coyote>0 || (p.form==='springaroo' && p.jumpsUsed<2))){
           const second=p.coyote<=0;
           p.vy=-(second?PHYSICS.doubleJump:PHYSICS.jump);WW.audio.play(second?'double':'jump');
-          p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumpsUsed++;
+          p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.flapBuffer=0;p.jumpsUsed++;
           if(second){particles(p.x,p.y-5,'#f6e190',13);WW.input.rumble(p.id,.25,80);}
-        }else if(flying && controls.pressed.jump && p.flapCooldown===0 && p.flaps>0){
-          // Each released-and-repressed wingbeat adds an impulse; holding Jump
-          // never generates free lift. The cooldown keeps rapid taps consistent.
+        }else if(flying && p.flapBuffer>0 && p.flapCooldown===0 && p.flaps>0){
+          // Buffer a fresh tap through the short flap cooldown. Holding Jump
+          // cannot queue additional flaps; ground takeoff consumes its own tap.
           p.vy=Math.max(-4.9,p.vy-3.65);
-          p.flaps--;p.flapCooldown=.15;p.wingbeat=.23;p.jumpBuffer=0;
+          p.flaps--;p.flapCooldown=.15;p.wingbeat=.23;p.jumpBuffer=0;p.flapBuffer=0;
           WW.audio.play('double');
           particles(p.x-p.face*8,p.y-14,'#e9f0ff',5);
         }
         // Releasing early makes a short hop for grounded forms.
         if(controls.released.jump&&p.vy< -1&&!flying)p.vy*=.56;
-        if(flying && (thermal(p.x,p.y-8)||thermal(p.x,p.y-20))){
-          p.vy=Math.max(-3.5,p.vy-.18*step);
-          p.flapRecharge+=dt;
-          if(p.flapRecharge>=.42){
-            p.flaps=Math.min(4,p.flaps+1);
-            p.flapRecharge=0;
-          }
-        }else p.flapRecharge=0;
         p.vy=Math.min(PHYSICS.maxFall,p.vy+PHYSICS.gravity*step);
         if(p.form==='glimmermoth'&&p.hover>0&&p.vy>1.45)p.vy=1.45;
       }
+      if(updraft){
+        // Upward acceleration must exceed gravity to match the visible air stream.
+        p.vy=Math.max(-3.6,p.vy-(flying?.46:.34)*step);
+        if(flying){
+          p.flapRecharge+=dt;
+          if(p.flapRecharge>=.42){
+            p.flaps=Math.min(4,p.flaps+1);p.flapRecharge=0;
+          }
+        }
+      }else p.flapRecharge=0;
       let nx=p.x+p.vx*step;
       const half=PHYSICS.bodyHalf, upper=PHYSICS.bodyHeight;
       const slopeFoot=level.surface?Math.min(surfaceY(nx-half+2),surfaceY(nx+half-2)):null;
@@ -593,16 +615,27 @@ WW.games.animals = (() => {
         const pr=projectiles[i],oldY=pr.y;
         pr.age+=dt;pr.ttl-=dt;
         pr.x+=pr.vx*step;pr.y+=pr.vy*step;
-        pr.vy+=(pr.kind==='food'?.20:pr.kind==='orb'?.045:
+        pr.vy+=(pr.kind==='food'?.20:pr.kind==='orb'?.14:
           pr.kind==='bubble'?-.012:0)*step;
         if(pr.kind==='food'&&FOOD[pr.food].method==='float'){
           pr.vy=Math.min(pr.vy,2.2);pr.x+=Math.sin(pr.age*9)*.5;
         }
-        const floorHit=solid(pr.x,pr.y)||
-          (at(pr.x,pr.y)==='platform'&&oldY<=Math.floor(pr.y/TILE)*TILE);
+        const onPlatform=at(pr.x,pr.y)==='platform' &&
+          oldY<=Math.floor(pr.y/TILE)*TILE;
+        const floorHit=solid(pr.x,pr.y)||onPlatform;
         const waterHit=pr.kind==='food'&&liquid(pr.x,pr.y);
-        if(pr.ttl<=0||floorHit||waterHit){
-          if(pr.kind==='food'&&pr.ttl>0)placeFood(pr);
+        if(pr.ttl<=0){projectiles.splice(i,1);continue;}
+        if(pr.kind==='orb'&&floorHit){
+          const floor=onPlatform?Math.floor(pr.y/TILE)*TILE:
+            level.surface?surfaceY(pr.x):Math.floor(pr.y/TILE)*TILE;
+          if(pr.vy>=0&&oldY<=floor+3&&pr.bounces<10){
+            // Small elastic hops skim continuous slopes without going through rock.
+            pr.y=floor-2;
+            pr.vy=-Math.max(.85,Math.min(2.2,pr.vy*.5));
+            pr.vx*=.96;pr.bounces++;
+          }else{projectiles.splice(i,1);continue;}
+        }else if(floorHit||waterHit){
+          if(pr.kind==='food')placeFood(pr);
           projectiles.splice(i,1);continue;
         }
         if(pr.kind!=='food'){
