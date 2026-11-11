@@ -60,6 +60,24 @@ with sync_playwright() as pw:
 
     play(0)
     assert state("mounts.map(m=>m.kind)")==["unicorn"]
+
+    # Verify real thrown berries, not only injected lures, tame a roaming mount.
+    page.evaluate("""()=>{
+        const s=WW.main.game.state,p=s.players[0],m=s.mounts[0];
+        s.animals.forEach(a=>{a.alive=false;a.respawn=99999;});
+        p.x=m.x-55;p.y=m.y;p.vx=p.vy=0;p.grounded=true;
+        p.form=null;p.selectedFood=0;p.face=1;p.actionCD=0;p.invincible=100;
+        m.trust=0;m.eating=0;s.lures.length=0;s.projectiles.length=0;
+    }""")
+    for attempt in range(2):
+        page.keyboard.down("f")
+        advance()
+        page.keyboard.up("f")
+        advance(27)
+    advance(130)
+    assert state("mounts[0].trust")==100,state("mounts[0]")
+
+    play(0)
     tame_and_board("unicorn")
 
     # Relocate to a real continuous dry ramp for repeatable movement checks.
