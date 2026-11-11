@@ -21,8 +21,10 @@ WW.vistas=(()=>{
       ['lantern',-11,6,100,146,.96],
       ['stones',-94,7,66,47,.82],['mushrooms',91,5,54,45,.92]],
     'shell-cove':[
-      ['shells',-82,10,120,84,.88],
-      ['reef',64,10,107,102,.81]],
+      // Nest the shells and reef into the bank rather than leaving their
+      // illustrated bases hovering as fake inaccessible platforms.
+      ['shells',-79,51,114,85,.88],
+      ['reef',66,49,108,101,.81]],
     'reef-arch':[
       ['reef',-87,11,116,111,.91],
       ['reef',86,11,115,111,.91],['shells',0,7,67,52,.72]],
