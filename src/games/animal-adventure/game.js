@@ -782,7 +782,7 @@ WW.games.animals = (() => {
     function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
     function background(ctx,time){
       if(WW.scenery.paintBackdrop(ctx,level.art?.background,cameraX,cameraY))return;
-      if(WW.scenery.background(ctx,chapter.biome,cameraX,level)){
+      if(WW.scenery.background(ctx,chapter.biome,cameraX,level,cameraY)){
         // Each painted biome has its own atmospheric motion: fireflies,
         // refracted sea spray or quiet stars. All effects sit behind collisions.
         ctx.save();

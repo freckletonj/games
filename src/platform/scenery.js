@@ -40,25 +40,23 @@ WW.scenery = (() => {
     ctx.drawImage(image,x,y,width,height);
     ctx.filter='none';
 
-    // Diffusion-painted submerged ruins appear only when camera framing
-    // overlaps an authored water basin, never as a global fake ocean behind
-    // dry shoreline gameplay. The image itself is one continuous crop.
+    // Submerged scene art is masked to the authored lake rectangle in
+    // both world axes. Terrestrial sky and banks never inherit a fake ocean
+    // just because a lagoon is somewhere near the camera.
     if(biome==='coast'&&ready('painted-biomes')&&level?.waterBodies?.length){
-      const center=cameraX+240;
-      let strength=0;
+      const atlas=images['painted-biomes'],row=atlas.naturalHeight/3;
+      const stripWidth=atlas.naturalWidth*(292/row);
       for(const basin of level.waterBodies){
-        const a=basin.start*16,b=basin.end*16;
-        const entry=Math.max(0,Math.min(1,(center-a+240)/300));
-        const exit=Math.max(0,Math.min(1,(b+240-center)/300));
-        strength=Math.max(strength,entry*exit);
-      }
-      strength*=wetlands?.22:.36;
-      if(strength>0){
-        const atlas=images['painted-biomes'],row=atlas.naturalHeight/3;
-        const stripWidth=atlas.naturalWidth*(292/row);
-        ctx.globalAlpha=strength;
+        const left=basin.start*16-cameraX,right=basin.end*16-cameraX;
+        const top=basin.surface*16-cameraY,bottom=basin.bottom*16-cameraY;
+        if(left>=480||right<=0||top>=270||bottom<=0)continue;
+        ctx.save();
+        ctx.beginPath();ctx.rect(left,top,right-left,bottom-top);
+        ctx.clip();
+        ctx.globalAlpha=wetlands?.22:.36;
         ctx.drawImage(atlas,0,row,atlas.naturalWidth,row,
           -(stripWidth-480)*travel,-8,stripWidth,292);
+        ctx.restore();
       }
     }
     ctx.restore();

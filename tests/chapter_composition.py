@@ -20,7 +20,7 @@ with sync_playwright() as pw:
     result = page.evaluate("""() => {
       const ids=['first-forest','crystal-coast','starfall-summit',
         'willow-wetlands','cloud-gardens'];
-      const render=(id,cameraX)=>{
+      const render=(id,cameraX,cameraY=0)=>{
         const level=WW.worlds.create(WW.chapters.find(c=>c.id===id));
         const canvas=document.createElement('canvas');
         canvas.width=480;canvas.height=270;
@@ -28,7 +28,7 @@ with sync_playwright() as pw:
         const original=ctx.drawImage.bind(ctx);
         let draws=0;
         ctx.drawImage=(...args)=>{draws++;return original(...args);};
-        WW.scenery.background(ctx,level.biome,cameraX,level);
+        WW.scenery.background(ctx,level.biome,cameraX,level,cameraY);
         const pixels=ctx.getImageData(0,0,480,270).data;
         let hash=0,opaque=0;
         for(let i=0;i<pixels.length;i+=32){
@@ -40,8 +40,8 @@ with sync_playwright() as pw:
       const initial=Object.fromEntries(ids.map(id=>[id,render(id,0)]));
       const meadow=WW.worlds.create(WW.chapters[0]);
       const distant=render('first-forest',meadow.width*16-480);
-      const coastal=render('crystal-coast',53*16-240);
-      const wetland=render('willow-wetlands',66*16-240);
+      const coastal=render('crystal-coast',53*16-240,36*16-130);
+      const wetland=render('willow-wetlands',66*16-240,35*16-130);
       const level=meadow;
       const bridge=level.platformSegments.find(s=>
         s.style==='bridge'&&s.x>=140&&s.x<160);
