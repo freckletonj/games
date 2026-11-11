@@ -83,6 +83,51 @@ stage coverage, impossible water depths, invalid ridge coordinates, overlapping
 water basins, and unknown prerequisite creatures. Shoreline corrections are
 reported as warnings so an LLM can revise the proposal.
 
+## Diffusion art preparation
+
+Run: node scripts/export-art-guides.mjs
+
+This exports dist/art-jobs.json and paired, camera-exact 16:9 SVG masks in
+dist/art-guides. The clean *.mask.svg files identify ground silhouettes,
+continuous water volumes, and walkable ledges without painting fake gameplay
+objects. The *.layout.svg guides overlay the actual creature, pickup and
+checkpoint anchors so a human or image critic can check visual readability.
+
+Each job has a 480x270 world-unit camera rectangle, a 960x540 output size,
+a named challenge and goal, separate distant-background and transparent
+foreground prompts, and suggested safe asset names. The exporter creates
+additional upper-altitude cameras where flight paths or aerial relics would
+otherwise be outside the ground-level view. Neighboring horizontal views
+overlap, helping a model preserve continuity without stretching artwork.
+
+To export a one-off candidate: node scripts/export-art-guides.mjs candidate.json
+
+Generated painted PNG/WebP files go in src/assets/scenes/panels. Reference
+their filename stem through a design's optional art.background or
+art.foreground arrays:
+
+    "art": {
+      "foreground": [
+        {"asset":"meadow_scene_01","x":0,"y":320,
+         "width":480,"height":270}
+      ]
+    }
+
+Coordinates use **world pixels** and match the canvas, not a resized PNG.
+The image itself can be 960x540 or larger at the same aspect ratio. The
+renderer center-crops to fit instead of distorting image proportions.
+Foreground panels are world-aligned; for distant atmospheric background
+layers use a parallax value between 0 and 1. Do not bake creatures, keys,
+UI text or fake collision obstacles into scene art.
+
+A built-in design referencing an asset that isn't bundled now fails the
+build with a specific missing-asset error. CI checks this panel packing
+path with a temporary PNG fixture and uploads the masks and art job manifest.
+
+**Limit:** This generates diffusion-ready spatial conditioning and prompts,
+not painted images. An image-generation model must still produce the panels,
+and visual inspection/human playtesting is required before acceptance.
+
 ## Authoring strategy for LLMs
 
 Start with gameplay intent: 3–6 named challenges, different routes,
