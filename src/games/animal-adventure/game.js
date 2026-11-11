@@ -1265,8 +1265,7 @@ WW.games.animals = (() => {
         }
       });
       lures.forEach(lure=>{
-        const icon={berry:'berryBush',nectar:'nectarFruit',star:'stardropFruit'}[lure.food];
-        WW.illustrations.draw(ctx,icon,lure.x,lure.y+1,19,20);
+        WW.art.drawFruit(ctx,lure.food,lure.x,lure.y-5,13);
       });
       animals.forEach(a=>{
         if(!a.alive)return;
@@ -1370,10 +1369,12 @@ WW.games.animals = (() => {
         ctx.restore();
       });
       projectiles.forEach(pr=>{
-        const asset=pr.kind==='food'?
-          ({berry:'berryBush',nectar:'nectarFruit',star:'stardropFruit'}[pr.food]):
-          ({orb:'bubble',honey:'honey',bubble:'bubble',gust:'gust',
-            spark:'spark',petal:'petal',feather:'gust',splash:'splash'}[pr.kind]);
+        if(pr.kind==='food'){
+          WW.art.drawFruit(ctx,pr.food,pr.x,pr.y,13);
+          return;
+        }
+        const asset=({orb:'bubble',honey:'honey',bubble:'bubble',gust:'gust',
+          spark:'spark',petal:'petal',feather:'gust',splash:'splash'})[pr.kind];
         ctx.save();
         ctx.translate(pr.x,pr.y);
         if(pr.vx<0)ctx.scale(-1,1);
