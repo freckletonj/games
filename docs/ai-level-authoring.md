@@ -20,14 +20,32 @@ From the repository root:
    water, platforms, spawns, key objectives, checkpoints and challenge sections).
 4. Run: node scripts/build.mjs
    This produces one fully offline dist/wonderwood.html file.
-5. Run the existing Playwright browser regressions for actual player physics,
-   creature AI, transformations, controls and screenshots.
+5. Run: python scripts/evaluate-routes.py
+   Chromium drives the real game physics at 60 Hz, probing each named challenge
+   with walking, jumping, and the chapter's intended transformation.
+   Outputs: dist/route-probes.json (progress, attempts, trajectories, stalled
+   tile, key contact and advice), and dist/preview-route-probes.svg
+   (a quick per-section comparison chart).
+6. Run the other Playwright regressions for campaign mechanics, input,
+   creature transformations, controller menus, co-op and screenshots.
+
+To evaluate a standalone level draft without editing the campaign, run:
+
+   python scripts/evaluate-routes.py path/to/candidate-design.json
+
+The candidate is compiled and probed in the actual browser runtime. To isolate
+traversal from the creature-capture puzzle, each probe starts locally in its
+section with the necessary transformation granted and wildlife combat disabled.
+A green bar means this movement script reached the section's far edge.
+Amber means this specific approach stalled. Neither proves that a human can
+or cannot complete the level. The JSON gives the exact furthest tile so an
+LLM can revise a limited area and compare the same probe again.
 
 CI performs these steps and uploads the offline game and review previews.
 
 Important: a structurally valid design does NOT prove a successful run, good
 pacing, or human enjoyment. Browser regressions verify targeted mechanics and
-selected routes. Full-map automated agent traces are a future milestone.
+selected routes. Full-map autonomous route search and objective-complete agent traces are a future milestone; local real-physics probes are now available.
 
 ## The design schema
 
@@ -87,6 +105,7 @@ This is an integrated architecture slice, not a claim of a complete engine
 replacement. Current gameplay still runs in Canvas 2D, with coarse semantic
 collision cells plus a continuous ground heightfield. Full caves and overhangs
 need arbitrary terrain polygons, stacked navigation and a future renderer.
-A general headless gameplay agent and screenshot-feedback loop are not
+Scripted real-physics local traversal agents run in CI, but a full
+objective-complete player-agent search and automated screenshot critic are not
 implemented yet. Maintain the single-file offline contract, canonical
 declarative designs, and deterministic diagnostics during those upgrades.
