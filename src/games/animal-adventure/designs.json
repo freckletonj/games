@@ -329,6 +329,19 @@
         "challenge": "return-and-discover",
         "goal": "Creatures, hidden shards and final gate"
       }
+    ],
+    "motifs": [
+      {
+        "id": "lily-arc",
+        "section": "lilypond",
+        "type": "arc",
+        "x": 131,
+        "y": 30,
+        "count": 6,
+        "dx": 7,
+        "width": 5,
+        "rise": 8
+      }
     ]
   },
   "crystal-coast": {
@@ -679,6 +692,19 @@
         ],
         "challenge": "return-and-discover",
         "goal": "Additional crossings and a final safe route"
+      }
+    ],
+    "motifs": [
+      {
+        "id": "coral-steps",
+        "section": "shallow-reef",
+        "type": "ripples",
+        "x": 59,
+        "y": 44,
+        "count": 5,
+        "dx": 10,
+        "width": 6,
+        "rise": 3
       }
     ]
   },
@@ -1056,6 +1082,19 @@
         "challenge": "reward-and-return",
         "goal": "The high light and return path"
       }
+    ],
+    "motifs": [
+      {
+        "id": "cloudway",
+        "section": "cloud-crossing",
+        "type": "arc",
+        "x": 174,
+        "y": 35,
+        "count": 7,
+        "dx": 10,
+        "width": 6,
+        "rise": 12
+      }
     ]
   },
   "willow-wetlands": {
@@ -1377,6 +1416,19 @@
         ],
         "challenge": "return-and-discover",
         "goal": "Leave the lagoon toward the final gate"
+      }
+    ],
+    "motifs": [
+      {
+        "id": "riverbed",
+        "section": "sunken-path",
+        "type": "ripples",
+        "x": 188,
+        "y": 49,
+        "count": 7,
+        "dx": 13,
+        "width": 5,
+        "rise": 4
       }
     ]
   },
@@ -1749,6 +1801,19 @@
         ],
         "challenge": "reward-and-return",
         "goal": "Reach the lantern and discover the route home"
+      }
+    ],
+    "motifs": [
+      {
+        "id": "sun-islands",
+        "section": "floating-sanctuary",
+        "type": "arc",
+        "x": 177,
+        "y": 39,
+        "count": 7,
+        "dx": 11,
+        "width": 6,
+        "rise": 11
       }
     ]
   }
