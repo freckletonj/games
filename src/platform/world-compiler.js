@@ -112,6 +112,32 @@ WW.worldCompiler = (() => {
       }
       if (last !== width) errors.push('sections must cover the full width');
     }
+    // Art never changes collision. Validate its coordinate system and
+    // referenced asset names so authored bitmap panels cannot silently stretch
+    // or accidentally become executable image paths.
+    if(spec.art!==undefined){
+      if(!spec.art || Array.isArray(spec.art) || typeof spec.art!=='object' ||
+          Object.keys(spec.art).some(layer=>!['background','foreground'].includes(layer))){
+        errors.push('art must have only background and foreground layers');
+      }else{
+        for(const [layer,panels] of Object.entries(spec.art)){
+          if(!Array.isArray(panels) || panels.length>200){
+            errors.push('art.'+layer+' must be an array of up to 200 panels');
+            continue;
+          }
+          for(const panel of panels){
+            if(!panel || typeof panel.asset!=='string' ||
+                !/^[a-zA-Z0-9_-]+$/.test(panel.asset) ||
+                !['x','y','width','height'].every(k=>finite(panel[k])) ||
+                panel.width<=0 || panel.height<=0 ||
+                (panel.parallax!==undefined &&
+                  (!finite(panel.parallax)||panel.parallax<0||panel.parallax>1))){
+              errors.push('Invalid painted panel in art.'+layer);
+            }
+          }
+        }
+      }
+    }
     for (const feature of spec.terrainFeatures || []) {
       if (!feature || !integer(feature.center) || feature.center < 0 ||
           feature.center > width || !integer(feature.radius) ||
@@ -275,7 +301,7 @@ WW.worldCompiler = (() => {
     return {width, height, grid, objects, chapter, biome: spec.biome,
       landmarks: spec.landmarks, surface, waterBodies: basins,
       platformSegments,
-      waterZones: spec.water, sections: spec.sections,
+      waterZones: spec.water, sections: spec.sections, art:spec.art||null,
       decorSeed: spec.id, diagnostics, warnings: report.warnings};
   }
   return {analyze, compile};
