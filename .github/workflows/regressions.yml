@@ -34,6 +34,7 @@ jobs:
           python tests/smoke.py
           python tests/playability.py
           python tests/routes.py
+          python tests/terrain_and_flight.py
           python tests/game_feel.py
           python tests/creature_mechanics.py
           python tests/painted_illustrations.py
