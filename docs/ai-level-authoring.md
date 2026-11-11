@@ -24,7 +24,13 @@ From the repository root:
    Chromium drives the real game physics at 60 Hz, probing each named challenge
    with walking, jumping, and the chapter's intended transformation.
    Outputs: dist/route-probes.json (progress, attempts, trajectories, stalled
-   tile, key contact and advice), and dist/preview-route-probes.svg
+   tile, key contact and advice), and dist/preview-route-probes.svg.
+   Each world additionally gets a goal probe: a finite, form-aware agent
+   starting on the authored real ledge, following goalRoute waypoints,
+   physically collecting the relic (or reporting a failing trace). The
+   campaign CI requires all five local goal probes to succeed; imported
+   candidates report failures without being rejected for artistic revision.
+   These are local proof-of-contact tests, not autonomous campaign completion
    (a quick per-section comparison chart).
 6. Run the other Playwright regressions for campaign mechanics, input,
    creature transformations, controller menus, co-op and screenshots.

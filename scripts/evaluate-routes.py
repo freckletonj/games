@@ -52,7 +52,8 @@ with sync_playwright() as playwright:
           return {
             id:spec.id,
             diagnostics:level.diagnostics,
-            sections:WW_ROUTE_PROBES.inspect(level)
+            sections:WW_ROUTE_PROBES.inspect(level),
+            goal:WW_ROUTE_PROBES.goal(level)
           };
         }""", design)
         report["worlds"].append(result)
@@ -61,11 +62,19 @@ with sync_playwright() as playwright:
         for section in result["sections"]:
             for note in section["notes"]:
                 print(f"  {section['id']}: {note}")
+        if result["goal"]:
+            status = "COLLECTED" if result["goal"]["collected"] else "NOT COLLECTED"
+            print(f"  Relic: {status} after {result['goal']['frames']} local physics frames")
     assert not errors, errors
 
     # Regression: a full-height wall must stop the movement probe. This
     # catches any accidental change that bypasses authoritative game collision.
     if not candidate:
+        assert all(world["goal"] and world["goal"]["collected"]
+                   for world in report["worlds"]), [
+            (world["id"],world["goal"]) for world in report["worlds"]
+            if not world["goal"] or not world["goal"]["collected"]
+        ]
         test = page.evaluate("""() => {
           const level=WW.worlds.create(WW.chapters[0]);
           const section=level.sections[0];

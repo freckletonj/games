@@ -14,8 +14,8 @@ window.WW_ROUTE_PROBES = (() => {
     springKey: 'springaroo', diveKey: 'tideling', skyKey: 'skyling'
   };
   const actionNames = WW.input.actions;
-  function controls(right, jump, down, previousJump) {
-    const current = {left: false, right, down, jump,
+  function controls(right, jump, down, previousJump, left=false) {
+    const current = {left, right, down, jump,
       snack: false, orb: false, transform: false, revive: false,
       foodCycle: false, recall: false};
     const pressed = Object.fromEntries(actionNames.map(action =>
@@ -81,7 +81,8 @@ window.WW_ROUTE_PROBES = (() => {
     WW.input.read=slot => {
       if(slot>0)return controls(false,false,false,false);
       const swimming=form==='tideling' &&
-        (level.grid[Math.floor((player.y-8)/tile)]?.[Math.floor(player.x/tile)]==='water');
+        (level.grid[Math.floor((player.y-8)/tile)]?.[Math.floor(player.x/tile)]==='water' ||
+       level.grid[Math.floor((player.y+2)/tile)]?.[Math.floor(player.x/tile)]==='water');
       let jump = strategy.rhythm==='jump' ? frames%43 < 15 :
         strategy.rhythm==='power' ? (form==='skyling' ? frames%11 === 0
           : form==='springaroo' ? frames%39 < 13 || frames%39 === 19
@@ -131,6 +132,79 @@ window.WW_ROUTE_PROBES = (() => {
       trace, stallTile:furthestX<goalX-8?Number((furthestX/tile).toFixed(1)):null
     };
   }
+  // An additional local objective proof uses the author's actual foothold
+  // and waypoints, with the real controller, collision and creature powers.
+  // It does not capture a creature or solve the rest of the campaign.
+  function goal(level, options = {}) {
+    const route=level.goalRoute;
+    if(!route||route.length<3)return null;
+    const kind=level.chapter.goals[0].kind,form=intendedForms[kind];
+    const game=WW.games.animals.start(level),state=game.state;
+    const player=state.players[0],last=route.at(-1);
+    const waypointAt=([x,y])=>({x:(x+.5)*tile,y:y*tile});
+    const first=waypointAt(route[0]);
+    player.x=first.x;player.y=first.y;
+    player.vx=player.vy=0;player.grounded=true;
+    player.jumpsUsed=0;player.coyote=.1;player.jumpBuffer=0;
+    player.form=form;player.caught=form;player.flaps=4;
+    player.health=3;player.invincible=9999;
+    player.lastSafe={x:player.x,y:player.y};
+    state.animals.forEach(a=>{a.alive=false;a.respawn=99999;});
+    const read=WW.input.read,trace=[];
+    let previousJump=false,hold=0,cooldown=0,next=1,frames=0;
+    for(frames=0;frames<(options.frames||700);frames++){
+      const target=waypointAt(route[next]);
+      const dx=target.x-player.x;
+      let right=dx>6,left=dx< -9,down=false,jump=false;
+      const x=Math.floor(player.x/tile);
+      const swim=form==='tideling'&&
+        (level.grid[Math.floor((player.y-8)/tile)]?.[x]==='water'||
+         level.grid[Math.floor((player.y+2)/tile)]?.[x]==='water');
+      if(form==='tideling'){
+        if(swim){
+          down=player.y<target.y-5;
+          jump=player.y>target.y+5;
+          if(Math.abs(dx)<30){right=false;left=false;}
+        }
+      }else if(form==='skyling'){
+        jump=(player.grounded&&player.y>target.y+4&&cooldown<=0)||
+          (!player.grounded&&player.flaps>0&&
+           player.y>target.y+9&&player.vy>=-1.2&&cooldown<=0);
+        if(jump)cooldown=11;
+        if(Math.abs(dx)<15&&player.y>target.y+15&&!player.grounded){
+          right=false;left=false;
+        }
+      }else{
+        jump=(player.grounded&&player.y>target.y+9&&cooldown<=0)||
+          (!player.grounded&&player.jumpsUsed===1&&
+           player.vy>-1.1&&player.y>target.y+12&&cooldown<=0);
+        if(jump){cooldown=13;hold=9;}
+        if(hold>0){jump=true;hold--;}
+      }
+      cooldown=Math.max(0,cooldown-1);
+      const input=controls(right,jump,down,previousJump,left);
+      previousJump=jump;
+      WW.input.read=slot=>slot?controls(false,false,false,false):input;
+      game.update(dt);
+      if(next<route.length-1&&
+         Math.abs(player.x-target.x)<24&&
+         Math.abs(player.y-target.y)<19)next++;
+      if(frames%20===0)trace.push([
+        Number((player.x/tile).toFixed(1)),
+        Number((player.y/tile).toFixed(1)),
+        next,form==='skyling'?player.flaps:null
+      ]);
+      if(state.shared.keys[kind]||player.sleep)break;
+    }
+    WW.input.read=read;
+    const result={kind,form,from:route[0],to:last,
+      collected:state.shared.keys[kind],
+      frames:frames+1,reachedWaypoint:next,
+      furthestTile:Number((player.x/tile).toFixed(1)),
+      trace};
+    game.stop();
+    return result;
+  }
   function inspect(level, options = {}) {
     return level.sections.map(section => {
       const attempts=strategies.map(strategy=>run(level,section,strategy,options));
@@ -155,5 +229,5 @@ window.WW_ROUTE_PROBES = (() => {
       };
     });
   }
-  return {run,inspect,strategies};
+  return {run,inspect,goal,strategies};
 })();
