@@ -1360,6 +1360,18 @@ WW.games.animals = (() => {
               time:now,grounded:p.grounded
             });
         }
+        // Four tiny feathers over Moonwing communicate remaining lift without
+        // a permanent HUD meter or instructional text across the scene.
+        if(p.form==='skyling'&&!p.grounded&&!p.sleep){
+          ctx.save();
+          for(let i=0;i<4;i++){
+            ctx.globalAlpha=i<p.flaps?.83:.19;
+            ctx.fillStyle=i<p.flaps?'#fff4d4':'#98a6c9';
+            const x=p.x-9+i*6,y=p.y-42-Math.sin(now*3+i)*.7;
+            ctx.beginPath();ctx.ellipse(x,y,1.8,3.3,-.5,0,Math.PI*2);ctx.fill();
+          }
+          ctx.restore();
+        }
         // Solo play needs no floating number over the protagonist. Keep
         // distinct team colors only when two explorers share the screen.
         if(players.length>1){
