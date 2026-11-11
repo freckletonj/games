@@ -221,7 +221,30 @@ WW.worldCompiler = (() => {
     for (const [x, y] of spec.stars) stamp('starShard', x, y);
     const waterCells = grid.reduce((count, row) =>
       count + row.filter(cell => cell === 'water').length, 0);
-    const diagnostics = {...report, metrics: {
+    // Localized feedback is more useful to an LLM than a global quality score:
+    // point to the named section and count the actual choices it contains.
+    const sectionReports = spec.sections.map(section => {
+      const [a, b] = section.range;
+      const within = x => x >= a && x < b;
+      const encounters = spec.creatures.filter(c => within(c[1])).length;
+      const checkpoints = spec.checkpoints.filter(within).length;
+      const platforms = platformSegments.filter(p => within(p.x)).length;
+      const waterRegions = basins.filter(p => p.start < b && p.end > a).length;
+      const notes = [];
+      if (b-a >= 65 && encounters === 0 && platforms < 2 && !waterRegions) {
+        notes.push('Long section has little authored interaction; consider a choice or encounter');
+      }
+      if (section.requires && !platforms && !waterRegions) {
+        notes.push('Ability-gated section has no local traversal features');
+      }
+      return {id: section.id, challenge: section.challenge, from: a, to: b,
+        requires: section.requires || null, encounters, checkpoints, platforms,
+        waterRegions, notes};
+    });
+    for (const section of sectionReports) for (const note of section.notes) {
+      report.warnings.push(section.id + ': ' + note);
+    }
+    const diagnostics = {...report, sectionReports, metrics: {
       width, height, sections: spec.sections.length, waterCells,
       ledges: spec.ledges.length, motifs: (spec.motifs || []).length,
       creatures: spec.creatures.length
