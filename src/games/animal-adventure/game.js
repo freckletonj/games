@@ -22,7 +22,7 @@ WW.games.animals = (() => {
     const abilityHelp={
       springaroo:'Double jump with Jump; F blows a short petal puff',
       tideling:'Swim with Jump / Down; F launches a small splash',
-      skyling:'Hold Jump to fly; F sends a gentle feather gust',
+      skyling:'Tap Jump for each wingbeat; F sends a gentle feather gust',
       mossback:'F launches honey that sticks a creature in place briefly',
       prismtail:'F catches a creature in a floating bubble',
       glimmermoth:'Press F in the air to hover briefly, without gaining height',
@@ -41,16 +41,32 @@ WW.games.animals = (() => {
         s:same(0,1),sw:same(-1,1),w:same(-1,0),nw:same(-1,-1),north:map[y-1]?.[x]||'empty'};
     }));
     const at=(x,y)=>map[Math.floor(y/TILE)]?.[Math.floor(x/TILE)]||'empty';
-    const solid=(x,y)=>y>=height||x<0||x>=width||at(x,y)==='ground';
+    // Optional fine-grained heightfield: 16-unit semantic cells remain useful
+    // for gameplay and AI, but neither slope collisions nor the art are tiled.
+    const surfaceY=(x)=>{
+      if(!level.surface)return null;
+      const cell=clamp(Math.floor(x/TILE),0,level.width-1);
+      const fraction=clamp(x/TILE-cell,0,1);
+      return (level.surface[cell]*(1-fraction)+level.surface[cell+1]*fraction)*TILE;
+    };
+    const solid=(x,y)=>y>=height||x<0||x>=width||at(x,y)==='ground'||
+      (level.surface && y>=surfaceY(x) && at(x,y)!=='water');
     const liquid=(x,y)=>at(x,y)==='water';
+    const thermal=(x,y)=>at(x,y)==='thermal';
     const first=(kind)=>level.objects.find(o=>o.kind===kind);
-    const location=(o)=>({x:(o.x+.5)*TILE,y:(o.y+1)*TILE});
+    const location=(o)=>{
+      const x=(o.x+.5)*TILE;
+      const rooted=['p1','p2','checkpoint','exit','snack'].includes(o.kind) ||
+        (CREATURE[o.kind] && !['skyling','glimmermoth','cloudwhisp'].includes(o.kind) &&
+         at(x,(o.y+.5)*TILE)!=='water' && Math.abs(surfaceY(x)-(o.y+1)*TILE)<20);
+      return {x,y:rooted && level.surface?surfaceY(x):(o.y+1)*TILE};
+    };
     const spawn=first('p1')?location(first('p1')):{x:48,y:height-32};
     const players=Array.from({length:WW.storage.data.settings.players},(_,id)=>{
       const position=location(first(id===0?'p1':'p2')||first('p1')||{x:3+id*2,y:level.height-3});
       return {id,...position,lastSafe:{...position},vx:0,vy:0,grounded:false,coyote:0,jumpBuffer:0,jumpsUsed:0,
         waterTime:0,face:1,health:3,sleep:false,invincible:0,selected:0,selectedFood:0,energy:Object.fromEntries(TYPES.map(t=>[t,0])),
-        form:null,caught:null,hover:0,actionCD:0,frame:0,hurt:0,
+        form:null,caught:null,hover:0,flapCooldown:0,wingbeat:0,actionCD:0,frame:0,hurt:0,
         unlocked:Object.fromEntries(TYPES.map(kind=>[kind,false]))};
     });
     const animals=level.objects.filter(o=>CREATURE[o.kind]).map((o,i)=>({
@@ -75,7 +91,7 @@ WW.games.animals = (() => {
       const closest=players[0];if(!chapter.signs)return;
       chapter.signs.forEach((sign,i)=>{
         if(Math.abs(closest.x-sign.x*TILE)<35 && signIndex!==i){
-          signIndex=i;say(`${sign.title}: ${sign.hint}`,4100);
+          signIndex=i;say(sign.title,1350);
         }
       });
     }
@@ -173,6 +189,8 @@ WW.games.animals = (() => {
       p.hurt=Math.max(0,p.hurt-dt);
       p.previousX=p.x;p.previousY=p.y;
       p.hover=Math.max(0,p.hover-dt);
+      p.flapCooldown=Math.max(0,p.flapCooldown-dt);
+      p.wingbeat=Math.max(0,p.wingbeat-dt);
       const direction=Number(controls.right)-Number(controls.left);
       if(direction)p.face=direction;
       const swimming=p.form==='tideling' && (liquid(p.x,p.y-8)||liquid(p.x,p.y+2));
@@ -198,18 +216,31 @@ WW.games.animals = (() => {
           p.vy=-(second?PHYSICS.doubleJump:PHYSICS.jump);WW.audio.play(second?'double':'jump');
           p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumpsUsed++;
           if(second){particles(p.x,p.y-5,'#f6e190',13);WW.input.rumble(p.id,.25,80);}
+        }else if(flying && controls.pressed.jump && p.flapCooldown===0){
+          // Each released-and-repressed wingbeat adds an impulse; holding Jump
+          // never generates free lift. The cooldown keeps rapid taps consistent.
+          p.vy=Math.max(-4.9,p.vy-3.65);
+          p.flapCooldown=.15;p.wingbeat=.23;p.jumpBuffer=0;
+          WW.audio.play('double');
+          particles(p.x-p.face*8,p.y-14,'#e9f0ff',5);
         }
-        // Releasing early makes a short hop; holding yields full jump height.
+        // Releasing early makes a short hop for grounded forms.
         if(controls.released.jump&&p.vy< -1&&!flying)p.vy*=.56;
-        if(flying && controls.jump) p.vy=Math.max(-2.95,p.vy-.52*step);
-
+        if(flying && (thermal(p.x,p.y-8)||thermal(p.x,p.y-20)))
+          p.vy=Math.max(-3.5,p.vy-.18*step);
         p.vy=Math.min(PHYSICS.maxFall,p.vy+PHYSICS.gravity*step);
         if(p.form==='glimmermoth'&&p.hover>0&&p.vy>1.45)p.vy=1.45;
       }
       let nx=p.x+p.vx*step;
       const half=PHYSICS.bodyHalf, upper=PHYSICS.bodyHeight;
-      if(p.vx>0&&(solid(nx+half,p.y-3)||solid(nx+half,p.y-upper)))nx=Math.floor((nx+half)/TILE)*TILE-half-1;
-      if(p.vx<0&&(solid(nx-half,p.y-3)||solid(nx-half,p.y-upper)))nx=(Math.floor((nx-half)/TILE)+1)*TILE+half+1;
+      const slopeFoot=level.surface?Math.min(surfaceY(nx-half+2),surfaceY(nx+half-2)):null;
+      const walkSlope=p.grounded&&!water&&slopeFoot!==null&&Math.abs(slopeFoot-p.y)<9;
+      const feet=walkSlope?slopeFoot:p.y;
+      if(p.vx>0&&(solid(nx+half,feet-3)||solid(nx+half,feet-upper)))
+        nx=Math.floor((nx+half)/TILE)*TILE-half-1;
+      if(p.vx<0&&(solid(nx-half,feet-3)||solid(nx-half,feet-upper)))
+        nx=(Math.floor((nx-half)/TILE)+1)*TILE+half+1;
+      if(walkSlope&&Math.abs(nx-(p.x+p.vx*step))<.1)p.y=slopeFoot;
       // Shared-camera co-op: neither player may strand another outside the viewport.
       for(const other of players)if(other!==p){
         const limited=clamp(nx,other.x-PHYSICS.leash,other.x+PHYSICS.leash);
@@ -219,10 +250,16 @@ WW.games.animals = (() => {
       p.x=clamp(nx,half+1,width-half-1);
       let ny=p.y+p.vy*step;
       const wasGrounded=p.grounded,landingSpeed=p.vy;
-      // Floating platforms are one-way: jump through from below, land from above.
+      // Floating platforms are one-way. Continuous slope surfaces provide
+      // sub-tile landing and downhill following without staircase collisions.
       const platformAt=(x)=>at(x,ny)==='platform' && p.y<=Math.floor(ny/TILE)*TILE;
-      if(p.vy>=0&&(solid(p.x-half+2,ny)||solid(p.x+half-2,ny)||platformAt(p.x-half+2)||platformAt(p.x+half-2))){
-        ny=Math.floor(ny/TILE)*TILE;p.vy=0;p.grounded=true;p.jumpsUsed=0;
+      const floorY=level.surface?Math.min(surfaceY(p.x-half+2),surfaceY(p.x+half-2)):null;
+      const onSlope=floorY!==null&&p.y<=floorY+9&&ny>=floorY&&
+        !liquid(p.x,p.y-2) && !liquid(p.x,ny-2);
+      if(p.vy>=0&&(onSlope||solid(p.x-half+2,ny)||solid(p.x+half-2,ny)||
+          platformAt(p.x-half+2)||platformAt(p.x+half-2))){
+        ny=onSlope?floorY:Math.floor(ny/TILE)*TILE;
+        p.vy=0;p.grounded=true;p.jumpsUsed=0;
       }else p.grounded=false;
       if(p.vy<0&&(solid(p.x-half+2,ny-upper)||solid(p.x+half-2,ny-upper))){
         ny=(Math.floor((ny-upper)/TILE)+1)*TILE+upper;p.vy=0;
@@ -272,6 +309,7 @@ WW.games.animals = (() => {
     }
     function standingHeight(x,fallback){
       const tileX=clamp(Math.floor(x/TILE),0,level.width-1);
+      if(level.surface)return surfaceY(x);
       const row=map.findIndex(line=>line[tileX]==='ground');
       return row>=0?row*TILE:fallback;
     }
@@ -304,6 +342,7 @@ WW.games.animals = (() => {
         const incapacitated=a.stunned>0||a.stuck>0||a.trapped>0;
         const near=target&&Math.abs(target.x-a.x)<100&&Math.abs(target.y-a.y)<44;
         const flying=['skyling','glimmermoth','cloudwhisp'].includes(a.kind);
+        const aquatic=a.kind==='tideling'&&liquid(a.x,a.y-10);
         const speed={
           springaroo:.88,tideling:.71,skyling:.83,mossback:.39,
           prismtail:1.45,glimmermoth:1.18,cloudwhisp:.56,emberkit:.68
@@ -365,7 +404,8 @@ WW.games.animals = (() => {
         const dx=clamp(desiredX-a.x,-rate*step,rate*step);
         const candidate=clamp(a.x+dx,a.homeX-125,a.homeX+125);
         const floor=standingHeight(candidate,a.homeY);
-        const blocked=!flying&&(!Number.isFinite(floor)||liquid(candidate,floor-6)||
+        const blocked=aquatic?!liquid(candidate,a.y-10):
+          !flying&&(!Number.isFinite(floor)||liquid(candidate,floor-6)||
           Math.abs(floor-a.homeY)>33||solid(candidate,a.y-16));
         if(!blocked){
           a.x=candidate;
@@ -375,7 +415,7 @@ WW.games.animals = (() => {
         if(a.trapped>0){
           a.y=Math.max(a.homeY-47,a.y-.82*step);
           a.moving=false;
-        }else if(flying){
+        }else if(flying||aquatic){
           const floatY=a.homeY+Math.sin(a.phase*(a.kind==='skyling'?2.2:1.45))*7;
           const wanted=food?food.y-16:floatY;
           a.y+=(wanted-a.y)*Math.min(1,dt*3.6);
@@ -831,7 +871,15 @@ WW.games.animals = (() => {
       background(ctx,now);
       ctx.save();ctx.translate(Math.round((Math.random()-.5)*shake),Math.round((Math.random()-.5)*shake));ctx.translate(-Math.round(cameraX),-Math.round(cameraY));
       // The panorama is already painted; avoid translucent sprite repeats in mid-air.
-      drawLandmarks(ctx,now);terrain(ctx,now);groundDetails(ctx,now);
+      drawLandmarks(ctx,now);terrain(ctx,now);
+      if(level.surface){
+        const left=Math.max(0,Math.floor(cameraX/TILE)-1);
+        const right=Math.min(level.width,Math.ceil((cameraX+W)/TILE)+1);
+        for(let x=left;x<right;x++)
+          WW.scenery.slope(ctx,chapter.biome,x*TILE,level.surface[x]*TILE,level.surface[x+1]*TILE);
+      }
+      WW.scenery.paintLayers(ctx,level.art?.foreground,cameraX,cameraY);
+      groundDetails(ctx,now);
       for(const sign of chapter.signs||[]){
         const x=sign.x*TILE;if(x<cameraX-65||x>cameraX+W+65)continue;
         const ground=Array.from({length:level.height},(_,y)=>y).find(y=>map[y]?.[sign.x]==='ground');
