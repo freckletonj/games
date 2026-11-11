@@ -45,6 +45,12 @@ for (const [id, design] of Object.entries(designs)) {
     ' authored challenge sections, ' + world.diagnostics.metrics.waterCells + ' water cells');
 }
 
+const meadow=compiler.compile(designs['first-forest']);
+assert.equal(meadow.grid[34][150],'platform','The lower lilypond bridge should remain walkable');
+assert.equal(meadow.grid[34][165],'platform','The lilypond bridge should reach the far bank');
+assert.equal(meadow.grid[30][220],'platform','The sheltered lantern bridge should remain walkable');
+assert.ok(designs['first-forest'].stars.some(([x,y])=>x===158&&y===23),
+  'The challenging upper lily route must retain a visible optional reward');
 const original = designs['first-forest'];
 const badGate = structuredClone(original);
 badGate.sections[0].requires = 'tideling';
