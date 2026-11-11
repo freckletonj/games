@@ -1,6 +1,6 @@
 # Wonderwood — a little world worth exploring
 
-A dependency-free, offline 2D creature adventure for one or two players. Three chapters, eight catchable creatures with distinct behaviors, three essential traversal transformations, and one hidden light to recover per chapter.
+A dependency-free, offline 2D creature adventure for one or two players. Five extended chapters, eight catchable creatures with distinct behaviors, three essential traversal transformations, and one hidden light to recover per chapter.
 
 **Play:** Run `node scripts/build.mjs` from the repository root, then open `dist/wonderwood.html` in Firefox or Chromium. No server, npm packages, or internet connection are needed. Pull request builds also publish a **wonderwood-playable-preview** artifact in GitHub Actions containing the complete standalone HTML.
 
@@ -15,8 +15,8 @@ All eight species can be transformed into. Only three are required to reach thei
 | Companion | Power | Chapter |
 | --- | --- | --- |
 | Springaroo | Double jump | Mosslight Meadow: the Canopy Light |
-| Tidefox | Swim and dive | Crystal Coast: the Pearl Light |
-| Moonwing | Hold Jump to fly | Starfall Summit: the Aurora Light |
+| Tidefox | Swim and dive | Crystal Coast and Willow Wetlands: underwater lights |
+| Moonwing | Tap Jump for successive wingbeats | Starfall Summit and Cloud Gardens: the high lights |
 
 The other five transformations provide situational, cooldown-limited abilities:
 
@@ -30,14 +30,21 @@ The other five transformations provide situational, cooldown-limited abilities:
 
 All creatures have recognizable patrols and non-random attack tells. Head-stomping from above gives the explorer a bounce and temporarily knocks the animal out; it returns after a short rest. Bubbles carry an animal upward briefly; honey holds it still; wind knocks it back and stuns it. These are friendly, temporary setbacks, not lethal attacks. You can also run past or use food to avoid confrontations. Captured animals return to their habitats later.
 
-The new authored 2D levels include changing terrain elevation, floating paths, shallow crossings, large illustrated landmarks, treasure, repeatable picnic baskets, and healing checkpoints. An objective guide points to a companion first, then to the chapter light, then home. Completed chapters are saved in this browser.
+Five expanded 2D adventures span **260–338 horizontal cells** and 52–80 vertical
+cells: rolling meadow slopes, wide lagoons with submerged shells, a multi-tier
+summit, the deep Willow Wetlands and the aerial Cloud Gardens. Geometry supports
+fractional-height ground profiles and genuine walkable ramps; deep water has
+aquatic wildlife, underwater shelves and multiple routes. Moonwing rises from
+**individual wingbeats**, not by holding Jump; shimmer columns provide updrafts.
+A restrained progress rail and occasional contextual hints replace a permanent
+text-heavy guide. Completed chapters are saved in the browser.
 
 ## Controls
 
 | Action | Player 1 | Player 2 | Controller |
 | --- | --- | --- | --- |
 | Move | A / D, arrows | J / L | Stick / D-pad |
-| Jump / fly / swim up | W / Space | I | South / A |
+| Jump / wingbeat / swim up | W / Space (tap repeatedly to flap) | I | South / A |
 | Swim down | S | K | Stick down |
 | Leave fruit (explorer) / use creature power (transformed) | F | O | East / B |
 | Change fruit | E | M | Trigger |
@@ -51,11 +58,11 @@ Movement uses acceleration, braking, buffered jumps, coyote time, variable jump 
 
 ## Developer guide
 
-- **src/games/animal-adventure/worlds.js** — built-in chapter geometry, encounters, ledges, water and landmark locations. This is the authored level source of truth.
+- **src/games/animal-adventure/worlds.js** — five authored heightfield profiles, deep-water zones, floating paths, updrafts and wildlife. This is the collision source of truth for built-in levels.
 - **src/games/animal-adventure/chapters.js** — story, objectives and environmental hints.
 - **src/games/animal-adventure/catalog.js** — companions, wildlife, and foods.
 - **src/games/animal-adventure/game.js** — physics, creature AI, edible lures, capture states, collectibles, camera, rendering and HUD.
-- **src/assets/** — transparent painted atlases for all eight creatures, independent Meadow/Coast/Summit backdrops, the painted lantern-tree landmark, and seamless terrain textures (all embedded into the offline build).
+- **src/assets/** — painted atlases for all eight creatures, biome backdrops, props and high-resolution terrain textures. Optional full-scene painted chunks in `src/assets/scenes/panels/` are bundled into the same offline build.
 - **src/platform/** — sprite and landscape drawing, audio, input, persistence, and custom map importing.
 - **src/main.js** and **src/style.css** — menu, chapter flow and interface.
 - **scripts/build.mjs** — builds the single-file offline game.
@@ -83,6 +90,29 @@ the resulting grid so level art stitches without painting manual corner tiles.
 Choose Meadow, Coast, or Summit scenery in the PNG loader, or save that choice
 inside compiled JSON with the CLI's `--biome` option.
 
+### Full-scene diffusion artwork (without tile-shaped paintings)
+
+The **visual texture and the colliders are independent**. For custom JSON
+maps, optional `surface` provides an array of `width + 1` fractional ground
+heights (tile-row units), interpolated continuously for smooth ramps. The
+semantic grid still defines water, platforms, hazards and markers.
+
+To use artwork larger than a tile, put losslessly aligned PNG or WebP scene
+panels in `src/assets/scenes/panels/`, then add `art.foreground` and/or
+`art.background` panel descriptors to the level JSON. Each descriptor names
+the embedded asset plus world-space `x`, `y`, `width` and `height`;
+background panels may set `parallax`. Foreground panels are drawn above
+fallback tile textures, but below creatures and interactive props. Because the
+full-resolution art never determines collisions, a diffusion model can paint
+entire valleys or reefs using a semantic mask as a conditioning guide and the
+player still walks on physically defined slopes. See
+`src/assets/scenes/panels/README.md` for a complete example.
+
+Without optional painted panels, the existing high-resolution terrain
+textures, continuous slope caps, and repeated mirrored biome panoramas render
+automatically. This makes a painted world-panel pass optional rather than a
+prerequisite to playing.
+
 Existing bitmap examples in **src/games/animal-adventure/levels/** remain available for users of the custom Load PNG Map feature, but they are no longer the built-in chapter maps.
 
 Build with Node.js 20+: **node scripts/build.mjs**. The standalone file is generated rather than version-controlled, because the full-resolution artwork makes the compiled HTML large.
@@ -94,6 +124,7 @@ Run browser regression tests after installing Python Playwright and its Chromium
     python tests/smoke.py
     python tests/playability.py
     python tests/routes.py
+    python tests/terrain_and_flight.py
     python tests/game_feel.py
     python tests/creature_mechanics.py
     python tests/painted_illustrations.py
