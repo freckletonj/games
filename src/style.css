@@ -28,7 +28,7 @@ button:focus-visible, summary:focus-visible, input:focus-visible, select:focus-v
   aspect-ratio: 16/9; overflow: hidden; isolation: isolate;
   background: #2f6173; box-shadow: 0 30px 100px #050b14d9;
 }
-#game { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+#game { display: block; width: 100%; height: 100%; image-rendering: auto; }
 .menu {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   padding: clamp(10px, 2vw, 25px); overflow: auto;
@@ -109,7 +109,7 @@ input[type=file] { max-width: 220px; font-size: 12px; }
 .art-orbit { position: absolute; inset: 8%; border: 1px solid #f3e4bd51; border-radius: 50%; transform: rotate(-22deg); }
 .art-orbit::after { content: ""; position: absolute; inset: 12%; border: 1px dashed #c6ebdd55; border-radius: 50%; }
 .art-portrait { position: absolute; width: 29%; aspect-ratio: 1; border: 3px solid #ecdcad; border-radius: 16px; padding: 5px; background: #1d3b4a; box-shadow: 0 12px 22px #091c29aa, 0 0 0 5px #a8cead3b; transform: rotate(var(--tilt)); animation: portrait-float 4.8s ease-in-out infinite alternate; }
-.art-portrait img { width: 100%; height: 100%; object-fit: cover; border-radius: 9px; image-rendering: pixelated; }
+.art-portrait img { width: 100%; height: 100%; object-fit: cover; border-radius: 9px; image-rendering: auto; }
 .art-portrait:nth-of-type(3) { left: 10%; top: 19%; --tilt: -12deg; }
 .art-portrait:nth-of-type(4) { right: 10%; top: 24%; --tilt: 11deg; animation-delay: -1.5s; }
 .art-portrait:nth-of-type(5) { left: 20%; bottom: 15%; --tilt: 7deg; animation-delay: -2.2s; }
@@ -130,7 +130,7 @@ input[type=file] { max-width: 220px; font-size: 12px; }
 .chapter-card.summit { background: linear-gradient(150deg,#645b89,#343f6c 73%,#202b53); }
 .chapter-card::before { content: ""; position: absolute; top: -28px; right: -15px; width: 138px; height: 138px; border: 1px solid #eef5d533; border-radius: 50%; pointer-events: none; }
 .chapter-illustration { align-self: flex-end; width: 80px; height: 80px; margin: -4px 0 -4px; border-radius: 50%; border: 1px solid #e7e9cd75; padding: 9px; background: #153642a6; box-shadow: 0 0 22px #dceebc30; }
-.chapter-illustration img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; image-rendering: pixelated; }
+.chapter-illustration img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; image-rendering: auto; }
 .chapter-number { color: #cde7d0; font-size: 10px; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
 .chapter-card h2 { margin: 4px 0 8px; font-size: clamp(20px,2vw,27px); }
 .chapter-card p { margin: 0 0 15px; min-height: 72px; font-size: 12px; }
@@ -138,15 +138,15 @@ input[type=file] { max-width: 220px; font-size: 12px; }
 .chapter-card button { width: 100%; }
 .menu-portraits { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 12px 0; }
 .menu-creature { width: 53px; height: 53px; padding: 3px; border: 1px solid #c1dcc9; border-radius: 10px; background: #1d4052; }
-.menu-creature img { width: 100%; height: 100%; border-radius: 6px; image-rendering: pixelated; }
+.menu-creature img { width: 100%; height: 100%; border-radius: 6px; image-rendering: auto; }
 .journal-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; margin: 18px 0; text-align: left; }
 .journal-card { display: flex; gap: 11px; align-items: center; border: 1px solid #8eb7ac63; border-radius: 11px; padding: 10px; background: #224452ad; }
-.journal-card img { flex: none; width: 56px; height: 56px; border: 1px solid #b5d5b3; border-radius: 8px; image-rendering: pixelated; }
+.journal-card img { flex: none; width: 56px; height: 56px; border: 1px solid #b5d5b3; border-radius: 8px; image-rendering: auto; }
 .journal-card b { display: block; color: #f5dfa9; }
 .journal-card small { display: block; margin-top: 4px; color: #c3d9d5; font-size: 11px; line-height: 1.5; }
 .guide-foods { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
 .food-guide { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border: 1px solid #8ab1a15e; border-radius: 9px; background: #20404f; font-size: 12px; }
-.food-guide img { width: 28px; height: 28px; image-rendering: pixelated; }
+.food-guide img { width: 28px; height: 28px; image-rendering: auto; }
 .food-guide small { color: #b1c8ce; }
 
 /* In-game information stays out of the way of the landscape. */
@@ -158,11 +158,11 @@ input[type=file] { max-width: 220px; font-size: 12px; }
 .mini-hearts { color: #ff9c9f; letter-spacing: -2px; font-size: 15px; }
 .mini-form { display: flex; align-items: center; gap: 3px; border-radius: 6px; padding: 2px; background: #214c58; border: 1px solid #6ba999; }
 .mini-form.morphed { background: #72566c; border-color: #f3db91; }
-.mini-form img { width: 26px; height: 26px; image-rendering: pixelated; border-radius: 4px; }
+.mini-form img { width: 26px; height: 26px; image-rendering: auto; border-radius: 4px; }
 .mini-form span { min-width: 20px; text-align: center; color: #fae5b0; font-size: 10px; }
 .mini-label { max-width: 150px; overflow: hidden; text-overflow: ellipsis; font-size: 10px; color: #d9e9dd; }
 .mini-food { display: flex; align-items: center; gap: 3px; color: #dcf9e7; font-size: 10px; }
-.mini-food img { width: 19px; height: 19px; image-rendering: pixelated; }
+.mini-food img { width: 19px; height: 19px; image-rendering: auto; }
 .compact-quest { display: flex; align-items: center; gap: 5px; min-height: 39px; padding: 7px 10px; background: #102b3cde; border: 1px solid #b8d6b79e; border-radius: 10px; white-space: nowrap; box-shadow: 0 3px 13px #08202c80; backdrop-filter: blur(4px); }
 .compact-quest b { color: #fff0c7; font: 700 12px Georgia,serif; }
 .quest-gem { margin-left: 3px; color: #547782; font-size: 15px; }
@@ -171,7 +171,7 @@ input[type=file] { max-width: 220px; font-size: 12px; }
 #message { position: absolute; left: 50%; bottom: 13%; transform: translateX(-50%); max-width: min(82%,820px); padding: 11px 18px; text-align: center; font: 700 clamp(11px,1.42vw,17px)/1.4 Georgia,serif; letter-spacing: .01em; color: #fff3d3; background: #132b38d9; border: 1px solid #d8ce9c70; border-radius: 10px; box-shadow: 0 8px 30px #051b2d8c; pointer-events: none; opacity: 0; transition: opacity .22s; }
 #message.show { opacity: 1; }
 #ability-callout { position: absolute; top: 13%; left: 50%; z-index: 2; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; width: min(430px,77%); padding: 12px 15px; color: #fff1ce; border: 1px solid #f0d69b; border-radius: 12px; background: #173748f0; box-shadow: 0 12px 32px #071b2a9e, inset 0 1px #fff4d13b; pointer-events: none; }
-#ability-callout img { width: 57px; height: 57px; border: 2px solid #adddc4; border-radius: 8px; image-rendering: pixelated; }
+#ability-callout img { width: 57px; height: 57px; border: 2px solid #adddc4; border-radius: 8px; image-rendering: auto; }
 #ability-callout strong { display: block; color: #ffdfa4; font: bold 19px Georgia,serif; }
 #ability-callout small { display: block; margin-top: 4px; color: #d5eee4; font-size: 12px; line-height: 1.4; }
 
