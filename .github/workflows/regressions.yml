@@ -25,6 +25,10 @@ jobs:
         run: |
           python -m pip install playwright pillow
           python -m playwright install --with-deps chromium
+      - name: Validate AI-authored semantic worlds
+        run: |
+          node tests/level-designs.mjs
+          node scripts/inspect-levels.mjs
       - name: Rebuild self-contained game
         run: node scripts/build.mjs
       - name: Verify playable standalone bundle was generated
@@ -53,5 +57,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wonderwood-previews
-          path: dist/preview-*.png
+          path: |
+            dist/preview-*.png
+            dist/preview-levels.svg
+            dist/level-diagnostics.json
           if-no-files-found: ignore
