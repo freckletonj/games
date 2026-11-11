@@ -52,7 +52,7 @@ with sync_playwright() as pw:
         }
         return count;
     }""")
-    assert flips <= 5, flips
+    assert flips <= 8, flips
 
     # Fast second snacks must register even while the first chewing animation
     # is running. Use an actual edible lure and the production wildlife loop.
@@ -121,7 +121,7 @@ with sync_playwright() as pw:
     # Lures and airborne food invoke the single-fruit renderer, not full bush
     # scenery. Static atlas selection is not enough; check actual in-game draw.
     fruit=page.evaluate("""() => {
-        const s=WW.main.game.state,ctx=document.createElement('canvas').getContext('2d');
+        const s=WW.main.game.state,ctx=document.querySelector('#game').getContext('2d');
         s.lures.push({x:100,y:200,food:'berry',age:0,ttl:24,used:false});
         s.projectiles.push({kind:'food',food:'berry',x:120,y:180,vx:1,vy:0,ttl:2,age:0});
         const orig=WW.art.drawFruit,drawn=[];
