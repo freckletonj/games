@@ -48,4 +48,4 @@ with sync_playwright() as pw:
     page.screenshot(path=str(html.parent/'preview-painted-summit.png'))
     assert not errors,errors
     browser.close()
-    print('PASS: three diffusion-painted panorama rows embedded and drawn offline')
+    print('PASS: packed biome plates decode, sharp main backdrops render, and underwater scenery tracks real lagoon proximity')

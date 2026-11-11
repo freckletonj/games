@@ -184,22 +184,20 @@ its own cast shadow. Sprite frames contain no detached ground-shadow layers.
 
 ### Shipped diffusion-painted biome plates
 
-The playable game now packs `src/assets/scenes/panels/painted-biomes.webp`
-as a three-row WebP atlas. The rows are curated from newly generated
-painted concept imagery: Mosslight's illuminated village and waterfalls,
-submerged reef and ruin architecture for the coastal lagoons, and a
-lavender mountain aqueduct for the aerial chapters. HUD, protagonists and
-enemy portraits are cropped out rather than accidentally baking fake
-interactive elements into the backdrop. Its source geometry remains
-purely scenic.
+The playable game embeds a three-row painted concept atlas at
+`src/assets/scenes/panels/painted-biomes.webp`. Initial integration
+made the forests and mountain chapters visibly blurry because the
+small concept crops were stretched across a large in-game panorama.
+The shipped renderer therefore prioritizes the sharper original
+biome-specific backdrop paintings for forests and mountains.
 
-`WW.scenery.background` composites these actual paintings behind terrain,
-interactive objects, and players. It draws each row at a uniform scale
-and mirror-joins the far panorama to avoid squashing art or visible
-repeated seams. Coastal underwater art fades in with actual water-basin
-proximity; shorelines show the original open-air panorama, so beaches
-do not look permanently submerged. The atlas is embedded into the offline
-HTML with all other panels and requires no image server.
+Only the atlas's coastal underwater plate is actively composited,
+and only when the camera approaches an authored lagoon. The composite
+fades with real basin proximity and stays behind the physics geometry.
+Beach approaches retain the bright coastal panorama. No invented HUD,
+sprites, or fake collision geometry is rendered from concept art.
+The embedded atlas remains available for future replacement with
+camera-locked, geometry-conditioned painted panels.
 
 These are first-pass painted atmospheric plates, not full camera-locked
 ground/foreground paintings. In a later asset iteration, generated panel
