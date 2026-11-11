@@ -62,6 +62,11 @@ assert.ok(compiler.analyze(brokenFeature).errors.some(e => e.includes('Invalid t
 const brokenMotif = structuredClone(original);
 brokenMotif.motifs[0].x = 250;
 assert.ok(compiler.analyze(brokenMotif).errors.some(e => e.includes('Invalid motif')));
+const painted = structuredClone(original);
+painted.art = {foreground:[{asset:'meadow_scene_01',x:0,y:0,width:480,height:270}]};
+assert.equal(compiler.compile(painted).art.foreground[0].asset,'meadow_scene_01');
+painted.art.foreground[0].asset='../unsafe';
+assert.ok(compiler.analyze(painted).errors.some(e=>e.includes('Invalid painted panel')));
 const missingWorld = structuredClone(original);
 missingWorld.version = 999;
 assert.equal(compiler.analyze(missingWorld).valid, false);
