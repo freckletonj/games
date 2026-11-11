@@ -5,7 +5,7 @@ WW.games.animals = (() => {
   const titles=Object.fromEntries(Object.entries(CREATURE).map(([kind,info])=>[kind,info.name]));
   // One world unit is one source-pixel; frames run at 60 Hz. All map jumps obey these rules.
   const PHYSICS={run:2.25,jump:5.7,doubleJump:5.5,gravity:.27,maxFall:5.7,
-    bodyHalf:9,bodyHeight:25,waterExposure:.8,leash:W-75};
+    bodyHalf:9,bodyHeight:25,waterExposure:.8};
   const jumpHeight=PHYSICS.jump**2/(2*PHYSICS.gravity);
   // Two favorite treats (or three other treats) distract an animal long enough for an orb.
   const TRUST_TARGET=100, DISTRACTION_SECONDS=12;
@@ -67,6 +67,7 @@ WW.games.animals = (() => {
       return {id,...position,lastSafe:{...position},vx:0,vy:0,grounded:false,coyote:0,jumpBuffer:0,jumpsUsed:0,
         waterTime:0,face:1,health:3,sleep:false,invincible:0,selected:0,selectedFood:0,energy:Object.fromEntries(TYPES.map(t=>[t,0])),
         form:null,caught:null,hover:0,flapCooldown:0,wingbeat:0,actionCD:0,frame:0,hurt:0,
+        bubble:false,bubbleGrace:0,
         unlocked:Object.fromEntries(TYPES.map(kind=>[kind,false]))};
     });
     const animals=level.objects.filter(o=>CREATURE[o.kind]).map((o,i)=>({
@@ -87,7 +88,7 @@ WW.games.animals = (() => {
     const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),keys:Object.fromEntries(goals.map(g=>[g.kind,false])),checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,trails:0,won:false};
     const challenges=(chapter.events||[]).map(e=>({...e,completed:false,active:false,time:0,owner:null,next:0,cooldown:0,lastRunner:null,relay:false}));
     const projectiles=[],lures=[],captures=[],effects=[];
-    let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,lastLeashHint=-10,signIndex=-1;
+    let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,signIndex=-1;
     const message=document.getElementById('message');const hud=document.getElementById('hud');
     function say(text,duration=1800) {
       message.textContent=text;message.classList.add('show');
@@ -171,11 +172,12 @@ WW.games.animals = (() => {
     }
     function recallParty(destination=spawn){WW.audio.play('recall');
       players.forEach((p,i)=>{p.x=destination.x+i*25;p.y=destination.y;p.vx=p.vy=0;p.waterTime=0;p.lastSafe={x:p.x,y:p.y};p.grounded=false;
+        p.bubble=false;p.bubbleGrace=0;
         if(p.sleep){p.sleep=false;p.health=3;}p.invincible=2;particles(p.x,p.y-10,'#b9f6ff',24);});
       cameraX=0;cameraY=0;WW.input.reset();say('Camp portal! Your relics, snacks and transformation time are safe.',2800);
     }
     function hitPlayer(player,sourceX=player.x-player.face*20){
-      if(player.invincible>0||player.sleep||shared.won)return;
+      if(player.invincible>0||player.sleep||player.bubble||shared.won)return;
       player.health--;WW.audio.play('hit');player.invincible=1.2;
       player.hurt=.23;player.grounded=false;
       player.vx=sourceX<player.x?3.3:-3.3;
@@ -188,8 +190,34 @@ WW.games.animals = (() => {
       }
     }
     function revive(player,by){WW.audio.play('revive');player.sleep=false;player.hurt=0;player.health=3;player.invincible=2;player.vy=-2;player.waterTime=0;player.x=player.lastSafe.x;player.y=player.lastSafe.y;particles(player.x,player.y-10,'#aafae3',14); WW.input.rumble(by.id,.45,180);say('Back on your feet!');}
+    function enterFollowBubble(partner) {
+      partner.bubble=true;partner.vx=partner.vy=0;partner.grounded=false;
+      const anchor=WW.coop.bubbleAnchor(players[0],width,height);
+      partner.x=anchor.x;partner.y=anchor.y;
+      WW.audio.play('recall');
+      particles(partner.x,partner.y-14,'#b4eeff',15);
+      say('P2 is riding along! Press a button to pop the bubble.',1800);
+    }
     function movePlayer(p,controls,dt){
       const step=dt*60;
+      if(p.bubble){
+        // Floating passengers have no collisions, attacks, objectives or
+        // physics updates. Any action button lets P2 rejoin beside P1.
+        const anchor=WW.coop.bubbleAnchor(players[0],width,height);
+        p.x+=(anchor.x-p.x)*Math.min(1,dt*16);
+        p.y+=(anchor.y-p.y)*Math.min(1,dt*16);
+        if(WW.coop.wantsToPop(controls)){
+          p.bubble=false;p.bubbleGrace=1;
+          p.sleep=false;p.health=Math.max(1,p.health);
+          p.vx=p.vy=0;p.grounded=false;p.waterTime=0;
+          p.invincible=Math.max(p.invincible,2);
+          WW.audio.play('revive');
+          particles(p.x,p.y-14,'#d5f9ff',22);
+          say('P2 is back! Stay nearby, or ride along again.',1450);
+        }
+        return;
+      }
+      p.bubbleGrace=Math.max(0,p.bubbleGrace-dt);
       if(p.sleep){
         if(controls.pressed.recall)recallParty();
         else if(controls.pressed.revive)revive(p,p);
@@ -252,12 +280,6 @@ WW.games.animals = (() => {
       if(p.vx<0&&(solid(nx-half,feet-3)||solid(nx-half,feet-upper)))
         nx=(Math.floor((nx-half)/TILE)+1)*TILE+half+1;
       if(walkSlope&&Math.abs(nx-(p.x+p.vx*step))<.1)p.y=slopeFoot;
-      // Shared-camera co-op: neither player may strand another outside the viewport.
-      for(const other of players)if(other!==p){
-        const limited=clamp(nx,other.x-PHYSICS.leash,other.x+PHYSICS.leash);
-        if(limited!==nx&&clock-lastLeashHint>3){say('Stay together! Wait for your teammate.',1200);lastLeashHint=clock;}
-        nx=limited;
-      }
       p.x=clamp(nx,half+1,width-half-1);
       let ny=p.y+p.vy*step;
       const wasGrounded=p.grounded,landingSpeed=p.vy;
@@ -311,7 +333,7 @@ WW.games.animals = (() => {
       p.frame+=dt*(p.grounded?Math.abs(p.vx)*5+1:7);
     }
     function targetFor(animal){
-      return players.filter(p=>!p.sleep).sort((a,b)=>distance(a,animal)-distance(b,animal))[0];
+      return players.filter(p=>!p.sleep&&!p.bubble).sort((a,b)=>distance(a,animal)-distance(b,animal))[0];
     }
     function nearbyFood(animal){
       return lures.filter(food=>!food.used&&food.ttl>0&&Math.abs(food.x-animal.homeX)<180)
@@ -444,14 +466,14 @@ WW.games.animals = (() => {
         }
         // A precise descending head stomp is safe, rewards a bounce, and
         // sends the animal to rest for a few seconds rather than harming it.
-        const stomp=players.find(p=>!p.sleep&&p.vy>0.6&&
+        const stomp=players.find(p=>!p.sleep&&!p.bubble&&p.vy>0.6&&
           Math.abs(p.x-a.x)<17&&p.previousY<=a.y-23&&p.y>=a.y-27&&p.y<a.y-12);
         if(stomp&&!incapacitated){knockOut(a,stomp);continue;}
         if(incapacitated||peaceful)continue;
         if(a.kind==='cloudwhisp'&&a.gustTime>0){
           a.gustTime=Math.max(0,a.gustTime-dt);
           for(const p of players){
-            if(!p.sleep&&!a.gustHit.includes(p.id)&&
+            if(!p.sleep&&!p.bubble&&!a.gustHit.includes(p.id)&&
                 (p.x-a.x)*a.dir>0&&(p.x-a.x)*a.dir<87&&Math.abs(p.y-a.y)<37){
               p.vx=a.dir*3.8;p.vy=Math.min(p.vy,-1.4);
               a.gustHit.push(p.id);
@@ -464,7 +486,7 @@ WW.games.animals = (() => {
         const danger=a.kind==='emberkit'||(a.kind==='prismtail'&&a.dashTime>0);
         if(danger){
           for(const p of players){
-            if(!p.sleep&&Math.abs(p.x-a.x)<18&&p.y>a.y-27&&p.y-25<a.y+1){
+            if(!p.sleep&&!p.bubble&&Math.abs(p.x-a.x)<18&&p.y>a.y-27&&p.y-25<a.y+1){
               hitPlayer(p,a.x);
             }
           }
@@ -549,14 +571,14 @@ WW.games.animals = (() => {
           c.cooldown=Math.max(0,c.cooldown-dt);
           if(c.active){
             c.time=Math.max(0,c.time-dt);
-            if(c.time===0||players.every(p=>p.sleep)){
+            if(c.time===0||players.every(p=>p.sleep||p.bubble)){
               c.active=false;c.owner=null;c.next=0;c.cooldown=1.2;c.lastRunner=null;c.relay=false;
               say('The rings faded. Touch the first glow to retry.',1600);
               continue;
             }
           }
           for(const p of players){
-            if(p.sleep||c.cooldown>0)continue;
+            if(p.sleep||p.bubble||c.cooldown>0)continue;
             const node=c.nodes[c.active?c.next:0];
             if(Math.abs(p.x-node[0]*TILE)>17||Math.abs(p.y-13-node[1]*TILE)>22)continue;
             if(!c.active){
@@ -587,7 +609,7 @@ WW.games.animals = (() => {
           if(c.time<=0){c.active=false;c.owner=null;say('The crystal timer expired. Run through the starting arch to retry!',2100);}
         }
         for(const p of players){
-          if(p.sleep)continue;
+          if(p.sleep||p.bubble)continue;
           if(!c.active&&p.previousX<c.start*TILE&&p.x>=c.start*TILE){
             c.active=true;c.owner=p.id;c.time=c.seconds;
             say(`SPEED TRIAL! Reach the glowing arch in ${c.seconds}s!`,2300);
@@ -604,7 +626,7 @@ WW.games.animals = (() => {
       items.forEach(item=>{
         if(item.used&&item.kind==='snack'&&clock>=item.respawn)item.used=false;
         if(item.used)return;
-        const p=players.find(p=>!p.sleep&&Math.abs(p.x-item.x)<20&&Math.abs((p.y-13)-item.y)<28);
+        const p=players.find(p=>!p.sleep&&!p.bubble&&Math.abs(p.x-item.x)<20&&Math.abs((p.y-13)-item.y)<28);
         if(!p)return;
         if(item.kind==='snack'){
           item.used=true;item.respawn=clock+11;
@@ -652,22 +674,20 @@ WW.games.animals = (() => {
       if(shared.won)return;
       dt=Math.min(dt,.045);clock+=dt; shake=Math.max(0,shake-dt*18);
       for(let i=0;i<players.length;i++)movePlayer(players[i],WW.input.read(i),dt);
+      const follower=players[1];
+      if(follower&&!follower.bubble&&follower.bubbleGrace===0 &&
+         WW.coop.shouldBubble(players[0],follower))enterFollowBubble(follower);
       updateAnimals(dt);updateProjectiles(dt);updateChallenges(dt);updateItems();chapterHint();
       if(clock>abilityUntil)callout.hidden=true;
       effects.forEach(e=>{e.x+=e.vx*dt*60;e.y+=e.vy*dt*60;e.vy+=.09*dt*60;e.time-=dt;});
       for(let i=effects.length-1;i>=0;i--)if(effects[i].time<=0)effects.splice(i,1);
-      const active=players.filter(p=>!p.sleep);const focus=active.length?active:players;
-      const xs=players.map(p=>p.x);
-      const minX=Math.min(...xs),maxX=Math.max(...xs);
-      // The desired camera position must contain *all* players plus a margin.
-      const targetX=clamp((minX+maxX)/2-W/2,maxX-(W-30),minX-30);
-      const desiredX=clamp(targetX+(players.length===1?players[0].vx*14:0),0,Math.max(0,width-W));
-      const smoothingX=Math.abs(desiredX-cameraX)>W*.85?1:Math.min(1,dt*10);
-      cameraX+=(desiredX-cameraX)*smoothingX;
-      const minY=Math.min(...players.map(p=>p.y)),maxY=Math.max(...players.map(p=>p.y));
-      const desiredY=clamp((minY+maxY)/2-H*.73,0,Math.max(0,height-H));
-      const smoothingY=Math.abs(desiredY-cameraY)>H*.9?1:Math.min(1,dt*8);
-      cameraY+=(desiredY-cameraY)*smoothingY;
+      // Player 1 leads the camera in co-op. P2 can explore normally while
+      // nearby, but never restricts movement or pushes the camera off course.
+      const target=WW.coop.cameraTarget(players[0],width,height,W,H);
+      const smoothingX=Math.abs(target.x-cameraX)>W*.85?1:Math.min(1,dt*10);
+      cameraX+=(target.x-cameraX)*smoothingX;
+      const smoothingY=Math.abs(target.y-cameraY)>H*.9?1:Math.min(1,dt*8);
+      cameraY+=(target.y-cameraY)*smoothingY;
       if(clock>+(message.dataset.until||0))message.classList.remove('show');
       if(clock-hudTime>.16){
         hudTime=clock;
@@ -676,7 +696,7 @@ WW.games.animals = (() => {
             const chosen=p.caught,food=FOODS[p.selectedFood];
             const display=p.form||chosen||'hero';
             return `<div class="compact-player p${p.id+1}" title="Player ${p.id+1}">
-              <b>P${p.id+1}</b><span class="mini-hearts">${'♥'.repeat(p.health)}${'♡'.repeat(3-p.health)}</span>
+              <b>P${p.id+1}${p.bubble?' ◌':''}</b><span class="mini-hearts">${'♥'.repeat(p.health)}${'♡'.repeat(3-p.health)}</span>
               <span class="mini-form ${p.form?'morphed':''}" title="${titles[display]||'Explorer'}">
                 <img src="${WW.art.portrait(display)}" alt="${titles[display]||'Explorer'}">
               </span>
@@ -992,7 +1012,7 @@ WW.games.animals = (() => {
       });
       animals.forEach(a=>{
         if(!a.alive)return;
-        const near=players.some(p=>!p.sleep&&Math.abs(p.x-a.x)<55&&Math.abs(p.y-a.y)<45);
+        const near=players.some(p=>!p.sleep&&!p.bubble&&Math.abs(p.x-a.x)<55&&Math.abs(p.y-a.y)<45);
         const species=CREATURE[a.kind],ready=a.distractedUntil>clock;
         // Shadows belong on supporting terrain; flying wildlife cast none.
         if(!['skyling','glimmermoth','cloudwhisp'].includes(a.kind)){
@@ -1104,7 +1124,29 @@ WW.games.animals = (() => {
         ctx.restore();
       });
       players.forEach(p=>{
-        if(p.sleep){
+        if(p.bubble){
+          // A translucent floating companion, visibly distinct from an
+          // active player. Keep their captured creature appearance intact.
+          const float=Math.sin(now*3.6)*1.6;
+          const cy=p.y-18+float;
+          ctx.save();
+          ctx.beginPath();ctx.arc(p.x,cy,23,0,Math.PI*2);ctx.clip();
+          const sheen=ctx.createRadialGradient(p.x-9,cy-10,2,p.x,cy,28);
+          sheen.addColorStop(0,'#f6ffff80');
+          sheen.addColorStop(.63,'#87d7f442');
+          sheen.addColorStop(1,'#5f95e066');
+          ctx.fillStyle=sheen;ctx.fillRect(p.x-24,cy-24,48,48);
+          ctx.save();ctx.translate(p.x,cy+8);ctx.scale(.65,.65);
+          WW.art.draw(ctx,p.form||'hero',0,15,Math.floor(p.frame)%6,false,p.id,
+            {action:'idle',time:now});
+          ctx.restore();ctx.restore();
+          ctx.save();
+          ctx.strokeStyle='#e1fff1e3';ctx.lineWidth=2;
+          ctx.beginPath();ctx.arc(p.x,cy,23,0,Math.PI*2);ctx.stroke();
+          ctx.strokeStyle='#ffffffaa';ctx.lineWidth=2.4;
+          ctx.beginPath();ctx.arc(p.x-3,cy-3,17,3.7,4.85);ctx.stroke();
+          ctx.restore();
+        }else if(p.sleep){
           WW.art.draw(ctx,'hero',p.x,p.y+8,1,p.face<0,p.id,{action:'sleep',time:now});
           // The dizzy stars are independently animated, never painted onto the KO sprite.
           for(let i=0;i<3;i++){
