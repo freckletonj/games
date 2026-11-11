@@ -500,7 +500,7 @@ WW.games.animals = (() => {
       }
       m.y=clamp(ny,upper+1,height-8);
       m.phase+=dt*(m.grounded?4+Math.abs(m.vx)*2:8);
-      p.x=m.x;p.y=m.y-23;p.vx=m.vx;p.vy=m.vy;p.grounded=m.grounded;
+      p.x=m.x;p.y=m.y-32;p.vx=m.vx;p.vy=m.vy;p.grounded=m.grounded;
       p.coyote=0;p.jumpsUsed=0;p.waterTime=0;
       if(m.grounded&&!liquid(m.x,m.y-8))p.lastSafe={x:p.x,y:p.y};
       p.frame+=dt*(Math.abs(m.vx)*3+4);
@@ -554,7 +554,7 @@ WW.games.animals = (() => {
           Math.abs(p.x-m.x)<27&&p.previousY<=m.y-23&&
           p.y>=m.y-27&&p.y<=m.y-10);
         if(rider){
-          m.rider=rider.id;rider.mount=m.id;rider.x=m.x;rider.y=m.y-23;
+          m.rider=rider.id;rider.mount=m.id;rider.x=m.x;rider.y=m.y-32;
           rider.vx=m.vx;rider.vy=m.vy;rider.grounded=m.grounded;
           rider.waterTime=0;
           WW.audio.play('morph');
@@ -893,7 +893,7 @@ WW.games.animals = (() => {
         if(item.used&&item.kind==='snack'&&clock>=item.respawn)item.used=false;
         if(item.used)return;
         const p=players.find(p=>!p.sleep&&!p.bubble&&Math.abs(p.x-item.x)<20&&
-          Math.abs((p.y+(p.mount!==null?8:-13))-item.y)<28);
+          Math.abs((p.y+(p.mount!==null?16:-13))-item.y)<28);
         if(!p)return;
         if(item.kind==='snack'){
           item.used=true;item.respawn=clock+11;
@@ -1577,16 +1577,26 @@ WW.games.animals = (() => {
             WW.illustrations.draw(ctx,'spark',sx,sy+size/2,size,size,.7+.25*Math.sin(phase)**2);
           }
         }else{
-          if(p.form){ctx.save();ctx.globalAlpha=.19+.09*Math.sin(now*5);ctx.fillStyle=FORM[p.form].color;ctx.beginPath();ctx.ellipse(p.x,p.y-13,18,23,0,0,Math.PI*2);ctx.fill();ctx.restore();}
-          if(p.invincible<=0||Math.floor(now*15)%2===0)
-            WW.art.draw(ctx,p.form||'hero',p.x,p.y,Math.floor(p.frame)%6,p.face<0,p.id,{
-              action:p.hurt>0?'hurt':!p.grounded?(p.vy<0?'jump':'fall'):Math.abs(p.vx)>0.25?'run':'idle',
-              time:now,grounded:p.grounded
-            });
+          if(p.form&&p.mount===null){ctx.save();ctx.globalAlpha=.19+.09*Math.sin(now*5);ctx.fillStyle=FORM[p.form].color;ctx.beginPath();ctx.ellipse(p.x,p.y-13,18,23,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+          if(p.invincible<=0||Math.floor(now*15)%2===0){
+            ctx.save();
+            if(p.mount!==null){
+              // Rider uses the saddle pivot; the mount supplies the running
+              // and flying animation rather than the rider cycling walk poses.
+              ctx.translate(p.x,p.y+2);ctx.scale(.80,.82);
+            }
+            WW.art.draw(ctx,p.form||'hero',p.mount!==null?0:p.x,
+              p.mount!==null?0:p.y,Math.floor(p.frame)%6,p.face<0,p.id,{
+                action:p.mount!==null?'idle':p.hurt>0?'hurt':
+                  !p.grounded?(p.vy<0?'jump':'fall'):Math.abs(p.vx)>0.25?'run':'idle',
+                time:now,grounded:p.grounded&&p.mount===null
+              });
+            ctx.restore();
+          }
         }
         // Four tiny feathers over Moonwing communicate remaining lift without
         // a permanent HUD meter or instructional text across the scene.
-        if(p.form==='skyling'&&!p.grounded&&!p.sleep){
+        if(p.form==='skyling'&&!p.grounded&&!p.sleep&&p.mount===null){
           ctx.save();
           for(let i=0;i<4;i++){
             ctx.globalAlpha=i<p.flaps?.83:.19;
