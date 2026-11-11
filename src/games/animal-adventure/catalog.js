@@ -21,6 +21,14 @@ WW.catalog = {
     cloudwhisp: {name:'Cloudwhisp',role:'gentle drifter',favorite:'nectar',color:'#d5c7ff',capturable:true,tactic:'Flashes a warning line, then blows a gust. Move behind it or stun it.'},
     emberkit: {name:'Emberkit',role:'territorial chaser',favorite:'berry',color:'#ffad79',capturable:true,tactic:'Approaches and telegraphs a damaging dash. Jump, head-stomp, feed, or stun it.'}
   },
+  // Rideable friends are separate from the eight capturable transformations.
+  // Two favorite treats (or three other treats) earn permission to mount.
+  mounts: {
+    unicorn: {name:'Unicorn',favorite:'berry',color:'#eec0ff',capturable:false,
+      speed:5.2,jump:10.7,role:'swift land mount'},
+    pegasus: {name:'Pegasus',favorite:'star',color:'#d9e9ff',capturable:false,
+      speed:4.25,jump:7.3,role:'unlimited flying mount'}
+  },
   foods: {
     berry: {name:'Blushberry',method:'lob',affection:1,color:'#fa73aa',speed:3.2},
     nectar: {name:'Nectar fruit',method:'lob',affection:1,color:'#82f9e5',speed:3.0},
