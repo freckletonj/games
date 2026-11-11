@@ -282,11 +282,13 @@ with sync_playwright() as playwright:
     print('BOOT DIAGNOSTIC:', errors, page.locator('h1').all_inner_texts(), page.locator('body').inner_text()[:250])
     assert page.locator('h1').count()==1 and page.locator('h1').inner_text()=='WONDERWOOD',errors
     page.get_by_role('button', name='CHOOSE A LEVEL').click()
-    assert page.locator('.chapter-card').count() == 3
+    assert page.locator('.chapter-card').count() == 5
     for i, (name,kind,size) in enumerate([
-        ('Mosslight Meadow','springKey',144),
-        ('Crystal Coast','diveKey',157),
-        ('Starfall Summit','skyKey',166),
+        ('Mosslight Meadow','springKey',260),
+        ('Crystal Coast','diveKey',294),
+        ('Starfall Summit','skyKey',310),
+        ('Willow Wetlands','diveKey',324),
+        ('Cloud Gardens','skyKey',338),
     ]):
         page.get_by_role('button', name='Explore '+name).click()
         page.locator('#menu').wait_for(state='hidden')
@@ -327,10 +329,10 @@ with sync_playwright() as playwright:
         assert page.evaluate('WW.worlds.summary[WW.main.game.state.chapter.id].width') == size
         assert page.locator('#hud').bounding_box()['height'] < 65
         page.evaluate('WW.main.game.render(document.querySelector("#game").getContext("2d"), 3)')
-        page.screenshot(path=str(html.parent / ("preview-"+["meadow","coast","summit"][i]+".png")))
+        page.screenshot(path=str(html.parent / ("preview-"+["meadow","coast","summit","wetlands","gardens"][i]+".png")))
         page.keyboard.press('Escape')
         page.get_by_role('button', name='Main menu').click()
         page.get_by_role('button', name='CHOOSE A LEVEL').click()
     assert not errors, errors
     browser.close()
-    print('PASS: 3 authored worlds, 1 light each, HUD, canvas rendering, keyboard menus')
+    print('PASS: 5 larger authored worlds, 1 light each, HUD, canvas rendering, keyboard menus')
