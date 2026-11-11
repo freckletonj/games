@@ -40,7 +40,7 @@ const scenes = {
   tiles: await dataUrl('src/assets/tiles/meadow/tiles.png','image/png')
 };
 const illustrations = Object.fromEntries(await Promise.all(
-  ['props','effects','landmarks','flora'].map(async name => [
+  ['props','effects','landmarks','flora','states'].map(async name => [
     name,await dataUrl(`src/assets/illustrations/${name}.webp`,'image/webp')
   ])
 ));
