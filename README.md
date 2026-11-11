@@ -78,10 +78,21 @@ The offline game embeds these declarations and compiles the same definitions
 that the Node-based level inspector validates. Challenge sections express
 intent and shoreline-aware basins avoid unsupported water columns.
 
-Run node tests/level-designs.mjs and node scripts/inspect-levels.mjs
-for machine-readable diagnostics and an SVG atlas, then node scripts/build.mjs
-to produce the single offline HTML. See docs/ai-level-authoring.md for the
-schema, workflow and current limits.
+An AI authoring loop can be run entirely offline:
+
+- `node tests/level-designs.mjs` — schema, ability sources and water-basin checks.
+- `node scripts/inspect-levels.mjs` — semantic level atlas and local diagnostics.
+- `node scripts/export-art-guides.mjs` — 16:9 geometry masks, annotated camera
+  layouts and prompts for painting cohesive, correctly aligned scene artwork.
+- `node scripts/build.mjs` — the single standalone offline HTML.
+- `python scripts/evaluate-routes.py` — actual browser-physics movement probes
+  with per-section stalls, skill/form attempts and a visual comparison.
+- `node scripts/compare-route-reports.mjs before.json after.json` — measure
+  which challenge sections improved or regressed after an LLM revision.
+
+Both route evaluation and art export accept a standalone candidate JSON path.
+See docs/ai-level-authoring.md for their schema, limitations and intended workflow.
+A scripted section probe is not a proof of complete human playability.
 
 ## Developer guide
 
