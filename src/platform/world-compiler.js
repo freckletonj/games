@@ -6,6 +6,7 @@ WW.worldCompiler = (() => {
   const creatures = new Set(['springaroo', 'tideling', 'skyling', 'mossback',
     'prismtail', 'glimmermoth', 'cloudwhisp', 'emberkit']);
   const setpieceKinds = new Set(['bounceBloom', 'windRing', 'bubbleVent']);
+  const mountKinds = new Set(['unicorn', 'pegasus']);
   const vistaKinds = new Set(['root-arch', 'elder-tree', 'lily-garden',
     'firefly-ruins', 'shell-cove', 'reef-arch', 'tide-temple',
     'sunken-ruin', 'pearl-shrine', 'willow-arch', 'moon-gate',
@@ -78,6 +79,14 @@ WW.worldCompiler = (() => {
           ? !creatures.has(v) : !finite(v)))) {
         errors.push('Invalid ' + name + ' entry');
       }
+    }
+    if(spec.mounts !== undefined && (
+      !Array.isArray(spec.mounts) || spec.mounts.length > 8 ||
+      spec.mounts.some(m=>!Array.isArray(m) || m.length<2 || m.length>3 ||
+        !mountKinds.has(m[0]) || !integer(m[1]) ||
+        m[1]<3 || m[1]>=width-3 ||
+        (m.length===3 && (!finite(m[2]) || m[2]<3 || m[2]>=height-2))))) {
+      errors.push('mounts must be [unicorn|pegasus,x,optional y] inside the level');
     }
     if (!Array.isArray(spec.relic) || spec.relic.length !== 3 ||
         !['springKey', 'diveKey', 'skyKey'].includes(spec.relic[0]) ||
@@ -380,6 +389,9 @@ WW.worldCompiler = (() => {
       const aerial = ['skyling', 'cloudwhisp', 'glimmermoth'].includes(kind);
       stamp(kind, x, explicitY ?? floorAt(x) - (aerial ? 4 : 1));
     }
+    for (const [kind, x, explicitY] of spec.mounts || []) {
+      stamp(kind, x, explicitY ?? floorAt(x) - 1);
+    }
     for (const x of spec.checkpoints) stamp('checkpoint', x, floorAt(x) - 1);
     for (const x of spec.snacks) stamp('snack', x, floorAt(x) - 1);
     for (const [x, y] of spec.stars) stamp('starShard', x, y);
@@ -454,7 +466,7 @@ WW.worldCompiler = (() => {
       terrainFeatures: (spec.terrainFeatures || []).length,
       setpieces: setpieces.length, vistas: vistas.length,
       dressing: dressing.length, goalWaypoints: (spec.goalRoute||[]).length,
-      creatures: spec.creatures.length
+      creatures: spec.creatures.length, mounts: (spec.mounts||[]).length
     }};
     return {width, height, grid, objects, chapter, biome: spec.biome,
       landmarks: spec.landmarks, surface, waterBodies: basins,
