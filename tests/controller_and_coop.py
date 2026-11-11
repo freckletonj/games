@@ -86,8 +86,12 @@ with sync_playwright() as pw:
     assert page.evaluate("WW.storage.data.settings.players") == 2
     assert focused()["action"] == "play"
 
-    tap(0)
+    # Hold A through the menu transition. It must not turn into a phantom jump.
+    pad(0, True)
     page.locator("#menu").wait_for(state="hidden")
+    page.evaluate("() => {for(let i=0;i<8;i++)WW.main.game.update(1/60)}")
+    assert page.evaluate("WW.main.game.state.players[0].jumpsUsed") == 0
+    pad(0, False)
     assert page.evaluate("WW.main.game.state.players.length") == 2
 
     # Start works from gameplay, and B resumes directly from pause.
@@ -100,6 +104,11 @@ with sync_playwright() as pw:
     tap(9)
     assert page.get_by_role("button", name="Resume").is_visible()
     tap(9)
+    page.locator("#menu").wait_for(state="hidden")
+    # Player 2's own controller can also pause and resume.
+    tap(9, controller=1)
+    assert page.get_by_role("button", name="Resume").is_visible()
+    tap(1, controller=1)
     page.locator("#menu").wait_for(state="hidden")
 
     page.evaluate("""() => {
