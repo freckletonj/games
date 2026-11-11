@@ -68,7 +68,8 @@ WW.games.animals = (() => {
     const location=(o)=>{
       const x=(o.x+.5)*TILE;
       const rooted=['p1','p2','checkpoint','exit','snack'].includes(o.kind) ||
-        (CREATURE[o.kind] && !['skyling','glimmermoth','cloudwhisp'].includes(o.kind) &&
+        ((MOUNTS[o.kind] || CREATURE[o.kind]) &&
+         !['skyling','glimmermoth','cloudwhisp'].includes(o.kind) &&
          at(x,(o.y+.5)*TILE)!=='water' && Math.abs(surfaceY(x)-(o.y+1)*TILE)<20);
       return {x,y:rooted && level.surface?surfaceY(x):(o.y+1)*TILE};
     };
