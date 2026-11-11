@@ -505,6 +505,14 @@ WW.games.animals = (() => {
       if(m.grounded&&!liquid(m.x,m.y-8))p.lastSafe={x:p.x,y:p.y};
       p.frame+=dt*(Math.abs(m.vx)*3+4);
     }
+    function mountFloor(x,y){
+      // A rideable on an authored shelf should stay on that shelf instead of
+      // snapping down to the lower continuous hillside while waiting for food.
+      const shelf=(level.platformSegments||[]).find(p=>p.kind==='platform' &&
+        x>=(p.x+.3)*TILE&&x<(p.x+p.length-.3)*TILE&&
+        Math.abs(p.y*TILE-y)<16);
+      return shelf?shelf.y*TILE:standingHeight(x,y);
+    }
     function updateMounts(dt){
       const step=dt*60;
       for(const m of mounts){
@@ -522,7 +530,7 @@ WW.games.animals = (() => {
         if(lure){
           const nextX=clamp(m.x+clamp(lure.x-m.x,-1.15*step,1.15*step),
             18,width-18);
-          const floor=standingHeight(nextX,m.homeY);
+          const floor=mountFloor(nextX,m.y);
           if(!liquid(nextX,floor-8)&&Math.abs(floor-m.y)<17){
             m.dir=nextX>=m.x?1:-1;m.vx=(nextX-m.x)/step;
             m.x=nextX;m.y=floor;
@@ -542,7 +550,7 @@ WW.games.animals = (() => {
           const target=m.homeX+m.dir*24;
           const nextX=clamp(m.x+clamp(target-m.x,-.35*step,.35*step),
             Math.max(18,m.homeX-26),Math.min(width-18,m.homeX+26));
-          const floor=standingHeight(nextX,m.homeY);
+          const floor=mountFloor(nextX,m.y);
           if(Math.abs(m.x-target)<2)m.dir*=-1;
           if(!liquid(nextX,floor-8)&&Math.abs(floor-m.y)<13){
             m.vx=(nextX-m.x)/step;m.x=nextX;m.y=floor;
