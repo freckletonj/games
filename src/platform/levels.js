@@ -123,6 +123,28 @@ WW.levels = (() => {
     if (level.biome !== undefined && !['meadow', 'coast', 'summit'].includes(level.biome)) {
       throw Error('Invalid scenery biome');
     }
+    // Optional continuous collision heightfield and whole-scene painted
+    // chunks are explicit, rather than inferred from illustration colors.
+    if(level.surface!==undefined &&
+      (!Array.isArray(level.surface) || level.surface.length!==width+1 ||
+       level.surface.some(y=>typeof y!=='number'||!Number.isFinite(y)||y<0||y>=height))) {
+      throw Error('Invalid continuous ground surface');
+    }
+    if(level.art!==undefined){
+      const panels=Object.entries(level.art);
+      if(!level.art || Array.isArray(level.art) ||
+         panels.some(([name,entries])=>!['background','foreground'].includes(name) ||
+           !Array.isArray(entries) || entries.length>200 || entries.some(panel=>
+             !panel || typeof panel.asset!=='string' ||
+             !/^[a-zA-Z0-9_-]+$/.test(panel.asset) ||
+             !['x','y','width','height'].every(k=>typeof panel[k]==='number' &&
+               Number.isFinite(panel[k])) ||
+             panel.width<=0 || panel.height<=0 ||
+             (panel.parallax!==undefined && (!Number.isFinite(panel.parallax) ||
+               panel.parallax<0 || panel.parallax>1))))) {
+        throw Error('Invalid painted scene panel metadata');
+      }
+    }
     const errors = validateMarkers(level);
     if (errors.length) throw Error(errors.join(' · '));
     return {...level, warnings: level.warnings || []};
