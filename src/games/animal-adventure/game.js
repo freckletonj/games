@@ -499,7 +499,7 @@ WW.games.animals = (() => {
         ny=(Math.floor((ny-upper)/TILE)+1)*TILE+upper;m.vy=0;
       }
       m.y=clamp(ny,upper+1,height-8);
-      m.phase+=dt*(m.grounded?4+Math.abs(m.vx)*2:8);
+      m.phase+=dt*(m.grounded?1.2+Math.abs(m.vx)*.35:2.2);
       p.x=m.x;p.y=m.y-32;p.vx=m.vx;p.vy=m.vy;p.grounded=m.grounded;
       p.coyote=0;p.jumpsUsed=0;p.waterTime=0;
       if(m.grounded&&!liquid(m.x,m.y-8))p.lastSafe={x:p.x,y:p.y};
@@ -1427,7 +1427,7 @@ WW.games.animals = (() => {
       });
       mounts.forEach(m=>{
         WW.art.drawMount(ctx,m.kind,m.x,m.y,m.dir<0,{
-          action:m.rider!==null?'run':m.eating>0?'eat':
+          action:m.eating>0?'eat':
             m.trust>=TRUST_TARGET?'happy':Math.abs(m.vx)>.15?'run':'idle',
           time:m.phase, flying:m.kind==='pegasus'&&!m.grounded
         });
