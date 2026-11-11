@@ -20,6 +20,7 @@ with sync_playwright() as pw:
         page.evaluate("""() => {
           const s=WW.main.game.state;
           s.animals.forEach(a=>{a.alive=false;a.respawn=99999});
+          s.items.filter(i=>i.kind==='starShard').forEach(i=>i.used=true);
           s.players[0].invincible=999;
         }""")
 
