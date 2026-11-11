@@ -286,7 +286,7 @@ WW.games.animals = (() => {
           p.bloomBoostWindow=0;p.jumpBuffer=0;
           WW.audio.play('double');WW.input.rumble(p.id,.48,105);
           particles(p.x,p.y-5,'#fff5b0',21);
-        }else if(p.form==='skyling'&&!p.grounded) p.flapBuffer=.19;
+        }else if(p.form==='skyling'&&!p.grounded&&p.flaps>0) p.flapBuffer=.19;
       }
       p.wingbeat=Math.max(0,p.wingbeat-dt);
       p.breachCooldown=Math.max(0,p.breachCooldown-dt);
