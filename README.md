@@ -147,7 +147,7 @@ player still walks on physically defined slopes. See
 `src/assets/scenes/panels/README.md` for a complete example.
 
 Without optional painted panels, the existing high-resolution terrain
-textures, continuous slope caps, and repeated mirrored biome panoramas render
+textures, continuous slope caps, and chapter-length painted panoramas render
 automatically. This makes a painted world-panel pass optional rather than a
 prerequisite to playing.
 
@@ -159,6 +159,7 @@ Run browser regression tests after installing Python Playwright and its Chromium
 
     python -m pip install playwright
     python -m playwright install chromium
+    python tests/offline_launch.py
     python tests/smoke.py
     python tests/playability.py
     python tests/routes.py
@@ -166,6 +167,14 @@ Run browser regression tests after installing Python Playwright and its Chromium
     python tests/game_feel.py
     python tests/creature_mechanics.py
     python tests/painted_illustrations.py
+
+The offline launch test deliberately uses the generated HTML **unchanged**:
+it clicks Play, lets the actual `requestAnimationFrame` loop draw, checks
+that the canvas contains real game frames, and moves the protagonist. It
+also catches test-only storage shims accidentally included in a release.
+Do not distribute a Playwright fixture with its animation loop removed.
+GitHub Actions is optional: `node scripts/build.mjs` and the local browser
+tests work without any hosted CI compute.
 
 GitHub Actions runs the same suite on pull requests. The traversal suite checks that the three chapter lights require their intended power using actual player physics. `tests/creature_mechanics.py` additionally checks every capturable form, latest-catch replacement, spell consequences, safe head-stomps and hazard windup.
 
