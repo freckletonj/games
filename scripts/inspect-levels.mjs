@@ -16,8 +16,8 @@ const colors = {meadow: ['#bfe9d7', '#476b5d'], coast: ['#aedfe9', '#5c7c86'],
   summit: ['#c9caee', '#686b91']};
 const out = [], reports = [];
 
-for (const [index, design] of Object.entries(designs).entries()) {
-  const {id} = design, analysis = compiler.analyze(design);
+for (const [index, [id, design]] of Object.entries(designs).entries()) {
+  const analysis = compiler.analyze(design);
   if (!analysis.valid) {
     console.error(id, analysis.errors.join('; '));
     process.exitCode = 1;
