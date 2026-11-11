@@ -18,6 +18,7 @@ COLORS = {
     "springKey": "#e83c86", "checkpoint": "#aaaaaa",
     "cloudwhisp": "#9480ed", "prismtail": "#ff895d", "mossback": "#6b9c42",
     "glimmermoth": "#ce6dff", "emberkit": "#fc5d3e", "starShard": "#f2f28a",
+    "unicorn": "#f39add", "pegasus": "#c3e5fa",
     "thermal": "#8af1f9", "prismKey": "#ffa03e", "mossKey": "#82e561",
     "cloudKey": "#c9adfb", "emberKey": "#f54848",
 }
