@@ -81,11 +81,14 @@ WW.games.animals = (() => {
     const projectiles=[],lures=[],captures=[],effects=[];
     let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,lastLeashHint=-10,signIndex=-1;
     const message=document.getElementById('message');const hud=document.getElementById('hud');
-    function say(text,duration=2100) {message.textContent=text;message.classList.add('show');message.dataset.until=String(clock+duration/1000);}
+    function say(text,duration=1800) {
+      message.textContent=text;message.classList.add('show');
+      message.dataset.until=String(clock+Math.min(duration,2200)/1000);
+    }
     function showAbility(p){
       if(!p.form){callout.hidden=true;return;}
-      callout.innerHTML=`<img src="${WW.art.portrait(p.form)}" alt=""><span><strong>P${p.id+1} · ${titles[p.form]}</strong><small>${abilityHelp[p.form]} · A new power for this adventure</small></span>`;
-      callout.hidden=false;abilityUntil=clock+3.7;
+      callout.innerHTML=`<img src="${WW.art.portrait(p.form)}" alt=""><span><strong>${titles[p.form]}</strong><small>${abilityHelp[p.form]}</small></span>`;
+      callout.hidden=false;abilityUntil=clock+2.2;
     }
     function chapterHint(){
       const closest=players[0];if(!chapter.signs)return;
@@ -625,26 +628,26 @@ WW.games.animals = (() => {
         hud.innerHTML=`
           <div class="compact-players">${players.map(p=>{
             const chosen=p.caught,food=FOODS[p.selectedFood];
-            const display=p.form||chosen||'hero',active=!!chosen;
-            return `<div class="compact-player p${p.id+1}">
+            const display=p.form||chosen||'hero';
+            return `<div class="compact-player p${p.id+1}" title="Player ${p.id+1}">
               <b>P${p.id+1}</b><span class="mini-hearts">${'♥'.repeat(p.health)}${'♡'.repeat(3-p.health)}</span>
-              <span class="mini-form ${p.form?'morphed':''}">
+              <span class="mini-form ${p.form?'morphed':''}" title="${titles[display]||'Explorer'}">
                 <img src="${WW.art.portrait(display)}" alt="${titles[display]||'Explorer'}">
-                <span>${p.form?'ON':active?'✓':'—'}</span>
               </span>
-              <span class="mini-label">${p.form?'F: '+FORM[p.form].power:active?'T: Become '+titles[chosen]:'Offer fruit · catch with G'}</span>
-              <span class="mini-food" title="${p.form?'F: creature power':FOOD[food].name+' (F: leave food, E: cycle)'}">
-                ${p.form?'✦ POWER':'<img src="'+WW.art.foodIcon(food)+'" alt="">×'+shared.foods[food]}
+              <span class="mini-food" title="${p.form?FORM[p.form].power:FOOD[food].name}">
+                ${p.form?'✦':'<img src="'+WW.art.foodIcon(food)+'" alt="">×'+shared.foods[food]}
               </span>
             </div>`;
           }).join('')}</div>
-          <div class="compact-quest"><b>${chapter.name}</b><span class="quest-gem ${goals.every(g=>shared.keys[g.kind])?'found':''}">◆</span>
-            <small>${goals.every(g=>shared.keys[g.kind])?'GATE OPEN':'FIND THE LIGHT'} · ✦ ${shared.shards}/${shared.totalShards}</small>
-          </div>`;
+          <div class="compact-quest" title="${chapter.name}">
+            <span class="quest-gem ${goals.every(g=>shared.keys[g.kind])?'found':''}">◆</span>
+            <small>✦ ${shared.shards}/${shared.totalShards}</small>
+          </div>``;
       }
     }
     function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
     function background(ctx,time){
+      if(WW.scenery.paintBackdrop(ctx,level.art?.background,cameraX,cameraY))return;
       if(WW.scenery.background(ctx,chapter.biome,cameraX)){
         // Each painted biome has its own atmospheric motion: fireflies,
         // refracted sea spray or quiet stars. All effects sit behind collisions.
@@ -829,41 +832,27 @@ WW.games.animals = (() => {
     }
     function trailGuide(ctx,now){
       const current=objective(),p=players[0],delta=current.x-p.x;
-      const miles=Math.round(Math.abs(delta)/TILE);
-      const direction=Math.abs(delta)<TILE*2?'HERE':delta>0?'RIGHT':'LEFT';
-      const goalLabel=current.name.length>30?current.name.slice(0,28)+'…':current.name;
-      // A two-line compass replaces the tiny, long-form debug string.
-      box(ctx,9,H-34,311,26,'#102b3ce7');
-      box(ctx,9,H-34,3,26,'#e7cb89');
-      ctx.textAlign='left';ctx.fillStyle='#f5db9d';ctx.font='bold 9px sans-serif';
-      ctx.fillText(`✦ ${goalLabel} · ${direction} ${miles} TILES`,16,H-23,295);
-      ctx.fillStyle='#d4e9df';ctx.font='8px sans-serif';
-      ctx.fillText(current.hint,16,H-12,292);
-      // A compact trail atlas communicates overall chapter scale and explored distance.
-      const left=W-147,top=H-34,bar=119;
-      box(ctx,left,top,138,26,'#102b3ce7');
-      ctx.fillStyle='#e5d9ad';ctx.font='bold 8px sans-serif';
-      ctx.fillText('TRAIL',left+8,top+9);
-      box(ctx,left+8,top+16,bar,3,'#49636b');
-      box(ctx,left+8,top+16,bar*clamp(p.x/width,0,1),3,'#a6dbbd');
+      // A quiet progress rail replaces constant prose and tile-count readouts.
+      const left=W/2-68,top=H-13,bar=124;
+      box(ctx,left-5,top-6,bar+10,14,'#102b3c9a');
+      box(ctx,left,top,bar,3,'#577476');
+      box(ctx,left,top,bar*clamp(p.x/width,0,1),3,'#d9dab7');
       for(const gem of items.filter(item=>goalKinds.has(item.kind))){
-        const gx=left+8+bar*gem.x/width;
-        box(ctx,gx-1,top+13,3,9,shared.keys[gem.kind]?'#f4d18c':'#7797a0');
+        const gx=left+bar*gem.x/width;
+        box(ctx,gx-1,top-3,3,9,shared.keys[gem.kind]?'#ffd68b':'#92afb3');
       }
       for(const player of players){
-        const px=left+8+bar*clamp(player.x/width,0,1);
-        box(ctx,px-2,top+13,5,9,player.id===0?'#ffefd2':'#c9bdff');
+        const px=left+bar*clamp(player.x/width,0,1);
+        box(ctx,px-2,top-2,5,7,player.id===0?'#fff2d7':'#c8b6f4');
       }
-      // Offscreen arrows anchor navigation without moving the camera or blocking play.
-      if(Math.abs(delta)>W*.42){
+      if(Math.abs(delta)>W*.37){
         const right=delta>0,x=right?W-19:19,y=H*.51;
-        ctx.globalAlpha=.6+.4*Math.sin(now*3.4);
-        ctx.fillStyle='#f5da9d';ctx.beginPath();
+        ctx.globalAlpha=.48+.25*Math.sin(now*3.4);
+        ctx.fillStyle='#f6dfa4';ctx.beginPath();
         ctx.moveTo(x+(right?7:-7),y);
         ctx.lineTo(x+(right?-4:4),y-7);
         ctx.lineTo(x+(right?-4:4),y+7);
-        ctx.closePath();ctx.fill();
-        ctx.globalAlpha=1;
+        ctx.closePath();ctx.fill();ctx.globalAlpha=1;
       }
     }
     function render(ctx,now){
@@ -1074,7 +1063,7 @@ WW.games.animals = (() => {
       if(race){box(ctx,140,32,200,20,'#203252d5');ctx.font='bold 12px sans-serif';ctx.fillStyle='#ffebb9';ctx.fillText(`CRYSTAL DASH: ${race.time.toFixed(1)}s`,164,46);}
       trailGuide(ctx,now);
     }
-    hud.hidden=false;callout.hidden=true;say(`${chapter.name} · ${chapter.intro}`,4200);
+    hud.hidden=false;callout.hidden=true;say(chapter.name,1500);
     return {update,render,recallParty,recallCheckpoint(){recallParty(shared.checkpoint);},stop(){hud.hidden=true;callout.hidden=true;message.classList.remove('show');},get state(){return {chapter,goals,challenges,players,shared,animals,items,projectiles,lures,captures,cameraX,cameraY,objective:objective(),physics:PHYSICS,jumpHeight}}};
   }
   return {start};
