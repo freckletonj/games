@@ -162,6 +162,12 @@ assert.ok(compiler.analyze(unknownMount).errors.some(e=>e.includes('mounts must 
 const invalidMountX=structuredClone(original);
 invalidMountX.mounts=[['unicorn',-1]];
 assert.ok(compiler.analyze(invalidMountX).errors.some(e=>e.includes('mounts must be')));
+const unsupportedMount=structuredClone(original);
+unsupportedMount.mounts=[['pegasus',179,14]];
+assert.ok(compiler.analyze(unsupportedMount).errors.some(e=>e.includes('authored bridge or ledge')));
+const submergedMount=structuredClone(original);
+submergedMount.mounts=[['unicorn',155]];
+assert.ok(compiler.analyze(submergedMount).errors.some(e=>e.includes('deep water')));
 const missingWorld = structuredClone(original);
 missingWorld.version = 999;
 assert.equal(compiler.analyze(missingWorld).valid, false);
