@@ -18,7 +18,10 @@ WW.scenery = (() => {
     ctx.imageSmoothingEnabled=true;
     // Alternating mirrored panorama panels join at identical painted edges.
     // Parallax keeps the backdrop moving throughout multi-screen chapters.
-    const span=510,scroll=cameraX*.12;
+    const image=images[source];
+    // Preserve the painter's aspect ratio; never squash the panorama to a
+    // fixed arbitrary width as the camera advances.
+    const span=image.naturalWidth*(292/image.naturalHeight),scroll=cameraX*.12;
     const first=Math.floor(scroll/span)-1;
     for(let i=first;i<first+4;i++){
       const x=i*span-scroll;
@@ -45,7 +48,17 @@ WW.scenery = (() => {
       const w=panel.width??image.naturalWidth,h=panel.height??image.naturalHeight;
       if(parallax && (x>480||x+w<0||y>270||y+h<0))continue;
       if(!parallax && (x>cameraX+480||x+w<cameraX||y>cameraY+270||y+h<cameraY))continue;
-      ctx.drawImage(image,x,y,w,h);
+      // World-space panel bounds are intentional, but non-uniform scaling is
+      // not. Cover the requested viewport with a centered source crop.
+      const sourceW=image.naturalWidth,sourceH=image.naturalHeight;
+      const imageRatio=sourceW/sourceH,viewportRatio=w/h;
+      let sx=0,sy=0,sw=sourceW,sh=sourceH;
+      if(imageRatio>viewportRatio){
+        sw=sourceH*viewportRatio;sx=(sourceW-sw)/2;
+      }else{
+        sh=sourceW/viewportRatio;sy=(sourceH-sh)/2;
+      }
+      ctx.drawImage(image,sx,sy,sw,sh,x,y,w,h);
       drawn=true;
     }
     return drawn;
