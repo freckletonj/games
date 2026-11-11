@@ -52,9 +52,24 @@ text-heavy guide. Each chapter also has a **Wonder Trail**: touch its first glow
 | Transform / revert | T | U | North / Y |
 | Revive | R | Y | Left shoulder |
 | Recall to camp | C | N | Back / Select |
-| Pause | Escape | Escape | Escape |
+| Pause | Escape | Escape | Start / Menu |
 
-Movement uses acceleration, braking, buffered jumps, coyote time, variable jump heights, and camera anticipation. Emberkit contact and Prismtail's active dash can cost hearts, with brief invulnerability; Cloudwhisp gusts cause knockback rather than heart loss. Enemies visibly wind up before their attacks. Controller vibration is optional.
+Movement uses acceleration, braking, buffered jumps, coyote time, variable jump heights, and camera anticipation.
+
+**Family-friendly co-op:** Player 1 leads the camera. Player 2 can explore and
+use their own controller normally while nearby, without preventing Player 1 from
+running or climbing. If the partners become too far apart, Player 2 is carried
+along safely inside a translucent follow bubble. Press any action button
+(Jump, food/power, capture, transform, etc.) to pop out beside Player 1 and
+resume playing. Riding in the bubble cannot collect objects, activate trials,
+attract enemies or take damage. Both players retain their creature powers and
+progression. Bubble travel and camera movement are automatic and need no extra
+control binding.
+
+**Gamepad menus:** Either connected controller can navigate the menus using its
+D-pad or left stick. A confirms, B goes back (or resumes a paused game), and
+Start pauses/resumes. Select lists and numeric controls change with Left/Right;
+A toggles checkboxes. All controls work in the generated offline HTML. Emberkit contact and Prismtail's active dash can cost hearts, with brief invulnerability; Cloudwhisp gusts cause knockback rather than heart loss. Enemies visibly wind up before their attacks. Controller vibration is optional.
 
 ## AI-native level design
 
