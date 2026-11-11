@@ -87,6 +87,19 @@ WW.worldCompiler = (() => {
         m[1]<3 || m[1]>=width-3 ||
         (m.length===3 && (!finite(m[2]) || m[2]<3 || m[2]>=height-2))))) {
       errors.push('mounts must be [unicorn|pegasus,x,optional y] inside the level');
+    } else if(Array.isArray(spec.mounts)) {
+      for(const [kind,x,y] of spec.mounts) {
+        if(y!==undefined){
+          const supported=[...(spec.bridges||[]),...(spec.ledges||[])]
+            .some(([left,top,length])=>x>=left&&x<left+length&&
+              Math.abs(top-(y+1))<.01);
+          if(!supported)errors.push(kind+' mount at x='+x+
+            ' must stand immediately above an authored bridge or ledge');
+        }else if(Array.isArray(spec.water)&&spec.water.some(b=>
+          x>=b[0]&&x<b[1])) {
+          errors.push(kind+' mount at x='+x+' cannot spawn in deep water');
+        }
+      }
     }
     if (!Array.isArray(spec.relic) || spec.relic.length !== 3 ||
         !['springKey', 'diveKey', 'skyKey'].includes(spec.relic[0]) ||
