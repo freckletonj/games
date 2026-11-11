@@ -102,6 +102,17 @@ GitHub Actions runs the same suite on pull requests. The traversal suite checks 
 
 **Status:** This is a playable iteration, not a finished commercial release. Dedicated animation art, encounter pacing and real-device playtesting remain important. The standalone HTML, browser storage and vibration should be tested on actual browsers and controllers before a public release.
 
+### Painted eating and knockout states
+
+The additional transparent `src/assets/illustrations/states.webp` 3×3 atlas
+contains eight species-specific eating poses and a knockout pose for the red-scarfed
+explorer. These are **character-only cutouts** without a ground patch or scenery;
+existing collision/ground shadows remain separate. Animals switch to the eating
+illustration while they chew, with a subtle chew motion. When the explorer is
+knocked out, her separate sleeping illustration replaces the ordinary frame;
+three dizzy stars orbit independently in the renderer rather than being baked
+into the artwork. The asset is embedded in the same offline HTML build.
+
 ### Illustrated scenery, pickups, and powers
 
 The four transparent 720×540 WebP sheets in `src/assets/illustrations/` are
