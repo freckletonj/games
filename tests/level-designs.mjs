@@ -22,6 +22,8 @@ for (const [id, design] of Object.entries(designs)) {
   assert.ok(world.diagnostics.valid);
   assert.equal(world.sections.at(-1).range[1], world.width);
   assert.equal(world.waterBodies.length, design.water.length);
+  assert.equal(world.diagnostics.metrics.motifs, design.motifs.length);
+  assert.ok(world.platformSegments.length > design.ledges.length + design.bridges.length);
   assert.ok(world.diagnostics.metrics.waterCells > 0);
   for (const basin of world.waterBodies) {
     // A pool may not protrude above either adjoining bank.
@@ -52,6 +54,9 @@ const brokenWater = structuredClone(original);
 brokenWater.water[0][2] = 10;
 brokenWater.water[0][3] = 2;
 assert.ok(compiler.analyze(brokenWater).errors.some(e => e.includes('no depth')));
+const brokenMotif = structuredClone(original);
+brokenMotif.motifs[0].x = 250;
+assert.ok(compiler.analyze(brokenMotif).errors.some(e => e.includes('Invalid motif')));
 const missingWorld = structuredClone(original);
 missingWorld.version = 999;
 assert.equal(compiler.analyze(missingWorld).valid, false);
