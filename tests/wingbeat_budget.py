@@ -23,15 +23,22 @@ with sync_playwright() as pw:
         pressed:Object.fromEntries(keys.map(k=>[k,k==='jump'&&tap])),
         released:Object.fromEntries(keys.map(k=>[k,false]))});
       const read=WW.input.read;
-      p.form='skyling';p.flaps=4;p.flapCooldown=0;p.x=110*16;p.y=42*16;
-      p.vx=p.vy=0;p.grounded=false;p.invincible=100;
+      // Budget the four finite wingbeats in air *outside* all thermal
+      // columns. Wind-assisted recharge is tested separately below.
+      const w=WW.worlds.create(s.chapter);
+      let x=20;
+      while(w.thermalVolumes.some(v=>x>=v.x-2&&x<v.x+v.width+2))x+=2;
+      p.form='skyling';p.flaps=4;p.flapCooldown=0;p.flapBuffer=0;
+      p.x=x*16;p.y=Math.max(190,w.surface[x]*16-230);
+      p.vx=p.vy=0;p.grounded=false;p.coyote=0;p.invincible=100;
+      const startY=p.y;
       let count=0,highest=p.y;
       WW.input.read=()=>input(count++%11===0);
-      for(let i=0;i<175;i++){
+      for(let i=0;i<62;i++){
         game.update(1/60);
         highest=Math.min(highest,p.y);
       }
-      const exhausted={flaps:p.flaps,highest,start:42*16,y:p.y};
+      const exhausted={flaps:p.flaps,highest,start:startY,y:p.y};
       p.x=123*16;p.y=35*16;p.vx=p.vy=0;p.flaps=0;p.flapRecharge=0;
       p.flapCooldown=0;p.grounded=false;
       // A wind-ring explicitly restores stored lift.
@@ -48,7 +55,8 @@ with sync_playwright() as pw:
       return {exhausted,restored,landed};
     }""")
     assert report['exhausted']['flaps']==0,report
-    assert report['exhausted']['highest'] > 26*16,report
+    assert report['exhausted']['highest'] < report['exhausted']['start'],report
+    assert report['exhausted']['highest'] > report['exhausted']['start']-190,report
     assert report['restored']>=2,report
     assert report['landed']['flaps']==4,report
     assert not errors,errors
