@@ -87,13 +87,33 @@ WW.spriteAtlas = (() => {
     if (portraits[name]) return portraits[name];
     const asset = atlases[name];
     if (!asset || !asset.image.complete || !asset.image.naturalWidth) return null;
-    const {frameWidth:w, frameHeight:h} = asset.manifest;
+    const {frameWidth:w, frameHeight:h, columns, animations} = asset.manifest;
+    const frame = animations.idle.frames[0];
+    const sx = frame % columns * w, sy = Math.floor(frame / columns) * h;
+    // Crop the transparent cell padding without stretching wide creatures into
+    // squares. The portrait and in-world sprite now retain the same silhouette.
+    const source = document.createElement('canvas');
+    source.width = w;
+    source.height = h;
+    const sourceCtx = source.getContext('2d', {willReadFrequently:true});
+    sourceCtx.drawImage(asset.image, sx, sy, w, h, 0, 0, w, h);
+    const pixels = sourceCtx.getImageData(0, 0, w, h).data;
+    let left=w, top=h, right=0, bottom=0;
+    for (let y=0; y<h; y++) for (let x=0; x<w; x++) {
+      if (pixels[(y*w+x)*4+3] <= 12) continue;
+      left=Math.min(left,x);right=Math.max(right,x);
+      top=Math.min(top,y);bottom=Math.max(bottom,y);
+    }
+    const width=right-left+1, height=bottom-top+1;
+    const scale=Math.min(112/width,112/height);
     const canvas = document.createElement('canvas');
     canvas.width = 128;
     canvas.height = 128;
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(asset.image, 0, 0, w, h, 0, 0, 128, 128);
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(asset.image, sx+left, sy+top, width, height,
+      (128-width*scale)/2, (128-height*scale)/2, width*scale, height*scale);
     portraits[name] = canvas.toDataURL('image/png');
     return portraits[name];
   }
