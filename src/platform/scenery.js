@@ -521,7 +521,7 @@ WW.scenery = (() => {
   // A whole semantic span is illustrated as one connected object. Painting
   // independent 16px blocks made bridges look like detached little squares.
   // Exact top and horizontal bounds still correspond to real collision.
-  function platformSpan(ctx, biome, segment, time=0) {
+  function platformSpan(ctx, biome, segment, time=0, level=null) {
     if(segment.kind!=='platform')return false;
     const x=segment.x*16,y=segment.y*16,w=segment.length*16;
     const bridge=segment.style==='bridge';
@@ -539,6 +539,48 @@ WW.scenery = (() => {
     const phase=Math.sin(segment.x*1.7+segment.y*.93);
     ctx.save();
     if(bridge){
+      // Stone-and-root piers meet the compiled heightfield, so bridges look
+      // physically installed rather than suspended rectangular platforms.
+      // Long drops keep their open negative space with hanging suspension
+      // ropes instead of drawing implausibly tall columns to the riverbed.
+      if(level?.surface){
+        const footing=px=>{
+          const i=Math.max(0,Math.min(level.width-1,Math.floor(px/16)));
+          const t=Math.max(0,Math.min(1,px/16-i));
+          return (level.surface[i]*(1-t)+level.surface[i+1]*t)*16;
+        };
+        for(const [index,offset] of [9,w-9].entries()){
+          const postX=x+offset,ground=footing(postX),drop=ground-y-14;
+          if(drop>14&&drop<205){
+            const depth=Math.min(drop,176);
+            const foot=ctx.createLinearGradient(postX-9,0,postX+9,0);
+            foot.addColorStop(0,p.low+'e0');
+            foot.addColorStop(.6,p.rock+'d5');
+            foot.addColorStop(1,p.highlight+'90');
+            ctx.fillStyle=foot;ctx.beginPath();
+            ctx.moveTo(postX-7,y+11);
+            ctx.quadraticCurveTo(postX-8,y+34,postX-5,y+depth+11);
+            ctx.lineTo(postX+7,y+depth+11);
+            ctx.quadraticCurveTo(postX+5,y+37,postX+7,y+11);
+            ctx.closePath();ctx.fill();
+            ctx.strokeStyle=p.highlight+'65';ctx.lineWidth=1.5;
+            ctx.beginPath();ctx.moveTo(postX+2,y+15);
+            ctx.lineTo(postX+3,y+depth+7);ctx.stroke();
+            if(biome==='meadow'){
+              ctx.strokeStyle=p.root+'be';ctx.lineWidth=2;
+              ctx.beginPath();ctx.moveTo(postX,y+25);
+              ctx.quadraticCurveTo(postX+(index?10:-10),y+42,
+                postX+(index?12:-12),y+55);ctx.stroke();
+            }
+          }else{
+            const hang=26+(segment.x*13+index*17)%21;
+            ctx.strokeStyle=p.root+'9e';ctx.lineWidth=2.2;
+            ctx.beginPath();ctx.moveTo(postX,y+13);
+            ctx.quadraticCurveTo(postX-5,y+hang*.75,postX+2,y+hang+10);
+            ctx.stroke();
+          }
+        }
+      }
       // Real continuous wooden/shell/stone crossing; organic supports only
       // below the traversable top edge.
       const rail=ctx.createLinearGradient(0,y,0,y+15);
