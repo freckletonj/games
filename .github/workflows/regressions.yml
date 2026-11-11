@@ -45,6 +45,7 @@ jobs:
           python tests/painted_illustrations.py
           python tests/semantic_pipeline.py
           python tests/character_packer.py
+          python tests/performance.py
       - name: Upload playable offline preview
         if: always()
         uses: actions/upload-artifact@v4
@@ -61,4 +62,5 @@ jobs:
             dist/preview-*.png
             dist/preview-levels.svg
             dist/level-diagnostics.json
+            dist/performance-report.json
           if-no-files-found: ignore
