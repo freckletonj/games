@@ -24,6 +24,10 @@ for (const [id, design] of Object.entries(designs)) {
   assert.equal(world.diagnostics.sectionReports.length, design.sections.length);
   assert.equal(world.waterBodies.length, design.water.length);
   assert.equal(world.thermalVolumes.length,(design.thermals||[]).length);
+  assert.equal(world.diagnostics.metrics.mounts,(design.mounts||[]).length);
+  assert.deepEqual(Array.from(world.objects.filter(o=>['unicorn','pegasus'].includes(o.kind))
+    .map(o=>[o.kind,o.x])),(design.mounts||[]).map(m=>[m[0],m[1]]));
+
   for(const current of world.thermalVolumes){
     assert.ok(current.width>=2&&current.height>=4);
     assert.equal(world.grid[current.y][current.x],'thermal');
@@ -152,6 +156,12 @@ painted.art = {foreground:[{asset:'meadow_scene_01',x:0,y:0,width:480,height:270
 assert.equal(compiler.compile(painted).art.foreground[0].asset,'meadow_scene_01');
 painted.art.foreground[0].asset='../unsafe';
 assert.ok(compiler.analyze(painted).errors.some(e=>e.includes('Invalid painted panel')));
+const unknownMount=structuredClone(original);
+unknownMount.mounts=[['dragon',178]];
+assert.ok(compiler.analyze(unknownMount).errors.some(e=>e.includes('mounts must be')));
+const invalidMountX=structuredClone(original);
+invalidMountX.mounts=[['unicorn',-1]];
+assert.ok(compiler.analyze(invalidMountX).errors.some(e=>e.includes('mounts must be')));
 const missingWorld = structuredClone(original);
 missingWorld.version = 999;
 assert.equal(compiler.analyze(missingWorld).valid, false);
