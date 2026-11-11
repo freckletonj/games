@@ -252,3 +252,31 @@ input[type=file] { max-width: 220px; font-size: 12px; }
 .home-art.storybook::after { opacity:.10; }
 .home-art.storybook .art-stars { opacity:.35; }
 .home-art.storybook .art-portrait img { image-rendering:auto; }
+
+/* Gameplay-first chrome: the artwork remains the primary visual hierarchy. */
+#hud { padding: 7px 10px; }
+.compact-players { gap: 5px; }
+.compact-player { height: 34px; padding: 3px 6px; gap: 5px; border-color: #abcbb875;
+  background: #132e3db8; box-shadow: 0 2px 8px #0920304d; }
+.compact-player .mini-form { padding: 1px; border-color: #7caa9880; }
+.compact-player .mini-form img { width: 22px; height: 22px; }
+.compact-player .mini-food { padding-left: 5px; }
+.compact-quest { min-height: 34px; padding: 5px 9px; border-color: #a7cab375;
+  background: #132e3db8; box-shadow: 0 2px 8px #0920304d; }
+#message { bottom: 8%; max-width: min(70%,570px); padding: 7px 12px;
+  font: 600 clamp(10px,1.1vw,14px)/1.3 system-ui,sans-serif;
+  background: #102b3cc9; border-color: #d6d6ae54;
+  box-shadow: 0 4px 15px #051b2d66; }
+#ability-callout { top: 11%; padding: 7px 9px; width: min(280px,53%);
+  border-color: #abd9bc83; background: #102b3cda; box-shadow: 0 4px 15px #051b2d66; }
+#ability-callout img { width: 37px; height: 37px; }
+#ability-callout strong { font-size: 14px; }
+#ability-callout small { font-size: 10px; line-height: 1.25; }
+@media (max-width: 700px), (max-height: 520px) {
+  #hud { padding: 5px; }
+  .compact-player { height: 29px; }
+  .compact-player .mini-form img { width: 18px; height: 18px; }
+  .compact-quest { min-height: 29px; }
+  #message { max-width: 80%; bottom: 9%; }
+  #ability-callout { top: 12%; width: min(240px,66%); }
+}
