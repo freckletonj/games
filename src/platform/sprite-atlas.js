@@ -4,19 +4,22 @@ WW.spriteAtlas = (() => {
   const portraits = {};
   const atlases = Object.fromEntries(Object.entries(window.WW_EMBEDDED_ATLASES || {}).map(([name, entry]) => {
     const image = new Image();
+    const asset={image, manifest:entry.manifest, ready:false};
     image.addEventListener('load', () => {
+      asset.image=WW.paintCleanup(image);
+      asset.ready=true;
       const src = portrait(name);
       for (const element of document.querySelectorAll(`img[data-sprite="${name}"]`)) {
         element.src = src;
       }
     });
     image.src = entry.image;
-    return [name, {image, manifest: entry.manifest}];
+    return [name, asset];
   }));
 
   function draw(ctx, name, x, y, frame = 0, flip = false, playerId = null, pose = {}) {
     const asset = atlases[name];
-    if (!asset || !asset.image.complete || !asset.image.naturalWidth) return false;
+    if (!asset?.ready) return false;
     const {manifest, image} = asset;
     const action = pose.action || 'idle';
     const state = manifest.animations[action] || manifest.animations.idle;
@@ -86,7 +89,7 @@ WW.spriteAtlas = (() => {
   function portrait(name) {
     if (portraits[name]) return portraits[name];
     const asset = atlases[name];
-    if (!asset || !asset.image.complete || !asset.image.naturalWidth) return null;
+    if (!asset?.ready) return null;
     const {frameWidth:w, frameHeight:h, columns, animations} = asset.manifest;
     const frame = animations.idle.frames[0];
     const sx = frame % columns * w, sy = Math.floor(frame / columns) * h;
