@@ -16,7 +16,12 @@ WW.illustrations = (() => {
     berryBush:['flora',0],nectarFruit:['flora',1],
     stardropFruit:['flora',2],mushrooms:['flora',3],
     flowers:['flora',4],reeds:['flora',5],
-    stones:['flora',6],moonStone:['flora',7]
+    stones:['flora',6],moonStone:['flora',7],
+    eatSpringaroo:['states',0],eatTideling:['states',1],
+    eatSkyling:['states',2],eatMossback:['states',3],
+    eatPrismtail:['states',4],eatGlimmermoth:['states',5],
+    eatCloudwhisp:['states',6],eatEmberkit:['states',7],
+    heroSleep:['states',8]
   };
   const sheets = Object.fromEntries(
     Object.entries(window.WW_EMBEDDED_ILLUSTRATIONS || {}).map(([key,url]) => {
@@ -25,23 +30,26 @@ WW.illustrations = (() => {
       return [key,image];
     })
   );
+  const dimensions = sheet => sheet === 'states' ? [3,3] : [4,2];
   const ready = name => {
     const source = names[name];
     const image = source && sheets[source[0]];
-    return !!(image && image.complete && image.naturalWidth &&
-      image.naturalWidth % 4 === 0 && image.naturalHeight % 2 === 0);
+    if (!image || !image.complete || !image.naturalWidth) return false;
+    const [columns,rows] = dimensions(source[0]);
+    return image.naturalWidth % columns === 0 && image.naturalHeight % rows === 0;
   };
   // The world position is the *bottom center* of the painted sprite.
   // Keep collision geometry in the semantic level; art never changes physics.
   function draw(ctx,name,x,y,w,h,opacity=1) {
     if (!ready(name)) return false;
     const [sheet,frame]=names[name],image=sheets[sheet];
-    const cw=image.naturalWidth/4,ch=image.naturalHeight/2;
+    const [columns,rows]=dimensions(sheet);
+    const cw=image.naturalWidth/columns,ch=image.naturalHeight/rows;
     ctx.save();
     ctx.globalAlpha*=opacity;
     ctx.imageSmoothingEnabled=true;
     ctx.imageSmoothingQuality='high';
-    ctx.drawImage(image,(frame%4)*cw,Math.floor(frame/4)*ch,cw,ch,
+    ctx.drawImage(image,(frame%columns)*cw,Math.floor(frame/columns)*ch,cw,ch,
       x-w/2,y-h,w,h);
     ctx.restore();
     return true;
