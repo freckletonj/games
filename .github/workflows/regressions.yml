@@ -52,6 +52,7 @@ jobs:
           python tests/wonder_trails.py
           python tests/painted_illustrations.py
           python tests/painted_panorama.py
+          python tests/chapter_composition.py
           python tests/staged_vistas.py
           python tests/semantic_pipeline.py
           python tests/character_packer.py
