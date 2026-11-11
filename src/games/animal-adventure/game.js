@@ -691,22 +691,26 @@ WW.games.animals = (() => {
       }
     }
     function sceneryBack(ctx,time){
-      // Large, transparent painted flora occupy the middle distance. They are
-      // decorative only and remain anchored in world coordinates.
+      // Repeat only minor plants and stones here. Story landmarks are placed
+      // explicitly by level.landmarks; duplicating them as ambient clutter
+      // makes the world feel like a row of identical stickers.
       const themes={
-        meadow:['lanternTree','mushrooms','flowers'],
-        coast:['reef','pond','reeds'],
-        summit:['crystal','island','observatory']
+        meadow:['mushrooms','flowers','stones'],
+        coast:['reeds','stones','moonStone'],
+        summit:['moonStone','stones','mushrooms']
       };
       const choices=themes[chapter.biome]||themes.meadow;
-      const first=Math.floor((cameraX-170)/150);
-      const last=Math.ceil((cameraX+W+170)/150);
+      const first=Math.floor((cameraX-90)/96);
+      const last=Math.ceil((cameraX+W+90)/96);
       for(let i=first;i<=last;i++){
-        const kind=choices[((i%choices.length)+choices.length)%choices.length];
-        const x=i*150+hash(i,31)%30;
-        const y=spawn.y+20+(hash(i,7)%19);
-        const large=['lanternTree','island','observatory'].includes(kind);
-        WW.illustrations.draw(ctx,kind,x,y,large?105:66,large?137:74,.25);
+        const x=i*96+hash(i,31)%31;
+        const col=Math.floor(x/TILE);
+        if(col<0||col>=level.width)continue;
+        const surface=map.findIndex(row=>row[col]==='ground');
+        if(surface<1||map[surface-1][col]!=='empty')continue;
+        const kind=choices[hash(i,17)%choices.length];
+        const w=29+hash(i,13)%14;
+        WW.illustrations.draw(ctx,kind,x,surface*TILE+3,w,w*1.15,.34);
       }
     }
     function drawLandmarks(ctx,time){
@@ -724,9 +728,9 @@ WW.games.animals = (() => {
       // Sparse small painted vegetation is distinct from the seamless terrain.
       // Never introduce decorative collision or change the semantic map.
       const themes={
-        meadow:['flowers','berryBush','mushrooms','nectarFruit'],
-        coast:['reeds','stones','flowers','shells'],
-        summit:['moonStone','stardropFruit','mushrooms','flowers']
+        meadow:['flowers','mushrooms','stones'],
+        coast:['reeds','stones','shells'],
+        summit:['moonStone','mushrooms','stones']
       };
       const choices=themes[chapter.biome]||themes.meadow;
       const left=Math.max(0,Math.floor(cameraX/TILE)-2);
