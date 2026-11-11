@@ -38,6 +38,9 @@ Each chapter is keyed by ID and has:
   one semantic cell currently corresponds to 16 game world units.
 - ridge: strictly increasing [x,y] points from x=0 to x=width.
   Decimal y positions provide continuous slopes. Positive y points downward.
+- terrainFeatures: optional broad, cosine-tapered changes to the ridge:
+  {"center":72,"radius":15,"lift":4} raises a hill 4 cells at x=72;
+  negative lift carves a gently sloping valley. Both endpoints blend to zero.
 - water: [startX,endX,referenceTopY,depth] basin spans. The compiler lowers
   the waterline to its banks when necessary and interpolates smooth shoulders.
   Deep water only exists where the basin floor is below the water surface.
