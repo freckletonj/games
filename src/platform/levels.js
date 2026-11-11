@@ -5,6 +5,7 @@ WW.levels = (() => {
     empty: '#ffffff', ground: '#101820', platform: '#5f5b85', water: '#176ad7', p1: '#00ed31', p2: '#91fe54', exit: '#ff152b',
     springaroo: '#ffdc12', skyling: '#00eeef', tideling: '#ef851a', snack: '#ff64bb', skyKey: '#b052fc', diveKey: '#167b86', springKey: '#e83c86',
     checkpoint: '#aaaaaa', cloudwhisp: '#9480ed', prismtail: '#ff895d', mossback: '#6b9c42', glimmermoth: '#ce6dff', emberkit: '#fc5d3e',
+    unicorn: '#f39add', pegasus: '#c3e5fa',
     starShard: '#f2f28a', thermal: '#8af1f9', prismKey: '#ffa03e', mossKey: '#82e561', cloudKey: '#c9adfb', emberKey: '#f54848'
   };
   const palette = Object.entries(colors).map(([name, hex]) =>
