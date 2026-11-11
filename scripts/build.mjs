@@ -50,6 +50,15 @@ for(const file of panelFiles){
   scenes[name]=await dataUrl('src/assets/scenes/panels/'+file,mime);
 }
 const levelDesigns = JSON.parse(await read('src/games/animal-adventure/designs.json'));
+for (const level of Object.values(levelDesigns)) {
+  for (const layer of Object.values(level.art || {})) {
+    for (const panel of layer) {
+      if (!Object.hasOwn(scenes, panel.asset)) {
+        throw Error('Missing painted scene asset: '+level.id+' / '+panel.asset);
+      }
+    }
+  }
+}
 const illustrations = Object.fromEntries(await Promise.all(
   ['props','effects','landmarks','flora','states'].map(async name => [
     name,await dataUrl(`src/assets/illustrations/${name}.webp`,'image/webp')
