@@ -26,6 +26,38 @@ with sync_playwright() as pw:
         assert len(state['vistas'])==len(state['sections'])
         assert len(state['dressing'])>=10
         assert all(len(s['visualBeats'])==1 for s in state['diagnostics']['sectionReports'])
+        # The goal path must appear in the actual game when approached and
+        # disappear after the chapter light is recovered. It cannot be merely
+        # metadata in an art guide.
+        guide=page.evaluate("""() => {
+          const game=WW.main.game,s=game.state;
+          const level=WW.worlds.create(s.chapter),route=level.goalRoute;
+          const goal=s.goals[0],p=s.players[0];
+          p.x=(route[0][0]+.5)*16;p.y=route[0][1]*16;
+          p.vx=p.vy=0;p.invincible=999;
+          s.animals.forEach(a=>{a.alive=false;a.respawn=99999});
+          for(let k=0;k<25;k++)game.update(1/60);
+          const referenceX=(route[0][0]+.5)*16;
+          const referenceY=route[0][1]*16-4;
+          const ctx=document.querySelector('#game').getContext('2d');
+          const original=WW.illustrations.draw;
+          let count=0;
+          WW.illustrations.draw=(c,name,x,y,w,h,alpha)=>{
+            if(['bubble','spark'].includes(name)&&
+               Math.abs(x-referenceX)<1&&Math.abs(y-referenceY)<1)count++;
+            return original(c,name,x,y,w,h,alpha);
+          };
+          game.render(ctx,17);
+          const before=count;
+          count=0;s.shared.keys[goal.kind]=true;
+          game.render(ctx,18);
+          const after=count;
+          s.shared.keys[goal.kind]=false;
+          WW.illustrations.draw=original;
+          return {before,after};
+        }""")
+        assert guide['before']>0 and guide['after']==0,guide
+
         # Prove the authored composition itself paints real visible pixels,
         # rather than merely rendering the standard panorama behind gameplay.
         vista_samples=page.evaluate("""() => {
