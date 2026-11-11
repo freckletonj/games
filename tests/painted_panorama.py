@@ -37,6 +37,26 @@ with sync_playwright() as pw:
     }""")
     assert all(value['changed']==480*270 for value in report.values()),report
     assert len({v['hash'] for v in report.values()})==4,report
+    # Geological relief follows each compiled heightfield; it never covers
+    # open traversal space or creates fake rock in front of the player.
+    relief=page.evaluate("""() => {
+      return ['first-forest','crystal-coast','starfall-summit'].map(id=>{
+        const design=WW_EMBEDDED_DESIGNS[id];
+        const level=WW.worldCompiler.compile(design);
+        const cy=Math.floor(level.surface[10]*16-125);
+        const canvas=document.createElement('canvas');
+        canvas.width=480;canvas.height=270;
+        const ctx=canvas.getContext('2d');
+        ctx.save();ctx.translate(0,-cy);
+        WW.scenery.terrainRelief(ctx,level,design.biome,0,cy);
+        ctx.restore();
+        const pixel=y=>[...ctx.getImageData(168,y,1,1).data];
+        return {id,air:pixel(30),rock:pixel(215)};
+      });
+    }""")
+    assert all(sample['air'][3]==0 and sample['rock'][3]>0
+               for sample in relief),relief
+
     page.evaluate("WW.main.play(0)")
     page.locator('#menu').wait_for(state='hidden')
     page.screenshot(path=str(html.parent/'preview-painted-meadow.png'))
