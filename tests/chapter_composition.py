@@ -42,6 +42,22 @@ with sync_playwright() as pw:
       const distant=render('first-forest',meadow.width*16-480);
       const coastal=render('crystal-coast',53*16-240,36*16-130);
       const wetland=render('willow-wetlands',66*16-240,35*16-130);
+      // The underwater painting must differ only inside actual water.
+      const mask=(()=>{
+        const level=WW.worlds.create(WW.chapters[1]);
+        const x=53*16-240,y=36*16-130;
+        const draw=withBasin=>{
+          const c=document.createElement('canvas');c.width=480;c.height=270;
+          const g=c.getContext('2d');
+          const basins=level.waterBodies;
+          if(!withBasin)level.waterBodies=[];
+          WW.scenery.background(g,'coast',x,level,y);
+          level.waterBodies=basins;
+          const sample=(px,py)=>[...g.getImageData(px,py,1,1).data];
+          return {sky:sample(280,65),water:sample(280,205)};
+        };
+        return {wet:draw(true),dry:draw(false)};
+      })();
       const level=meadow;
       const bridge=level.platformSegments.find(s=>
         s.style==='bridge'&&s.x>=140&&s.x<160);
@@ -53,7 +69,7 @@ with sync_playwright() as pw:
         g.restore();
         return g.getImageData(44,85,1,1).data[3];
       };
-      return {initial,distant,coastal,wetland,
+      return {initial,distant,coastal,wetland,mask,
         supportWithWorld:paintSupport(true),
         supportWithoutWorld:paintSupport(false)};
     }""")
@@ -67,6 +83,8 @@ with sync_playwright() as pw:
                 ('crystal-coast','willow-wetlands'),
                 ('starfall-summit','cloud-gardens')]:
         assert initial[a]['hash'] != initial[b]['hash'],(a,b,result)
+    assert result['mask']['wet']['sky']==result['mask']['dry']['sky'],result
+    assert result['mask']['wet']['water']!=result['mask']['dry']['water'],result
     assert result['supportWithWorld']>result['supportWithoutWorld'],result
     assert not errors,errors
     browser.close()
