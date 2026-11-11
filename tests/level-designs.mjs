@@ -23,7 +23,7 @@ for (const [id, design] of Object.entries(designs)) {
   assert.equal(world.sections.at(-1).range[1], world.width);
   assert.equal(world.diagnostics.sectionReports.length, design.sections.length);
   assert.equal(world.waterBodies.length, design.water.length);
-  assert.equal(world.thermalVolumes.length,design.thermals.length);
+  assert.equal(world.thermalVolumes.length,(design.thermals||[]).length);
   for(const current of world.thermalVolumes){
     assert.ok(current.width>=2&&current.height>=4);
     assert.equal(world.grid[current.y][current.x],'thermal');
