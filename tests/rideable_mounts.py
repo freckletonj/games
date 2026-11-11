@@ -121,6 +121,13 @@ with sync_playwright() as pw:
 
     play(2)
     assert state("mounts.map(m=>m.kind)")==["pegasus"]
+    perch=state("mounts[0].y")
+    advance(20)
+    assert abs(state("mounts[0].y")-perch)<2, "Pegasus must stay on its authored ledge"
+    assert page.evaluate("""()=>{
+      const s=WW.main.game.state,m=s.mounts[0],w=WW.worlds.create(s.chapter);
+      return m.y < w.surface[Math.floor(m.x/16)]*16-100;
+    }"""), "Pegasus should be on a raised shelf, not the ground-floor route"
     tame_and_board("pegasus")
     page.evaluate("""()=>{
         const s=WW.main.game.state,p=s.players[0],m=s.mounts[0];
