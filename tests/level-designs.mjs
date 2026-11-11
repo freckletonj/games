@@ -1,0 +1,58 @@
+// Fast headless compiler tests; no browser, third-party modules, or network.
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+
+const context = {};
+context.window = context;
+vm.createContext(context);
+vm.runInContext(readFileSync('src/platform/world-compiler.js', 'utf8'), context);
+const compiler = context.WW.worldCompiler;
+const designs = JSON.parse(readFileSync('src/games/animal-adventure/designs.json', 'utf8'));
+assert.equal(Object.keys(designs).length, 5);
+
+for (const [id, design] of Object.entries(designs)) {
+  const chapter = {id, biome: design.biome};
+  const world = compiler.compile(design, chapter);
+  assert.equal(world.surface.length, design.width + 1);
+  assert.equal(world.grid.length, design.height);
+  assert.equal(world.objects.filter(o => o.kind === 'p1').length, 1);
+  assert.equal(world.objects.filter(o => o.kind === 'exit').length, 1);
+  assert.equal(world.objects.filter(o => o.kind === design.relic[0]).length, 1);
+  assert.ok(world.diagnostics.valid);
+  assert.equal(world.sections.at(-1).range[1], world.width);
+  assert.equal(world.waterBodies.length, design.water.length);
+  assert.ok(world.diagnostics.metrics.waterCells > 0);
+  for (const basin of world.waterBodies) {
+    // A pool may not protrude above either adjoining bank.
+    assert.ok(basin.surface >= world.surface[basin.start] - 0.001);
+    assert.ok(basin.surface >= world.surface[basin.end] - 0.001);
+    assert.ok(basin.bottom > basin.surface);
+    // Basin endpoints cannot form unsupported vertical water walls.
+    assert.notEqual(world.grid[Math.ceil(basin.surface)]?.[basin.start], 'water');
+  }
+  for (const section of design.sections) {
+    if (section.requires) {
+      assert.ok(design.creatures.some(c => c[0] === section.requires &&
+        c[1] < section.range[0]), section.id + ' lacks an early form source');
+    }
+  }
+  console.log('PASS ' + id + ': ' + world.sections.length +
+    ' authored challenge sections, ' + world.diagnostics.metrics.waterCells + ' water cells');
+}
+
+const original = designs['first-forest'];
+const badGate = structuredClone(original);
+badGate.sections[0].requires = 'tideling';
+assert.ok(compiler.analyze(badGate).errors.some(e => e.includes('no earlier encounter')));
+const brokenProgress = structuredClone(original);
+brokenProgress.sections[1].range[0] += 1;
+assert.ok(compiler.analyze(brokenProgress).errors.some(e => e.includes('noncontiguous')));
+const brokenWater = structuredClone(original);
+brokenWater.water[0][2] = 10;
+brokenWater.water[0][3] = 2;
+assert.ok(compiler.analyze(brokenWater).errors.some(e => e.includes('no depth')));
+const missingWorld = structuredClone(original);
+missingWorld.version = 999;
+assert.equal(compiler.analyze(missingWorld).valid, false);
+console.log('PASS schema validation, ability gating, nonfloating pools and deterministic compilation');
