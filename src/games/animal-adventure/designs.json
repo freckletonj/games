@@ -536,6 +536,37 @@
         "unicorn",
         179
       ]
+    ],
+    "mountCourses": [
+      {
+        "id": "lantern-gallop",
+        "section": "lantern-grove",
+        "name": "Lantern Leap",
+        "mount": "unicorn",
+        "seconds": 13,
+        "nodes": [
+          [
+            182,
+            31
+          ],
+          [
+            199,
+            25
+          ],
+          [
+            218,
+            24
+          ],
+          [
+            235,
+            28
+          ],
+          [
+            250,
+            27
+          ]
+        ]
+      }
     ]
   },
   "crystal-coast": {
@@ -1664,6 +1695,33 @@
         276,
         28
       ]
+    ],
+    "mountCourses": [
+      {
+        "id": "aurora-flight",
+        "section": "aurora-return",
+        "name": "Aurora Flight",
+        "mount": "pegasus",
+        "seconds": 13,
+        "nodes": [
+          [
+            278,
+            27
+          ],
+          [
+            287,
+            20
+          ],
+          [
+            297,
+            13
+          ],
+          [
+            306,
+            10
+          ]
+        ]
+      }
     ]
   },
   "willow-wetlands": {
@@ -2763,6 +2821,33 @@
         300,
         22
       ]
+    ],
+    "mountCourses": [
+      {
+        "id": "sky-lantern-loop",
+        "section": "sky-lantern",
+        "name": "Sky Lantern Loop",
+        "mount": "pegasus",
+        "seconds": 14,
+        "nodes": [
+          [
+            301,
+            21
+          ],
+          [
+            311,
+            15
+          ],
+          [
+            322,
+            10
+          ],
+          [
+            331,
+            14
+          ]
+        ]
+      }
     ]
   }
 }
