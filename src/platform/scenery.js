@@ -16,10 +16,43 @@ WW.scenery = (() => {
     if(!source||!ready(source))return false;
     ctx.save();
     ctx.imageSmoothingEnabled=true;
-    const offset=Math.min(40,Math.max(0,cameraX*.023));
-    ctx.drawImage(images[source],-offset,-8,520,292);
+    // Alternating mirrored panorama panels join at identical painted edges.
+    // Parallax keeps the backdrop moving throughout multi-screen chapters.
+    const span=510,scroll=cameraX*.12;
+    const first=Math.floor(scroll/span)-1;
+    for(let i=first;i<first+4;i++){
+      const x=i*span-scroll;
+      ctx.save();
+      if(Math.abs(i%2)===1){ctx.translate(x+span,0);ctx.scale(-1,1);ctx.drawImage(images[source],0,-8,span,292);}
+      else ctx.drawImage(images[source],x,-8,span,292);
+      ctx.restore();
+    }
     ctx.restore();
     return true;
+  }
+
+  // Diffusion-painted world panels are optional. A JSON level may reference
+  // embedded panels independent of its semantic collision grid. Backdrops use
+  // parallax; foreground panels replace visible tiles without changing physics.
+  function paintLayers(ctx, panels, cameraX=0, cameraY=0, parallax=false) {
+    if(!Array.isArray(panels))return false;
+    let drawn=false;
+    for(const panel of panels){
+      if(!ready(panel.asset))continue;
+      const image=images[panel.asset];
+      const x=panel.x-(parallax?cameraX*(panel.parallax??.15):0);
+      const y=panel.y-(parallax?cameraY*(panel.parallax??.15):0);
+      const w=panel.width??image.naturalWidth,h=panel.height??image.naturalHeight;
+      if(parallax && (x>480||x+w<0||y>270||y+h<0))continue;
+      if(!parallax && (x>cameraX+480||x+w<cameraX||y>cameraY+270||y+h<cameraY))continue;
+      ctx.drawImage(image,x,y,w,h);
+      drawn=true;
+    }
+    return drawn;
+  }
+
+  function paintBackdrop(ctx, panels, cameraX, cameraY){
+    return paintLayers(ctx,panels,cameraX,cameraY,true);
   }
 
   function landmark(ctx, biome, type, time) {
@@ -108,6 +141,36 @@ WW.scenery = (() => {
       };
     }
     return paints[biome];
+  }
+
+  // Paint a continuous terrain skin at sub-tile precision. The semantic
+  // grid still identifies underground material; this fills the wedge between
+  // coarse grid rows and the authored walkable heightfield.
+  function slope(ctx, biome, x, y0, y1) {
+    if(!ready('tiles'))return false;
+    if(!Number.isFinite(y0)||!Number.isFinite(y1))return false;
+    const p=textures(biome), edge=edgeTones[biome]||edgeTones.meadow;
+    const bottom=Math.max(y0,y1)+16;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x,y0);ctx.lineTo(x+16,y1);
+    ctx.lineTo(x+16,bottom);ctx.lineTo(x,bottom);ctx.closePath();
+    ctx.clip();
+    ctx.fillStyle=p.ground;
+    ctx.fillRect(x,Math.min(y0,y1),16,bottom-Math.min(y0,y1));
+    if(Math.abs(y0-y1)>0.01){
+      ctx.strokeStyle=edge.rim;
+      ctx.lineWidth=2.3;
+      ctx.beginPath();ctx.moveTo(x,y0+1);ctx.lineTo(x+16,y1+1);ctx.stroke();
+      ctx.strokeStyle='#eff7d077';
+      ctx.lineWidth=.8;
+      ctx.beginPath();ctx.moveTo(x,y0);ctx.lineTo(x+16,y1);ctx.stroke();
+    }else{
+      ctx.fillStyle=p.groundTop;
+      ctx.fillRect(x,y0,16,5);
+    }
+    ctx.restore();
+    return true;
   }
 
   function sideShade(ctx, x, y, left, color) {
@@ -250,5 +313,5 @@ WW.scenery = (() => {
     return true;
   }
 
-  return {background, landmark, tile, url, ready};
+  return {background, paintBackdrop, paintLayers, slope, landmark, tile, url, ready};
 })();
