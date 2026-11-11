@@ -79,33 +79,45 @@ WW.scenery = (() => {
   // a 16-unit-high strip so their painted highlight starts at the same height
   // on every ledge, regardless of the platform's world Y position.
   function makePaint(image, column, top, x0, y0, width, height, tone) {
-    const cw = image.naturalWidth / 4, ch = image.naturalHeight / 2;
-    const px = 128, py = top ? 16 : 128;
-    const canvas = document.createElement('canvas');
-    canvas.width = px * 2;
-    canvas.height = top ? py : py * 2;
-    const g = canvas.getContext('2d');
-    g.imageSmoothingEnabled = true;
-    g.imageSmoothingQuality = 'high';
-    for (let row = 0; row < (top ? 1 : 2); row++) for (let col = 0; col < 2; col++) {
-      g.save();
-      g.translate(col ? px * 2 : 0, row ? py * 2 : 0);
-      g.scale(col ? -1 : 1, row ? -1 : 1);
-      g.drawImage(image, column * cw + cw * x0, ch * y0, cw * width, ch * height, 0, 0, px, py);
-      g.restore();
+    const cw=image.naturalWidth/4,ch=image.naturalHeight/2;
+    // A single generous painted crop with feathered *outer* wrap edges avoids
+    // the centerline/kaleidoscope artifacts of mirrored 128px terrain swatches.
+    const px=320,py=top?20:320;
+    const canvas=document.createElement('canvas');
+    canvas.width=px;canvas.height=py;
+    const g=canvas.getContext('2d',{willReadFrequently:true});
+    g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
+    g.drawImage(image,column*cw+cw*x0,ch*y0,cw*width,ch*height,0,0,px,py);
+    const imageData=g.getImageData(0,0,px,py);
+    const pixels=imageData.data;
+    const sample=new Uint8ClampedArray(pixels);
+    const horizontal=Math.min(32,Math.floor(px/5));
+    for(let y=0;y<py;y++)for(let i=0;i<horizontal;i++){
+      const weight=.5-.5*Math.cos(Math.PI*i/horizontal);
+      const left=(y*px+i)*4,right=(y*px+px-1-i)*4;
+      for(let c=0;c<4;c++){
+        const middle=(sample[left+c]+sample[right+c])/2;
+        pixels[left+c]=middle*(1-weight)+sample[left+c]*weight;
+        pixels[right+c]=middle*(1-weight)+sample[right+c]*weight;
+      }
     }
-    if (tone) {
-      // Keep the original painting's luminosity and brush texture while
-      // giving each biome actual materials, not a blanket hue rotation that
-      // can turn coastal water purple and alpine stone green.
-      g.save();
-      g.globalCompositeOperation = 'color';
-      g.globalAlpha = .82;
-      g.fillStyle = tone;
-      g.fillRect(0, 0, canvas.width, canvas.height);
-      g.restore();
+    sample.set(pixels);
+    const vertical=Math.min(top?4:32,Math.floor(py/5));
+    for(let x=0;x<px;x++)for(let i=0;i<vertical;i++){
+      const weight=.5-.5*Math.cos(Math.PI*i/vertical);
+      const upper=(i*px+x)*4,lower=((py-1-i)*px+x)*4;
+      for(let c=0;c<4;c++){
+        const middle=(sample[upper+c]+sample[lower+c])/2;
+        pixels[upper+c]=middle*(1-weight)+sample[upper+c]*weight;
+        pixels[lower+c]=middle*(1-weight)+sample[lower+c]*weight;
+      }
     }
-    return g.createPattern(canvas, 'repeat');
+    g.putImageData(imageData,0,0);
+    if(tone){
+      g.save();g.globalCompositeOperation='color';g.globalAlpha=.82;
+      g.fillStyle=tone;g.fillRect(0,0,px,py);g.restore();
+    }
+    return g.createPattern(canvas,'repeat');
   }
 
   const materialTones = {
