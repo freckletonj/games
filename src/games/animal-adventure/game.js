@@ -238,9 +238,11 @@ WW.games.animals = (() => {
           particles(s.x,s.y,'#d7f6ff',17);
         }else if(s.kind==='bubbleVent' && liquid(p.x,p.y-8) &&
                  Math.abs(p.x-s.x)<20 && Math.abs(p.y-11-s.y)<38){
-          // A vent is an upward current even when the swimmer is not paddling.
+          // Passive lift stays visible, but a committed dive can push against
+          // the current. Otherwise vents near deep relics become hard walls.
+          const lift=swimming&&controls.down?.1:swimming?.68:.38;
           p.vy=swimming&&controls.jump?Math.min(p.vy,-3.75):
-            Math.max(-3.75,p.vy-(swimming?.68:.38));
+            Math.max(-3.75,p.vy-lift);
         }
       }
     }
