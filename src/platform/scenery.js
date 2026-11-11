@@ -139,6 +139,11 @@ WW.scenery = (() => {
         ctx.fillStyle = silt;
         ctx.fillRect(x, y, 16, 10);
       } else if (!n) {
+        // The painted grass-cap source has translucent bristle edges. Give
+        // every exposed cap the same ground-colored underpainting rather than
+        // letting whichever rock swatch lies beneath alter its color.
+        ctx.fillStyle = {meadow:'#547e69',coast:'#a29b85',summit:'#77739d'}[biome] || '#547e69';
+        ctx.fillRect(x, y, 16, 7);
         ctx.fillStyle = p.groundTop;
         ctx.fillRect(x, y, 16, 7);
         const fade = ctx.createLinearGradient(0, y + 3, 0, y + 10);
