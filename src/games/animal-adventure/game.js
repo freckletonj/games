@@ -735,6 +735,15 @@ WW.games.animals = (() => {
       // Player 1 leads the camera in co-op. P2 can explore normally while
       // nearby, but never restricts movement or pushes the camera off course.
       const target=WW.coop.cameraTarget(players[0],width,height,W,H);
+      // Gently reveal the upper part of the authored architecture while
+      // retaining the player and platform hazards in the lower screen.
+      const focus=(level.vistas||[]).find(v=>
+        Math.abs(players[0].x-(v.x+.5)*TILE)<v.span*TILE*.65);
+      if(focus){
+        const proximity=1-Math.abs(players[0].x-(focus.x+.5)*TILE)/
+          (focus.span*TILE*.65);
+        target.y=clamp(target.y-40*proximity,0,Math.max(0,height-H));
+      }
       const smoothingX=Math.abs(target.x-cameraX)>W*.85?1:Math.min(1,dt*10);
       cameraX+=(target.x-cameraX)*smoothingX;
       const smoothingY=Math.abs(target.y-cameraY)>H*.9?1:Math.min(1,dt*8);

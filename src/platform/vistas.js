@@ -278,7 +278,9 @@ WW.vistas = (() => {
   }
   function paintOne(g,v,biome,time){
     const c=colors[biome]||colors.meadow,t=tint[v.kind];
-    const scale=v.span*16/340;
+    // Grand silhouettes must fit the 270-unit camera as compositions, not
+    // crop into unrecognizable fragments when a player walks beneath them.
+    const scale=Math.min(1.08,v.span*16/340);
     g.save();g.translate((v.x+.5)*T,v.y*T);g.scale(scale,scale);
     g.globalAlpha=.93;
     // Composite existing painted atlases into each architectural arrangement:
