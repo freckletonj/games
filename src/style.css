@@ -20,7 +20,8 @@ body {
 }
 button, input, select { font: inherit; }
 button { cursor: pointer; border: 0; }
-button:focus-visible, summary:focus-visible, input:focus-visible, select:focus-visible {
+button:focus-visible, summary:focus-visible, input:focus-visible, select:focus-visible,
+.menu .gamepad-focus {
   outline: 3px solid #ffe5a2; outline-offset: 3px;
 }
 #app {
