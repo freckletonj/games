@@ -970,14 +970,15 @@ WW.games.animals = (() => {
         hud.innerHTML=`
           <div class="compact-players">${players.map(p=>{
             const chosen=p.caught,food=FOODS[p.selectedFood];
+            const mount=p.mount===null?null:MOUNTS[mounts[p.mount].kind];
             const display=p.form||chosen||'hero';
             return `<div class="compact-player p${p.id+1}" title="Player ${p.id+1}">
               <b>P${p.id+1}${p.bubble?' ◌':''}</b><span class="mini-hearts">${'♥'.repeat(p.health)}${'♡'.repeat(3-p.health)}</span>
               <span class="mini-form ${p.form?'morphed':''}" title="${titles[display]||'Explorer'}">
                 <img src="${WW.art.portrait(display)}" alt="${titles[display]||'Explorer'}">
               </span>
-              <span class="mini-food" title="${p.form?FORM[p.form].power:FOOD[food].name}">
-                ${p.form?'✦':'<img src="'+WW.art.foodIcon(food)+'" alt="">×'+shared.foods[food]}
+              <span class="mini-food" title="${mount?mount.name+' · T dismount':p.form?FORM[p.form].power:FOOD[food].name}">
+                ${mount?'♞':p.form?'✦':'<img src="'+WW.art.foodIcon(food)+'" alt="">×'+shared.foods[food]}
               </span>
             </div>`;
           }).join('')}</div>
