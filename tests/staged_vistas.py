@@ -26,6 +26,24 @@ with sync_playwright() as pw:
         assert len(state['vistas'])==len(state['sections'])
         assert len(state['dressing'])>=10
         assert all(len(s['visualBeats'])==1 for s in state['diagnostics']['sectionReports'])
+        # Prove the authored composition itself paints real visible pixels,
+        # rather than merely rendering the standard panorama behind gameplay.
+        vista_samples=page.evaluate("""() => {
+          const level=WW.worlds.create(WW.main.game.state.chapter);
+          return level.vistas.map(v=>{
+            const c=document.createElement('canvas');c.width=480;c.height=270;
+            const ctx=c.getContext('2d');
+            const cx=(v.x+.5)*16-240,cy=v.y*16-165;
+            ctx.save();ctx.translate(-cx,-cy);
+            WW.vistas.draw(ctx,level,cx,cy,6);
+            ctx.restore();
+            const data=ctx.getImageData(0,0,480,270).data;
+            let visible=0;
+            for(let i=3;i<data.length;i+=4)if(data[i]>12)visible++;
+            return {id:v.id,visible};
+          });
+        }""")
+        assert all(v['visible']>400 for v in vista_samples),vista_samples
         # Move the camera to a specific story beat and render a real game frame.
         # The runtime must use authored vista geometry, not repeated old stamps.
         frame=page.evaluate("""() => {
