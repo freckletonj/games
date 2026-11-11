@@ -5,7 +5,7 @@ WW.games.animals = (() => {
   const titles=Object.fromEntries(Object.entries(CREATURE).map(([kind,info])=>[kind,info.name]));
   // One world unit is one source-pixel; frames run at 60 Hz. All map jumps obey these rules.
   const PHYSICS={run:2.25,jump:5.7,doubleJump:5.5,gravity:.27,maxFall:5.7,
-    bodyHalf:9,bodyHeight:25,waterExposure:.8,leash:W-75};
+    bodyHalf:9,bodyHeight:25,waterExposure:.8};
   const jumpHeight=PHYSICS.jump**2/(2*PHYSICS.gravity);
   // Two favorite treats (or three other treats) distract an animal long enough for an orb.
   const TRUST_TARGET=100, DISTRACTION_SECONDS=12;
@@ -21,8 +21,8 @@ WW.games.animals = (() => {
     const goals=chapter.goals,goalKinds=new Set(goals.map(g=>g.kind));
     const abilityHelp={
       springaroo:'Double jump with Jump; F blows a short petal puff',
-      tideling:'Swim with Jump / Down; F launches a small splash',
-      skyling:'Tap Jump for each wingbeat; F sends a gentle feather gust',
+      tideling:'Swim with Jump / Down; hold Jump near the surface to leap ashore. F splashes',
+      skyling:'Four wingbeats per flight. Land or find wind to recharge; F sends a feather gust',
       mossback:'F launches honey that sticks a creature in place briefly',
       prismtail:'F catches a creature in a floating bubble',
       glimmermoth:'Press F in the air to hover briefly, without gaining height',
@@ -34,6 +34,17 @@ WW.games.animals = (() => {
       coast:{sky:['#236b9b','#69b6d7','#72e7db','#fcebbd'],mountains:['#87cfdf','#44a9cc','#2d72a3'],tree:['#2a7393','#3ba3b5','#81e5e1'],soil:['#325477','#387c9f','#598bac'],grass:['#8ad9c3','#4eb1a9']},
       summit:{sky:['#192859','#684caa','#d284cc','#e8b5f7'],mountains:['#7776c4','#6760aa','#424b8c'],tree:['#465b97','#7b7ec4','#c9aef0'],soil:['#4e4779','#66629b','#8178ac'],grass:['#a6a5f4','#827cce']}}[chapter.biome]||null;
     const tint=terrainTint||{sky:['#5e4fa8','#a078da','#7cdbd5','#fff0a9'],mountains:['#a69eda','#6bb0cb','#368a93'],tree:['#2b6484','#499aa2','#6be1aa'],soil:['#634a74','#795781','#8e6484'],grass:['#68cf8d','#378e80']};
+    // Connected platform silhouettes are rendered as physical spans, not
+    // individual textured rectangles. Merge overlapping same-style runs.
+    const platformSpans=[];
+    for(const span of (level.platformSegments||[]).filter(p=>p.kind==='platform')
+      .sort((a,b)=>a.y-b.y||a.x-b.x)){
+      const prev=platformSpans.at(-1);
+      if(prev&&prev.y===span.y&&prev.style===span.style&&
+         span.x<=prev.x+prev.length+1){
+        prev.length=Math.max(prev.length,span.x+span.length-prev.x);
+      }else platformSpans.push({...span});
+    }
     // Precompute eight-neighbor autotile relationships once per immutable level.
     const terrainNeighbors = map.map((row, y) => row.map((kind, x) => {
       const same = (dx, dy) => map[y + dy]?.[x + dx] === kind;
@@ -66,7 +77,8 @@ WW.games.animals = (() => {
       const position=location(first(id===0?'p1':'p2')||first('p1')||{x:3+id*2,y:level.height-3});
       return {id,...position,lastSafe:{...position},vx:0,vy:0,grounded:false,coyote:0,jumpBuffer:0,jumpsUsed:0,
         waterTime:0,face:1,health:3,sleep:false,invincible:0,selected:0,selectedFood:0,energy:Object.fromEntries(TYPES.map(t=>[t,0])),
-        form:null,caught:null,hover:0,flapCooldown:0,wingbeat:0,actionCD:0,frame:0,hurt:0,
+        form:null,caught:null,hover:0,flapCooldown:0,flaps:4,flapRecharge:0,wingbeat:0,actionCD:0,frame:0,hurt:0,
+        bubble:false,bubbleGrace:0,breachCooldown:0,
         unlocked:Object.fromEntries(TYPES.map(kind=>[kind,false]))};
     });
     const animals=level.objects.filter(o=>CREATURE[o.kind]).map((o,i)=>({
@@ -87,7 +99,12 @@ WW.games.animals = (() => {
     const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),keys:Object.fromEntries(goals.map(g=>[g.kind,false])),checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,trails:0,won:false};
     const challenges=(chapter.events||[]).map(e=>({...e,completed:false,active:false,time:0,owner:null,next:0,cooldown:0,lastRunner:null,relay:false}));
     const projectiles=[],lures=[],captures=[],effects=[];
-    let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,lastLeashHint=-10,signIndex=-1;
+    // Level-authored interactive landmarks are independent of painted scenery.
+    const setpieces=(level.setpieces||[]).map(piece=>({
+      ...piece,x:(piece.x+.5)*TILE,y:piece.y*TILE,
+      target:{x:(piece.target[0]+.5)*TILE,y:piece.target[1]*TILE},ready:[0,0]
+    }));
+    let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,signIndex=-1;
     const message=document.getElementById('message');const hud=document.getElementById('hud');
     function say(text,duration=1800) {
       message.textContent=text;message.classList.add('show');
@@ -171,11 +188,12 @@ WW.games.animals = (() => {
     }
     function recallParty(destination=spawn){WW.audio.play('recall');
       players.forEach((p,i)=>{p.x=destination.x+i*25;p.y=destination.y;p.vx=p.vy=0;p.waterTime=0;p.lastSafe={x:p.x,y:p.y};p.grounded=false;
+        p.bubble=false;p.bubbleGrace=0;
         if(p.sleep){p.sleep=false;p.health=3;}p.invincible=2;particles(p.x,p.y-10,'#b9f6ff',24);});
       cameraX=0;cameraY=0;WW.input.reset();say('Camp portal! Your relics, snacks and transformation time are safe.',2800);
     }
     function hitPlayer(player,sourceX=player.x-player.face*20){
-      if(player.invincible>0||player.sleep||shared.won)return;
+      if(player.invincible>0||player.sleep||player.bubble||shared.won)return;
       player.health--;WW.audio.play('hit');player.invincible=1.2;
       player.hurt=.23;player.grounded=false;
       player.vx=sourceX<player.x?3.3:-3.3;
@@ -188,8 +206,56 @@ WW.games.animals = (() => {
       }
     }
     function revive(player,by){WW.audio.play('revive');player.sleep=false;player.hurt=0;player.health=3;player.invincible=2;player.vy=-2;player.waterTime=0;player.x=player.lastSafe.x;player.y=player.lastSafe.y;particles(player.x,player.y-10,'#aafae3',14); WW.input.rumble(by.id,.45,180);say('Back on your feet!');}
+    function enterFollowBubble(partner) {
+      partner.bubble=true;partner.vx=partner.vy=0;partner.grounded=false;
+      const anchor=WW.coop.bubbleAnchor(players[0],width,height);
+      partner.x=anchor.x;partner.y=anchor.y;
+      WW.audio.play('recall');
+      particles(partner.x,partner.y-14,'#b4eeff',15);
+      say('P2 is riding along! Press a button to pop the bubble.',1800);
+    }
+    function touchSetpieces(p,controls,swimming){
+      for(const s of setpieces){
+        if(Math.abs(p.x-s.x)>25)continue;
+        if(s.kind==='bounceBloom' && p.grounded &&
+           Math.abs(p.x-s.x)<16 && Math.abs(p.y-s.y)<11 &&
+           clock>=(s.ready[p.id]||0)){
+          p.vy=-7.35;p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumpsUsed=1;
+          s.ready[p.id]=clock+.65;
+          WW.audio.play('double');WW.input.rumble(p.id,.32,105);
+          particles(s.x,s.y-12,chapter.biome==='summit'?'#d9b4ff':'#ffd3ab',16);
+        }else if(s.kind==='windRing' && p.form==='skyling' &&
+                 Math.abs(p.y-13-s.y)<22 && clock>=(s.ready[p.id]||0)){
+          p.vy=Math.min(p.vy,-4.8);p.flapCooldown=0;p.flaps=Math.min(4,p.flaps+2);p.wingbeat=.28;
+          s.ready[p.id]=clock+2.1;
+          WW.audio.play('double');WW.input.rumble(p.id,.18,90);
+          particles(s.x,s.y,'#d7f6ff',17);
+        }else if(s.kind==='bubbleVent' && swimming && controls.jump &&
+                 Math.abs(p.x-s.x)<20 && Math.abs(p.y-11-s.y)<38){
+          p.vy=Math.min(p.vy,-3.75);
+        }
+      }
+    }
     function movePlayer(p,controls,dt){
       const step=dt*60;
+      if(p.bubble){
+        // Floating passengers have no collisions, attacks, objectives or
+        // physics updates. Any action button lets P2 rejoin beside P1.
+        const anchor=WW.coop.bubbleAnchor(players[0],width,height);
+        p.x+=(anchor.x-p.x)*Math.min(1,dt*16);
+        p.y+=(anchor.y-p.y)*Math.min(1,dt*16);
+        if(WW.coop.wantsToPop(controls)){
+          p.bubble=false;p.bubbleGrace=1;
+          p.sleep=false;p.health=Math.max(1,p.health);
+          p.vx=p.vy=0;p.grounded=false;p.waterTime=0;
+          p.invincible=Math.max(p.invincible,2);
+          WW.audio.play('revive');
+          particles(p.x,p.y-14,'#d5f9ff',22);
+          say('P2 is back! Stay nearby, or ride along again.',1450);
+        }
+        return;
+      }
+      p.bubbleGrace=Math.max(0,p.bubbleGrace-dt);
       if(p.sleep){
         if(controls.pressed.recall)recallParty();
         else if(controls.pressed.revive)revive(p,p);
@@ -202,10 +268,12 @@ WW.games.animals = (() => {
       p.hover=Math.max(0,p.hover-dt);
       p.flapCooldown=Math.max(0,p.flapCooldown-dt);
       p.wingbeat=Math.max(0,p.wingbeat-dt);
+      p.breachCooldown=Math.max(0,p.breachCooldown-dt);
       const direction=Number(controls.right)-Number(controls.left);
       if(direction)p.face=direction;
       const swimming=p.form==='tideling' && (liquid(p.x,p.y-8)||liquid(p.x,p.y+2));
       const flying=p.form==='skyling';
+      if(flying&&p.grounded){p.flaps=4;p.flapRecharge=0;}
       const run=p.form==='springaroo'?2.65:swimming?2.55:PHYSICS.run;
       const water=liquid(p.x,p.y-9)||liquid(p.x,p.y-1);
       // Acceleration gives movement weight without sacrificing the sprint trial.
@@ -215,6 +283,18 @@ WW.games.animals = (() => {
       if(!direction&&!p.hurt&&Math.abs(p.vx)<.08)p.vx=0;
       if(swimming){
         p.vy=(Number(controls.down)-Number(controls.jump))*2.45;
+        // A Tidefox can breach the surface instead of getting pinned against
+        // the bank. Carry its upward momentum through the final underwater frames.
+        const pool=(level.waterBodies||[]).find(b=>
+          p.x>=b.start*TILE&&p.x<b.end*TILE);
+        if(controls.jump && p.breachCooldown>0){
+          p.vy=Math.min(p.vy,-5.1);
+        }else if(controls.jump && pool &&
+                 p.y-pool.surface*TILE<30 && p.breachCooldown===0){
+          p.vy=-5.1;p.breachCooldown=.48;
+          particles(p.x,p.y-13,'#b9f8f2',10);
+          WW.audio.play('jump');
+        }
         p.coyote=0;p.jumpBuffer=0;p.jumpsUsed=0;
       }else if(water){
         p.vy=Math.min(2.4,p.vy+.14*step);
@@ -227,18 +307,24 @@ WW.games.animals = (() => {
           p.vy=-(second?PHYSICS.doubleJump:PHYSICS.jump);WW.audio.play(second?'double':'jump');
           p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumpsUsed++;
           if(second){particles(p.x,p.y-5,'#f6e190',13);WW.input.rumble(p.id,.25,80);}
-        }else if(flying && controls.pressed.jump && p.flapCooldown===0){
+        }else if(flying && controls.pressed.jump && p.flapCooldown===0 && p.flaps>0){
           // Each released-and-repressed wingbeat adds an impulse; holding Jump
           // never generates free lift. The cooldown keeps rapid taps consistent.
           p.vy=Math.max(-4.9,p.vy-3.65);
-          p.flapCooldown=.15;p.wingbeat=.23;p.jumpBuffer=0;
+          p.flaps--;p.flapCooldown=.15;p.wingbeat=.23;p.jumpBuffer=0;
           WW.audio.play('double');
           particles(p.x-p.face*8,p.y-14,'#e9f0ff',5);
         }
         // Releasing early makes a short hop for grounded forms.
         if(controls.released.jump&&p.vy< -1&&!flying)p.vy*=.56;
-        if(flying && (thermal(p.x,p.y-8)||thermal(p.x,p.y-20)))
+        if(flying && (thermal(p.x,p.y-8)||thermal(p.x,p.y-20))){
           p.vy=Math.max(-3.5,p.vy-.18*step);
+          p.flapRecharge+=dt;
+          if(p.flapRecharge>=.42){
+            p.flaps=Math.min(4,p.flaps+1);
+            p.flapRecharge=0;
+          }
+        }else p.flapRecharge=0;
         p.vy=Math.min(PHYSICS.maxFall,p.vy+PHYSICS.gravity*step);
         if(p.form==='glimmermoth'&&p.hover>0&&p.vy>1.45)p.vy=1.45;
       }
@@ -252,12 +338,6 @@ WW.games.animals = (() => {
       if(p.vx<0&&(solid(nx-half,feet-3)||solid(nx-half,feet-upper)))
         nx=(Math.floor((nx-half)/TILE)+1)*TILE+half+1;
       if(walkSlope&&Math.abs(nx-(p.x+p.vx*step))<.1)p.y=slopeFoot;
-      // Shared-camera co-op: neither player may strand another outside the viewport.
-      for(const other of players)if(other!==p){
-        const limited=clamp(nx,other.x-PHYSICS.leash,other.x+PHYSICS.leash);
-        if(limited!==nx&&clock-lastLeashHint>3){say('Stay together! Wait for your teammate.',1200);lastLeashHint=clock;}
-        nx=limited;
-      }
       p.x=clamp(nx,half+1,width-half-1);
       let ny=p.y+p.vy*step;
       const wasGrounded=p.grounded,landingSpeed=p.vy;
@@ -295,13 +375,14 @@ WW.games.animals = (() => {
         p.waterTime=0;
         if(p.grounded&&!nowWater&&!liquid(p.x+14,p.y-8)&&!liquid(p.x-14,p.y-8))p.lastSafe={x:p.x,y:p.y};
       }
+      touchSetpieces(p,controls,swimming);
       if(controls.pressed.snack){if(p.form)usePower(p);else throwThing(p,'food');}
       if(controls.pressed.orb)throwThing(p,'orb');
       if(controls.pressed.foodCycle){p.selectedFood=(p.selectedFood+1)%FOODS.length;const food=FOODS[p.selectedFood];say(`P${p.id+1}: ${FOOD[food].name} · ${shared.foods[food]} left`,1350);}
       if(controls.pressed.transform){
-        if(p.form){p.form=null;p.hover=0;callout.hidden=true;say('Back to explorer form. F throws food again.',1500);}
+        if(p.form){p.form=null;p.hover=0;p.flaps=4;callout.hidden=true;say('Back to explorer form. F throws food again.',1500);}
         else if(p.caught){
-          p.form=p.caught;p.hover=0;WW.audio.play('morph');WW.input.rumble(p.id,.35,180);
+          p.form=p.caught;p.hover=0;p.flaps=4;WW.audio.play('morph');WW.input.rumble(p.id,.35,180);
           particles(p.x,p.y-10,FORM[p.form].color,24);
           showAbility(p);say(titles[p.form]+' power! '+FORM[p.form].power+'.',1900);
         }else say('Offer fruit, then catch a distracted creature with G to gain its power.',1800);
@@ -311,7 +392,7 @@ WW.games.animals = (() => {
       p.frame+=dt*(p.grounded?Math.abs(p.vx)*5+1:7);
     }
     function targetFor(animal){
-      return players.filter(p=>!p.sleep).sort((a,b)=>distance(a,animal)-distance(b,animal))[0];
+      return players.filter(p=>!p.sleep&&!p.bubble).sort((a,b)=>distance(a,animal)-distance(b,animal))[0];
     }
     function nearbyFood(animal){
       return lures.filter(food=>!food.used&&food.ttl>0&&Math.abs(food.x-animal.homeX)<180)
@@ -444,14 +525,14 @@ WW.games.animals = (() => {
         }
         // A precise descending head stomp is safe, rewards a bounce, and
         // sends the animal to rest for a few seconds rather than harming it.
-        const stomp=players.find(p=>!p.sleep&&p.vy>0.6&&
+        const stomp=players.find(p=>!p.sleep&&!p.bubble&&p.vy>0.6&&
           Math.abs(p.x-a.x)<17&&p.previousY<=a.y-23&&p.y>=a.y-27&&p.y<a.y-12);
         if(stomp&&!incapacitated){knockOut(a,stomp);continue;}
         if(incapacitated||peaceful)continue;
         if(a.kind==='cloudwhisp'&&a.gustTime>0){
           a.gustTime=Math.max(0,a.gustTime-dt);
           for(const p of players){
-            if(!p.sleep&&!a.gustHit.includes(p.id)&&
+            if(!p.sleep&&!p.bubble&&!a.gustHit.includes(p.id)&&
                 (p.x-a.x)*a.dir>0&&(p.x-a.x)*a.dir<87&&Math.abs(p.y-a.y)<37){
               p.vx=a.dir*3.8;p.vy=Math.min(p.vy,-1.4);
               a.gustHit.push(p.id);
@@ -464,7 +545,7 @@ WW.games.animals = (() => {
         const danger=a.kind==='emberkit'||(a.kind==='prismtail'&&a.dashTime>0);
         if(danger){
           for(const p of players){
-            if(!p.sleep&&Math.abs(p.x-a.x)<18&&p.y>a.y-27&&p.y-25<a.y+1){
+            if(!p.sleep&&!p.bubble&&Math.abs(p.x-a.x)<18&&p.y>a.y-27&&p.y-25<a.y+1){
               hitPlayer(p,a.x);
             }
           }
@@ -549,14 +630,14 @@ WW.games.animals = (() => {
           c.cooldown=Math.max(0,c.cooldown-dt);
           if(c.active){
             c.time=Math.max(0,c.time-dt);
-            if(c.time===0||players.every(p=>p.sleep)){
+            if(c.time===0||players.every(p=>p.sleep||p.bubble)){
               c.active=false;c.owner=null;c.next=0;c.cooldown=1.2;c.lastRunner=null;c.relay=false;
               say('The rings faded. Touch the first glow to retry.',1600);
               continue;
             }
           }
           for(const p of players){
-            if(p.sleep||c.cooldown>0)continue;
+            if(p.sleep||p.bubble||c.cooldown>0)continue;
             const node=c.nodes[c.active?c.next:0];
             if(Math.abs(p.x-node[0]*TILE)>17||Math.abs(p.y-13-node[1]*TILE)>22)continue;
             if(!c.active){
@@ -587,7 +668,7 @@ WW.games.animals = (() => {
           if(c.time<=0){c.active=false;c.owner=null;say('The crystal timer expired. Run through the starting arch to retry!',2100);}
         }
         for(const p of players){
-          if(p.sleep)continue;
+          if(p.sleep||p.bubble)continue;
           if(!c.active&&p.previousX<c.start*TILE&&p.x>=c.start*TILE){
             c.active=true;c.owner=p.id;c.time=c.seconds;
             say(`SPEED TRIAL! Reach the glowing arch in ${c.seconds}s!`,2300);
@@ -604,7 +685,7 @@ WW.games.animals = (() => {
       items.forEach(item=>{
         if(item.used&&item.kind==='snack'&&clock>=item.respawn)item.used=false;
         if(item.used)return;
-        const p=players.find(p=>!p.sleep&&Math.abs(p.x-item.x)<20&&Math.abs((p.y-13)-item.y)<28);
+        const p=players.find(p=>!p.sleep&&!p.bubble&&Math.abs(p.x-item.x)<20&&Math.abs((p.y-13)-item.y)<28);
         if(!p)return;
         if(item.kind==='snack'){
           item.used=true;item.respawn=clock+11;
@@ -652,22 +733,29 @@ WW.games.animals = (() => {
       if(shared.won)return;
       dt=Math.min(dt,.045);clock+=dt; shake=Math.max(0,shake-dt*18);
       for(let i=0;i<players.length;i++)movePlayer(players[i],WW.input.read(i),dt);
+      const follower=players[1];
+      if(follower&&!follower.bubble&&follower.bubbleGrace===0 &&
+         WW.coop.shouldBubble(players[0],follower))enterFollowBubble(follower);
       updateAnimals(dt);updateProjectiles(dt);updateChallenges(dt);updateItems();chapterHint();
       if(clock>abilityUntil)callout.hidden=true;
       effects.forEach(e=>{e.x+=e.vx*dt*60;e.y+=e.vy*dt*60;e.vy+=.09*dt*60;e.time-=dt;});
       for(let i=effects.length-1;i>=0;i--)if(effects[i].time<=0)effects.splice(i,1);
-      const active=players.filter(p=>!p.sleep);const focus=active.length?active:players;
-      const xs=players.map(p=>p.x);
-      const minX=Math.min(...xs),maxX=Math.max(...xs);
-      // The desired camera position must contain *all* players plus a margin.
-      const targetX=clamp((minX+maxX)/2-W/2,maxX-(W-30),minX-30);
-      const desiredX=clamp(targetX+(players.length===1?players[0].vx*14:0),0,Math.max(0,width-W));
-      const smoothingX=Math.abs(desiredX-cameraX)>W*.85?1:Math.min(1,dt*10);
-      cameraX+=(desiredX-cameraX)*smoothingX;
-      const minY=Math.min(...players.map(p=>p.y)),maxY=Math.max(...players.map(p=>p.y));
-      const desiredY=clamp((minY+maxY)/2-H*.73,0,Math.max(0,height-H));
-      const smoothingY=Math.abs(desiredY-cameraY)>H*.9?1:Math.min(1,dt*8);
-      cameraY+=(desiredY-cameraY)*smoothingY;
+      // Player 1 leads the camera in co-op. P2 can explore normally while
+      // nearby, but never restricts movement or pushes the camera off course.
+      const target=WW.coop.cameraTarget(players[0],width,height,W,H);
+      // Gently reveal the upper part of the authored architecture while
+      // retaining the player and platform hazards in the lower screen.
+      const focus=(level.vistas||[]).find(v=>
+        Math.abs(players[0].x-(v.x+.5)*TILE)<v.span*TILE*.65);
+      if(focus){
+        const proximity=1-Math.abs(players[0].x-(focus.x+.5)*TILE)/
+          (focus.span*TILE*.65);
+        target.y=clamp(target.y-40*proximity,0,Math.max(0,height-H));
+      }
+      const smoothingX=Math.abs(target.x-cameraX)>W*.85?1:Math.min(1,dt*10);
+      cameraX+=(target.x-cameraX)*smoothingX;
+      const smoothingY=Math.abs(target.y-cameraY)>H*.9?1:Math.min(1,dt*8);
+      cameraY+=(target.y-cameraY)*smoothingY;
       if(clock>+(message.dataset.until||0))message.classList.remove('show');
       if(clock-hudTime>.16){
         hudTime=clock;
@@ -676,7 +764,7 @@ WW.games.animals = (() => {
             const chosen=p.caught,food=FOODS[p.selectedFood];
             const display=p.form||chosen||'hero';
             return `<div class="compact-player p${p.id+1}" title="Player ${p.id+1}">
-              <b>P${p.id+1}</b><span class="mini-hearts">${'♥'.repeat(p.health)}${'♡'.repeat(3-p.health)}</span>
+              <b>P${p.id+1}${p.bubble?' ◌':''}</b><span class="mini-hearts">${'♥'.repeat(p.health)}${'♡'.repeat(3-p.health)}</span>
               <span class="mini-form ${p.form?'morphed':''}" title="${titles[display]||'Explorer'}">
                 <img src="${WW.art.portrait(display)}" alt="${titles[display]||'Explorer'}">
               </span>
@@ -694,7 +782,7 @@ WW.games.animals = (() => {
     function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
     function background(ctx,time){
       if(WW.scenery.paintBackdrop(ctx,level.art?.background,cameraX,cameraY))return;
-      if(WW.scenery.background(ctx,chapter.biome,cameraX)){
+      if(WW.scenery.background(ctx,chapter.biome,cameraX,level,cameraY)){
         // Each painted biome has its own atmospheric motion: fireflies,
         // refracted sea spray or quiet stars. All effects sit behind collisions.
         ctx.save();
@@ -780,6 +868,9 @@ WW.games.animals = (() => {
       }
     }
     function drawLandmarks(ctx,time){
+      // Imported grids still use traditional landmarks. Built-in levels use
+      // one composed landmark per authored gameplay section.
+      if(level.vistas?.length)return;
       for(const place of level.landmarks||[]){
         const x=place.x*TILE;
         if(x<cameraX-130||x>cameraX+W+130)continue;
@@ -792,6 +883,21 @@ WW.games.animals = (() => {
       }
     }
     function groundDetails(ctx,time){
+      if(level.dressing){
+        const left=cameraX-35,right=cameraX+W+35;
+        for(const prop of level.dressing){
+          const x=(prop.x+.5)*TILE;
+          if(x<left||x>right)continue;
+          const dimensions={
+            flowers:[24,24],mushrooms:[22,23],stones:[27,17],
+            reeds:[20,29],shells:[29,22],moonStone:[25,27],
+            berryBush:[26,27]
+          }[prop.asset];
+          WW.illustrations.draw(ctx,prop.asset,x,prop.y*TILE+3,
+            dimensions[0]*prop.scale,dimensions[1]*prop.scale,.9);
+        }
+        return;
+      }
       // Sparse small painted vegetation is distinct from the seamless terrain.
       // Never introduce decorative collision or change the semantic map.
       const themes={
@@ -824,11 +930,126 @@ WW.games.animals = (() => {
         }
       }
     }
+    function paintGoalRoute(ctx,now){
+      const goal=goals[0];
+      if(!goal||shared.keys[goal.kind]||!level.goalRoute?.length)return;
+      const player=players[0],match={springKey:'springaroo',
+        diveKey:'tideling',skyKey:'skyling'}[goal.kind];
+      const color={springKey:'#f9d991',diveKey:'#9debe9',
+        skyKey:'#edddff'}[goal.kind]||'#f9d991';
+      for(let i=0;i<level.goalRoute.length-1;i++){
+        const [tx,ty]=level.goalRoute[i];
+        const x=(tx+.5)*TILE,y=ty*TILE-9;
+        const distance=Math.hypot(x-player.x,y-player.y+12);
+        if(distance>260||x<cameraX-22||x>cameraX+W+22||
+           y<cameraY-24||y>cameraY+H+24)continue;
+        const near=1-Math.min(1,distance/260);
+        const pulse=.67+.33*Math.sin(now*2.4+i*2);
+        const opacity=(player.form===match?.65:.34)*(.3+near*.7)*pulse;
+        ctx.save();ctx.globalAlpha=opacity;
+        ctx.strokeStyle=color;ctx.lineWidth=1.1;
+        ctx.beginPath();ctx.arc(x,y,7+Math.sin(now*1.7+i)*1.6,
+          Math.PI*.1,Math.PI*1.75);ctx.stroke();
+        WW.illustrations.draw(ctx,goal.kind==='diveKey'?'bubble':'spark',
+          x,y+5,12,12,.9);
+        ctx.restore();
+      }
+    }
+    function paintSetpieces(ctx,now){
+      const colors={meadow:['#f9b5c5','#f4e49e'],coast:['#80e7dc','#fff0b0'],
+        summit:['#bea5f5','#f6d0f4']}[chapter.biome] || ['#f9b5c5','#fff0b0'];
+      for(const s of setpieces){
+        if(s.x<cameraX-45||s.x>cameraX+W+45||
+           s.y<cameraY-65||s.y>cameraY+H+65)continue;
+        const pulse=Math.sin(now*3+s.x*.05);
+        // Keep navigational motes contextual. They reveal the *authored*
+        // destination only when a player with the useful form approaches.
+        const nearby=players.some(p=>!p.bubble&&
+          Math.abs(p.x-s.x)<180&&Math.abs(p.y-s.y)<165&&
+          (s.kind==='bounceBloom'&&(!s.requires||p.form===s.requires)||
+           (s.kind==='windRing'&&p.form==='skyling')||
+           (s.kind==='bubbleVent'&&p.form==='tideling')));
+        if(nearby){
+          const dx=s.target.x-s.x,color=s.kind==='bounceBloom'?'#fff0b2':
+            s.kind==='windRing'?'#d8edff':'#b4fff5';
+          ctx.save();ctx.globalAlpha=.25;ctx.strokeStyle=color;
+          ctx.lineWidth=1.4;ctx.setLineDash([3,8]);
+          ctx.beginPath();ctx.moveTo(s.x,s.y-12);
+          ctx.quadraticCurveTo(s.x+dx*.2,s.target.y-20,s.target.x,s.target.y);
+          ctx.stroke();ctx.setLineDash([]);
+          ctx.globalAlpha=.6;
+          for(let i=1;i<8;i++){
+            const t=((i+now*.6)%8)/8,u=1-t;
+            const px=u*u*s.x+2*u*t*(s.x+dx*.2)+t*t*s.target.x;
+            const py=u*u*(s.y-12)+2*u*t*(s.target.y-20)+t*t*s.target.y;
+            ctx.fillStyle=color;ctx.beginPath();
+            ctx.arc(px,py,1.5+(i%3)*.35,0,Math.PI*2);ctx.fill();
+          }
+          ctx.restore();
+        }
+        ctx.save();ctx.translate(s.x,s.y);
+        if(s.kind==='bounceBloom'){
+          // A spring flower communicates launch through upright petals.
+          WW.illustrations.draw(ctx,'flowers',0,7,43,39,.92);
+          ctx.shadowColor=colors[0];ctx.shadowBlur=11;
+          for(let i=0;i<6;i++){
+            const angle=i*Math.PI/3+Math.sin(now*1.7)*.06;
+            ctx.save();ctx.rotate(angle);
+            ctx.fillStyle=i%2?colors[0]:colors[1];
+            ctx.beginPath();ctx.ellipse(0,-9.5,5.5,10.5+pulse,0,0,Math.PI*2);
+            ctx.fill();ctx.restore();
+          }
+          ctx.shadowBlur=0;
+          ctx.fillStyle='#fff7cc';ctx.beginPath();ctx.arc(0,0,5.4,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle='#fff7e2';ctx.lineWidth=1.5;
+          ctx.beginPath();ctx.moveTo(0,-12-pulse*2);ctx.lineTo(0,-23-pulse*2);
+          ctx.moveTo(-4,-19-pulse*2);ctx.lineTo(0,-24-pulse*2);
+          ctx.lineTo(4,-19-pulse*2);ctx.stroke();
+        }else if(s.kind==='windRing'){
+          const glow=ctx.createRadialGradient(0,0,2,0,0,23);
+          glow.addColorStop(0,'#dcffff7a');glow.addColorStop(.6,'#acdaf64d');
+          glow.addColorStop(1,'#c7c7fc00');
+          ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,24,0,Math.PI*2);ctx.fill();
+          ctx.save();ctx.rotate(now*.43);
+          ctx.strokeStyle='#f9eec4';ctx.lineWidth=2.5;
+          ctx.setLineDash([15,5,6,5]);
+          ctx.beginPath();ctx.arc(0,0,14+pulse*.55,0,Math.PI*2);ctx.stroke();
+          ctx.restore();
+          ctx.strokeStyle='#a3e7f2bd';ctx.lineWidth=1.2;
+          ctx.beginPath();ctx.ellipse(0,0,19,7,-.46,0,Math.PI*2);ctx.stroke();
+          ctx.fillStyle='#fff5d0';ctx.beginPath();ctx.arc(0,0,3,0,Math.PI*2);ctx.fill();
+          for(let i=0;i<3;i++){
+            const phase=now*2.1+i*2.09;
+            ctx.fillStyle=i===1?'#f8d8fb':'#d4f9fa';
+            ctx.beginPath();ctx.arc(Math.cos(phase)*20,Math.sin(phase)*16,1.8,0,Math.PI*2);ctx.fill();
+          }
+        }else if(s.kind==='bubbleVent'){
+          WW.illustrations.draw(ctx,'shells',0,13,35,27,.9);
+          const glow=ctx.createRadialGradient(0,0,2,0,0,27);
+          glow.addColorStop(0,'#b5fff7a0');glow.addColorStop(1,'#63d9ee00');
+          ctx.fillStyle=glow;ctx.fillRect(-28,-38,56,52);
+          for(let i=0;i<8;i++){
+            const progress=((now*(.43+i%3*.13)+i*.19)%1+1)%1;
+            const x=Math.sin(now*1.3+i*2.7)*6+(i%3-1)*5;
+            const y=7-progress*52,r=2+(i%3)*1.6;
+            ctx.strokeStyle=i%2?'#e8fff1b8':'#a1f8ffbb';
+            ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();
+            ctx.fillStyle='#f4fff999';ctx.beginPath();
+            ctx.arc(x-r*.3,y-r*.35,.7,0,Math.PI*2);ctx.fill();
+          }
+        }
+        ctx.restore();
+      }
+    }
     function terrain(ctx,time){
       const left=Math.max(0,Math.floor(cameraX/TILE)-1),right=Math.min(level.width,Math.ceil((cameraX+W)/TILE)+1);
       const top=Math.max(0,Math.floor(cameraY/TILE)-1),bottom=Math.min(level.height,Math.ceil((cameraY+H)/TILE)+1);
       for(let y=top;y<bottom;y++)for(let x=left;x<right;x++){
-        const t=map[y][x];if(t==='empty')continue;
+        const t=map[y][x];
+        // Paint contained water as one basin, never striped texture cells.
+        if(t==='empty'||(t==='water'&&level.waterBodies?.length)||
+           (t==='platform'&&platformSpans.length)||
+           (t==='thermal'&&level.thermalVolumes?.length))continue;
         const px=x*TILE,py=y*TILE,h=hash(x,y);
         // The authored slope skin draws one continuous grass line. Suppress
         // coarse ground-tile caps beneath it to avoid floating bright stripes.
@@ -892,28 +1113,11 @@ WW.games.animals = (() => {
     }
     function trailGuide(ctx,now){
       const current=objective(),p=players[0],delta=current.x-p.x;
-      // A quiet progress rail replaces constant prose and tile-count readouts.
-      const left=W/2-68,top=H-13,bar=124;
-      box(ctx,left-5,top-6,bar+10,14,'#102b3c9a');
-      box(ctx,left,top,bar,3,'#577476');
-      box(ctx,left,top,bar*clamp(p.x/width,0,1),3,'#d9dab7');
-      for(const gem of items.filter(item=>goalKinds.has(item.kind))){
-        const gx=left+bar*gem.x/width;
-        box(ctx,gx-1,top-3,3,9,shared.keys[gem.kind]?'#ffd68b':'#92afb3');
-      }
-      // A tiny marker on the existing progress rail makes optional routes discoverable.
-      for(const c of challenges){
-        if(c.type!=='trail')continue;
-        const tx=left+bar*clamp(c.nodes[0][0]*TILE/width,0,1);
-        box(ctx,tx-2,top-4,5,8,c.completed?'#96ddb4':'#f4d98a');
-      }
-      for(const player of players){
-        const px=left+bar*clamp(player.x/width,0,1);
-        box(ctx,px-2,top-2,5,7,player.id===0?'#fff2d7':'#c8b6f4');
-      }
+      // The world itself teaches navigation. Only an unobtrusive direction
+      // cue appears when the next goal is beyond the camera.
       if(Math.abs(delta)>W*.37){
         const right=delta>0,x=right?W-19:19,y=H*.51;
-        ctx.globalAlpha=.48+.25*Math.sin(now*3.4);
+        ctx.globalAlpha=.35+.18*Math.sin(now*3.4);
         ctx.fillStyle='#f6dfa4';ctx.beginPath();
         ctx.moveTo(x+(right?7:-7),y);
         ctx.lineTo(x+(right?-4:4),y-7);
@@ -924,18 +1128,33 @@ WW.games.animals = (() => {
     function render(ctx,now){
       ctx.setTransform(3,0,0,3,0,0);
       background(ctx,now);
+      WW.vistas.atmosphere(ctx,level,cameraX,now);
       ctx.save();ctx.translate(Math.round((Math.random()-.5)*shake),Math.round((Math.random()-.5)*shake));ctx.translate(-Math.round(cameraX),-Math.round(cameraY));
       // The panorama is already painted; avoid translucent sprite repeats in mid-air.
-      drawLandmarks(ctx,now);terrain(ctx,now);
+      WW.vistas.draw(ctx,level,cameraX,cameraY,now);
+       drawLandmarks(ctx,now);terrain(ctx,now);
       if(level.surface){
         const left=Math.max(0,Math.floor(cameraX/TILE)-1);
         const right=Math.min(level.width,Math.ceil((cameraX+W)/TILE)+1);
         for(let x=left;x<right;x++)
           WW.scenery.slope(ctx,chapter.biome,x*TILE,level.surface[x]*TILE,level.surface[x+1]*TILE);
       }
+      WW.scenery.terrainRelief(ctx,level,chapter.biome,cameraX,cameraY);
+      WW.scenery.waterVolume(ctx,level,cameraX,now);
+      WW.scenery.thermalColumns(ctx,level,cameraX,cameraY,now);
+      for(const span of platformSpans){
+        if((span.x+span.length)*TILE<cameraX-24||
+            span.x*TILE>cameraX+W+24||span.y*TILE<cameraY-48||
+            span.y*TILE>cameraY+H+26)continue;
+        WW.scenery.platformSpan(ctx,chapter.biome,span,now,level);
+      }
       WW.scenery.paintLayers(ctx,level.art?.foreground,cameraX,cameraY);
       groundDetails(ctx,now);
-      for(const sign of chapter.signs||[]){
+      paintGoalRoute(ctx,now);
+       paintSetpieces(ctx,now);
+      // Narrative hints remain proximity-triggered, but enormous repeated
+      // sign sprites no longer compete with each area's focal architecture.
+      for(const sign of level.vistas?.length?[]:(chapter.signs||[])){
         const x=sign.x*TILE;if(x<cameraX-65||x>cameraX+W+65)continue;
         const ground=Array.from({length:level.height},(_,y)=>y).find(y=>map[y]?.[sign.x]==='ground');
         if(ground===undefined)continue;
@@ -976,7 +1195,8 @@ WW.games.animals = (() => {
         if(goalKinds.has(it.kind)){
           const tint=({springKey:'#ff94d5',skyKey:'#f5dfa9',diveKey:'#91f5ff',prismKey:'#ffaf68',mossKey:'#a7f8a0',cloudKey:'#d9bfff',emberKey:'#ff8d6d'})[it.kind]||'#ffe79f';
           WW.props.light(ctx,it.x,it.y+bob,tint,now);
-          ctx.fillStyle='#fff4dd';ctx.font='bold 8px sans-serif';ctx.fillText('LIGHT',it.x-12,it.y-19+bob);
+          // The illuminated relic painting itself communicates the reward;
+          // world-space text labels would spoil the scene composition.
         }
         if(it.kind==='exit'){
           WW.props.gate(ctx,it.x,it.y,goals.every(g=>shared.keys[g.kind]),chapter.biome,now);
@@ -991,7 +1211,7 @@ WW.games.animals = (() => {
       });
       animals.forEach(a=>{
         if(!a.alive)return;
-        const near=players.some(p=>!p.sleep&&Math.abs(p.x-a.x)<55&&Math.abs(p.y-a.y)<45);
+        const near=players.some(p=>!p.sleep&&!p.bubble&&Math.abs(p.x-a.x)<55&&Math.abs(p.y-a.y)<45);
         const species=CREATURE[a.kind],ready=a.distractedUntil>clock;
         // Shadows belong on supporting terrain; flying wildlife cast none.
         if(!['skyling','glimmermoth','cloudwhisp'].includes(a.kind)){
@@ -1103,7 +1323,29 @@ WW.games.animals = (() => {
         ctx.restore();
       });
       players.forEach(p=>{
-        if(p.sleep){
+        if(p.bubble){
+          // A translucent floating companion, visibly distinct from an
+          // active player. Keep their captured creature appearance intact.
+          const float=Math.sin(now*3.6)*1.6;
+          const cy=p.y-18+float;
+          ctx.save();
+          ctx.beginPath();ctx.arc(p.x,cy,23,0,Math.PI*2);ctx.clip();
+          const sheen=ctx.createRadialGradient(p.x-9,cy-10,2,p.x,cy,28);
+          sheen.addColorStop(0,'#f6ffff80');
+          sheen.addColorStop(.63,'#87d7f442');
+          sheen.addColorStop(1,'#5f95e066');
+          ctx.fillStyle=sheen;ctx.fillRect(p.x-24,cy-24,48,48);
+          ctx.save();ctx.translate(p.x,cy+8);ctx.scale(.65,.65);
+          WW.art.draw(ctx,p.form||'hero',0,15,Math.floor(p.frame)%6,false,p.id,
+            {action:'idle',time:now});
+          ctx.restore();ctx.restore();
+          ctx.save();
+          ctx.strokeStyle='#e1fff1e3';ctx.lineWidth=2;
+          ctx.beginPath();ctx.arc(p.x,cy,23,0,Math.PI*2);ctx.stroke();
+          ctx.strokeStyle='#ffffffaa';ctx.lineWidth=2.4;
+          ctx.beginPath();ctx.arc(p.x-3,cy-3,17,3.7,4.85);ctx.stroke();
+          ctx.restore();
+        }else if(p.sleep){
           WW.art.draw(ctx,'hero',p.x,p.y+8,1,p.face<0,p.id,{action:'sleep',time:now});
           // The dizzy stars are independently animated, never painted onto the KO sprite.
           for(let i=0;i<3;i++){
@@ -1121,9 +1363,26 @@ WW.games.animals = (() => {
               time:now,grounded:p.grounded
             });
         }
-        // Colored player markers remain clear even while transformed.
-        box(ctx,p.x-8,p.y-43,16,3,'#152e42');box(ctx,p.x-7,p.y-42,14,2,p.id===0?'#ffd782':'#91d2ff');
-        ctx.font='bold 8px sans-serif';ctx.fillStyle='#102b41';ctx.fillText(String(p.id+1),p.x-2,p.y-46);
+        // Four tiny feathers over Moonwing communicate remaining lift without
+        // a permanent HUD meter or instructional text across the scene.
+        if(p.form==='skyling'&&!p.grounded&&!p.sleep){
+          ctx.save();
+          for(let i=0;i<4;i++){
+            ctx.globalAlpha=i<p.flaps?.83:.19;
+            ctx.fillStyle=i<p.flaps?'#fff4d4':'#98a6c9';
+            const x=p.x-9+i*6,y=p.y-42-Math.sin(now*3+i)*.7;
+            ctx.beginPath();ctx.ellipse(x,y,1.8,3.3,-.5,0,Math.PI*2);ctx.fill();
+          }
+          ctx.restore();
+        }
+        // Solo play needs no floating number over the protagonist. Keep
+        // distinct team colors only when two explorers share the screen.
+        if(players.length>1){
+          box(ctx,p.x-8,p.y-43,16,3,'#152e42');
+          box(ctx,p.x-7,p.y-42,14,2,p.id===0?'#ffd782':'#91d2ff');
+          ctx.font='bold 8px sans-serif';ctx.fillStyle='#102b41';
+          ctx.fillText(String(p.id+1),p.x-2,p.y-46);
+        }
       });
       effects.forEach(e=>{
         // A larger faint halo lets spell effects read as light, not confetti.
@@ -1154,7 +1413,7 @@ WW.games.animals = (() => {
       trailGuide(ctx,now);
     }
     hud.hidden=false;callout.hidden=true;say(chapter.name,1500);
-    return {update,render,recallParty,recallCheckpoint(){recallParty(shared.checkpoint);},stop(){hud.hidden=true;callout.hidden=true;message.classList.remove('show');},get state(){return {chapter,goals,challenges,players,shared,animals,items,projectiles,lures,captures,cameraX,cameraY,objective:objective(),physics:PHYSICS,jumpHeight}}};
+    return {update,render,recallParty,recallCheckpoint(){recallParty(shared.checkpoint);},stop(){hud.hidden=true;callout.hidden=true;message.classList.remove('show');},get state(){return {chapter,goals,challenges,players,shared,animals,items,setpieces,projectiles,lures,captures,cameraX,cameraY,objective:objective(),physics:PHYSICS,jumpHeight}}};
   }
   return {start};
 })();

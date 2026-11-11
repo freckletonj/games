@@ -27,7 +27,15 @@ WW.input = (() => {
     prev[slot] = new Set(actions.filter(a=>current[a]));
     return { ...current, pressed, released };
   }
-  function reset() { prev.forEach(s=>s.clear()); keys.clear(); syncAssignments(); }
+  function reset() {
+    keys.clear();syncAssignments();
+    // When leaving a menu or returning to camp, a held confirm/recall button
+    // must not fire a fresh jump or spell until the controller is released.
+    for(let slot=0;slot<prev.length;slot++){
+      const current=sample(slot);
+      prev[slot]=new Set(actions.filter(action=>current[action]));
+    }
+  }
   function rumble(slot, strength=.5, duration=160) {
     if (!WW.storage.data.settings.rumble) return;
     const pad = pads().find(p=>p.index===assigned.get(slot));

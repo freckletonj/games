@@ -11,21 +11,53 @@ WW.scenery = (() => {
   const ready = name => images[name]?.complete && images[name].naturalWidth > 0;
   const url = name => sources[name] || '';
 
-  function background(ctx, biome, cameraX) {
-    const source={meadow:'backdrop',coast:'coastBackdrop',summit:'summitBackdrop'}[biome];
-    if(!source||!ready(source))return false;
+  // One uninterrupted panorama per chapter. Repeating and alternating
+  // mirrored panels duplicated waterfalls, mountains and temples every
+  // few hundred pixels, making the supposedly authored world look tiled.
+  // Pan a modest crop across the original painting over the whole chapter.
+  function background(ctx, biome, cameraX, level=null, cameraY=0) {
+    const world=level?.chapter?.id || level?.decorSeed || '';
+    const wetlands=world==='willow-wetlands';
+    const gardens=world==='cloud-gardens';
+    const source=wetlands?'backdrop':
+      {meadow:'backdrop',coast:'coastBackdrop',summit:'summitBackdrop'}[biome];
+    if(!ready(source))return false;
+    const image=images[source];
+    const maxCamera=Math.max(1,(level?.width||260)*16-480);
+    const travel=Math.max(0,Math.min(1,cameraX/maxCamera));
+    const height=biome==='meadow'||wetlands?358:385;
+    const width=height*image.naturalWidth/image.naturalHeight;
+    const x=-(width-480)*travel;
+    const y=biome==='meadow'||wetlands?-20:-36;
     ctx.save();
     ctx.imageSmoothingEnabled=true;
-    // Alternating mirrored panorama panels join at identical painted edges.
-    // Parallax keeps the backdrop moving throughout multi-screen chapters.
-    const span=510,scroll=cameraX*.12;
-    const first=Math.floor(scroll/span)-1;
-    for(let i=first;i<first+4;i++){
-      const x=i*span-scroll;
-      ctx.save();
-      if(Math.abs(i%2)===1){ctx.translate(x+span,0);ctx.scale(-1,1);ctx.drawImage(images[source],0,-8,span,292);}
-      else ctx.drawImage(images[source],x,-8,span,292);
-      ctx.restore();
+    ctx.imageSmoothingQuality='high';
+    // Coastal lagoons are tropical and luminous; the wetlands reuse the
+    // tree-filled painting with darker, cooler coloration so their river
+    // does not look like a duplicated ocean scene.
+    if(wetlands)ctx.filter='hue-rotate(22deg) saturate(.74) brightness(.83)';
+    else if(gardens)ctx.filter='hue-rotate(-14deg) saturate(.88) brightness(1.12)';
+    ctx.drawImage(image,x,y,width,height);
+    ctx.filter='none';
+
+    // Submerged scene art is masked to the authored lake rectangle in
+    // both world axes. Terrestrial sky and banks never inherit a fake ocean
+    // just because a lagoon is somewhere near the camera.
+    if(biome==='coast'&&ready('painted-biomes')&&level?.waterBodies?.length){
+      const atlas=images['painted-biomes'],row=atlas.naturalHeight/3;
+      const stripWidth=atlas.naturalWidth*(292/row);
+      for(const basin of level.waterBodies){
+        const left=basin.start*16-cameraX,right=basin.end*16-cameraX;
+        const top=basin.surface*16-cameraY,bottom=basin.bottom*16-cameraY;
+        if(left>=480||right<=0||top>=270||bottom<=0)continue;
+        ctx.save();
+        ctx.beginPath();ctx.rect(left,top,right-left,bottom-top);
+        ctx.clip();
+        ctx.globalAlpha=wetlands?.22:.36;
+        ctx.drawImage(atlas,0,row,atlas.naturalWidth,row,
+          -(stripWidth-480)*travel,-8,stripWidth,292);
+        ctx.restore();
+      }
     }
     ctx.restore();
     return true;
@@ -45,10 +77,74 @@ WW.scenery = (() => {
       const w=panel.width??image.naturalWidth,h=panel.height??image.naturalHeight;
       if(parallax && (x>480||x+w<0||y>270||y+h<0))continue;
       if(!parallax && (x>cameraX+480||x+w<cameraX||y>cameraY+270||y+h<cameraY))continue;
-      ctx.drawImage(image,x,y,w,h);
+      // World-space panel bounds are intentional, but non-uniform scaling is
+      // not. Cover the requested viewport with a centered source crop.
+      const sourceW=image.naturalWidth,sourceH=image.naturalHeight;
+      const imageRatio=sourceW/sourceH,viewportRatio=w/h;
+      let sx=0,sy=0,sw=sourceW,sh=sourceH;
+      if(imageRatio>viewportRatio){
+        sw=sourceH*viewportRatio;sx=(sourceW-sw)/2;
+      }else{
+        sh=sourceW/viewportRatio;sy=(sourceH-sh)/2;
+      }
+      ctx.drawImage(image,sx,sy,sw,sh,x,y,w,h);
       drawn=true;
     }
     return drawn;
+  }
+
+  // A lake is a continuous contained volume, not a wall of blue tiles.
+  // Render its waterline once and use the same slope points as collision.
+  function waterVolume(ctx, level, cameraX, time) {
+    if (!level.surface || !level.waterBodies) return;
+    for (const basin of level.waterBodies) {
+      if (basin.end*16 < cameraX-16 || basin.start*16 > cameraX+496) continue;
+      const threshold = basin.surface + .35;
+      let start = basin.start, end = basin.end;
+      while (start < end && level.surface[start] <= threshold) start++;
+      while (end > start && level.surface[end] <= threshold) end--;
+      if (end - start < 2) continue;
+      const top = basin.surface*16;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(start*16, top);
+      ctx.lineTo(end*16, top);
+      for (let x=end; x>=start; x--) ctx.lineTo(x*16,level.surface[x]*16);
+      ctx.closePath();
+      ctx.clip();
+      const glow=ctx.createLinearGradient(0,top,0,top+140);
+      glow.addColorStop(0,'#9ae8dc9a');
+      glow.addColorStop(.42,'#318cb4c4');
+      glow.addColorStop(1,'#163f81cd');
+      ctx.fillStyle=glow;
+      ctx.fillRect(start*16,top,(end-start)*16,Math.max(180,basin.bottom*16-top));
+      // Sparse, broken light caustics replace full-width horizontal stripes.
+      // Every glint is clipped to the actual basin geometry, never a tile cell.
+      ctx.lineWidth=1.1;
+      for(let row=0;row<Math.ceil((basin.bottom*16-top)/38);row++){
+        const cy=top+22+row*38;
+        const fade=Math.max(.04,.24-row*.027);
+        for(let x=start*16+18+row%3*13;x<end*16-8;x+=48){
+          const phase=x*.023+row*1.8+time*.8;
+          const yy=cy+Math.sin(phase)*4;
+          const len=11+6*Math.sin(x*.03+row);
+          ctx.globalAlpha=fade*(.65+.35*Math.sin(time*1.1+x*.016));
+          ctx.strokeStyle=row%2?'#b5edfa':'#dafff0';
+          ctx.beginPath();ctx.moveTo(x,yy);
+          ctx.quadraticCurveTo(x+len*.5,yy-2.2,x+len,yy+1);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+      ctx.strokeStyle='#d6fff0b3';
+      ctx.lineWidth=1.4;
+      ctx.beginPath();
+      for (let x=start*16; x<=end*16; x+=3) {
+        const wave=top+Math.sin(x*.095+time*1.5)*.5;
+        if (x===start*16) ctx.moveTo(x,wave); else ctx.lineTo(x,wave);
+      }
+      ctx.stroke();
+    }
   }
 
   function paintBackdrop(ctx, panels, cameraX, cameraY){
@@ -82,7 +178,9 @@ WW.scenery = (() => {
     const cw=image.naturalWidth/4,ch=image.naturalHeight/2;
     // A single generous painted crop with feathered *outer* wrap edges avoids
     // the centerline/kaleidoscope artifacts of mirrored 128px terrain swatches.
-    const px=320,py=top?16:320;
+    // Fine-grained, native-pixel brush detail. The old 320px repeat was
+    // nearly a full camera wide, making leaf/rock swatches enormous.
+    const px=64,py=top?16:64; // fine brush detail; cap repeats at exact tile-row pitch
     const canvas=document.createElement('canvas');
     canvas.width=px;canvas.height=py;
     const g=canvas.getContext('2d',{willReadFrequently:true});
@@ -179,16 +277,37 @@ WW.scenery = (() => {
     ctx.fillRect(x,Math.min(y0,y1),16,bottom-Math.min(y0,y1));
     ctx.fillStyle=p.ground;
     ctx.fillRect(x,Math.min(y0,y1),16,bottom-Math.min(y0,y1));
-    if(Math.abs(y0-y1)>0.01){
-      ctx.strokeStyle=edge.rim;
-      ctx.lineWidth=2.3;
-      ctx.beginPath();ctx.moveTo(x,y0+1);ctx.lineTo(x+16,y1+1);ctx.stroke();
-      ctx.strokeStyle='#eff7d077';
-      ctx.lineWidth=.8;
-      ctx.beginPath();ctx.moveTo(x,y0);ctx.lineTo(x+16,y1);ctx.stroke();
-    }else{
-      ctx.fillStyle=p.groundTop;
-      ctx.fillRect(x,y0,16,5);
+    // The same painted cap follows the continuous authored heightfield.
+    // No rectangular grass strips or floating tile corners on steep banks.
+    ctx.beginPath();ctx.moveTo(x,y0);ctx.lineTo(x+16,y1);
+    ctx.lineTo(x+16,y1+5);ctx.lineTo(x,y0+5);ctx.closePath();
+    ctx.fillStyle=p.groundTop;ctx.fill();
+    ctx.restore();
+    ctx.save();
+    const palette={
+      meadow:['#87bb82','#d4dea3'],coast:['#89b9a9','#dfddbd'],
+      summit:['#9294b6','#c5d4db']
+    }[biome]||['#87bb82','#d4dea3'];
+    // Irregular small tufts follow *real* ground coordinates; their spacing
+    // is fixed in world space, so no seams appear at tile boundaries.
+    // Sparse clumps, not a picket fence of identical V-shaped grass blades.
+    // Use world-space deterministic placement so neighboring tiles join.
+    const seed=Math.abs(Math.sin(x*12.9898+3.476));
+    if(seed>.6){
+      const px=x+4+seed*7,yy=y0+(y1-y0)*(px-x)/16;
+      const height=1.4+seed*2.3;
+      ctx.lineCap='round';ctx.strokeStyle=palette[0];
+      ctx.lineWidth=1.1;ctx.beginPath();
+      ctx.moveTo(px,yy+1);
+      ctx.quadraticCurveTo(px-1,yy-height*.55,px-1.6,yy-height);
+      ctx.moveTo(px+.2,yy+1);
+      ctx.quadraticCurveTo(px+1.6,yy-height*.5,px+2.6,yy-height*.75);
+      ctx.stroke();
+      if(seed>.88){
+        ctx.strokeStyle=palette[1];ctx.lineWidth=.7;
+        ctx.beginPath();ctx.moveTo(px,yy);
+        ctx.lineTo(px+.6,yy-height*.88);ctx.stroke();
+      }
     }
     ctx.restore();
     return true;
@@ -338,5 +457,263 @@ WW.scenery = (() => {
     return true;
   }
 
-  return {background, paintBackdrop, paintLayers, slope, landmark, tile, url, ready};
+  // Depth shading and geological seams attach to the actual heightfield,
+  // instead of stamping the same rocky tile for the entire cliff face.
+  // This is visual only. It never creates additional supporting surfaces.
+  function terrainRelief(ctx,level,biome,cameraX,cameraY){
+    if(!level.surface)return;
+    const x0=Math.max(0,Math.floor(cameraX/16)*16-16);
+    const x1=Math.min(level.width*16,Math.ceil((cameraX+480)/16)*16+16);
+    const foot=x=>{
+      const tile=Math.max(0,Math.min(level.width-1,Math.floor(x/16)));
+      const t=x/16-tile;
+      return 16*(level.surface[tile]*(1-t)+level.surface[tile+1]*t);
+    };
+    const tones={
+      meadow:['#254940','#92b28f','#21463d'],
+      coast:['#204e58','#95d0c2','#265767'],
+      summit:['#353653','#ada4d3','#484367']
+    }[biome]||['#254940','#92b28f','#21463d'];
+    ctx.save();
+    ctx.beginPath();ctx.moveTo(x0,foot(x0)+7);
+    for(let x=x0+8;x<=x1;x+=8)ctx.lineTo(x,foot(x)+7);
+    ctx.lineTo(x1,level.height*16);
+    ctx.lineTo(x0,level.height*16);ctx.closePath();ctx.clip();
+    const deep=ctx.createLinearGradient(0,cameraY,0,cameraY+340);
+    deep.addColorStop(0,'#00000000');
+    deep.addColorStop(.55,tones[0]+'29');
+    deep.addColorStop(1,tones[0]+'85');
+    ctx.fillStyle=deep;
+    ctx.fillRect(x0,cameraY,x1-x0,340);
+    // Short, world-anchored hairline seams suggest natural layers without
+    // drawing a continuous glowing contour across a whole screen of rock.
+    for(const depth of [38,88,145]){
+      for(let sector=Math.floor(x0/128);sector<=Math.ceil(x1/128);sector++){
+        if((sector*7+depth)%4===0)continue;
+        const left=sector*128+13+(sector*13+depth)%29;
+        const length=24+(sector*17+depth)%34;
+        ctx.beginPath();
+        for(let x=left;x<=left+length;x+=6){
+          const y=foot(x)+depth+Math.sin(x*.031+depth*.12)*3;
+          if(x===left)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+        }
+        ctx.lineWidth=1.1;
+        ctx.strokeStyle=depth===38?tones[1]+'2e':tones[2]+'43';
+        ctx.stroke();
+      }
+    }
+    // Architectural focal points have matching natural root systems and
+    // mineral seams below the walkable surface, keeping them grounded.
+    for(const vista of level.vistas||[]){
+      const center=(vista.x+.5)*16;
+      if(center<x0-95||center>x1+95)continue;
+      for(const side of [-1,1]){
+        const x=center+side*49,y=foot(x)+10;
+        ctx.beginPath();ctx.moveTo(x,y);
+        ctx.bezierCurveTo(x-side*9,y+18,x+side*17,y+48,
+          x+side*7,y+84);
+        ctx.lineWidth=biome==='meadow'?3.5:2.1;
+        ctx.strokeStyle=tones[2]+'a0';ctx.stroke();
+        ctx.beginPath();ctx.moveTo(x+side*7,y+41);
+        ctx.quadraticCurveTo(x+side*25,y+55,x+side*29,y+68);
+        ctx.lineWidth=1.5;ctx.strokeStyle=tones[1]+'72';ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  // Each authored updraft is one soft volume, not a wall of flickering
+  // 16px tiles. Physics still samples 'thermal' in the compiled collision grid;
+  // this painter only reveals that force through long, coherent air currents.
+  function thermalColumns(ctx,level,cameraX,cameraY,time){
+    for(const current of level.thermalVolumes||[]){
+      const x=current.x*16,y=current.y*16,w=current.width*16,h=current.height*16;
+      if(x>cameraX+510||x+w<cameraX-30||
+         y>cameraY+290||y+h<cameraY-25)continue;
+      ctx.save();
+      const haze=ctx.createLinearGradient(x,0,x+w,0);
+      haze.addColorStop(0,'#a6e8ff00');
+      haze.addColorStop(.3,'#b5fcff16');
+      haze.addColorStop(.56,'#c1fcff27');
+      haze.addColorStop(1,'#9ad8ff00');
+      ctx.fillStyle=haze;
+      ctx.fillRect(x,y,w,h);
+      for(let i=0;i<5;i++){
+        const seed=(i+.5)/5;
+        const center=x+w*seed+Math.sin(time*.5+i*2.3)*5;
+        const bottom=y+h+4,top=y-8;
+        ctx.strokeStyle=i%2?'#dbf5ffa1':'#a0f1ef77';
+        ctx.globalAlpha=.26+.14*Math.sin(time*1.4+i);
+        ctx.lineWidth=i%2?1.3:2.2;ctx.lineCap='round';
+        ctx.beginPath();ctx.moveTo(center-5,bottom);
+        ctx.bezierCurveTo(center+16,y+h*.68,
+          center-16,y+h*.3,center+3,top);
+        ctx.stroke();
+      }
+      for(let i=0;i<7;i++){
+        const u=(i*37+current.x*7)%83/83;
+        const drift=(time*18+i*31)%(h+38);
+        const cx=x+w*.22+u*w*.58+Math.sin(time*.75+i)*4;
+        const cy=y+h+18-drift;
+        ctx.fillStyle='#e1fffa';
+        ctx.globalAlpha=.17+.2*(.5+.5*Math.sin(time*1.9+i));
+        ctx.beginPath();ctx.ellipse(cx,cy,1.2,4.2,-.3,0,Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+
+  // A whole semantic span is illustrated as one connected object. Painting
+  // independent 16px blocks made bridges look like detached little squares.
+  // Exact top and horizontal bounds still correspond to real collision.
+  function platformSpan(ctx, biome, segment, time=0, level=null) {
+    if(segment.kind!=='platform')return false;
+    const x=segment.x*16,y=segment.y*16,w=segment.length*16;
+    const bridge=segment.style==='bridge';
+    const shelf=segment.style==='shelf';
+    const step=segment.style==='step';
+    const palettes={
+      meadow:{rock:'#455c55',body:'#6d8b6e',cap:'#8dbf8e',highlight:'#d6e9b1',
+        low:'#304b45',accent:'#e8c7a0',root:'#476c59'},
+      coast:{rock:'#426b75',body:'#849d9a',cap:'#c8cfb5',highlight:'#fff0d3',
+        low:'#325767',accent:'#f4b6b1',root:'#6c9798'},
+      summit:{rock:'#565779',body:'#8889ae',cap:'#b9b6d7',highlight:'#f0e3e2',
+        low:'#3b4069',accent:'#d4b9fb',root:'#7886bc'}
+    };
+    const p=palettes[biome]||palettes.meadow;
+    const phase=Math.sin(segment.x*1.7+segment.y*.93);
+    ctx.save();
+    if(bridge){
+      // Stone-and-root piers meet the compiled heightfield, so bridges look
+      // physically installed rather than suspended rectangular platforms.
+      // Long drops keep their open negative space with hanging suspension
+      // ropes instead of drawing implausibly tall columns to the riverbed.
+      if(level?.surface){
+        const footing=px=>{
+          const i=Math.max(0,Math.min(level.width-1,Math.floor(px/16)));
+          const t=Math.max(0,Math.min(1,px/16-i));
+          return (level.surface[i]*(1-t)+level.surface[i+1]*t)*16;
+        };
+        for(const [index,offset] of [9,w-9].entries()){
+          const postX=x+offset,ground=footing(postX),drop=ground-y-14;
+          if(drop>14&&drop<205){
+            const depth=Math.min(drop,176);
+            const foot=ctx.createLinearGradient(postX-9,0,postX+9,0);
+            foot.addColorStop(0,p.low+'e0');
+            foot.addColorStop(.6,p.rock+'d5');
+            foot.addColorStop(1,p.highlight+'90');
+            ctx.fillStyle=foot;ctx.beginPath();
+            ctx.moveTo(postX-7,y+11);
+            ctx.quadraticCurveTo(postX-8,y+34,postX-5,y+depth+11);
+            ctx.lineTo(postX+7,y+depth+11);
+            ctx.quadraticCurveTo(postX+5,y+37,postX+7,y+11);
+            ctx.closePath();ctx.fill();
+            ctx.strokeStyle=p.highlight+'65';ctx.lineWidth=1.5;
+            ctx.beginPath();ctx.moveTo(postX+2,y+15);
+            ctx.lineTo(postX+3,y+depth+7);ctx.stroke();
+            if(biome==='meadow'){
+              ctx.strokeStyle=p.root+'be';ctx.lineWidth=2;
+              ctx.beginPath();ctx.moveTo(postX,y+25);
+              ctx.quadraticCurveTo(postX+(index?10:-10),y+42,
+                postX+(index?12:-12),y+55);ctx.stroke();
+            }
+          }else{
+            const hang=26+(segment.x*13+index*17)%21;
+            ctx.strokeStyle=p.root+'9e';ctx.lineWidth=2.2;
+            ctx.beginPath();ctx.moveTo(postX,y+13);
+            ctx.quadraticCurveTo(postX-5,y+hang*.75,postX+2,y+hang+10);
+            ctx.stroke();
+          }
+        }
+      }
+      // Real continuous wooden/shell/stone crossing; organic supports only
+      // below the traversable top edge.
+      const rail=ctx.createLinearGradient(0,y,0,y+15);
+      rail.addColorStop(0,p.cap);rail.addColorStop(.3,p.body);
+      rail.addColorStop(1,p.low);
+      ctx.fillStyle=rail;ctx.beginPath();ctx.moveTo(x,y+2);
+      ctx.lineTo(x+w,y+2);ctx.lineTo(x+w-4,y+13);
+      ctx.quadraticCurveTo(x+w/2,y+17,x+4,y+13);
+      ctx.closePath();ctx.fill();
+      if(ready('tiles')){
+        ctx.save();ctx.clip();ctx.globalAlpha=.78;
+        ctx.fillStyle=textures(biome).platform;
+        ctx.fillRect(x,y-2,w,35);ctx.restore();
+      }
+      ctx.strokeStyle=p.highlight;ctx.lineWidth=3.2;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(x+2,y+1);
+      ctx.quadraticCurveTo(x+w/2,y-.3,x+w-2,y+1);ctx.stroke();
+      ctx.strokeStyle=p.low+'b0';ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(x+2,y+12);
+      ctx.quadraticCurveTo(x+w/2,y+17,x+w-2,y+12);ctx.stroke();
+      if(biome==='meadow'){
+        ctx.strokeStyle=p.root;ctx.lineWidth=2;
+        for(let t=12;t<w-10;t+=24){
+          ctx.beginPath();ctx.moveTo(x+t,y+11);
+          ctx.quadraticCurveTo(x+t-5,y+22,x+t+4,y+28+phase*2);ctx.stroke();
+        }
+      }else if(biome==='coast'){
+        for(let t=11;t<w-8;t+=26){
+          ctx.fillStyle=p.accent+'9c';ctx.beginPath();
+          ctx.ellipse(x+t,y+4,6,2.2,.12,0,Math.PI*2);ctx.fill();
+        }
+      }else{
+        ctx.fillStyle=p.highlight+'ac';
+        for(let t=17;t<w-10;t+=35){
+          ctx.beginPath();ctx.moveTo(x+t-4,y+4);
+          ctx.lineTo(x+t+2,y+8);ctx.lineTo(x+t+9,y+4);ctx.closePath();ctx.fill();
+        }
+      }
+    }else{
+      // A single softly scalloped island of rock/roots/coral, not a rectangle.
+      const base=ctx.createLinearGradient(0,y,0,y+30);
+      base.addColorStop(0,p.cap);base.addColorStop(.32,p.body);
+      base.addColorStop(1,p.rock);
+      ctx.fillStyle=base;ctx.beginPath();ctx.moveTo(x,y+2);
+      ctx.quadraticCurveTo(x+w/2,y-1,x+w,y+2);
+      ctx.quadraticCurveTo(x+w+3,y+9,x+w-8,y+14);
+      // An irregular rocky lower edge reads as a real island fragment;
+      // the former symmetrical canoe-shaped ellipses looked like UI pills.
+      ctx.lineTo(x+w*.84,y+18);
+      ctx.lineTo(x+w*.71,y+16);
+      ctx.lineTo(x+w*.59,y+25+(step?1:6));
+      ctx.lineTo(x+w*.49,y+22);
+      ctx.lineTo(x+w*.38,y+27+(step?0:7));
+      ctx.lineTo(x+w*.2,y+16);
+      ctx.lineTo(x+8,y+15);
+      ctx.quadraticCurveTo(x-3,y+13,x,y+2);ctx.fill();
+      if(ready('tiles')){
+        ctx.save();ctx.clip();ctx.globalAlpha=.86;
+        ctx.fillStyle=textures(biome).platform;
+        ctx.fillRect(x,y-2,w,47);ctx.restore();
+      }
+      ctx.strokeStyle=p.highlight;ctx.lineWidth=2.8;
+      ctx.beginPath();ctx.moveTo(x+2,y+1.6);
+      ctx.quadraticCurveTo(x+w/2,y,x+w-2,y+1.6);ctx.stroke();
+      const surface=ctx.createLinearGradient(0,y-2,0,y+7);
+      surface.addColorStop(0,p.highlight+'ac');
+      surface.addColorStop(1,p.cap+'20');
+      ctx.fillStyle=surface;ctx.beginPath();
+      ctx.ellipse(x+w/2,y+3,w*.48,4.5,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=p.low+'88';ctx.lineWidth=1.4;
+      for(let t=15;t<w-9;t+=33){
+        ctx.beginPath();ctx.moveTo(x+t,y+14);
+        ctx.quadraticCurveTo(x+t-5,y+19,x+t+4,y+25);ctx.stroke();
+      }
+      if(!shelf){
+        // Small authored mineral/foliage accents, attached to the same span.
+        for(const i of [0,1]){
+          const px=x+w*(i===0?.18:.82),py=y+1;
+          ctx.fillStyle=i?p.accent:p.highlight;
+          ctx.beginPath();ctx.ellipse(px,py-2.1,3.2,1.8,
+            i?.25:-.25,0,Math.PI*2);ctx.fill();
+        }
+      }
+    }
+    ctx.restore();
+    return true;
+  }
+
+  return {background, paintBackdrop, paintLayers, waterVolume, slope, landmark, tile, platformSpan, terrainRelief, thermalColumns, url, ready};
 })();

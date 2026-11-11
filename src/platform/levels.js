@@ -108,6 +108,11 @@ WW.levels = (() => {
   async function loadJSON(url) {
     const response = await fetch(url);
     const level = await response.json();
+    // Imported AI-authored designs use the same deterministic compiler as
+    // built-in chapters; compiled legacy grid JSON remains importable.
+    if (level.version === 1 && Array.isArray(level.ridge) && !level.grid) {
+      return WW.worldCompiler.compile(level);
+    }
     const {width, height, grid, objects} = level;
     if (!Number.isInteger(width) || !Number.isInteger(height) ||
         width < 8 || width > 400 || height < 6 || height > 80 ||

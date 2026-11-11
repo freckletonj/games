@@ -52,13 +52,51 @@ text-heavy guide. Each chapter also has a **Wonder Trail**: touch its first glow
 | Transform / revert | T | U | North / Y |
 | Revive | R | Y | Left shoulder |
 | Recall to camp | C | N | Back / Select |
-| Pause | Escape | Escape | Escape |
+| Pause | Escape | Escape | Start / Menu |
 
-Movement uses acceleration, braking, buffered jumps, coyote time, variable jump heights, and camera anticipation. Emberkit contact and Prismtail's active dash can cost hearts, with brief invulnerability; Cloudwhisp gusts cause knockback rather than heart loss. Enemies visibly wind up before their attacks. Controller vibration is optional.
+Movement uses acceleration, braking, buffered jumps, coyote time, variable jump heights, and camera anticipation.
+
+**Family-friendly co-op:** Player 1 leads the camera. Player 2 can explore and
+use their own controller normally while nearby, without preventing Player 1 from
+running or climbing. If the partners become too far apart, Player 2 is carried
+along safely inside a translucent follow bubble. Press any action button
+(Jump, food/power, capture, transform, etc.) to pop out beside Player 1 and
+resume playing. Riding in the bubble cannot collect objects, activate trials,
+attract enemies or take damage. Both players retain their creature powers and
+progression. Bubble travel and camera movement are automatic and need no extra
+control binding.
+
+**Gamepad menus:** Either connected controller can navigate the menus using its
+D-pad or left stick. A confirms, B goes back (or resumes a paused game), and
+Start pauses/resumes. Select lists and numeric controls change with Left/Right;
+A toggles checkboxes. All controls work in the generated offline HTML. Emberkit contact and Prismtail's active dash can cost hearts, with brief invulnerability; Cloudwhisp gusts cause knockback rather than heart loss. Enemies visibly wind up before their attacks. Controller vibration is optional.
+
+## AI-native level design
+
+Built-in worlds are now authored as versioned JSON in src/games/animal-adventure/designs.json.
+The offline game embeds these declarations and compiles the same definitions
+that the Node-based level inspector validates. Challenge sections express
+intent and shoreline-aware basins avoid unsupported water columns.
+
+An AI authoring loop can be run entirely offline:
+
+- `node tests/level-designs.mjs` — schema, ability sources and water-basin checks.
+- `node scripts/inspect-levels.mjs` — semantic level atlas and local diagnostics.
+- `node scripts/export-art-guides.mjs` — 16:9 geometry masks, annotated camera
+  layouts and prompts for painting cohesive, correctly aligned scene artwork.
+- `node scripts/build.mjs` — the single standalone offline HTML.
+- `python scripts/evaluate-routes.py` — actual browser-physics movement probes
+  with per-section stalls, skill/form attempts and a visual comparison.
+- `node scripts/compare-route-reports.mjs before.json after.json` — measure
+  which challenge sections improved or regressed after an LLM revision.
+
+Both route evaluation and art export accept a standalone candidate JSON path.
+See docs/ai-level-authoring.md for their schema, limitations and intended workflow.
+A scripted section probe is not a proof of complete human playability.
 
 ## Developer guide
 
-- **src/games/animal-adventure/worlds.js** — five authored heightfield profiles, deep-water zones, floating paths, updrafts and wildlife. This is the collision source of truth for built-in levels.
+- **src/games/animal-adventure/designs.json** — AI-editable progression and geometry. **src/platform/world-compiler.js** compiles the canonical declarations into collision and objects; **worlds.js** adapts them to the game.
 - **src/games/animal-adventure/chapters.js** — story, objectives and environmental hints.
 - **src/games/animal-adventure/catalog.js** — companions, wildlife, and foods.
 - **src/games/animal-adventure/game.js** — physics, creature AI, edible lures, capture states, collectibles, camera, rendering and HUD.
@@ -109,7 +147,7 @@ player still walks on physically defined slopes. See
 `src/assets/scenes/panels/README.md` for a complete example.
 
 Without optional painted panels, the existing high-resolution terrain
-textures, continuous slope caps, and repeated mirrored biome panoramas render
+textures, continuous slope caps, and chapter-length painted panoramas render
 automatically. This makes a painted world-panel pass optional rather than a
 prerequisite to playing.
 
@@ -121,6 +159,7 @@ Run browser regression tests after installing Python Playwright and its Chromium
 
     python -m pip install playwright
     python -m playwright install chromium
+    python tests/offline_launch.py
     python tests/smoke.py
     python tests/playability.py
     python tests/routes.py
@@ -128,6 +167,14 @@ Run browser regression tests after installing Python Playwright and its Chromium
     python tests/game_feel.py
     python tests/creature_mechanics.py
     python tests/painted_illustrations.py
+
+The offline launch test deliberately uses the generated HTML **unchanged**:
+it clicks Play, lets the actual `requestAnimationFrame` loop draw, checks
+that the canvas contains real game frames, and moves the protagonist. It
+also catches test-only storage shims accidentally included in a release.
+Do not distribute a Playwright fixture with its animation loop removed.
+GitHub Actions is optional: `node scripts/build.mjs` and the local browser
+tests work without any hosted CI compute.
 
 GitHub Actions runs the same suite on pull requests. The traversal suite checks that the three chapter lights require their intended power using actual player physics. `tests/creature_mechanics.py` additionally checks every capturable form, latest-catch replacement, spell consequences, safe head-stomps and hazard windup.
 

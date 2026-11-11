@@ -1,0 +1,2748 @@
+{
+  "first-forest": {
+    "width": 260,
+    "height": 52,
+    "ridge": [
+      [
+        0,
+        38
+      ],
+      [
+        18,
+        38
+      ],
+      [
+        36,
+        35
+      ],
+      [
+        57,
+        32
+      ],
+      [
+        76,
+        34
+      ],
+      [
+        94,
+        30
+      ],
+      [
+        120,
+        32
+      ],
+      [
+        143,
+        37
+      ],
+      [
+        167,
+        35
+      ],
+      [
+        189,
+        30
+      ],
+      [
+        211,
+        33
+      ],
+      [
+        235,
+        29
+      ],
+      [
+        260,
+        32
+      ]
+    ],
+    "water": [
+      [
+        146,
+        166,
+        32,
+        11
+      ],
+      [
+        214,
+        230,
+        30,
+        9
+      ]
+    ],
+    "bridges": [
+      [
+        140,
+        34,
+        11
+      ],
+      [
+        151,
+        34,
+        11
+      ],
+      [
+        162,
+        34,
+        9
+      ],
+      [
+        208,
+        30,
+        10
+      ],
+      [
+        218,
+        30,
+        10
+      ],
+      [
+        228,
+        30,
+        9
+      ]
+    ],
+    "ledges": [
+      [
+        27,
+        32,
+        9
+      ],
+      [
+        42,
+        28,
+        8
+      ],
+      [
+        61,
+        28,
+        8
+      ],
+      [
+        83,
+        26,
+        8
+      ],
+      [
+        97,
+        27,
+        8
+      ],
+      [
+        106,
+        24,
+        9
+      ],
+      [
+        115,
+        26,
+        8
+      ],
+      [
+        127,
+        30,
+        9
+      ],
+      [
+        174,
+        30,
+        9
+      ],
+      [
+        190,
+        26,
+        9
+      ],
+      [
+        199,
+        24,
+        7
+      ],
+      [
+        237,
+        25,
+        10
+      ],
+      [
+        144,
+        29,
+        6
+      ],
+      [
+        155,
+        27,
+        6
+      ],
+      [
+        164,
+        29,
+        5
+      ],
+      [
+        213,
+        26,
+        7
+      ],
+      [
+        225,
+        25,
+        7
+      ],
+      [
+        52,
+        29,
+        9
+      ],
+      [
+        186,
+        30,
+        10
+      ]
+    ],
+    "relic": [
+      "springKey",
+      112,
+      16
+    ],
+    "creatures": [
+      [
+        "springaroo",
+        19
+      ],
+      [
+        "glimmermoth",
+        45
+      ],
+      [
+        "springaroo",
+        96
+      ],
+      [
+        "mossback",
+        131
+      ],
+      [
+        "springaroo",
+        189
+      ],
+      [
+        "emberkit",
+        203
+      ],
+      [
+        "glimmermoth",
+        220
+      ]
+    ],
+    "checkpoints": [
+      77,
+      174,
+      232
+    ],
+    "snacks": [
+      10,
+      41,
+      90,
+      130,
+      177,
+      219,
+      246
+    ],
+    "stars": [
+      [
+        35,
+        29
+      ],
+      [
+        107,
+        21
+      ],
+      [
+        134,
+        28
+      ],
+      [
+        158,
+        23
+      ],
+      [
+        197,
+        21
+      ],
+      [
+        239,
+        22
+      ]
+    ],
+    "landmarks": [
+      {
+        "x": 38,
+        "type": "tree"
+      },
+      {
+        "x": 105,
+        "type": "tree"
+      },
+      {
+        "x": 154,
+        "type": "pond"
+      },
+      {
+        "x": 204,
+        "type": "tree"
+      },
+      {
+        "x": 246,
+        "type": "lantern"
+      }
+    ],
+    "version": 1,
+    "id": "first-forest",
+    "biome": "meadow",
+    "sections": [
+      {
+        "id": "picnic-trail",
+        "range": [
+          0,
+          61
+        ],
+        "challenge": "lure-and-befriend",
+        "goal": "Teach creatures and bait through safe encounters"
+      },
+      {
+        "id": "canopy-ascent",
+        "range": [
+          61,
+          124
+        ],
+        "challenge": "vertical-traversal",
+        "requires": "springaroo",
+        "goal": "Multiple approach platforms build toward the high relic"
+      },
+      {
+        "id": "lilypond",
+        "range": [
+          124,
+          174
+        ],
+        "challenge": "branching-crossing",
+        "goal": "Choose the safe lower bridge or climb the lily arcs for a hidden high star"
+      },
+      {
+        "id": "lantern-grove",
+        "range": [
+          174,
+          260
+        ],
+        "challenge": "return-and-discover",
+        "goal": "Cross the sheltered lantern bridge, discover optional high ledges and return to the gate"
+      }
+    ],
+    "motifs": [
+      {
+        "id": "lily-arc",
+        "section": "lilypond",
+        "type": "arc",
+        "x": 131,
+        "y": 30,
+        "count": 6,
+        "dx": 7,
+        "width": 5,
+        "rise": 8
+      }
+    ],
+    "terrainFeatures": [
+      {
+        "center": 14,
+        "radius": 10,
+        "lift": -3
+      },
+      {
+        "center": 72,
+        "radius": 15,
+        "lift": 4
+      },
+      {
+        "center": 185,
+        "radius": 13,
+        "lift": -3
+      }
+    ],
+    "setpieces": [
+      {
+        "id": "picnic-trail-bounce-bloom-1",
+        "kind": "bounceBloom",
+        "section": "picnic-trail",
+        "x": 51,
+        "target": [
+          56,
+          29
+        ]
+      },
+      {
+        "id": "lilypond-bounce-bloom-2",
+        "kind": "bounceBloom",
+        "section": "lilypond",
+        "x": 137,
+        "target": [
+          145,
+          29
+        ],
+        "requires": "springaroo"
+      },
+      {
+        "id": "lantern-grove-bounce-bloom-3",
+        "kind": "bounceBloom",
+        "section": "lantern-grove",
+        "x": 184,
+        "target": [
+          189,
+          30
+        ]
+      },
+      {
+        "id": "lantern-grove-bounce-bloom-4",
+        "kind": "bounceBloom",
+        "section": "lantern-grove",
+        "x": 238,
+        "target": [
+          242,
+          25
+        ]
+      }
+    ],
+    "vistas": [
+      {
+        "id": "picnic-hollow",
+        "section": "picnic-trail",
+        "kind": "root-arch",
+        "role": "teach",
+        "x": 32,
+        "span": 20
+      },
+      {
+        "id": "elder-canopy",
+        "section": "canopy-ascent",
+        "kind": "elder-tree",
+        "role": "reveal",
+        "x": 108,
+        "span": 29
+      },
+      {
+        "id": "lily-bridge",
+        "section": "lilypond",
+        "kind": "lily-garden",
+        "role": "challenge",
+        "x": 154,
+        "span": 23
+      },
+      {
+        "id": "lantern-ruins",
+        "section": "lantern-grove",
+        "kind": "firefly-ruins",
+        "role": "reward",
+        "x": 216,
+        "span": 23
+      }
+    ],
+    "dressing": [
+      {
+        "x": 17,
+        "asset": "berryBush",
+        "scale": 1.2
+      },
+      {
+        "x": 29,
+        "asset": "flowers",
+        "scale": 1.1
+      },
+      {
+        "x": 37,
+        "asset": "mushrooms",
+        "scale": 0.9
+      },
+      {
+        "x": 54,
+        "asset": "stones",
+        "scale": 1.1
+      },
+      {
+        "x": 80,
+        "asset": "flowers",
+        "scale": 1.1
+      },
+      {
+        "x": 91,
+        "asset": "mushrooms",
+        "scale": 1
+      },
+      {
+        "x": 120,
+        "asset": "flowers",
+        "scale": 0.9
+      },
+      {
+        "x": 131,
+        "asset": "reeds",
+        "scale": 1.2
+      },
+      {
+        "x": 142,
+        "asset": "reeds",
+        "scale": 1
+      },
+      {
+        "x": 171,
+        "asset": "flowers",
+        "scale": 1.3
+      },
+      {
+        "x": 185,
+        "asset": "mushrooms",
+        "scale": 1.1
+      },
+      {
+        "x": 205,
+        "asset": "stones",
+        "scale": 1
+      },
+      {
+        "x": 221,
+        "asset": "flowers",
+        "scale": 1.3
+      },
+      {
+        "x": 246,
+        "asset": "mushrooms",
+        "scale": 1
+      }
+    ],
+    "goalRoute": [
+      [
+        106,
+        24
+      ],
+      [
+        109,
+        22
+      ],
+      [
+        112,
+        16
+      ]
+    ]
+  },
+  "crystal-coast": {
+    "width": 294,
+    "height": 60,
+    "ridge": [
+      [
+        0,
+        42
+      ],
+      [
+        32,
+        40
+      ],
+      [
+        49,
+        39
+      ],
+      [
+        108,
+        40
+      ],
+      [
+        129,
+        37
+      ],
+      [
+        150,
+        40
+      ],
+      [
+        223,
+        40
+      ],
+      [
+        245,
+        38
+      ],
+      [
+        270,
+        40
+      ],
+      [
+        294,
+        38
+      ]
+    ],
+    "water": [
+      [
+        53,
+        104,
+        36,
+        15
+      ],
+      [
+        155,
+        222,
+        34,
+        20
+      ],
+      [
+        238,
+        264,
+        35,
+        15
+      ]
+    ],
+    "bridges": [
+      [
+        51,
+        33,
+        10
+      ],
+      [
+        63,
+        33,
+        9
+      ],
+      [
+        76,
+        33,
+        9
+      ],
+      [
+        89,
+        33,
+        9
+      ],
+      [
+        102,
+        33,
+        8
+      ],
+      [
+        151,
+        31,
+        9
+      ],
+      [
+        165,
+        31,
+        10
+      ],
+      [
+        180,
+        31,
+        10
+      ],
+      [
+        196,
+        31,
+        10
+      ],
+      [
+        211,
+        31,
+        12
+      ],
+      [
+        236,
+        32,
+        12
+      ],
+      [
+        250,
+        32,
+        13
+      ]
+    ],
+    "ledges": [
+      [
+        24,
+        35,
+        9
+      ],
+      [
+        36,
+        33,
+        8
+      ],
+      [
+        112,
+        34,
+        9
+      ],
+      [
+        132,
+        31,
+        8
+      ],
+      [
+        143,
+        34,
+        8
+      ],
+      [
+        226,
+        33,
+        8
+      ],
+      [
+        272,
+        34,
+        9
+      ],
+      [
+        285,
+        34,
+        8
+      ]
+    ],
+    "relic": [
+      "diveKey",
+      187,
+      49
+    ],
+    "creatures": [
+      [
+        "tideling",
+        27
+      ],
+      [
+        "prismtail",
+        43
+      ],
+      [
+        "tideling",
+        72,
+        41
+      ],
+      [
+        "glimmermoth",
+        114
+      ],
+      [
+        "tideling",
+        139
+      ],
+      [
+        "tideling",
+        187,
+        42
+      ],
+      [
+        "mossback",
+        230
+      ],
+      [
+        "emberkit",
+        269
+      ],
+      [
+        "tideling",
+        280
+      ]
+    ],
+    "checkpoints": [
+      112,
+      151,
+      228
+    ],
+    "snacks": [
+      12,
+      44,
+      112,
+      146,
+      228,
+      268,
+      284
+    ],
+    "stars": [
+      [
+        40,
+        30
+      ],
+      [
+        77,
+        44
+      ],
+      [
+        134,
+        28
+      ],
+      [
+        190,
+        47
+      ],
+      [
+        210,
+        48
+      ],
+      [
+        278,
+        30
+      ]
+    ],
+    "landmarks": [
+      {
+        "x": 43,
+        "type": "crystal"
+      },
+      {
+        "x": 84,
+        "type": "reef"
+      },
+      {
+        "x": 133,
+        "type": "crystal"
+      },
+      {
+        "x": 182,
+        "type": "reef"
+      },
+      {
+        "x": 243,
+        "type": "reef"
+      },
+      {
+        "x": 273,
+        "type": "crystal"
+      }
+    ],
+    "version": 1,
+    "id": "crystal-coast",
+    "biome": "coast",
+    "sections": [
+      {
+        "id": "tideline",
+        "range": [
+          0,
+          53
+        ],
+        "challenge": "transformation-introduction",
+        "goal": "Learn Tidefox interaction on a safe beach"
+      },
+      {
+        "id": "shallow-reef",
+        "range": [
+          53,
+          111
+        ],
+        "challenge": "branching-crossing",
+        "goal": "Bridge route and underwater discovery"
+      },
+      {
+        "id": "coral-rest",
+        "range": [
+          111,
+          155
+        ],
+        "challenge": "rest-and-prepare",
+        "goal": "Checkpoint and coastal ridges"
+      },
+      {
+        "id": "pearl-depths",
+        "range": [
+          155,
+          224
+        ],
+        "challenge": "underwater-vault",
+        "requires": "tideling",
+        "goal": "The light requires diving and safe surfacing"
+      },
+      {
+        "id": "tidal-return",
+        "range": [
+          224,
+          294
+        ],
+        "challenge": "return-and-discover",
+        "goal": "Additional crossings and a final safe route"
+      }
+    ],
+    "motifs": [
+      {
+        "id": "coral-steps",
+        "section": "shallow-reef",
+        "type": "ripples",
+        "x": 59,
+        "y": 44,
+        "count": 5,
+        "dx": 10,
+        "width": 6,
+        "rise": 3
+      }
+    ],
+    "terrainFeatures": [
+      {
+        "center": 29,
+        "radius": 15,
+        "lift": 4
+      },
+      {
+        "center": 128,
+        "radius": 13,
+        "lift": -4
+      },
+      {
+        "center": 281,
+        "radius": 12,
+        "lift": 3
+      }
+    ],
+    "setpieces": [
+      {
+        "id": "tideline-bounce-bloom-1",
+        "kind": "bounceBloom",
+        "section": "tideline",
+        "x": 31,
+        "target": [
+          38,
+          33
+        ]
+      },
+      {
+        "id": "shallow-reef-bubble-vent-2",
+        "kind": "bubbleVent",
+        "section": "shallow-reef",
+        "x": 81,
+        "y": 44,
+        "target": [
+          82,
+          36
+        ]
+      },
+      {
+        "id": "coral-rest-bounce-bloom-3",
+        "kind": "bounceBloom",
+        "section": "coral-rest",
+        "x": 141,
+        "target": [
+          146,
+          34
+        ]
+      },
+      {
+        "id": "pearl-depths-bubble-vent-4",
+        "kind": "bubbleVent",
+        "section": "pearl-depths",
+        "x": 174,
+        "y": 44,
+        "target": [
+          175,
+          36
+        ]
+      },
+      {
+        "id": "pearl-depths-bubble-vent-5",
+        "kind": "bubbleVent",
+        "section": "pearl-depths",
+        "x": 207,
+        "y": 48,
+        "target": [
+          208,
+          40
+        ]
+      },
+      {
+        "id": "tidal-return-bubble-vent-6",
+        "kind": "bubbleVent",
+        "section": "tidal-return",
+        "x": 251,
+        "y": 44,
+        "target": [
+          252,
+          36
+        ]
+      },
+      {
+        "id": "tidal-return-bounce-bloom-7",
+        "kind": "bounceBloom",
+        "section": "tidal-return",
+        "x": 283,
+        "target": [
+          288,
+          34
+        ]
+      }
+    ],
+    "vistas": [
+      {
+        "id": "shell-landing",
+        "section": "tideline",
+        "kind": "shell-cove",
+        "role": "teach",
+        "x": 29,
+        "span": 20
+      },
+      {
+        "id": "reef-window",
+        "section": "shallow-reef",
+        "kind": "reef-arch",
+        "role": "challenge",
+        "x": 82,
+        "span": 29
+      },
+      {
+        "id": "tide-courtyard",
+        "section": "coral-rest",
+        "kind": "tide-temple",
+        "role": "rest",
+        "x": 133,
+        "span": 22
+      },
+      {
+        "id": "sunken-sanctuary",
+        "section": "pearl-depths",
+        "kind": "sunken-ruin",
+        "role": "reveal",
+        "x": 190,
+        "span": 32
+      },
+      {
+        "id": "pearl-terrace",
+        "section": "tidal-return",
+        "kind": "pearl-shrine",
+        "role": "reward",
+        "x": 253,
+        "span": 26
+      }
+    ],
+    "dressing": [
+      {
+        "x": 17,
+        "asset": "shells",
+        "scale": 1.2
+      },
+      {
+        "x": 34,
+        "asset": "stones",
+        "scale": 1
+      },
+      {
+        "x": 48,
+        "asset": "reeds",
+        "scale": 1
+      },
+      {
+        "x": 61,
+        "asset": "shells",
+        "scale": 0.85
+      },
+      {
+        "x": 108,
+        "asset": "shells",
+        "scale": 1.3
+      },
+      {
+        "x": 122,
+        "asset": "reeds",
+        "scale": 0.9
+      },
+      {
+        "x": 139,
+        "asset": "stones",
+        "scale": 1
+      },
+      {
+        "x": 148,
+        "asset": "shells",
+        "scale": 1.1
+      },
+      {
+        "x": 226,
+        "asset": "reeds",
+        "scale": 1.15
+      },
+      {
+        "x": 234,
+        "asset": "shells",
+        "scale": 1.05
+      },
+      {
+        "x": 269,
+        "asset": "stones",
+        "scale": 1.2
+      },
+      {
+        "x": 282,
+        "asset": "shells",
+        "scale": 0.9
+      }
+    ],
+    "goalRoute": [
+      [
+        167,
+        31
+      ],
+      [
+        177,
+        42
+      ],
+      [
+        187,
+        49
+      ]
+    ]
+  },
+  "starfall-summit": {
+    "width": 310,
+    "height": 74,
+    "ridge": [
+      [
+        0,
+        60
+      ],
+      [
+        24,
+        59
+      ],
+      [
+        49,
+        55
+      ],
+      [
+        79,
+        58
+      ],
+      [
+        108,
+        53
+      ],
+      [
+        136,
+        57
+      ],
+      [
+        165,
+        52
+      ],
+      [
+        197,
+        57
+      ],
+      [
+        224,
+        54
+      ],
+      [
+        260,
+        59
+      ],
+      [
+        282,
+        55
+      ],
+      [
+        310,
+        58
+      ]
+    ],
+    "water": [
+      [
+        79,
+        109,
+        53,
+        17
+      ]
+    ],
+    "bridges": [
+      [
+        82,
+        50,
+        10
+      ],
+      [
+        91,
+        50,
+        11
+      ]
+    ],
+    "ledges": [
+      [
+        19,
+        54,
+        8
+      ],
+      [
+        30,
+        49,
+        9
+      ],
+      [
+        44,
+        45,
+        8
+      ],
+      [
+        57,
+        41,
+        8
+      ],
+      [
+        73,
+        38,
+        8
+      ],
+      [
+        91,
+        44,
+        10
+      ],
+      [
+        107,
+        39,
+        8
+      ],
+      [
+        119,
+        35,
+        8
+      ],
+      [
+        132,
+        31,
+        8
+      ],
+      [
+        147,
+        27,
+        8
+      ],
+      [
+        160,
+        24,
+        8
+      ],
+      [
+        174,
+        32,
+        9
+      ],
+      [
+        190,
+        28,
+        9
+      ],
+      [
+        205,
+        24,
+        8
+      ],
+      [
+        221,
+        20,
+        9
+      ],
+      [
+        236,
+        17,
+        8
+      ],
+      [
+        247,
+        14,
+        8
+      ],
+      [
+        261,
+        20,
+        9
+      ],
+      [
+        274,
+        29,
+        9
+      ],
+      [
+        290,
+        48,
+        10
+      ]
+    ],
+    "thermals": [
+      [
+        67,
+        38,
+        5,
+        14
+      ],
+      [
+        152,
+        25,
+        5,
+        24
+      ],
+      [
+        229,
+        17,
+        6,
+        26
+      ]
+    ],
+    "relic": [
+      "skyKey",
+      252,
+      6
+    ],
+    "creatures": [
+      [
+        "skyling",
+        25
+      ],
+      [
+        "cloudwhisp",
+        47
+      ],
+      [
+        "glimmermoth",
+        88
+      ],
+      [
+        "emberkit",
+        109
+      ],
+      [
+        "skyling",
+        143,
+        28
+      ],
+      [
+        "prismtail",
+        187
+      ],
+      [
+        "cloudwhisp",
+        214,
+        24
+      ],
+      [
+        "skyling",
+        239,
+        17
+      ],
+      [
+        "mossback",
+        288
+      ]
+    ],
+    "checkpoints": [
+      102,
+      177,
+      269
+    ],
+    "snacks": [
+      9,
+      45,
+      97,
+      138,
+      183,
+      224,
+      279,
+      298
+    ],
+    "stars": [
+      [
+        37,
+        46
+      ],
+      [
+        124,
+        31
+      ],
+      [
+        209,
+        19
+      ],
+      [
+        245,
+        11
+      ],
+      [
+        289,
+        43
+      ]
+    ],
+    "landmarks": [
+      {
+        "x": 45,
+        "type": "observatory"
+      },
+      {
+        "x": 91,
+        "type": "island"
+      },
+      {
+        "x": 141,
+        "type": "observatory"
+      },
+      {
+        "x": 196,
+        "type": "island"
+      },
+      {
+        "x": 253,
+        "type": "observatory"
+      },
+      {
+        "x": 290,
+        "type": "island"
+      }
+    ],
+    "version": 1,
+    "id": "starfall-summit",
+    "biome": "summit",
+    "sections": [
+      {
+        "id": "lower-roost",
+        "range": [
+          0,
+          80
+        ],
+        "challenge": "learn-wingbeat",
+        "goal": "Friendly Moonwing introduction"
+      },
+      {
+        "id": "ridge-traversal",
+        "range": [
+          80,
+          160
+        ],
+        "challenge": "vertical-traversal",
+        "requires": "skyling",
+        "goal": "Stepping ledges and rising air"
+      },
+      {
+        "id": "cloud-crossing",
+        "range": [
+          160,
+          242
+        ],
+        "challenge": "aerial-challenge",
+        "requires": "skyling",
+        "goal": "Wind routes and floating platforms"
+      },
+      {
+        "id": "aurora-return",
+        "range": [
+          242,
+          310
+        ],
+        "challenge": "reward-and-return",
+        "goal": "The high light and return path"
+      }
+    ],
+    "motifs": [
+      {
+        "id": "cloudway",
+        "section": "cloud-crossing",
+        "type": "arc",
+        "x": 174,
+        "y": 35,
+        "count": 7,
+        "dx": 10,
+        "width": 6,
+        "rise": 12
+      }
+    ],
+    "terrainFeatures": [
+      {
+        "center": 19,
+        "radius": 14,
+        "lift": 5
+      },
+      {
+        "center": 119,
+        "radius": 18,
+        "lift": -5
+      },
+      {
+        "center": 199,
+        "radius": 16,
+        "lift": 5
+      },
+      {
+        "center": 287,
+        "radius": 14,
+        "lift": -3
+      }
+    ],
+    "setpieces": [
+      {
+        "id": "lower-roost-bounce-bloom-1",
+        "kind": "windRing",
+        "section": "lower-roost",
+        "x": 40,
+        "target": [
+          46,
+          45
+        ],
+        "y": 51
+      },
+      {
+        "id": "lower-roost-wind-ring-2",
+        "kind": "windRing",
+        "section": "lower-roost",
+        "x": 68,
+        "y": 38,
+        "target": [
+          74,
+          33
+        ]
+      },
+      {
+        "id": "ridge-traversal-wind-ring-3",
+        "kind": "windRing",
+        "section": "ridge-traversal",
+        "x": 122,
+        "y": 34,
+        "target": [
+          128,
+          29
+        ]
+      },
+      {
+        "id": "cloud-crossing-wind-ring-4",
+        "kind": "windRing",
+        "section": "cloud-crossing",
+        "x": 183,
+        "y": 28,
+        "target": [
+          189,
+          23
+        ]
+      },
+      {
+        "id": "cloud-crossing-wind-ring-5",
+        "kind": "windRing",
+        "section": "cloud-crossing",
+        "x": 220,
+        "y": 21,
+        "target": [
+          226,
+          16
+        ]
+      },
+      {
+        "id": "aurora-return-wind-ring-6",
+        "kind": "windRing",
+        "section": "aurora-return",
+        "x": 264,
+        "y": 19,
+        "target": [
+          270,
+          14
+        ]
+      },
+      {
+        "id": "aurora-return-bounce-bloom-7",
+        "kind": "windRing",
+        "section": "aurora-return",
+        "x": 288,
+        "target": [
+          294,
+          48
+        ],
+        "y": 51
+      }
+    ],
+    "vistas": [
+      {
+        "id": "moon-roost",
+        "section": "lower-roost",
+        "kind": "moon-gate",
+        "role": "teach",
+        "x": 36,
+        "span": 23
+      },
+      {
+        "id": "wind-stair",
+        "section": "ridge-traversal",
+        "kind": "wind-temple",
+        "role": "challenge",
+        "x": 121,
+        "span": 29,
+        "y": 35
+      },
+      {
+        "id": "cloud-sanctuary",
+        "section": "cloud-crossing",
+        "kind": "floating-garden",
+        "role": "challenge",
+        "x": 207,
+        "span": 32,
+        "y": 35
+      },
+      {
+        "id": "aurora-crown",
+        "section": "aurora-return",
+        "kind": "aurora-spire",
+        "role": "reward",
+        "x": 255,
+        "span": 26,
+        "y": 20
+      }
+    ],
+    "dressing": [
+      {
+        "x": 16,
+        "asset": "moonStone",
+        "scale": 0.9
+      },
+      {
+        "x": 33,
+        "asset": "stones",
+        "scale": 1.3
+      },
+      {
+        "x": 59,
+        "asset": "moonStone",
+        "scale": 0.9
+      },
+      {
+        "x": 78,
+        "asset": "stones",
+        "scale": 1
+      },
+      {
+        "x": 115,
+        "asset": "moonStone",
+        "scale": 1.25
+      },
+      {
+        "x": 157,
+        "asset": "stones",
+        "scale": 0.9
+      },
+      {
+        "x": 169,
+        "asset": "moonStone",
+        "scale": 1.1
+      },
+      {
+        "x": 246,
+        "asset": "moonStone",
+        "scale": 1
+      },
+      {
+        "x": 263,
+        "asset": "stones",
+        "scale": 1.1
+      },
+      {
+        "x": 292,
+        "asset": "moonStone",
+        "scale": 1.3
+      }
+    ],
+    "goalRoute": [
+      [
+        239,
+        17
+      ],
+      [
+        249,
+        13
+      ],
+      [
+        252,
+        6
+      ]
+    ]
+  },
+  "willow-wetlands": {
+    "width": 324,
+    "height": 62,
+    "ridge": [
+      [
+        0,
+        43
+      ],
+      [
+        31,
+        41
+      ],
+      [
+        60,
+        38
+      ],
+      [
+        141,
+        39
+      ],
+      [
+        172,
+        42
+      ],
+      [
+        278,
+        40
+      ],
+      [
+        304,
+        37
+      ],
+      [
+        324,
+        40
+      ]
+    ],
+    "water": [
+      [
+        66,
+        139,
+        35,
+        21
+      ],
+      [
+        182,
+        278,
+        34,
+        23
+      ]
+    ],
+    "bridges": [
+      [
+        64,
+        32,
+        11
+      ],
+      [
+        78,
+        32,
+        9
+      ],
+      [
+        91,
+        32,
+        8
+      ],
+      [
+        105,
+        32,
+        10
+      ],
+      [
+        121,
+        32,
+        12
+      ],
+      [
+        180,
+        30,
+        12
+      ],
+      [
+        198,
+        30,
+        11
+      ],
+      [
+        217,
+        30,
+        10
+      ],
+      [
+        235,
+        30,
+        11
+      ],
+      [
+        252,
+        30,
+        12
+      ],
+      [
+        269,
+        30,
+        12
+      ]
+    ],
+    "ledges": [
+      [
+        30,
+        35,
+        9
+      ],
+      [
+        48,
+        33,
+        9
+      ],
+      [
+        144,
+        33,
+        9
+      ],
+      [
+        159,
+        39,
+        10
+      ],
+      [
+        286,
+        33,
+        10
+      ],
+      [
+        301,
+        31,
+        8
+      ]
+    ],
+    "relic": [
+      "diveKey",
+      245,
+      52
+    ],
+    "creatures": [
+      [
+        "tideling",
+        25
+      ],
+      [
+        "mossback",
+        51
+      ],
+      [
+        "tideling",
+        90,
+        45
+      ],
+      [
+        "glimmermoth",
+        146
+      ],
+      [
+        "tideling",
+        171
+      ],
+      [
+        "tideling",
+        216,
+        46
+      ],
+      [
+        "prismtail",
+        284
+      ],
+      [
+        "emberkit",
+        304
+      ]
+    ],
+    "checkpoints": [
+      60,
+      161,
+      282
+    ],
+    "snacks": [
+      12,
+      54,
+      143,
+      175,
+      281,
+      310
+    ],
+    "stars": [
+      [
+        39,
+        32
+      ],
+      [
+        100,
+        49
+      ],
+      [
+        162,
+        32
+      ],
+      [
+        203,
+        49
+      ],
+      [
+        259,
+        49
+      ],
+      [
+        303,
+        28
+      ]
+    ],
+    "landmarks": [
+      {
+        "x": 49,
+        "type": "pond"
+      },
+      {
+        "x": 110,
+        "type": "reef"
+      },
+      {
+        "x": 158,
+        "type": "tree"
+      },
+      {
+        "x": 221,
+        "type": "reef"
+      },
+      {
+        "x": 282,
+        "type": "pond"
+      },
+      {
+        "x": 308,
+        "type": "lantern"
+      }
+    ],
+    "version": 1,
+    "id": "willow-wetlands",
+    "biome": "coast",
+    "sections": [
+      {
+        "id": "willow-bank",
+        "range": [
+          0,
+          65
+        ],
+        "challenge": "lure-and-befriend",
+        "goal": "Learn Tidefox near calm water"
+      },
+      {
+        "id": "first-lagoon",
+        "range": [
+          65,
+          141
+        ],
+        "challenge": "branching-crossing",
+        "goal": "Dive or cross via shell bridges"
+      },
+      {
+        "id": "reed-island",
+        "range": [
+          141,
+          182
+        ],
+        "challenge": "rest-and-prepare",
+        "goal": "Checkpoint and shoreline refuge"
+      },
+      {
+        "id": "sunken-path",
+        "range": [
+          182,
+          279
+        ],
+        "challenge": "underwater-vault",
+        "requires": "tideling",
+        "goal": "A deep optional route toward the pearl"
+      },
+      {
+        "id": "home-water",
+        "range": [
+          279,
+          324
+        ],
+        "challenge": "return-and-discover",
+        "goal": "Leave the lagoon toward the final gate"
+      }
+    ],
+    "motifs": [
+      {
+        "id": "riverbed",
+        "section": "sunken-path",
+        "type": "ripples",
+        "x": 188,
+        "y": 49,
+        "count": 7,
+        "dx": 13,
+        "width": 5,
+        "rise": 4
+      }
+    ],
+    "terrainFeatures": [
+      {
+        "center": 40,
+        "radius": 16,
+        "lift": 4
+      },
+      {
+        "center": 160,
+        "radius": 12,
+        "lift": -3
+      },
+      {
+        "center": 294,
+        "radius": 12,
+        "lift": 3
+      }
+    ],
+    "setpieces": [
+      {
+        "id": "willow-bank-bounce-bloom-1",
+        "kind": "bounceBloom",
+        "section": "willow-bank",
+        "x": 47,
+        "target": [
+          51,
+          33
+        ]
+      },
+      {
+        "id": "first-lagoon-bubble-vent-2",
+        "kind": "bubbleVent",
+        "section": "first-lagoon",
+        "x": 89,
+        "y": 47,
+        "target": [
+          90,
+          39
+        ]
+      },
+      {
+        "id": "first-lagoon-bubble-vent-3",
+        "kind": "bubbleVent",
+        "section": "first-lagoon",
+        "x": 119,
+        "y": 49,
+        "target": [
+          120,
+          41
+        ]
+      },
+      {
+        "id": "reed-island-bounce-bloom-4",
+        "kind": "bounceBloom",
+        "section": "reed-island",
+        "x": 156,
+        "target": [
+          162,
+          39
+        ]
+      },
+      {
+        "id": "sunken-path-bubble-vent-5",
+        "kind": "bubbleVent",
+        "section": "sunken-path",
+        "x": 205,
+        "y": 48,
+        "target": [
+          206,
+          40
+        ]
+      },
+      {
+        "id": "sunken-path-bubble-vent-6",
+        "kind": "bubbleVent",
+        "section": "sunken-path",
+        "x": 243,
+        "y": 51,
+        "target": [
+          244,
+          43
+        ]
+      },
+      {
+        "id": "sunken-path-bubble-vent-7",
+        "kind": "bubbleVent",
+        "section": "sunken-path",
+        "x": 264,
+        "y": 49,
+        "target": [
+          265,
+          41
+        ]
+      },
+      {
+        "id": "home-water-bounce-bloom-8",
+        "kind": "bounceBloom",
+        "section": "home-water",
+        "x": 302,
+        "target": [
+          305,
+          31
+        ]
+      }
+    ],
+    "vistas": [
+      {
+        "id": "willow-entrance",
+        "section": "willow-bank",
+        "kind": "willow-arch",
+        "role": "establish",
+        "x": 42,
+        "span": 28
+      },
+      {
+        "id": "lily-lagoon",
+        "section": "first-lagoon",
+        "kind": "lily-garden",
+        "role": "challenge",
+        "x": 104,
+        "span": 29,
+        "y": 39
+      },
+      {
+        "id": "elder-refuge",
+        "section": "reed-island",
+        "kind": "elder-tree",
+        "role": "rest",
+        "x": 159,
+        "span": 24
+      },
+      {
+        "id": "sunken-library",
+        "section": "sunken-path",
+        "kind": "sunken-ruin",
+        "role": "reveal",
+        "x": 239,
+        "span": 32
+      },
+      {
+        "id": "lantern-delta",
+        "section": "home-water",
+        "kind": "firefly-ruins",
+        "role": "reward",
+        "x": 301,
+        "span": 21
+      }
+    ],
+    "dressing": [
+      {
+        "x": 19,
+        "asset": "reeds",
+        "scale": 1.15
+      },
+      {
+        "x": 36,
+        "asset": "mushrooms",
+        "scale": 1.2
+      },
+      {
+        "x": 56,
+        "asset": "reeds",
+        "scale": 1.3
+      },
+      {
+        "x": 63,
+        "asset": "reeds",
+        "scale": 0.85
+      },
+      {
+        "x": 144,
+        "asset": "shells",
+        "scale": 0.9
+      },
+      {
+        "x": 155,
+        "asset": "reeds",
+        "scale": 1.1
+      },
+      {
+        "x": 175,
+        "asset": "flowers",
+        "scale": 1
+      },
+      {
+        "x": 180,
+        "asset": "reeds",
+        "scale": 1.3
+      },
+      {
+        "x": 280,
+        "asset": "reeds",
+        "scale": 1.2
+      },
+      {
+        "x": 296,
+        "asset": "mushrooms",
+        "scale": 0.9
+      },
+      {
+        "x": 315,
+        "asset": "flowers",
+        "scale": 1.1
+      }
+    ],
+    "goalRoute": [
+      [
+        222,
+        30
+      ],
+      [
+        235,
+        44
+      ],
+      [
+        245,
+        52
+      ]
+    ]
+  },
+  "cloud-gardens": {
+    "width": 338,
+    "height": 80,
+    "ridge": [
+      [
+        0,
+        64
+      ],
+      [
+        25,
+        61
+      ],
+      [
+        55,
+        66
+      ],
+      [
+        89,
+        60
+      ],
+      [
+        126,
+        64
+      ],
+      [
+        166,
+        61
+      ],
+      [
+        211,
+        66
+      ],
+      [
+        253,
+        62
+      ],
+      [
+        292,
+        66
+      ],
+      [
+        338,
+        62
+      ]
+    ],
+    "water": [
+      [
+        98,
+        127,
+        59,
+        18
+      ]
+    ],
+    "bridges": [
+      [
+        102,
+        56,
+        10
+      ],
+      [
+        113,
+        56,
+        10
+      ]
+    ],
+    "ledges": [
+      [
+        21,
+        58,
+        9
+      ],
+      [
+        36,
+        53,
+        9
+      ],
+      [
+        51,
+        49,
+        8
+      ],
+      [
+        66,
+        45,
+        9
+      ],
+      [
+        83,
+        42,
+        8
+      ],
+      [
+        100,
+        47,
+        9
+      ],
+      [
+        119,
+        41,
+        8
+      ],
+      [
+        137,
+        36,
+        9
+      ],
+      [
+        153,
+        32,
+        8
+      ],
+      [
+        170,
+        29,
+        9
+      ],
+      [
+        185,
+        39,
+        10
+      ],
+      [
+        201,
+        34,
+        8
+      ],
+      [
+        219,
+        28,
+        9
+      ],
+      [
+        237,
+        24,
+        9
+      ],
+      [
+        252,
+        20,
+        8
+      ],
+      [
+        267,
+        17,
+        8
+      ],
+      [
+        281,
+        14,
+        9
+      ],
+      [
+        296,
+        23,
+        10
+      ],
+      [
+        316,
+        42,
+        9
+      ]
+    ],
+    "thermals": [
+      [
+        60,
+        46,
+        5,
+        17
+      ],
+      [
+        144,
+        34,
+        5,
+        20
+      ],
+      [
+        225,
+        26,
+        6,
+        29
+      ],
+      [
+        275,
+        15,
+        6,
+        33
+      ]
+    ],
+    "relic": [
+      "skyKey",
+      285,
+      6
+    ],
+    "creatures": [
+      [
+        "skyling",
+        23
+      ],
+      [
+        "cloudwhisp",
+        53
+      ],
+      [
+        "skyling",
+        85,
+        44
+      ],
+      [
+        "glimmermoth",
+        116
+      ],
+      [
+        "emberkit",
+        160
+      ],
+      [
+        "skyling",
+        194,
+        36
+      ],
+      [
+        "cloudwhisp",
+        241,
+        24
+      ],
+      [
+        "prismtail",
+        298
+      ],
+      [
+        "mossback",
+        324
+      ]
+    ],
+    "checkpoints": [
+      105,
+      190,
+      302
+    ],
+    "snacks": [
+      12,
+      49,
+      99,
+      151,
+      201,
+      255,
+      310
+    ],
+    "stars": [
+      [
+        37,
+        50
+      ],
+      [
+        137,
+        33
+      ],
+      [
+        226,
+        24
+      ],
+      [
+        266,
+        13
+      ],
+      [
+        321,
+        37
+      ]
+    ],
+    "landmarks": [
+      {
+        "x": 53,
+        "type": "island"
+      },
+      {
+        "x": 106,
+        "type": "observatory"
+      },
+      {
+        "x": 164,
+        "type": "island"
+      },
+      {
+        "x": 225,
+        "type": "observatory"
+      },
+      {
+        "x": 283,
+        "type": "island"
+      },
+      {
+        "x": 322,
+        "type": "observatory"
+      }
+    ],
+    "version": 1,
+    "id": "cloud-gardens",
+    "biome": "summit",
+    "sections": [
+      {
+        "id": "first-flight",
+        "range": [
+          0,
+          89
+        ],
+        "challenge": "learn-wingbeat",
+        "goal": "Establish rhythmic wingbeats"
+      },
+      {
+        "id": "sunlit-arches",
+        "range": [
+          89,
+          166
+        ],
+        "challenge": "vertical-traversal",
+        "requires": "skyling",
+        "goal": "Rise using ledges and thermals"
+      },
+      {
+        "id": "floating-sanctuary",
+        "range": [
+          166,
+          253
+        ],
+        "challenge": "aerial-challenge",
+        "requires": "skyling",
+        "goal": "Compose flight through islands"
+      },
+      {
+        "id": "sky-lantern",
+        "range": [
+          253,
+          338
+        ],
+        "challenge": "reward-and-return",
+        "goal": "Reach the lantern and discover the route home"
+      }
+    ],
+    "motifs": [
+      {
+        "id": "sun-islands",
+        "section": "floating-sanctuary",
+        "type": "arc",
+        "x": 177,
+        "y": 39,
+        "count": 7,
+        "dx": 11,
+        "width": 6,
+        "rise": 11
+      }
+    ],
+    "terrainFeatures": [
+      {
+        "center": 32,
+        "radius": 14,
+        "lift": 5
+      },
+      {
+        "center": 163,
+        "radius": 16,
+        "lift": -4
+      },
+      {
+        "center": 301,
+        "radius": 20,
+        "lift": 5
+      }
+    ],
+    "setpieces": [
+      {
+        "id": "first-flight-bounce-bloom-1",
+        "kind": "windRing",
+        "section": "first-flight",
+        "x": 45,
+        "target": [
+          51,
+          49
+        ],
+        "y": 55
+      },
+      {
+        "id": "first-flight-wind-ring-2",
+        "kind": "windRing",
+        "section": "first-flight",
+        "x": 76,
+        "y": 43,
+        "target": [
+          82,
+          38
+        ]
+      },
+      {
+        "id": "sunlit-arches-wind-ring-3",
+        "kind": "windRing",
+        "section": "sunlit-arches",
+        "x": 140,
+        "y": 34,
+        "target": [
+          146,
+          29
+        ]
+      },
+      {
+        "id": "floating-sanctuary-wind-ring-4",
+        "kind": "windRing",
+        "section": "floating-sanctuary",
+        "x": 188,
+        "y": 33,
+        "target": [
+          194,
+          28
+        ]
+      },
+      {
+        "id": "floating-sanctuary-wind-ring-5",
+        "kind": "windRing",
+        "section": "floating-sanctuary",
+        "x": 228,
+        "y": 25,
+        "target": [
+          234,
+          20
+        ]
+      },
+      {
+        "id": "sky-lantern-wind-ring-6",
+        "kind": "windRing",
+        "section": "sky-lantern",
+        "x": 274,
+        "y": 17,
+        "target": [
+          280,
+          12
+        ]
+      },
+      {
+        "id": "sky-lantern-wind-ring-7",
+        "kind": "windRing",
+        "section": "sky-lantern",
+        "x": 316,
+        "y": 36,
+        "target": [
+          322,
+          31
+        ]
+      },
+      {
+        "id": "sky-lantern-bounce-bloom-8",
+        "kind": "windRing",
+        "section": "sky-lantern",
+        "x": 310,
+        "target": [
+          316,
+          42
+        ],
+        "y": 47
+      }
+    ],
+    "vistas": [
+      {
+        "id": "first-wing",
+        "section": "first-flight",
+        "kind": "moon-gate",
+        "role": "teach",
+        "x": 54,
+        "span": 23
+      },
+      {
+        "id": "updraft-temple",
+        "section": "sunlit-arches",
+        "kind": "wind-temple",
+        "role": "challenge",
+        "x": 137,
+        "span": 28,
+        "y": 38
+      },
+      {
+        "id": "island-palace",
+        "section": "floating-sanctuary",
+        "kind": "floating-garden",
+        "role": "reveal",
+        "x": 218,
+        "span": 33,
+        "y": 35
+      },
+      {
+        "id": "sky-crown",
+        "section": "sky-lantern",
+        "kind": "aurora-spire",
+        "role": "reward",
+        "x": 285,
+        "span": 27,
+        "y": 17
+      }
+    ],
+    "dressing": [
+      {
+        "x": 16,
+        "asset": "moonStone",
+        "scale": 1.1
+      },
+      {
+        "x": 35,
+        "asset": "stones",
+        "scale": 0.9
+      },
+      {
+        "x": 57,
+        "asset": "moonStone",
+        "scale": 1.3
+      },
+      {
+        "x": 91,
+        "asset": "flowers",
+        "scale": 0.8
+      },
+      {
+        "x": 132,
+        "asset": "moonStone",
+        "scale": 1.15
+      },
+      {
+        "x": 163,
+        "asset": "flowers",
+        "scale": 1.1
+      },
+      {
+        "x": 194,
+        "asset": "moonStone",
+        "scale": 0.95
+      },
+      {
+        "x": 248,
+        "asset": "stones",
+        "scale": 1
+      },
+      {
+        "x": 290,
+        "asset": "moonStone",
+        "scale": 1.2
+      },
+      {
+        "x": 319,
+        "asset": "flowers",
+        "scale": 1
+      }
+    ],
+    "goalRoute": [
+      [
+        269,
+        17
+      ],
+      [
+        282,
+        14
+      ],
+      [
+        285,
+        6
+      ]
+    ]
+  }
+}

@@ -2,7 +2,7 @@ window.WW = window.WW || {};
 WW.main = (() => {
   const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
   const menu=document.getElementById('menu');const hud=document.getElementById('hud');
-  let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,customMapJson=false,pixelsPerTile=1,customBiome='meadow',menuPadLatch='',currentChapterIndex=0;
+  let game=null,last=0,paused=true,screen='home',cancelCalibration=null,customMap=null,customMapJson=false,pixelsPerTile=1,customBiome='meadow',menuPadState=new Map(),currentChapterIndex=0;
   const panel=(content)=>{menu.hidden=false;menu.innerHTML=`<section class="panel ${screen==='home'?'panel-home':''}">${content}</section>`;menu.querySelector('button')?.focus({preventScroll:true});};
   const button=(id,label,kind='secondary')=>`<button class="${kind}" data-action="${id}">${label}</button>`;
   function home(){
@@ -36,7 +36,7 @@ WW.main = (() => {
     <details class="control-guide"><summary>View keyboard controls</summary>
       <div class="instructions"><b>Player 1:</b> A / D move · W jump / tap to flap · F food / creature power · E change food · G catch orb · T transform · R revive · C camp<br>
       <b>Player 2:</b> J / L move · I jump / tap to flap · O food / creature power · M change food · P catch orb · U transform · Y revive · N camp<br>
-      <b>Menus:</b> Arrow keys + Enter · Escape pauses · Gems collect on contact</div>
+      <b>Menus:</b> Arrow keys or controller D-pad / left stick to navigate · A select · B back · Start pause / resume · Gems collect on contact</div>
     </details>`);
     const art=menu.querySelector('.home-art');
     if(art)art.style.backgroundImage=`url("${WW.scenery.url('backdrop')}")`;
@@ -158,22 +158,84 @@ WW.main = (() => {
     const forward=['ArrowDown','ArrowRight','KeyS'].includes(e.code);
     buttons[(index+(forward?1:-1)+buttons.length)%buttons.length].focus();
   });
-  function pollMenuGamepad(){
-    if(menu.hidden || screen==='calibration'){menuPadLatch='';return;}
-    const pad=WW.input.pads()[0];if(!pad){menuPadLatch='';return;}
-    const left=pad.buttons[14]?.pressed||pad.axes[0]<-.55;
-    const right=pad.buttons[15]?.pressed||pad.axes[0]>.55;
-    const up=pad.buttons[12]?.pressed||pad.axes[1]<-.55;
-    const down=pad.buttons[13]?.pressed||pad.axes[1]>.55;
-    const confirm=pad.buttons[0]?.pressed;
-    const value=confirm?'confirm':left||up?'previous':right||down?'next':'';
-    if(value&&value!==menuPadLatch){
-      const buttons=[...menu.querySelectorAll('button:not([disabled])')];
-      if(value==='confirm')document.activeElement?.click?.();
-      else if(buttons.length){const selected=buttons.indexOf(document.activeElement);
-        buttons[(selected+(value==='next'?1:-1)+buttons.length)%buttons.length].focus({preventScroll:true});}
+  function menuTargets(){
+    return [...menu.querySelectorAll(
+      'button:not([disabled]), select:not([disabled]), input[type="checkbox"]:not([disabled]), '+
+      'input[type="number"]:not([disabled]), input[type="file"]:not([disabled]), summary'
+    )].filter(element=>element.getClientRects().length>0);
+  }
+  function focusMenuTarget(direction){
+    const targets=menuTargets();
+    if(!targets.length)return;
+    const current=targets.indexOf(document.activeElement);
+    const index=current<0?0:(current+direction+targets.length)%targets.length;
+    menu.querySelector('.gamepad-focus')?.classList.remove('gamepad-focus');
+    targets[index].focus({preventScroll:true});
+    targets[index].classList.add('gamepad-focus');
+    targets[index].scrollIntoView({block:'nearest'});
+  }
+  function adjustMenuValue(direction){
+    const target=document.activeElement;
+    if(!menu.contains(target))return false;
+    if(target instanceof HTMLSelectElement){
+      target.selectedIndex=(target.selectedIndex+direction+target.options.length)%target.options.length;
+      target.dispatchEvent(new Event('change',{bubbles:true}));
+      return true;
     }
-    menuPadLatch=value;
+    if(target instanceof HTMLInputElement && target.type==='number'){
+      direction>0?target.stepUp():target.stepDown();
+      target.dispatchEvent(new Event('change',{bubbles:true}));
+      return true;
+    }
+    return false;
+  }
+  function activateMenuTarget(){
+    const targets=menuTargets();
+    const target=targets.includes(document.activeElement)?document.activeElement:targets[0];
+    if(!target)return;
+    if(target instanceof HTMLSelectElement || (target instanceof HTMLInputElement && target.type==='number')){
+      adjustMenuValue(1);
+    }else target.click();
+  }
+  function resumeGame(){
+    if(screen!=='paused')return;
+    paused=false;screen='playing';menu.hidden=true;WW.input.reset();last=0;
+  }
+  function pollMenuGamepad(now=performance.now()){
+    const pads=WW.input.pads();
+    for(const pad of pads){
+      const previous=menuPadState.get(pad.index)||{
+        direction:'',repeatAt:0,confirm:false,back:false,start:false
+      };
+      const button=index=>(pad.buttons[index]?.value||0)>.55;
+      const axis=index=>pad.axes[index]||0;
+      const direction=button(12)||axis(1)<-.55?'up':
+        button(13)||axis(1)>.55?'down':
+        button(14)||axis(0)<-.55?'left':
+        button(15)||axis(0)>.55?'right':'';
+      const confirm=button(0),back=button(1),start=button(9);
+      let repeatAt=previous.repeatAt;
+      if(screen!=='calibration'){
+        if(start&&!previous.start){
+          if(screen==='playing')pause();
+          else if(screen==='paused')resumeGame();
+        }else if(!menu.hidden&&screen!=='loading'){
+          if(back&&!previous.back){
+            if(screen==='paused')resumeGame();
+            else if(screen!=='home')home();
+          }else if(confirm&&!previous.confirm){
+            activateMenuTarget();
+          }else if(direction && (direction!==previous.direction || now>=previous.repeatAt)){
+            if(!['left','right'].includes(direction) || !adjustMenuValue(direction==='right'?1:-1)){
+              focusMenuTarget(['right','down'].includes(direction)?1:-1);
+            }
+            repeatAt=now+(direction===previous.direction?125:310);
+          }
+        }
+      }
+      menuPadState.set(pad.index,{direction,repeatAt,confirm,back,start});
+    }
+    for(const id of menuPadState.keys())if(!pads.some(p=>p.index===id))menuPadState.delete(id);
   }
   function idle(now){
     ctx.setTransform(3,0,0,3,0,0);
@@ -189,7 +251,7 @@ WW.main = (() => {
     ctx.fillRect(0,0,480,270);
   }
   function frame(now){const dt=last?Math.min((now-last)/1000,.05):0;last=now;if(game){if(!paused)game.update(dt);game.render(ctx,now/1000);}else idle(now);
-    pollMenuGamepad();requestAnimationFrame(frame);}
+    pollMenuGamepad(now);requestAnimationFrame(frame);}
   WW.storage.load();WW.input.syncAssignments();home();requestAnimationFrame(frame);
-  return {home,pause,win,play,get game(){return game}};
+  return {home,pause,win,play,pollMenuGamepad,get game(){return game}};
 })();

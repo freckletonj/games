@@ -25,22 +25,40 @@ jobs:
         run: |
           python -m pip install playwright pillow
           python -m playwright install --with-deps chromium
+      - name: Validate AI-authored semantic worlds
+        run: |
+          node tests/level-designs.mjs
+          node scripts/inspect-levels.mjs
+          node scripts/export-art-guides.mjs
+          node tests/art-guides.mjs
+          node tests/route-comparison.mjs
+      - name: Verify diffusion scene panels are embedded
+        run: node tests/scene-panels.mjs
       - name: Rebuild self-contained game
         run: node scripts/build.mjs
       - name: Verify playable standalone bundle was generated
         run: test -s dist/wonderwood.html
       - name: Run gameplay and browser regressions
         run: |
+          python tests/offline_launch.py
           python tests/smoke.py
           python tests/playability.py
+          python tests/controller_and_coop.py
           python tests/routes.py
           python tests/terrain_and_flight.py
+          python tests/wingbeat_budget.py
+          python tests/living_setpieces.py
           python tests/game_feel.py
           python tests/creature_mechanics.py
           python tests/wonder_trails.py
           python tests/painted_illustrations.py
+          python tests/painted_panorama.py
+          python tests/chapter_composition.py
+          python tests/staged_vistas.py
           python tests/semantic_pipeline.py
           python tests/character_packer.py
+          python scripts/evaluate-routes.py
+          python tests/performance.py
       - name: Upload playable offline preview
         if: always()
         uses: actions/upload-artifact@v4
@@ -53,5 +71,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wonderwood-previews
-          path: dist/preview-*.png
+          path: |
+            dist/preview-*.png
+            dist/preview-levels.svg
+            dist/level-diagnostics.json
+            dist/route-probes.json
+            dist/preview-route-probes.svg
+            dist/art-jobs.json
+            dist/art-guides/*.svg
+            dist/performance-report.json
           if-no-files-found: ignore
