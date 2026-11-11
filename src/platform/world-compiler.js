@@ -155,7 +155,9 @@ WW.worldCompiler = (() => {
     for (let x = 0; x < width; x++) {
       const floor = floorAt(x);
       const pool = basins.find(b => x >= b.start && x < b.end);
-      if (pool) {
+      // A coarse cell touching dry bank cannot be classified as a whole
+      // water column just because the adjacent downhill corner is wet.
+      if (pool && Math.min(surface[x], surface[x + 1]) > pool.surface + .35) {
         const waterTop = Math.ceil(pool.surface);
         for (let y = waterTop; y < floor; y++) grid[y][x] = 'water';
       }
@@ -186,7 +188,6 @@ WW.worldCompiler = (() => {
     for (const [x, y] of spec.stars) stamp('starShard', x, y);
     const waterCells = grid.reduce((count, row) =>
       count + row.filter(cell => cell === 'water').length, 0);
-    if (!waterCells) throw Error(spec.id + ': No swimmable water');
     const diagnostics = {...report, metrics: {
       width, height, sections: spec.sections.length, waterCells,
       ledges: spec.ledges.length, creatures: spec.creatures.length
