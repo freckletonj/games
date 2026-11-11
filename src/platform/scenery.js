@@ -99,8 +99,11 @@ WW.scenery = (() => {
       paints[biome] = {
         ground: makePaint(image, 1, false, .15, .28, .70, .63, tones.ground),
         groundTop: makePaint(image, 0, true, .12, .19, .76, .28, tones.groundTop),
-        platform: makePaint(image, 2, false, .16, .36, .68, .46, tones.platform),
-        platformTop: makePaint(image, 2, true, .16, .23, .68, .22, tones.platformTop),
+        // The painted floating-island cell has a transparent silhouette.
+        // Sampling it as a repeating rectangle produces black hollow ledges.
+        // Use the fully painted cliff interior, plus an opaque mossy cap.
+        platform: makePaint(image, 1, false, .24, .35, .52, .45, tones.platform),
+        platformTop: makePaint(image, 0, true, .20, .22, .60, .16, tones.platformTop),
         water: makePaint(image, 3, false, .19, .51, .62, .43, tones.water)
       };
     }
@@ -188,11 +191,26 @@ WW.scenery = (() => {
         ctx.quadraticCurveTo(x + 16, y + 16, x + 16, y + 10); ctx.stroke();
       }
     } else if (kind === 'platform') {
-      if (!n) {ctx.fillStyle = p.platformTop; ctx.fillRect(x, y, 16, 7);}
-      ctx.fillStyle = '#213c5473';
-      ctx.fillRect(x, y + 13, 16, 3);
-      if (!w) sideShade(ctx, x, y, true, '#294253a6');
-      if (!e) sideShade(ctx, x, y, false, '#cee2d27a');
+      if (!n) {
+        // A solid underpainting keeps grass from inheriting the cliff pattern
+        // through translucent brush tips, just as with exposed ground caps.
+        ctx.fillStyle = {meadow:'#66866f',coast:'#99b9b2',summit:'#9894b8'}[biome] || '#66866f';
+        ctx.fillRect(x, y, 16, 7);
+        ctx.fillStyle = p.platformTop;
+        ctx.fillRect(x, y, 16, 7);
+        ctx.strokeStyle = edge.rim;
+        ctx.lineWidth = .8;
+        ctx.beginPath();ctx.moveTo(x,y+2);ctx.lineTo(x+16,y+2);ctx.stroke();
+      }
+      if (!s) {
+        const underside=ctx.createLinearGradient(0,y+11,0,y+16);
+        underside.addColorStop(0,'#182a3900');
+        underside.addColorStop(1,'#182a39a3');
+        ctx.fillStyle=underside;
+        ctx.fillRect(x,y+11,16,5);
+      }
+      if (!w) sideShade(ctx, x, y, true, edge.left);
+      if (!e) sideShade(ctx, x, y, false, edge.right);
     } else {
       ctx.fillStyle = '#176a9e26';
       ctx.fillRect(x, y, 16, 16);
