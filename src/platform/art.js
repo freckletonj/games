@@ -1,6 +1,6 @@
 window.WW = window.WW || {};
 // All characters are now drawn from painted, frame-accurate image atlases.
-// Food illustrations are clipped from the committed transparent flora atlas.
+// Inventory food portraits come from the flora atlas; airborne treats are single fruits.
 WW.art = (() => {
   const empty='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
   const icons={};
