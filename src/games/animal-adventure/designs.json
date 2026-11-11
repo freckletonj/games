@@ -72,31 +72,6 @@
     ],
     "bridges": [
       [
-        145,
-        29,
-        9
-      ],
-      [
-        154,
-        29,
-        8
-      ],
-      [
-        163,
-        29,
-        6
-      ],
-      [
-        213,
-        27,
-        9
-      ],
-      [
-        222,
-        27,
-        9
-      ],
-      [
         140,
         34,
         11
@@ -187,6 +162,31 @@
         237,
         25,
         10
+      ],
+      [
+        144,
+        29,
+        6
+      ],
+      [
+        155,
+        27,
+        6
+      ],
+      [
+        164,
+        29,
+        5
+      ],
+      [
+        213,
+        26,
+        7
+      ],
+      [
+        225,
+        25,
+        7
       ]
     ],
     "relic": [
@@ -204,10 +204,6 @@
         45
       ],
       [
-        "prismtail",
-        68
-      ],
-      [
         "springaroo",
         96
       ],
@@ -220,16 +216,8 @@
         176
       ],
       [
-        "springaroo",
-        196
-      ],
-      [
         "glimmermoth",
         220
-      ],
-      [
-        "mossback",
-        243
       ]
     ],
     "checkpoints": [
@@ -252,10 +240,6 @@
         29
       ],
       [
-        62,
-        25
-      ],
-      [
         107,
         21
       ],
@@ -274,26 +258,6 @@
       [
         239,
         22
-      ],
-      [
-        48,
-        26
-      ],
-      [
-        103,
-        22
-      ],
-      [
-        118,
-        23
-      ],
-      [
-        181,
-        28
-      ],
-      [
-        227,
-        25
       ]
     ],
     "landmarks": [
@@ -395,25 +359,41 @@
         "id": "picnic-trail-bounce-bloom-1",
         "kind": "bounceBloom",
         "section": "picnic-trail",
-        "x": 33
+        "x": 52,
+        "target": [
+          59,
+          28
+        ]
       },
       {
         "id": "lilypond-bounce-bloom-2",
         "kind": "bounceBloom",
         "section": "lilypond",
-        "x": 137
+        "x": 137,
+        "target": [
+          144,
+          29
+        ]
       },
       {
         "id": "lantern-grove-bounce-bloom-3",
         "kind": "bounceBloom",
         "section": "lantern-grove",
-        "x": 182
+        "x": 182,
+        "target": [
+          189,
+          26
+        ]
       },
       {
         "id": "lantern-grove-bounce-bloom-4",
         "kind": "bounceBloom",
         "section": "lantern-grove",
-        "x": 238
+        "x": 238,
+        "target": [
+          245,
+          25
+        ]
       }
     ],
     "vistas": [
@@ -760,39 +740,15 @@
         28
       ],
       [
-        173,
-        43
+        190,
+        47
       ],
       [
         210,
         48
       ],
       [
-        249,
-        42
-      ],
-      [
         278,
-        30
-      ],
-      [
-        61,
-        30
-      ],
-      [
-        190,
-        47
-      ],
-      [
-        206,
-        30
-      ],
-      [
-        242,
-        41
-      ],
-      [
-        260,
         30
       ]
     ],
@@ -908,47 +864,75 @@
         "id": "tideline-bounce-bloom-1",
         "kind": "bounceBloom",
         "section": "tideline",
-        "x": 28
+        "x": 28,
+        "target": [
+          35,
+          33
+        ]
       },
       {
         "id": "shallow-reef-bubble-vent-2",
         "kind": "bubbleVent",
         "section": "shallow-reef",
         "x": 81,
-        "y": 44
+        "y": 44,
+        "target": [
+          82,
+          36
+        ]
       },
       {
         "id": "coral-rest-bounce-bloom-3",
         "kind": "bounceBloom",
         "section": "coral-rest",
-        "x": 135
+        "x": 135,
+        "target": [
+          142,
+          34
+        ]
       },
       {
         "id": "pearl-depths-bubble-vent-4",
         "kind": "bubbleVent",
         "section": "pearl-depths",
         "x": 174,
-        "y": 44
+        "y": 44,
+        "target": [
+          175,
+          36
+        ]
       },
       {
         "id": "pearl-depths-bubble-vent-5",
         "kind": "bubbleVent",
         "section": "pearl-depths",
         "x": 207,
-        "y": 48
+        "y": 48,
+        "target": [
+          208,
+          40
+        ]
       },
       {
         "id": "tidal-return-bubble-vent-6",
         "kind": "bubbleVent",
         "section": "tidal-return",
         "x": 251,
-        "y": 44
+        "y": 44,
+        "target": [
+          252,
+          36
+        ]
       },
       {
         "id": "tidal-return-bounce-bloom-7",
         "kind": "bounceBloom",
         "section": "tidal-return",
-        "x": 281
+        "x": 281,
+        "target": [
+          288,
+          34
+        ]
       }
     ],
     "vistas": [
@@ -1318,16 +1302,8 @@
         46
       ],
       [
-        75,
-        35
-      ],
-      [
         124,
         31
-      ],
-      [
-        165,
-        20
       ],
       [
         209,
@@ -1340,26 +1316,6 @@
       [
         289,
         43
-      ],
-      [
-        58,
-        39
-      ],
-      [
-        154,
-        23
-      ],
-      [
-        224,
-        17
-      ],
-      [
-        274,
-        23
-      ],
-      [
-        298,
-        45
       ]
     ],
     "landmarks": [
@@ -1471,48 +1427,76 @@
         "id": "lower-roost-bounce-bloom-1",
         "kind": "bounceBloom",
         "section": "lower-roost",
-        "x": 35
+        "x": 35,
+        "target": [
+          42,
+          45
+        ]
       },
       {
         "id": "lower-roost-wind-ring-2",
         "kind": "windRing",
         "section": "lower-roost",
         "x": 68,
-        "y": 38
+        "y": 38,
+        "target": [
+          74,
+          33
+        ]
       },
       {
         "id": "ridge-traversal-wind-ring-3",
         "kind": "windRing",
         "section": "ridge-traversal",
         "x": 122,
-        "y": 34
+        "y": 34,
+        "target": [
+          128,
+          29
+        ]
       },
       {
         "id": "cloud-crossing-wind-ring-4",
         "kind": "windRing",
         "section": "cloud-crossing",
         "x": 183,
-        "y": 28
+        "y": 28,
+        "target": [
+          189,
+          23
+        ]
       },
       {
         "id": "cloud-crossing-wind-ring-5",
         "kind": "windRing",
         "section": "cloud-crossing",
         "x": 220,
-        "y": 21
+        "y": 21,
+        "target": [
+          226,
+          16
+        ]
       },
       {
         "id": "aurora-return-wind-ring-6",
         "kind": "windRing",
         "section": "aurora-return",
         "x": 264,
-        "y": 19
+        "y": 19,
+        "target": [
+          270,
+          14
+        ]
       },
       {
         "id": "aurora-return-bounce-bloom-7",
         "kind": "bounceBloom",
         "section": "aurora-return",
-        "x": 289
+        "x": 289,
+        "target": [
+          296,
+          48
+        ]
       }
     ],
     "vistas": [
@@ -1809,10 +1793,6 @@
         49
       ],
       [
-        132,
-        47
-      ],
-      [
         162,
         32
       ],
@@ -1826,26 +1806,6 @@
       ],
       [
         303,
-        28
-      ],
-      [
-        82,
-        41
-      ],
-      [
-        215,
-        44
-      ],
-      [
-        236,
-        49
-      ],
-      [
-        270,
-        33
-      ],
-      [
-        296,
         28
       ]
     ],
@@ -1961,54 +1921,86 @@
         "id": "willow-bank-bounce-bloom-1",
         "kind": "bounceBloom",
         "section": "willow-bank",
-        "x": 47
+        "x": 47,
+        "target": [
+          54,
+          33
+        ]
       },
       {
         "id": "first-lagoon-bubble-vent-2",
         "kind": "bubbleVent",
         "section": "first-lagoon",
         "x": 89,
-        "y": 47
+        "y": 47,
+        "target": [
+          90,
+          39
+        ]
       },
       {
         "id": "first-lagoon-bubble-vent-3",
         "kind": "bubbleVent",
         "section": "first-lagoon",
         "x": 119,
-        "y": 49
+        "y": 49,
+        "target": [
+          120,
+          41
+        ]
       },
       {
         "id": "reed-island-bounce-bloom-4",
         "kind": "bounceBloom",
         "section": "reed-island",
-        "x": 163
+        "x": 163,
+        "target": [
+          170,
+          36
+        ]
       },
       {
         "id": "sunken-path-bubble-vent-5",
         "kind": "bubbleVent",
         "section": "sunken-path",
         "x": 205,
-        "y": 48
+        "y": 48,
+        "target": [
+          206,
+          40
+        ]
       },
       {
         "id": "sunken-path-bubble-vent-6",
         "kind": "bubbleVent",
         "section": "sunken-path",
         "x": 243,
-        "y": 51
+        "y": 51,
+        "target": [
+          244,
+          43
+        ]
       },
       {
         "id": "sunken-path-bubble-vent-7",
         "kind": "bubbleVent",
         "section": "sunken-path",
         "x": 264,
-        "y": 49
+        "y": 49,
+        "target": [
+          265,
+          41
+        ]
       },
       {
         "id": "home-water-bounce-bloom-8",
         "kind": "bounceBloom",
         "section": "home-water",
-        "x": 302
+        "x": 302,
+        "target": [
+          309,
+          31
+        ]
       }
     ],
     "vistas": [
@@ -2365,16 +2357,8 @@
         50
       ],
       [
-        80,
-        39
-      ],
-      [
         137,
         33
-      ],
-      [
-        176,
-        25
       ],
       [
         226,
@@ -2385,32 +2369,8 @@
         13
       ],
       [
-        299,
-        19
-      ],
-      [
         321,
         37
-      ],
-      [
-        69,
-        43
-      ],
-      [
-        145,
-        33
-      ],
-      [
-        239,
-        22
-      ],
-      [
-        283,
-        13
-      ],
-      [
-        313,
-        39
       ]
     ],
     "landmarks": [
@@ -2517,55 +2477,87 @@
         "id": "first-flight-bounce-bloom-1",
         "kind": "bounceBloom",
         "section": "first-flight",
-        "x": 39
+        "x": 39,
+        "target": [
+          46,
+          53
+        ]
       },
       {
         "id": "first-flight-wind-ring-2",
         "kind": "windRing",
         "section": "first-flight",
         "x": 76,
-        "y": 43
+        "y": 43,
+        "target": [
+          82,
+          38
+        ]
       },
       {
         "id": "sunlit-arches-wind-ring-3",
         "kind": "windRing",
         "section": "sunlit-arches",
         "x": 140,
-        "y": 34
+        "y": 34,
+        "target": [
+          146,
+          29
+        ]
       },
       {
         "id": "floating-sanctuary-wind-ring-4",
         "kind": "windRing",
         "section": "floating-sanctuary",
         "x": 188,
-        "y": 33
+        "y": 33,
+        "target": [
+          194,
+          28
+        ]
       },
       {
         "id": "floating-sanctuary-wind-ring-5",
         "kind": "windRing",
         "section": "floating-sanctuary",
         "x": 228,
-        "y": 25
+        "y": 25,
+        "target": [
+          234,
+          20
+        ]
       },
       {
         "id": "sky-lantern-wind-ring-6",
         "kind": "windRing",
         "section": "sky-lantern",
         "x": 274,
-        "y": 17
+        "y": 17,
+        "target": [
+          280,
+          12
+        ]
       },
       {
         "id": "sky-lantern-wind-ring-7",
         "kind": "windRing",
         "section": "sky-lantern",
         "x": 316,
-        "y": 36
+        "y": 36,
+        "target": [
+          322,
+          31
+        ]
       },
       {
         "id": "sky-lantern-bounce-bloom-8",
         "kind": "bounceBloom",
         "section": "sky-lantern",
-        "x": 302
+        "x": 302,
+        "target": [
+          309,
+          60
+        ]
       }
     ],
     "vistas": [
