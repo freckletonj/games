@@ -516,9 +516,9 @@ WW.games.animals = (() => {
     function updateMounts(dt){
       const step=dt*60;
       for(const m of mounts){
+        m.eating=Math.max(0,m.eating-dt);
         if(m.rider!==null)continue;
         m.phase+=dt;
-        m.eating=Math.max(0,m.eating-dt);
         if(!m.grounded){
           m.vy=Math.min(PHYSICS.maxFall,m.vy+PHYSICS.gravity*step);
           m.y+=m.vy*step;
@@ -1427,8 +1427,9 @@ WW.games.animals = (() => {
       });
       mounts.forEach(m=>{
         WW.art.drawMount(ctx,m.kind,m.x,m.y,m.dir<0,{
-          action:m.eating>0?'eat':
-            m.trust>=TRUST_TARGET?'happy':Math.abs(m.vx)>.15?'run':'idle',
+          action:m.rider!==null?(Math.abs(m.vx)>.15?'run':'idle'):
+            m.eating>0?'eat':m.trust>=TRUST_TARGET?'happy':
+            Math.abs(m.vx)>.15?'run':'idle',
           time:m.phase, flying:m.kind==='pegasus'&&!m.grounded
         });
         if(m.trust>0&&m.rider===null){
