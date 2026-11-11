@@ -180,7 +180,9 @@ WW.scenery = (() => {
     const cw=image.naturalWidth/4,ch=image.naturalHeight/2;
     // A single generous painted crop with feathered *outer* wrap edges avoids
     // the centerline/kaleidoscope artifacts of mirrored 128px terrain swatches.
-    const px=320,py=top?16:320;
+    // Fine-grained, native-pixel brush detail. The old 320px repeat was
+    // nearly a full camera wide, making leaf/rock swatches enormous.
+    const px=128,py=top?10:128;
     const canvas=document.createElement('canvas');
     canvas.width=px;canvas.height=py;
     const g=canvas.getContext('2d',{willReadFrequently:true});
@@ -466,6 +468,11 @@ WW.scenery = (() => {
       ctx.lineTo(x+w,y+2);ctx.lineTo(x+w-4,y+13);
       ctx.quadraticCurveTo(x+w/2,y+17,x+4,y+13);
       ctx.closePath();ctx.fill();
+      if(ready('tiles')){
+        ctx.save();ctx.clip();ctx.globalAlpha=.78;
+        ctx.fillStyle=textures(biome).platform;
+        ctx.fillRect(x,y-2,w,35);ctx.restore();
+      }
       ctx.strokeStyle=p.highlight;ctx.lineWidth=3.2;ctx.lineCap='round';
       ctx.beginPath();ctx.moveTo(x+2,y+1);
       ctx.quadraticCurveTo(x+w/2,y-.3,x+w-2,y+1);ctx.stroke();
@@ -498,10 +505,21 @@ WW.scenery = (() => {
       ctx.fillStyle=base;ctx.beginPath();ctx.moveTo(x,y+2);
       ctx.quadraticCurveTo(x+w/2,y-1,x+w,y+2);
       ctx.quadraticCurveTo(x+w+3,y+9,x+w-8,y+14);
-      ctx.lineTo(x+w*.67,y+21+(step?3:9));
-      ctx.quadraticCurveTo(x+w*.51,y+32+(step?5:11),x+w*.38,y+23);
+      // An irregular rocky lower edge reads as a real island fragment;
+      // the former symmetrical canoe-shaped ellipses looked like UI pills.
+      ctx.lineTo(x+w*.84,y+18);
+      ctx.lineTo(x+w*.71,y+16);
+      ctx.lineTo(x+w*.59,y+25+(step?1:6));
+      ctx.lineTo(x+w*.49,y+22);
+      ctx.lineTo(x+w*.38,y+27+(step?0:7));
+      ctx.lineTo(x+w*.2,y+16);
       ctx.lineTo(x+8,y+15);
       ctx.quadraticCurveTo(x-3,y+13,x,y+2);ctx.fill();
+      if(ready('tiles')){
+        ctx.save();ctx.clip();ctx.globalAlpha=.86;
+        ctx.fillStyle=textures(biome).platform;
+        ctx.fillRect(x,y-2,w,47);ctx.restore();
+      }
       ctx.strokeStyle=p.highlight;ctx.lineWidth=2.8;
       ctx.beginPath();ctx.moveTo(x+2,y+1.6);
       ctx.quadraticCurveTo(x+w/2,y,x+w-2,y+1.6);ctx.stroke();
