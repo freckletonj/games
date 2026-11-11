@@ -14,7 +14,7 @@ with sync_playwright() as playwright:
     page.on('pageerror',lambda error:errors.append(str(error)))
     page.set_content(source,wait_until='domcontentloaded')
     assert page.evaluate("Object.keys(WW_EMBEDDED_ILLUSTRATIONS).sort()") == [
-        'effects','flora','landmarks','props'
+        'effects','flora','landmarks','props','states'
     ]
     page.wait_for_function("WW.illustrations.names.every(WW.illustrations.ready)")
     result=page.evaluate("""() => {
@@ -34,8 +34,8 @@ with sync_playwright() as playwright:
       });
       return {counts,frames};
     }""")
-    assert len(result['counts']) == 32,result
-    assert result['frames'] == [[720,540]]*4,result['frames']
+    assert len(result['counts']) == 41,result
+    assert result['frames'] == [[720,540]]*4+[[288,288]],result['frames']
     assert all(painted and pixels>50 for name,painted,pixels in result['counts']),result['counts']
 
     # Renderer uses the same real illustrations for gates, campfires, collectibles
@@ -66,7 +66,7 @@ with sync_playwright() as playwright:
     page.evaluate("""() => {
       const names=WW.illustrations.names;
       const canvas=document.createElement('canvas');canvas.id='illustrations-preview';
-      canvas.width=8*146;canvas.height=4*184;
+      canvas.width=8*146;canvas.height=Math.ceil(names.length/8)*184;
       const ctx=canvas.getContext('2d');
       names.forEach((name,i)=>{
         const x=i%8*146,y=Math.floor(i/8)*184;
@@ -82,4 +82,4 @@ with sync_playwright() as playwright:
         path=str(html.parent/'preview-illustrations.png'))
     assert not errors,errors
     browser.close()
-    print('PASS: 32 transparent painted assets, gates, eight landmarks and offline contact sheet')
+    print('PASS: 41 transparent painted assets, gates, landmarks, eating and KO states and offline contact sheet')
