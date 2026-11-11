@@ -74,6 +74,38 @@ with sync_playwright() as pw:
             state('animals.find(a=>a.kind==="springaroo").distractedUntil'))
     assert second[0]==100 and second[1]>0,second
 
+    # Real rapid button presses launch two physical berry projectiles; the
+    # same Springaroo must gain 100 trust and be available for an orb capture.
+    play(0)
+    page.evaluate("""() => {
+        const s=WW.main.game.state,p=s.players[0];
+        const a=s.animals.find(a=>a.kind==='springaroo');
+        s.animals.forEach(other=>{other.alive=other===a;other.respawn=99999;});
+        a.trust=0;a.eating=0;a.stunned=a.stuck=a.trapped=0;
+        a.distractedUntil=0;a.windup=0;a.dashTime=0;
+        p.x=a.x-75;p.y=a.homeY;p.vx=p.vy=0;p.grounded=true;
+        p.form=null;p.selectedFood=0;p.face=1;p.actionCD=0;p.invincible=100;
+        s.lures.length=0;s.projectiles.length=0;
+    }""")
+    for attempt in range(2):
+        page.keyboard.down("f")
+        advance()
+        page.keyboard.up("f")
+        advance(25)
+    advance(170)
+    trust=state('animals.find(a=>a.kind==="springaroo").trust')
+    assert trust==100,trust
+    assert state('animals.find(a=>a.kind==="springaroo").distractedUntil')>0
+    page.evaluate("""() => {
+        const s=WW.main.game.state,p=s.players[0];
+        const a=s.animals.find(a=>a.kind==='springaroo');
+        p.x=a.x-29;p.y=a.y;p.vx=p.vy=0;p.face=1;p.actionCD=0;
+    }""")
+    page.keyboard.down("g")
+    advance(12)
+    page.keyboard.up("g")
+    assert state("players[0].caught")=="springaroo"
+
     # Cloudwhisp warns before contact from significantly farther away than
     # the old 100px threshold, and its gust produces meaningful displacement.
     play(2)
