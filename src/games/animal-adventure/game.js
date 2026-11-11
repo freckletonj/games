@@ -275,9 +275,11 @@ WW.games.animals = (() => {
       p.flapCooldown=Math.max(0,p.flapCooldown-dt);
       p.flapBuffer=Math.max(0,p.flapBuffer-dt);
       p.bloomBoostWindow=Math.max(0,p.bloomBoostWindow-dt);
+      let bloomBoosted=false;
       if(controls.pressed.jump){
         p.lastJumpPress=clock;
         if(p.bloomBoostWindow>0){
+          bloomBoosted=true;
           p.vy=Math.min(p.vy,-9.2);
           p.bloomBoostWindow=0;p.jumpBuffer=0;
           WW.audio.play('double');WW.input.rumble(p.id,.48,105);
@@ -321,7 +323,8 @@ WW.games.animals = (() => {
         p.coyote=0;p.jumpBuffer=0;
       }else{
         p.coyote=p.grounded?.105:Math.max(0,p.coyote-dt);
-        p.jumpBuffer=controls.pressed.jump?.12:Math.max(0,p.jumpBuffer-dt);
+        p.jumpBuffer=controls.pressed.jump&&!bloomBoosted?.12:
+          bloomBoosted?0:Math.max(0,p.jumpBuffer-dt);
         if(p.jumpBuffer>0 && (p.coyote>0 || (p.form==='springaroo' && p.jumpsUsed<2))){
           const second=p.coyote<=0;
           p.vy=-(second?PHYSICS.doubleJump:PHYSICS.jump);WW.audio.play(second?'double':'jump');
