@@ -21,7 +21,7 @@ WW.games.animals = (() => {
     const goals=chapter.goals,goalKinds=new Set(goals.map(g=>g.kind));
     const abilityHelp={
       springaroo:'Double jump with Jump; F blows a short petal puff',
-      tideling:'Swim with Jump / Down; F launches a small splash',
+      tideling:'Swim with Jump / Down; hold Jump near the surface to leap ashore. F splashes',
       skyling:'Tap Jump for each wingbeat; F sends a gentle feather gust',
       mossback:'F launches honey that sticks a creature in place briefly',
       prismtail:'F catches a creature in a floating bubble',
@@ -67,7 +67,7 @@ WW.games.animals = (() => {
       return {id,...position,lastSafe:{...position},vx:0,vy:0,grounded:false,coyote:0,jumpBuffer:0,jumpsUsed:0,
         waterTime:0,face:1,health:3,sleep:false,invincible:0,selected:0,selectedFood:0,energy:Object.fromEntries(TYPES.map(t=>[t,0])),
         form:null,caught:null,hover:0,flapCooldown:0,wingbeat:0,actionCD:0,frame:0,hurt:0,
-        bubble:false,bubbleGrace:0,
+        bubble:false,bubbleGrace:0,breachCooldown:0,
         unlocked:Object.fromEntries(TYPES.map(kind=>[kind,false]))};
     });
     const animals=level.objects.filter(o=>CREATURE[o.kind]).map((o,i)=>({
@@ -256,6 +256,7 @@ WW.games.animals = (() => {
       p.hover=Math.max(0,p.hover-dt);
       p.flapCooldown=Math.max(0,p.flapCooldown-dt);
       p.wingbeat=Math.max(0,p.wingbeat-dt);
+      p.breachCooldown=Math.max(0,p.breachCooldown-dt);
       const direction=Number(controls.right)-Number(controls.left);
       if(direction)p.face=direction;
       const swimming=p.form==='tideling' && (liquid(p.x,p.y-8)||liquid(p.x,p.y+2));
@@ -269,6 +270,18 @@ WW.games.animals = (() => {
       if(!direction&&!p.hurt&&Math.abs(p.vx)<.08)p.vx=0;
       if(swimming){
         p.vy=(Number(controls.down)-Number(controls.jump))*2.45;
+        // A Tidefox can breach the surface instead of getting pinned against
+        // the bank. Carry its upward momentum through the final underwater frames.
+        const pool=(level.waterBodies||[]).find(b=>
+          p.x>=b.start*TILE&&p.x<b.end*TILE);
+        if(controls.jump && p.breachCooldown>0){
+          p.vy=Math.min(p.vy,-5.1);
+        }else if(controls.jump && pool &&
+                 p.y-pool.surface*TILE<30 && p.breachCooldown===0){
+          p.vy=-5.1;p.breachCooldown=.48;
+          particles(p.x,p.y-13,'#b9f8f2',10);
+          WW.audio.play('jump');
+        }
         p.coyote=0;p.jumpBuffer=0;p.jumpsUsed=0;
       }else if(water){
         p.vy=Math.min(2.4,p.vy+.14*step);

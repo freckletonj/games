@@ -60,6 +60,23 @@ with sync_playwright() as pw:
     page.keyboard.up('Space')
     vy=page.evaluate('WW.main.game.state.players[0].vy')
     assert vy <= -3.7, vy
+    # Tidefox must be able to breach the waterline to clear steep basin banks.
+    page.evaluate("""() => {
+      const s=WW.main.game.state,p=s.players[0],level=WW.worlds.create(s.chapter);
+      const basin=level.waterBodies[1];
+      p.x=((basin.start+basin.end)/2)*16;
+      p.y=basin.surface*16+25;
+      p.vy=0;p.breachCooldown=0;p.grounded=false;
+    }""")
+    page.keyboard.down('Space')
+    advance(1)
+    page.keyboard.up('Space')
+    breach=page.evaluate("""() => {
+      const p=WW.main.game.state.players[0];
+      return {vy:p.vy,cooldown:p.breachCooldown};
+    }""")
+    assert breach['vy'] <= -5 and breach['cooldown'] > 0, breach
+
     page.evaluate('WW.main.game.render(document.querySelector("#game").getContext("2d"),7)')
     assert not errors, errors
     browser.close()

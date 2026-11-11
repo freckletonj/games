@@ -91,6 +91,8 @@ Each chapter is keyed by ID and has:
     resets flap cooldown when passing through a luminous ring.
   - bubbleVent (central deep water; y required): Tidefox holds Jump near
     the vent to ride a stronger upward current, then releases it to dive.
+    Near the waterline, the same held Jump produces a short Tidefox breach to
+    get out onto steep banks without requiring a perfectly timed button tap.
   Example: {"id":"reef-rescue","kind":"bubbleVent","section":"shallow-reef",
   "x":81,"y":44}. The compiler rejects unknown kinds, duplicates, misplaced
   landmarks and wrong section references, and emits local interaction counts.
