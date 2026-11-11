@@ -222,6 +222,15 @@ WW.worldCompiler = (() => {
         Math.abs(route.at(-1)[0]-spec.relic[1])<.01&&
         Math.abs(route.at(-1)[1]-spec.relic[2])<.01;
       if(!valid)errors.push('Invalid goalRoute: 3..8 ordered, bounded waypoints ending exactly at the relic');
+      else{
+        const [x,y]=route[0];
+        const foothold=[...spec.ledges,...spec.bridges].some(([left,top,width])=>
+          x>=left&&x<left+width&&Math.abs(y-top)<1);
+        if(!foothold)errors.push('goalRoute must begin on a real authored ledge or bridge');
+        if(spec.relic[0]==='diveKey' && !spec.water.some(([left,right])=>
+          route.at(-2)[0]>=left&&route.at(-2)[0]<right))
+          errors.push('Tidefox goalRoute must enter the actual water basin');
+      }
     }
     // Author named playable beats instead of executable arbitrary scripts.
     if (spec.setpieces !== undefined && !Array.isArray(spec.setpieces))
