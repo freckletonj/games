@@ -131,6 +131,11 @@ with sync_playwright() as pw:
     }""")
     assert check == {"used": False, "bubble": True}, check
 
+    # Review the passenger visually as well as checking the state transitions.
+    page.evaluate("""() => WW.main.game.render(
+      document.querySelector("#game").getContext("2d"), 12)""")
+    page.screenshot(path=str(html.parent / "preview-coop-bubble.png"))
+
     # Keyboard action pops P2; the triggering button is consumed.
     page.keyboard.down("i")
     page.evaluate("WW.main.game.update(1/60)")
