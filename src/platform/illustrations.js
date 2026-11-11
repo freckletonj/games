@@ -1,6 +1,6 @@
 window.WW = window.WW || {};
-// Hand-painted storybook sprites. Each committed sheet contains a 4 x 2 atlas;
-// its cell order is defined here so art and gameplay geometry stay independent.
+// Painted storybook sprites. Environment sheets have a 4 x 2 grid; character
+// eating and KO states use 3 x 3. Source and geometry remain independent.
 WW.illustrations = (() => {
   const names = {
     gateClosed:['props',0],gateOpen:['props',1],
