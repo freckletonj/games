@@ -95,6 +95,36 @@
         222,
         27,
         9
+      ],
+      [
+        140,
+        34,
+        11
+      ],
+      [
+        151,
+        34,
+        11
+      ],
+      [
+        162,
+        34,
+        9
+      ],
+      [
+        208,
+        30,
+        10
+      ],
+      [
+        218,
+        30,
+        10
+      ],
+      [
+        228,
+        30,
+        9
       ]
     ],
     "ledges": [
@@ -235,7 +265,7 @@
       ],
       [
         158,
-        34
+        23
       ],
       [
         197,
@@ -318,7 +348,7 @@
           174
         ],
         "challenge": "branching-crossing",
-        "goal": "Bridge choice and shoreline exploration"
+        "goal": "Choose the safe lower bridge or climb the lily arcs for a hidden high star"
       },
       {
         "id": "lantern-grove",
@@ -327,7 +357,7 @@
           260
         ],
         "challenge": "return-and-discover",
-        "goal": "Creatures, hidden shards and final gate"
+        "goal": "Cross the sheltered lantern bridge, discover optional high ledges and return to the gate"
       }
     ],
     "motifs": [
