@@ -39,6 +39,16 @@ const scenes = {
   summitBackdrop: await dataUrl('src/assets/scenes/summit/backdrop.webp','image/webp'),
   tiles: await dataUrl('src/assets/tiles/meadow/tiles.png','image/png')
 };
+// Optional diffusion-painted level chunks, bundled with the same zero-network
+// guarantee as all other paintings. No chunk has to match the collision grid.
+const panelFiles=(await readdir(resolve(root,'src/assets/scenes/panels')))
+  .filter(name=>/\\.(webp|png)$/i.test(name)).sort();
+for(const file of panelFiles){
+  const name=file.replace(/\\.(webp|png)$/i,'');
+  if(Object.hasOwn(scenes,name))throw Error('Duplicate scene asset: '+name);
+  const mime=file.toLowerCase().endsWith('.png')?'image/png':'image/webp';
+  scenes[name]=await dataUrl('src/assets/scenes/panels/'+file,mime);
+}
 const illustrations = Object.fromEntries(await Promise.all(
   ['props','effects','landmarks','flora','states'].map(async name => [
     name,await dataUrl(`src/assets/illustrations/${name}.webp`,'image/webp')
