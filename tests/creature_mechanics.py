@@ -39,7 +39,7 @@ with sync_playwright() as pw:
     # Catch different animals in a single meadow. Each capture must forget the
     # old type, even if that type was actively transformed.
     play(0)
-    for kind in ['springaroo', 'mossback', 'prismtail', 'emberkit', 'glimmermoth']:
+    for kind in ['springaroo', 'mossback', 'emberkit', 'glimmermoth']:
         page.evaluate("""kind => {
           const s=WW.main.game.state,p=s.players[0];
           s.animals.forEach(a => {a.alive=a.kind===kind;a.respawn=99999;});
@@ -58,7 +58,7 @@ with sync_playwright() as pw:
         assert state('players[0].form') == kind, kind
 
     # The other biome species are equally catchable, with no special flags.
-    for chapter, kinds in [(1, ['tideling']), (2, ['skyling', 'cloudwhisp'])]:
+    for chapter, kinds in [(1, ['tideling', 'prismtail']), (2, ['skyling', 'cloudwhisp'])]:
         play(chapter)
         for kind in kinds:
             page.evaluate("""kind => {
