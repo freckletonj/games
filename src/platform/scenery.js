@@ -42,41 +42,69 @@ WW.scenery = (() => {
     return drawn;
   }
 
-  // Assemble mirrored, 128-world-unit swatches from the interior of the
-  // painted source panels. The texture is anchored to WORLD coordinates and
-  // repeated as a seamless pattern, not reset at each 16-unit gameplay tile.
-  function makePaint(image, column, top, x0, y0, width, height) {
+  // Mirrored swatches repeat seamlessly in WORLD coordinates. Surface caps use
+  // a 16-unit-high strip so their painted highlight starts at the same height
+  // on every ledge, regardless of the platform's world Y position.
+  function makePaint(image, column, top, x0, y0, width, height, tone) {
     const cw = image.naturalWidth / 4, ch = image.naturalHeight / 2;
     const px = 128, py = top ? 16 : 128;
     const canvas = document.createElement('canvas');
     canvas.width = px * 2;
-    canvas.height = py * 2;
+    canvas.height = top ? py : py * 2;
     const g = canvas.getContext('2d');
     g.imageSmoothingEnabled = true;
     g.imageSmoothingQuality = 'high';
-    for (let row = 0; row < 2; row++) for (let col = 0; col < 2; col++) {
+    for (let row = 0; row < (top ? 1 : 2); row++) for (let col = 0; col < 2; col++) {
       g.save();
       g.translate(col ? px * 2 : 0, row ? py * 2 : 0);
       g.scale(col ? -1 : 1, row ? -1 : 1);
       g.drawImage(image, column * cw + cw * x0, ch * y0, cw * width, ch * height, 0, 0, px, py);
       g.restore();
     }
+    if (tone) {
+      // Keep the original painting's luminosity and brush texture while
+      // giving each biome actual materials, not a blanket hue rotation that
+      // can turn coastal water purple and alpine stone green.
+      g.save();
+      g.globalCompositeOperation = 'color';
+      g.globalAlpha = .82;
+      g.fillStyle = tone;
+      g.fillRect(0, 0, canvas.width, canvas.height);
+      g.restore();
+    }
     return g.createPattern(canvas, 'repeat');
   }
 
-  let paints;
-  function textures() {
-    if (!paints) {
+  const materialTones = {
+    meadow: {},
+    coast: {
+      ground: '#9c8774', groundTop: '#c0b69b',
+      platform: '#9aafb6', platformTop: '#c6d5ce', water: '#3e9fbe'
+    },
+    summit: {
+      ground: '#666386', groundTop: '#aca5c5',
+      platform: '#7e81a6', platformTop: '#c9c6dd', water: '#568bb5'
+    }
+  };
+  const edgeTones = {
+    meadow: {rim:'#b4ddaf91',corner:'#173b4977',left:'#182d3a66',right:'#a6d0b13d'},
+    coast: {rim:'#d7e6c091',corner:'#456c7877',left:'#273f5066',right:'#c2e5dd50'},
+    summit: {rim:'#d0c8e791',corner:'#3d426677',left:'#20284366',right:'#d2c9f050'}
+  };
+  const paints = {};
+  function textures(biome) {
+    if (!paints[biome]) {
       const image = images.tiles;
-      paints = {
-        ground: makePaint(image, 1, false, .15, .28, .70, .63),
-        groundTop: makePaint(image, 0, true, .12, .19, .76, .28),
-        platform: makePaint(image, 2, false, .16, .36, .68, .46),
-        platformTop: makePaint(image, 2, true, .16, .23, .68, .22),
-        water: makePaint(image, 3, false, .19, .51, .62, .43)
+      const tones = materialTones[biome] || materialTones.meadow;
+      paints[biome] = {
+        ground: makePaint(image, 1, false, .15, .28, .70, .63, tones.ground),
+        groundTop: makePaint(image, 0, true, .12, .19, .76, .28, tones.groundTop),
+        platform: makePaint(image, 2, false, .16, .36, .68, .46, tones.platform),
+        platformTop: makePaint(image, 2, true, .16, .23, .68, .22, tones.platformTop),
+        water: makePaint(image, 3, false, .19, .51, .62, .43, tones.water)
       };
     }
-    return paints;
+    return paints[biome];
   }
 
   function sideShade(ctx, x, y, left, color) {
@@ -91,13 +119,11 @@ WW.scenery = (() => {
   // above. Collisions always follow the untouched semantic grid.
   function tile(ctx, biome, kind, x, y, variant, neighbors = {}, time = 0) {
     if (!ready('tiles') || !['ground', 'platform', 'water'].includes(kind)) return false;
-    const p = textures();
+    const p = textures(biome), edge = edgeTones[biome] || edgeTones.meadow;
     const n = !!neighbors.n, e = !!neighbors.e, s = !!neighbors.s, w = !!neighbors.w;
     ctx.save();
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-    if (biome === 'coast') ctx.filter = 'hue-rotate(75deg) saturate(.80) brightness(.88)';
-    if (biome === 'summit') ctx.filter = 'hue-rotate(155deg) saturate(.66) brightness(.90)';
     ctx.beginPath();
     ctx.rect(x, y, 16, 16);
     ctx.clip();
@@ -121,10 +147,10 @@ WW.scenery = (() => {
         ctx.fillStyle = fade;
         ctx.fillRect(x, y + 3, 16, 7);
       }
-      if (!w) sideShade(ctx, x, y, true, '#182d3a66');
-      if (!e) sideShade(ctx, x, y, false, '#a6d0b13d');
+      if (!w) sideShade(ctx, x, y, true, edge.left);
+      if (!e) sideShade(ctx, x, y, false, edge.right);
       if (!s) {ctx.fillStyle = '#1d36424d'; ctx.fillRect(x, y + 13, 16, 3);}
-      ctx.strokeStyle = '#b4ddaf91';
+      ctx.strokeStyle = edge.rim;
       ctx.lineWidth = 1.5;
       if (!n && !w) {
         ctx.beginPath(); ctx.moveTo(x, y + 6);
@@ -134,7 +160,7 @@ WW.scenery = (() => {
         ctx.beginPath(); ctx.moveTo(x + 10, y);
         ctx.quadraticCurveTo(x + 16, y, x + 16, y + 6); ctx.stroke();
       }
-      ctx.strokeStyle = '#173b4977';
+      ctx.strokeStyle = edge.corner;
       if (n && w && !neighbors.nw) {
         ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI / 2); ctx.stroke();
       }
