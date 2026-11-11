@@ -98,6 +98,26 @@ WW.worldCompiler = (() => {
       }
       if (last !== width) errors.push('sections must cover the full width');
     }
+    // High-level platform motifs let an LLM author meaningful traversals
+    // without enumerating each tiny physics tile. Every motif belongs to a
+    // named challenge section so reports identify the intended experience.
+    for (const motif of spec.motifs || []) {
+      const section = spec.sections?.find(s => s.id === motif.section);
+      if (!['arc','staircase','ripples'].includes(motif.type) ||
+          !section || typeof motif.id !== 'string' || !motif.id ||
+          !integer(motif.x) || !integer(motif.y) ||
+          !integer(motif.count) || motif.count < 2 || motif.count > 12 ||
+          !integer(motif.dx) || motif.dx < 4 || motif.dx > 24 ||
+          !integer(motif.width) || motif.width < 3 || motif.width > 12 ||
+          !integer(motif.rise) || Math.abs(motif.rise) > 15 ||
+          motif.x < section?.range[0] ||
+          motif.x + (motif.count - 1) * motif.dx + motif.width > section?.range[1] ||
+          motif.y - Math.abs(motif.rise) < 1 ||
+          motif.y + Math.abs(motif.rise) >= height) {
+        errors.push('Invalid motif ' + (motif.id || '?') +
+          ': require a valid section, shape and in-bounds platforms');
+      }
+    }
     if (Array.isArray(spec.water) && Array.isArray(ridge) && ridge.length > 1 &&
         errors.every(error => !error.startsWith('ridge'))) {
       let previousEnd = -1;
@@ -144,10 +164,11 @@ WW.worldCompiler = (() => {
     }
 
     const grid = Array.from({length: height}, () => Array(width).fill('empty'));
-    const objects = [];
+    const objects = [], platformSegments = [];
     const floorAt = x => Math.min(height - 1, Math.ceil(Math.max(surface[x], surface[x + 1])));
     const stamp = (kind, x, y) => objects.push({kind, x, y});
     const platform = (x, y, length, kind = 'platform') => {
+      platformSegments.push({x, y, length, kind});
       for (let i = x; i < Math.min(width, x + length); i++) {
         if (i >= 0 && y >= 0 && y < height) grid[y][i] = kind;
       }
@@ -167,6 +188,18 @@ WW.worldCompiler = (() => {
     for (const [x, y, length] of spec.ledges) platform(x, y, length);
     for (const [x, y, w, h] of spec.thermals || []) {
       for (let row = y; row < y + h; row++) platform(x, row, w, 'thermal');
+    }
+    for (const motif of spec.motifs || []) {
+      for (let i = 0; i < motif.count; i++) {
+        const t = i / (motif.count - 1);
+        const offset = motif.type === 'arc'
+          ? -motif.rise * Math.sin(Math.PI * t)
+          : motif.type === 'staircase'
+            ? -motif.rise * t
+            : (i % 2 ? motif.rise : -motif.rise);
+        platform(motif.x + motif.dx*i, Math.round(motif.y + offset),
+          motif.width);
+      }
     }
     // Optional shelves offer meaningful underwater routes instead of an empty
     // column of water; deeper platforms remain independently traversable.
@@ -190,10 +223,12 @@ WW.worldCompiler = (() => {
       count + row.filter(cell => cell === 'water').length, 0);
     const diagnostics = {...report, metrics: {
       width, height, sections: spec.sections.length, waterCells,
-      ledges: spec.ledges.length, creatures: spec.creatures.length
+      ledges: spec.ledges.length, motifs: (spec.motifs || []).length,
+      creatures: spec.creatures.length
     }};
     return {width, height, grid, objects, chapter, biome: spec.biome,
       landmarks: spec.landmarks, surface, waterBodies: basins,
+      platformSegments,
       waterZones: spec.water, sections: spec.sections,
       decorSeed: spec.id, diagnostics, warnings: report.warnings};
   }
