@@ -1,6 +1,6 @@
 window.WW = window.WW || {}; WW.games = WW.games || {};
 WW.games.animals = (() => {
-  const TILE=16,W=480,H=270, FORM=WW.catalog.forms, CREATURE=WW.catalog.creatures, FOOD=WW.catalog.foods;
+  const TILE=16,W=480,H=270, FORM=WW.catalog.forms, CREATURE=WW.catalog.creatures, MOUNTS=WW.catalog.mounts, FOOD=WW.catalog.foods;
   const TYPES=Object.keys(FORM),FOODS=Object.keys(FOOD);
   const titles=Object.fromEntries(Object.entries(CREATURE).map(([kind,info])=>[kind,info.name]));
   // One world unit is one source-pixel; frames run at 60 Hz. All map jumps obey these rules.
@@ -79,7 +79,7 @@ WW.games.animals = (() => {
         waterTime:0,face:1,health:3,sleep:false,invincible:0,selected:0,selectedFood:0,energy:Object.fromEntries(TYPES.map(t=>[t,0])),
         form:null,caught:null,hover:0,flapCooldown:0,flapBuffer:0,flaps:4,flapRecharge:0,wingbeat:0,actionCD:0,frame:0,hurt:0,
         bloomBoostWindow:0,lastJumpPress:-100,
-        bubble:false,bubbleGrace:0,breachCooldown:0,windPush:0,
+        bubble:false,bubbleGrace:0,breachCooldown:0,windPush:0,mount:null,mountCooldown:0,
         unlocked:Object.fromEntries(TYPES.map(kind=>[kind,false]))};
     });
     const animals=level.objects.filter(o=>CREATURE[o.kind]).map((o,i)=>({
@@ -88,6 +88,10 @@ WW.games.animals = (() => {
       turnCooldown:0,aggroUntil:0,
       eating:0,windup:0,dashTime:0,dashDir:1,chargeCooldown:1+i*.3,phase:i*.9,frame:0,homeDir:i%2?1:-1,
       stunned:0,stuck:0,trapped:0,gustTime:0,gustHit:[],moving:false
+    }));
+    const mounts=level.objects.filter(o=>MOUNTS[o.kind]).map((o,id)=>({
+      id,kind:o.kind,...location(o),homeX:location(o).x,homeY:location(o).y,
+      vx:0,vy:0,dir:1,grounded:true,trust:0,eating:0,rider:null,phase:id*1.3
     }));
     const items=level.objects.filter(o=>(['snack','starShard','checkpoint','exit'].includes(o.kind)||goalKinds.has(o.kind))).map(o=>{
       const x=(o.x+.5)*TILE;
@@ -189,13 +193,20 @@ WW.games.animals = (() => {
       }
     }
     function recallParty(destination=spawn){WW.audio.play('recall');
-      players.forEach((p,i)=>{p.x=destination.x+i*25;p.y=destination.y;p.vx=p.vy=0;p.waterTime=0;p.lastSafe={x:p.x,y:p.y};p.grounded=false;
+      players.forEach((p,i)=>{
+        if(p.mount!==null){
+          const mount=mounts[p.mount];
+          mount.rider=null;mount.x=mount.homeX;mount.y=mount.homeY;
+          mount.vx=mount.vy=0;mount.grounded=true;p.mount=null;
+        }
+        p.x=destination.x+i*25;p.y=destination.y;p.vx=p.vy=0;p.waterTime=0;p.lastSafe={x:p.x,y:p.y};p.grounded=false;
         p.bubble=false;p.bubbleGrace=0;
         if(p.sleep){p.sleep=false;p.health=3;}p.invincible=2;particles(p.x,p.y-10,'#b9f6ff',24);});
       cameraX=0;cameraY=0;WW.input.reset();say('Camp portal! Your relics, snacks and transformation time are safe.',2800);
     }
     function hitPlayer(player,sourceX=player.x-player.face*20){
       if(player.invincible>0||player.sleep||player.bubble||shared.won)return;
+      if(player.mount!==null)dismount(player);
       player.health--;WW.audio.play('hit');player.invincible=1.2;
       player.hurt=.23;player.grounded=false;
       player.vx=sourceX<player.x?3.3:-3.3;
@@ -209,6 +220,7 @@ WW.games.animals = (() => {
     }
     function revive(player,by){WW.audio.play('revive');player.sleep=false;player.hurt=0;player.health=3;player.invincible=2;player.vy=-2;player.waterTime=0;player.x=player.lastSafe.x;player.y=player.lastSafe.y;particles(player.x,player.y-10,'#aafae3',14); WW.input.rumble(by.id,.45,180);say('Back on your feet!');}
     function enterFollowBubble(partner) {
+      if(partner.mount!==null)dismount(partner);
       partner.bubble=true;partner.vx=partner.vy=0;partner.grounded=false;
       const anchor=WW.coop.bubbleAnchor(players[0],width,height);
       partner.x=anchor.x;partner.y=anchor.y;
@@ -266,9 +278,14 @@ WW.games.animals = (() => {
         return;
       }
       p.bubbleGrace=Math.max(0,p.bubbleGrace-dt);
+      p.mountCooldown=Math.max(0,p.mountCooldown-dt);
       if(p.sleep){
         if(controls.pressed.recall)recallParty();
         else if(controls.pressed.revive)revive(p,p);
+        return;
+      }
+      if(p.mount!==null){
+        moveMountedPlayer(p,controls,dt);
         return;
       }
       p.invincible=Math.max(0,p.invincible-dt);
@@ -420,6 +437,133 @@ WW.games.animals = (() => {
       if(controls.pressed.recall)recallParty();
       if(controls.pressed.revive)for(const other of players)if(other!==p&&other.sleep&&distance(other,p)<48)revive(other,p);
       p.frame+=dt*(p.grounded?Math.abs(p.vx)*5+1:7);
+    }
+    function dismount(p){
+      const mount=mounts[p.mount];
+      mount.rider=null;mount.vx=p.vx*.55;
+      p.mount=null;p.mountCooldown=.65;
+      p.x=clamp(mount.x+mount.dir*28,11,width-11);
+      p.y=clamp(mount.y-33,PHYSICS.bodyHeight+1,height-12);
+      p.vy=-2.5;p.grounded=false;p.coyote=0;p.jumpBuffer=0;
+      p.invincible=Math.max(p.invincible,.7);
+      say('Back on foot. Feed a mount and land on its back to ride again.',1700);
+    }
+    function moveMountedPlayer(p,controls,dt){
+      const m=mounts[p.mount],spec=MOUNTS[m.kind],step=dt*60;
+      if(controls.pressed.transform){dismount(p);return;}
+      if(controls.pressed.recall){recallParty();return;}
+      p.previousX=p.x;p.previousY=p.y;
+      p.invincible=Math.max(0,p.invincible-dt);
+      const direction=Number(controls.right)-Number(controls.left);
+      if(direction){m.dir=direction;p.face=direction;}
+      const target=direction*spec.speed;
+      m.vx+=clamp(target-m.vx,-(m.grounded?.46:.26)*step,(m.grounded?.46:.26)*step);
+      if(m.kind==='unicorn'){
+        if(controls.pressed.jump&&m.grounded){
+          m.vy=-spec.jump;m.grounded=false;WW.audio.play('double');
+          particles(m.x,m.y-5,'#f6d7ff',17);
+        }
+        m.vy=Math.min(PHYSICS.maxFall,m.vy+PHYSICS.gravity*step);
+      }else{
+        // Pegasus can climb for as long as Jump is held; Down intentionally dives.
+        // Unlike Moonwing, it has no finite wingbeat or flight-energy budget.
+        if(controls.jump)m.vy=Math.max(-4.6,m.vy-.43*step);
+        else if(controls.down)m.vy=Math.min(4.5,m.vy+.35*step);
+        else m.vy=clamp(m.vy*.92+.045*step,-4.5,2.5);
+      }
+      const half=18,upper=38;
+      const nx=clamp(m.x+m.vx*step,half+1,width-half-1);
+      const feet=m.y;
+      const ground=level.surface?Math.min(surfaceY(nx-half+3),surfaceY(nx+half-3)):null;
+      const walkSlope=m.grounded&&!liquid(nx,feet-5)&&ground!==null&&
+        Math.abs(ground-feet)<13;
+      const blocked=liquid(nx,feet-8)&&m.grounded||
+        (m.vx>0&&(solid(nx+half,feet-6)||solid(nx+half,feet-upper)))||
+        (m.vx<0&&(solid(nx-half,feet-6)||solid(nx-half,feet-upper)));
+      if(!blocked){
+        m.x=nx;
+        if(walkSlope)m.y=ground;
+      }else m.vx=0;
+      let ny=m.y+m.vy*step;
+      const floor=level.surface?Math.min(surfaceY(m.x-half+3),surfaceY(m.x+half-3)):null;
+      const onSlope=floor!==null&&m.y<=floor+12&&ny>=floor&&
+        !liquid(m.x,m.y-6)&&!liquid(m.x,ny-6);
+      const platform=at(m.x,ny)==='platform'&&
+        m.y<=Math.floor(ny/TILE)*TILE;
+      if(m.vy>=0&&(onSlope||solid(m.x-half+3,ny)||solid(m.x+half-3,ny)||platform)){
+        ny=onSlope?floor:Math.floor(ny/TILE)*TILE;
+        m.vy=0;m.grounded=true;
+      }else m.grounded=false;
+      if(m.vy<0&&(solid(m.x-half+3,ny-upper)||solid(m.x+half-3,ny-upper))){
+        ny=(Math.floor((ny-upper)/TILE)+1)*TILE+upper;m.vy=0;
+      }
+      m.y=clamp(ny,upper+1,height-8);
+      m.phase+=dt*(m.grounded?4+Math.abs(m.vx)*2:8);
+      p.x=m.x;p.y=m.y-23;p.vx=m.vx;p.vy=m.vy;p.grounded=m.grounded;
+      p.coyote=0;p.jumpsUsed=0;p.waterTime=0;
+      if(m.grounded&&!liquid(m.x,m.y-8))p.lastSafe={x:p.x,y:p.y};
+      p.frame+=dt*(Math.abs(m.vx)*3+4);
+    }
+    function updateMounts(dt){
+      const step=dt*60;
+      for(const m of mounts){
+        if(m.rider!==null)continue;
+        m.phase+=dt;
+        m.eating=Math.max(0,m.eating-dt);
+        if(!m.grounded){
+          m.vy=Math.min(PHYSICS.maxFall,m.vy+PHYSICS.gravity*step);
+          m.y+=m.vy*step;
+          const ground=standingHeight(m.x,m.homeY);
+          if(m.y>=ground){m.y=ground;m.vy=0;m.grounded=true;}
+          continue;
+        }
+        const lure=nearbyFood(m);
+        if(lure){
+          const nextX=clamp(m.x+clamp(lure.x-m.x,-1.15*step,1.15*step),
+            18,width-18);
+          const floor=standingHeight(nextX,m.homeY);
+          if(!liquid(nextX,floor-8)&&Math.abs(floor-m.y)<17){
+            m.dir=nextX>=m.x?1:-1;m.vx=(nextX-m.x)/step;
+            m.x=nextX;m.y=floor;
+          }
+          if(Math.abs(m.x-lure.x)<21&&Math.abs(m.y-lure.y)<40){
+            lure.used=true;m.eating=.8;
+            const favorite=MOUNTS[m.kind].favorite===lure.food;
+            m.trust=Math.min(TRUST_TARGET,m.trust+(favorite?60:36));
+            WW.audio.play('munch');
+            particles(m.x,m.y-27,MOUNTS[m.kind].color,10);
+            if(m.trust>=TRUST_TARGET){
+              WW.audio.play('ready');
+              say(MOUNTS[m.kind].name+' trusts you! Jump onto its back to ride.',2200);
+            }
+          }
+        }else{
+          const target=m.homeX+m.dir*24;
+          const nextX=clamp(m.x+clamp(target-m.x,-.35*step,.35*step),
+            Math.max(18,m.homeX-26),Math.min(width-18,m.homeX+26));
+          const floor=standingHeight(nextX,m.homeY);
+          if(Math.abs(m.x-target)<2)m.dir*=-1;
+          if(!liquid(nextX,floor-8)&&Math.abs(floor-m.y)<13){
+            m.vx=(nextX-m.x)/step;m.x=nextX;m.y=floor;
+          }else{m.dir*=-1;m.vx=0;}
+        }
+        if(m.trust<TRUST_TARGET)continue;
+        const rider=players.find(p=>!p.sleep&&!p.bubble&&p.mount===null&&
+          p.mountCooldown===0&&p.vy>=0&&
+          Math.abs(p.x-m.x)<27&&p.previousY<=m.y-23&&
+          p.y>=m.y-27&&p.y<=m.y-10);
+        if(rider){
+          m.rider=rider.id;rider.mount=m.id;rider.x=m.x;rider.y=m.y-23;
+          rider.vx=m.vx;rider.vy=m.vy;rider.grounded=m.grounded;
+          rider.waterTime=0;
+          WW.audio.play('morph');
+          WW.input.rumble(rider.id,.4,180);
+          particles(m.x,m.y-28,MOUNTS[m.kind].color,22);
+          say(m.kind==='unicorn'?
+            'Unicorn! Run fast, press Jump for a soaring leap. T dismounts.':
+            'Pegasus! Hold Jump to climb, Down to descend. Fly freely! T dismounts.',2200);
+        }
+      }
     }
     function targetFor(animal){
       return players.filter(p=>!p.sleep&&!p.bubble).sort((a,b)=>distance(a,animal)-distance(b,animal))[0];
@@ -575,7 +719,7 @@ WW.games.animals = (() => {
         }
         // A precise descending head stomp is safe, rewards a bounce, and
         // sends the animal to rest for a few seconds rather than harming it.
-        const stomp=players.find(p=>!p.sleep&&!p.bubble&&p.vy>0.6&&
+        const stomp=players.find(p=>!p.sleep&&!p.bubble&&p.mount===null&&p.vy>0.6&&
           Math.abs(p.x-a.x)<17&&p.previousY<=a.y-23&&p.y>=a.y-27&&p.y<a.y-12);
         if(stomp&&!incapacitated){knockOut(a,stomp);continue;}
         if(incapacitated||peaceful)continue;
@@ -747,7 +891,8 @@ WW.games.animals = (() => {
       items.forEach(item=>{
         if(item.used&&item.kind==='snack'&&clock>=item.respawn)item.used=false;
         if(item.used)return;
-        const p=players.find(p=>!p.sleep&&!p.bubble&&Math.abs(p.x-item.x)<20&&Math.abs((p.y-13)-item.y)<28);
+        const p=players.find(p=>!p.sleep&&!p.bubble&&Math.abs(p.x-item.x)<20&&
+          Math.abs((p.y+(p.mount!==null?8:-13))-item.y)<28);
         if(!p)return;
         if(item.kind==='snack'){
           item.used=true;item.respawn=clock+11;
@@ -798,7 +943,7 @@ WW.games.animals = (() => {
       const follower=players[1];
       if(follower&&!follower.bubble&&follower.bubbleGrace===0 &&
          WW.coop.shouldBubble(players[0],follower))enterFollowBubble(follower);
-      updateAnimals(dt);updateProjectiles(dt);updateChallenges(dt);updateItems();chapterHint();
+      updateAnimals(dt);updateMounts(dt);updateProjectiles(dt);updateChallenges(dt);updateItems();chapterHint();
       if(clock>abilityUntil)callout.hidden=true;
       effects.forEach(e=>{e.x+=e.vx*dt*60;e.y+=e.vy*dt*60;e.vy+=.09*dt*60;e.time-=dt;});
       for(let i=effects.length-1;i>=0;i--)if(effects[i].time<=0)effects.splice(i,1);
@@ -1270,6 +1415,18 @@ WW.games.animals = (() => {
       lures.forEach(lure=>{
         WW.art.drawFruit(ctx,lure.food,lure.x,lure.y-5,13);
       });
+      mounts.forEach(m=>{
+        WW.art.drawMount(ctx,m.kind,m.x,m.y,m.dir<0,{
+          action:m.rider!==null?'run':m.eating>0?'eat':
+            m.trust>=TRUST_TARGET?'happy':Math.abs(m.vx)>.15?'run':'idle',
+          time:m.phase, flying:m.kind==='pegasus'&&!m.grounded
+        });
+        if(m.trust>0&&m.rider===null){
+          box(ctx,m.x-20,m.y-55,40,4,'#213345');
+          box(ctx,m.x-19,m.y-54,38*m.trust/TRUST_TARGET,2,
+            m.trust>=TRUST_TARGET?'#ffdc88':'#cfb9e8');
+        }
+      });
       animals.forEach(a=>{
         if(!a.alive)return;
         const near=players.some(p=>!p.sleep&&!p.bubble&&Math.abs(p.x-a.x)<55&&Math.abs(p.y-a.y)<45);
@@ -1476,7 +1633,7 @@ WW.games.animals = (() => {
       trailGuide(ctx,now);
     }
     hud.hidden=false;callout.hidden=true;say(chapter.name,1500);
-    return {update,render,recallParty,recallCheckpoint(){recallParty(shared.checkpoint);},stop(){hud.hidden=true;callout.hidden=true;message.classList.remove('show');},get state(){return {chapter,goals,challenges,players,shared,animals,items,setpieces,projectiles,lures,captures,cameraX,cameraY,objective:objective(),physics:PHYSICS,jumpHeight}}};
+    return {update,render,recallParty,recallCheckpoint(){recallParty(shared.checkpoint);},stop(){hud.hidden=true;callout.hidden=true;message.classList.remove('show');},get state(){return {chapter,goals,challenges,players,shared,animals,mounts,items,setpieces,projectiles,lures,captures,cameraX,cameraY,objective:objective(),physics:PHYSICS,jumpHeight}}};
   }
   return {start};
 })();
