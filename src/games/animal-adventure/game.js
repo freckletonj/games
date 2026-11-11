@@ -34,6 +34,17 @@ WW.games.animals = (() => {
       coast:{sky:['#236b9b','#69b6d7','#72e7db','#fcebbd'],mountains:['#87cfdf','#44a9cc','#2d72a3'],tree:['#2a7393','#3ba3b5','#81e5e1'],soil:['#325477','#387c9f','#598bac'],grass:['#8ad9c3','#4eb1a9']},
       summit:{sky:['#192859','#684caa','#d284cc','#e8b5f7'],mountains:['#7776c4','#6760aa','#424b8c'],tree:['#465b97','#7b7ec4','#c9aef0'],soil:['#4e4779','#66629b','#8178ac'],grass:['#a6a5f4','#827cce']}}[chapter.biome]||null;
     const tint=terrainTint||{sky:['#5e4fa8','#a078da','#7cdbd5','#fff0a9'],mountains:['#a69eda','#6bb0cb','#368a93'],tree:['#2b6484','#499aa2','#6be1aa'],soil:['#634a74','#795781','#8e6484'],grass:['#68cf8d','#378e80']};
+    // Connected platform silhouettes are rendered as physical spans, not
+    // individual textured rectangles. Merge overlapping same-style runs.
+    const platformSpans=[];
+    for(const span of (level.platformSegments||[]).filter(p=>p.kind==='platform')
+      .sort((a,b)=>a.y-b.y||a.x-b.x)){
+      const prev=platformSpans.at(-1);
+      if(prev&&prev.y===span.y&&prev.style===span.style&&
+         span.x<=prev.x+prev.length+1){
+        prev.length=Math.max(prev.length,span.x+span.length-prev.x);
+      }else platformSpans.push({...span});
+    }
     // Precompute eight-neighbor autotile relationships once per immutable level.
     const terrainNeighbors = map.map((row, y) => row.map((kind, x) => {
       const same = (dx, dy) => map[y + dy]?.[x + dx] === kind;
@@ -969,7 +980,8 @@ WW.games.animals = (() => {
       for(let y=top;y<bottom;y++)for(let x=left;x<right;x++){
         const t=map[y][x];
         // Paint contained water as one basin, never striped texture cells.
-        if(t==='empty'||(t==='water'&&level.waterBodies?.length))continue;
+        if(t==='empty'||(t==='water'&&level.waterBodies?.length)||
+           (t==='platform'&&platformSpans.length))continue;
         const px=x*TILE,py=y*TILE,h=hash(x,y);
         // The authored slope skin draws one continuous grass line. Suppress
         // coarse ground-tile caps beneath it to avoid floating bright stripes.
@@ -1077,6 +1089,12 @@ WW.games.animals = (() => {
           WW.scenery.slope(ctx,chapter.biome,x*TILE,level.surface[x]*TILE,level.surface[x+1]*TILE);
       }
       WW.scenery.waterVolume(ctx,level,cameraX,now);
+      for(const span of platformSpans){
+        if((span.x+span.length)*TILE<cameraX-24||
+            span.x*TILE>cameraX+W+24||span.y*TILE<cameraY-48||
+            span.y*TILE>cameraY+H+26)continue;
+        WW.scenery.platformSpan(ctx,chapter.biome,span,now);
+      }
       WW.scenery.paintLayers(ctx,level.art?.foreground,cameraX,cameraY);
       groundDetails(ctx,now);
        paintSetpieces(ctx,now);
