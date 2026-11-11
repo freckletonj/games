@@ -11,63 +11,54 @@ WW.scenery = (() => {
   const ready = name => images[name]?.complete && images[name].naturalWidth > 0;
   const url = name => sources[name] || '';
 
+  // One uninterrupted panorama per chapter. Repeating and alternating
+  // mirrored panels duplicated waterfalls, mountains and temples every
+  // few hundred pixels, making the supposedly authored world look tiled.
+  // Pan a modest crop across the original painting over the whole chapter.
   function background(ctx, biome, cameraX, level=null) {
-    const source={meadow:'backdrop',coast:'coastBackdrop',summit:'summitBackdrop'}[biome];
-    const painted=ready('painted-biomes');
-    if(!painted && (!source||!ready(source)))return false;
+    const world=level?.chapter?.id || level?.decorSeed || '';
+    const wetlands=world==='willow-wetlands';
+    const gardens=world==='cloud-gardens';
+    const source=wetlands?'backdrop':
+      {meadow:'backdrop',coast:'coastBackdrop',summit:'summitBackdrop'}[biome];
+    if(!ready(source))return false;
+    const image=images[source];
+    const maxCamera=Math.max(1,(level?.width||260)*16-480);
+    const travel=Math.max(0,Math.min(1,cameraX/maxCamera));
+    const height=biome==='meadow'||wetlands?358:385;
+    const width=height*image.naturalWidth/image.naturalHeight;
+    const x=-(width-480)*travel;
+    const y=biome==='meadow'||wetlands?-20:-36;
     ctx.save();
     ctx.imageSmoothingEnabled=true;
-    // Alternating mirrored panorama panels join at identical painted edges.
-    // Parallax keeps the backdrop moving throughout multi-screen chapters.
-    const image=images[source];
-    if(ready(source)){
-    // Preserve the painter's aspect ratio; never squash the panorama to a
-    // fixed arbitrary width as the camera advances.
-    const span=image.naturalWidth*(292/image.naturalHeight),scroll=cameraX*.12;
-    const first=Math.floor(scroll/span)-1;
-    for(let i=first;i<first+4;i++){
-      const x=i*span-scroll;
-      ctx.save();
-      if(Math.abs(i%2)===1){ctx.translate(x+span,0);ctx.scale(-1,1);ctx.drawImage(images[source],0,-8,span,292);}
-      else ctx.drawImage(images[source],x,-8,span,292);
-      ctx.restore();
-    }
-    }
-    // Keep the full-resolution painted panorama for forests and mountains:
-    // the tiny atlas was getting magnified and made the game look blurry.
-    // Its underwater image is reserved for actual coastal lagoons.
-    if(painted && biome==='coast' && level?.waterBodies?.length){
-      const atlas=images['painted-biomes'],index=1;
-      const span=atlas.naturalWidth*(292/(atlas.naturalHeight/3));
-      const scroll=cameraX*.12,first=Math.floor(scroll/span)-1;
-      let strength=.87;
-      if(biome==='coast'){
-        // Dry shores retain the brighter surface panorama. As the camera
-        // approaches a *real* lagoon, blend in the submerged-ruins painting;
-        // no fake pool is positioned independent of level geometry.
-        const center=cameraX+240;
-        strength=0;
-        for(const basin of level?.waterBodies||[]){
-          const a=basin.start*16,b=basin.end*16;
-          const approach=Math.max(0,Math.min(1,(center-a+240)/300));
-          const retreat=Math.max(0,Math.min(1,(b+240-center)/300));
-          strength=Math.max(strength,approach*retreat);
-        }
-        strength*=.42;
+    ctx.imageSmoothingQuality='high';
+    // Coastal lagoons are tropical and luminous; the wetlands reuse the
+    // tree-filled painting with darker, cooler coloration so their river
+    // does not look like a duplicated ocean scene.
+    if(wetlands)ctx.filter='hue-rotate(22deg) saturate(.74) brightness(.83)';
+    else if(gardens)ctx.filter='hue-rotate(-14deg) saturate(.88) brightness(1.12)';
+    ctx.drawImage(image,x,y,width,height);
+    ctx.filter='none';
+
+    // Diffusion-painted submerged ruins appear only when camera framing
+    // overlaps an authored water basin, never as a global fake ocean behind
+    // dry shoreline gameplay. The image itself is one continuous crop.
+    if(biome==='coast'&&ready('painted-biomes')&&level?.waterBodies?.length){
+      const center=cameraX+240;
+      let strength=0;
+      for(const basin of level.waterBodies){
+        const a=basin.start*16,b=basin.end*16;
+        const entry=Math.max(0,Math.min(1,(center-a+240)/300));
+        const exit=Math.max(0,Math.min(1,(b+240-center)/300));
+        strength=Math.max(strength,entry*exit);
       }
-      ctx.globalAlpha=strength;
-      for(let i=first;i<first+4;i++){
-        const x=i*span-scroll;
-        ctx.save();
-        if(Math.abs(i%2)===1){
-          ctx.translate(x+span,0);ctx.scale(-1,1);
-          ctx.drawImage(atlas,0,index*atlas.naturalHeight/3,
-            atlas.naturalWidth,atlas.naturalHeight/3,0,-8,span,292);
-        }else{
-          ctx.drawImage(atlas,0,index*atlas.naturalHeight/3,
-            atlas.naturalWidth,atlas.naturalHeight/3,x,-8,span,292);
-        }
-        ctx.restore();
+      strength*=wetlands?.22:.36;
+      if(strength>0){
+        const atlas=images['painted-biomes'],row=atlas.naturalHeight/3;
+        const stripWidth=atlas.naturalWidth*(292/row);
+        ctx.globalAlpha=strength;
+        ctx.drawImage(atlas,0,row,atlas.naturalWidth,row,
+          -(stripWidth-480)*travel,-8,stripWidth,292);
       }
     }
     ctx.restore();
