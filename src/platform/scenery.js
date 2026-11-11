@@ -15,7 +15,7 @@ WW.scenery = (() => {
   // mirrored panels duplicated waterfalls, mountains and temples every
   // few hundred pixels, making the supposedly authored world look tiled.
   // Pan a modest crop across the original painting over the whole chapter.
-  function background(ctx, biome, cameraX, level=null) {
+  function background(ctx, biome, cameraX, level=null, cameraY=0) {
     const world=level?.chapter?.id || level?.decorSeed || '';
     const wetlands=world==='willow-wetlands';
     const gardens=world==='cloud-gardens';
