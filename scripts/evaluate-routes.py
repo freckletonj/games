@@ -89,6 +89,14 @@ with sync_playwright() as playwright:
         }""")
         assert test["normal"] > 30, test
         assert test["blocked"] < 26 and not test["wallReached"], test
+        goal_wall = page.evaluate("""() => {
+          const clear=WW.worlds.create(WW.chapters[0]);
+          const blocked=WW.worlds.create(WW.chapters[0]);
+          for(const row of blocked.grid)row[110]='ground';
+          return {normal:WW_ROUTE_PROBES.goal(clear,{frames:260}).collected,
+            blocked:WW_ROUTE_PROBES.goal(blocked,{frames:260}).collected};
+        }""")
+        assert goal_wall == {"normal": True, "blocked": False}, goal_wall
     browser.close()
 
 output.mkdir(exist_ok=True)
