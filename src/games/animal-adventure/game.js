@@ -22,7 +22,7 @@ WW.games.animals = (() => {
     const abilityHelp={
       springaroo:'Double jump with Jump; F blows a short petal puff',
       tideling:'Swim with Jump / Down; hold Jump near the surface to leap ashore. F splashes',
-      skyling:'Tap Jump for each wingbeat; F sends a gentle feather gust',
+      skyling:'Four wingbeats per flight. Land or find wind to recharge; F sends a feather gust',
       mossback:'F launches honey that sticks a creature in place briefly',
       prismtail:'F catches a creature in a floating bubble',
       glimmermoth:'Press F in the air to hover briefly, without gaining height',
@@ -77,7 +77,7 @@ WW.games.animals = (() => {
       const position=location(first(id===0?'p1':'p2')||first('p1')||{x:3+id*2,y:level.height-3});
       return {id,...position,lastSafe:{...position},vx:0,vy:0,grounded:false,coyote:0,jumpBuffer:0,jumpsUsed:0,
         waterTime:0,face:1,health:3,sleep:false,invincible:0,selected:0,selectedFood:0,energy:Object.fromEntries(TYPES.map(t=>[t,0])),
-        form:null,caught:null,hover:0,flapCooldown:0,wingbeat:0,actionCD:0,frame:0,hurt:0,
+        form:null,caught:null,hover:0,flapCooldown:0,flaps:4,flapRecharge:0,wingbeat:0,actionCD:0,frame:0,hurt:0,
         bubble:false,bubbleGrace:0,breachCooldown:0,
         unlocked:Object.fromEntries(TYPES.map(kind=>[kind,false]))};
     });
@@ -226,7 +226,7 @@ WW.games.animals = (() => {
           particles(s.x,s.y-12,chapter.biome==='summit'?'#d9b4ff':'#ffd3ab',16);
         }else if(s.kind==='windRing' && p.form==='skyling' &&
                  Math.abs(p.y-13-s.y)<22 && clock>=(s.ready[p.id]||0)){
-          p.vy=Math.min(p.vy,-4.8);p.flapCooldown=0;p.wingbeat=.28;
+          p.vy=Math.min(p.vy,-4.8);p.flapCooldown=0;p.flaps=Math.min(4,p.flaps+2);p.wingbeat=.28;
           s.ready[p.id]=clock+2.1;
           WW.audio.play('double');WW.input.rumble(p.id,.18,90);
           particles(s.x,s.y,'#d7f6ff',17);
@@ -273,6 +273,7 @@ WW.games.animals = (() => {
       if(direction)p.face=direction;
       const swimming=p.form==='tideling' && (liquid(p.x,p.y-8)||liquid(p.x,p.y+2));
       const flying=p.form==='skyling';
+      if(flying&&p.grounded){p.flaps=4;p.flapRecharge=0;}
       const run=p.form==='springaroo'?2.65:swimming?2.55:PHYSICS.run;
       const water=liquid(p.x,p.y-9)||liquid(p.x,p.y-1);
       // Acceleration gives movement weight without sacrificing the sprint trial.
@@ -306,18 +307,24 @@ WW.games.animals = (() => {
           p.vy=-(second?PHYSICS.doubleJump:PHYSICS.jump);WW.audio.play(second?'double':'jump');
           p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumpsUsed++;
           if(second){particles(p.x,p.y-5,'#f6e190',13);WW.input.rumble(p.id,.25,80);}
-        }else if(flying && controls.pressed.jump && p.flapCooldown===0){
+        }else if(flying && controls.pressed.jump && p.flapCooldown===0 && p.flaps>0){
           // Each released-and-repressed wingbeat adds an impulse; holding Jump
           // never generates free lift. The cooldown keeps rapid taps consistent.
           p.vy=Math.max(-4.9,p.vy-3.65);
-          p.flapCooldown=.15;p.wingbeat=.23;p.jumpBuffer=0;
+          p.flaps--;p.flapCooldown=.15;p.wingbeat=.23;p.jumpBuffer=0;
           WW.audio.play('double');
           particles(p.x-p.face*8,p.y-14,'#e9f0ff',5);
         }
         // Releasing early makes a short hop for grounded forms.
         if(controls.released.jump&&p.vy< -1&&!flying)p.vy*=.56;
-        if(flying && (thermal(p.x,p.y-8)||thermal(p.x,p.y-20)))
+        if(flying && (thermal(p.x,p.y-8)||thermal(p.x,p.y-20))){
           p.vy=Math.max(-3.5,p.vy-.18*step);
+          p.flapRecharge+=dt;
+          if(p.flapRecharge>=.42){
+            p.flaps=Math.min(4,p.flaps+1);
+            p.flapRecharge=0;
+          }
+        }else p.flapRecharge=0;
         p.vy=Math.min(PHYSICS.maxFall,p.vy+PHYSICS.gravity*step);
         if(p.form==='glimmermoth'&&p.hover>0&&p.vy>1.45)p.vy=1.45;
       }
@@ -373,9 +380,9 @@ WW.games.animals = (() => {
       if(controls.pressed.orb)throwThing(p,'orb');
       if(controls.pressed.foodCycle){p.selectedFood=(p.selectedFood+1)%FOODS.length;const food=FOODS[p.selectedFood];say(`P${p.id+1}: ${FOOD[food].name} · ${shared.foods[food]} left`,1350);}
       if(controls.pressed.transform){
-        if(p.form){p.form=null;p.hover=0;callout.hidden=true;say('Back to explorer form. F throws food again.',1500);}
+        if(p.form){p.form=null;p.hover=0;p.flaps=4;callout.hidden=true;say('Back to explorer form. F throws food again.',1500);}
         else if(p.caught){
-          p.form=p.caught;p.hover=0;WW.audio.play('morph');WW.input.rumble(p.id,.35,180);
+          p.form=p.caught;p.hover=0;p.flaps=4;WW.audio.play('morph');WW.input.rumble(p.id,.35,180);
           particles(p.x,p.y-10,FORM[p.form].color,24);
           showAbility(p);say(titles[p.form]+' power! '+FORM[p.form].power+'.',1900);
         }else say('Offer fruit, then catch a distracted creature with G to gain its power.',1800);
