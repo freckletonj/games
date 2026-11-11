@@ -50,6 +50,7 @@ jobs:
           python tests/living_setpieces.py
           python tests/interaction_feel.py
           python tests/creature_feel.py
+          python tests/rideable_mounts.py
           python tests/game_feel.py
           python tests/creature_mechanics.py
           python tests/wonder_trails.py
