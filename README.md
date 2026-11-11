@@ -1,6 +1,6 @@
 # Wonderwood — a little world worth exploring
 
-A dependency-free, offline 2D creature adventure for one or two players. Five extended chapters, eight catchable creatures with distinct behaviors, three essential traversal transformations, and one hidden light to recover per chapter.
+A dependency-free, offline 2D creature adventure for one or two players. Five extended chapters, eight catchable creatures with distinct behaviors, two additional feedable rideable mounts, three essential traversal transformations, and one hidden light to recover per chapter.
 
 **Play:** Run `node scripts/build.mjs` from the repository root, then open `dist/wonderwood.html` in Firefox or Chromium. No server, npm packages, or internet connection are needed. Pull request builds also publish a **wonderwood-playable-preview** artifact in GitHub Actions containing the complete standalone HTML.
 
@@ -27,6 +27,14 @@ The other five transformations provide situational, cooldown-limited abilities:
 | Glimmermoth | Short hover: slows falling briefly, never lifts | Flees nearby explorers. Lure it, then give it room. |
 | Cloudwhisp | Wind blast: pushes and stuns an animal | Winds up a gust along a marked line. Get behind it or move out of the lane. |
 | Emberkit | Short stunning spark | Chases and telegraphs a damaging dash. Leap over it, stomp its head, or distract it. |
+
+### Unicorn and Pegasus mounts
+
+A **Unicorn** or **Pegasus** is a friend to ride, **not** a capture-orb transformation. In explorer form, leave two favorite treats (or three other treats) until its trust bar fills, then **jump onto its back** to mount. A capture orb cannot capture a mount, and riding never replaces the latest caught transformation.
+
+The **Unicorn** runs much faster than the explorer and launches into exceptionally high jumps with a tap of Jump. The **Pegasus** moves swiftly and can fly upward indefinitely by holding Jump; release to coast, or hold Down to descend. Unlike Moonwing it has no four-flap budget. Press **T** to dismount safely and return to normal explorer/transformation controls. Both mounts share the player's world position while ridden and release safely on recall, a damaging hit, or co-op follow-bubble transport.
+
+For this first implementation, the mounts use animated, canvas-painted silhouettes with consistent saddle and ground pivots. Dedicated, reviewed painted character atlases are still outstanding. The authored worlds currently place the Unicorn in later Mosslight Meadow and the Pegasus in later Starfall Summit and Cloud Gardens, making them optional traversal companions.
 
 All creatures have recognizable patrols and non-random attack tells. Head-stomping from above gives the explorer a bounce and temporarily knocks the animal out; it returns after a short rest. Bubbles carry an animal upward briefly; honey holds it still; wind knocks it back and stuns it. These are friendly, temporary setbacks, not lethal attacks. You can also run past or use food to avoid confrontations. Captured animals return to their habitats later.
 
