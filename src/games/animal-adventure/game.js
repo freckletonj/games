@@ -840,6 +840,9 @@ WW.games.animals = (() => {
       }
     }
     function drawLandmarks(ctx,time){
+      // Imported grids still use traditional landmarks. Built-in levels use
+      // one composed landmark per authored gameplay section.
+      if(level.vistas?.length)return;
       for(const place of level.landmarks||[]){
         const x=place.x*TILE;
         if(x<cameraX-130||x>cameraX+W+130)continue;
@@ -852,6 +855,21 @@ WW.games.animals = (() => {
       }
     }
     function groundDetails(ctx,time){
+      if(level.dressing){
+        const left=cameraX-35,right=cameraX+W+35;
+        for(const prop of level.dressing){
+          const x=(prop.x+.5)*TILE;
+          if(x<left||x>right)continue;
+          const dimensions={
+            flowers:[24,24],mushrooms:[22,23],stones:[27,17],
+            reeds:[20,29],shells:[29,22],moonStone:[25,27],
+            berryBush:[26,27]
+          }[prop.asset];
+          WW.illustrations.draw(ctx,prop.asset,x,prop.y*TILE+3,
+            dimensions[0]*prop.scale,dimensions[1]*prop.scale,.9);
+        }
+        return;
+      }
       // Sparse small painted vegetation is distinct from the seamless terrain.
       // Never introduce decorative collision or change the semantic map.
       const themes={
@@ -949,7 +967,9 @@ WW.games.animals = (() => {
       const left=Math.max(0,Math.floor(cameraX/TILE)-1),right=Math.min(level.width,Math.ceil((cameraX+W)/TILE)+1);
       const top=Math.max(0,Math.floor(cameraY/TILE)-1),bottom=Math.min(level.height,Math.ceil((cameraY+H)/TILE)+1);
       for(let y=top;y<bottom;y++)for(let x=left;x<right;x++){
-        const t=map[y][x];if(t==='empty')continue;
+        const t=map[y][x];
+        // Paint contained water as one basin, never striped texture cells.
+        if(t==='empty'||(t==='water'&&level.waterBodies?.length))continue;
         const px=x*TILE,py=y*TILE,h=hash(x,y);
         // The authored slope skin draws one continuous grass line. Suppress
         // coarse ground-tile caps beneath it to avoid floating bright stripes.
@@ -1045,9 +1065,11 @@ WW.games.animals = (() => {
     function render(ctx,now){
       ctx.setTransform(3,0,0,3,0,0);
       background(ctx,now);
+      WW.vistas.atmosphere(ctx,level,cameraX,now);
       ctx.save();ctx.translate(Math.round((Math.random()-.5)*shake),Math.round((Math.random()-.5)*shake));ctx.translate(-Math.round(cameraX),-Math.round(cameraY));
       // The panorama is already painted; avoid translucent sprite repeats in mid-air.
-      drawLandmarks(ctx,now);terrain(ctx,now);
+      WW.vistas.draw(ctx,level,cameraX,cameraY,now);
+       drawLandmarks(ctx,now);terrain(ctx,now);
       if(level.surface){
         const left=Math.max(0,Math.floor(cameraX/TILE)-1);
         const right=Math.min(level.width,Math.ceil((cameraX+W)/TILE)+1);

@@ -307,7 +307,7 @@ WW.vistas = (() => {
     for(const v of level.vistas){
       const x=(v.x+.5)*T,y=v.y*T,r=v.span*T*.65;
       if(x+r<cameraX-65||x-r>cameraX+545||
-         y+80<cameraY-95||y-v.span*T<cameraY+ -95)continue;
+         y+80<cameraY-65||y-v.span*T>cameraY+335)continue;
       paintOne(g,v,biome,time);
     }
   }
