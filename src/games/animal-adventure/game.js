@@ -794,40 +794,53 @@ WW.games.animals = (() => {
     function updateProjectiles(dt){
       const step=dt*60;
       for(let i=projectiles.length-1;i>=0;i--){
-        const pr=projectiles[i],oldY=pr.y;
+        const pr=projectiles[i];
         pr.age+=dt;pr.ttl-=dt;
-        pr.x+=pr.vx*step;pr.y+=pr.vy*step;
-        pr.vy+=(pr.kind==='food'?.20:pr.kind==='orb'?.14:
-          pr.kind==='bubble'?-.012:0)*step;
-        if(pr.kind==='food'&&FOOD[pr.food].method==='float'){
-          pr.vy=Math.min(pr.vy,2.2);pr.x+=Math.sin(pr.age*9)*.5;
-        }
-        const onPlatform=at(pr.x,pr.y)==='platform' &&
-          oldY<=Math.floor(pr.y/TILE)*TILE;
-        const floorHit=solid(pr.x,pr.y)||onPlatform;
-        const waterHit=pr.kind==='food'&&liquid(pr.x,pr.y);
         if(pr.ttl<=0){projectiles.splice(i,1);continue;}
-        if(pr.kind==='orb'&&floorHit){
-          const floor=onPlatform?Math.floor(pr.y/TILE)*TILE:
-            level.surface?surfaceY(pr.x):Math.floor(pr.y/TILE)*TILE;
-          if(pr.vy>=0&&oldY<=floor+3&&pr.bounces<10){
-            // Small elastic hops skim continuous slopes without going through rock.
-            pr.y=floor-2;
-            pr.vy=-Math.max(.85,Math.min(2.2,pr.vy*.5));
-            pr.vx*=.96;pr.bounces++;
-          }else{projectiles.splice(i,1);continue;}
-        }else if(floorHit||waterHit){
-          if(pr.kind==='food')placeFood(pr);
-          projectiles.splice(i,1);continue;
-        }
-        if(pr.kind!=='food'){
-          const a=animals.find(a=>a.alive&&Math.abs(pr.x-a.x)<18&&Math.abs(pr.y-(a.y-14))<23);
-          if(a){
-            if(pr.kind==='orb')capture(a,pr.owner);
-            else affectAnimal(a,pr);
-            projectiles.splice(i,1);
+        // Substep fast shots so neither a one-cell wall nor a moving creature
+        // disappears between the start and end point of a long frame.
+        const ticks=Math.max(1,Math.ceil(
+          Math.max(Math.abs(pr.vx),Math.abs(pr.vy))*step/4));
+        const substep=step/ticks;
+        let removed=false;
+        for(let n=0;n<ticks;n++){
+          const oldY=pr.y;
+          pr.x+=pr.vx*substep;pr.y+=pr.vy*substep;
+          pr.vy+=(pr.kind==='food'?.20:pr.kind==='orb'?.14:
+            pr.kind==='bubble'?-.012:0)*substep;
+          if(pr.kind==='food'&&FOOD[pr.food].method==='float'){
+            pr.vy=Math.min(pr.vy,2.2);
+            pr.x+=Math.sin(pr.age*9)*.5/ticks;
+          }
+          const onPlatform=at(pr.x,pr.y)==='platform' &&
+            oldY<=Math.floor(pr.y/TILE)*TILE;
+          const floorHit=solid(pr.x,pr.y)||onPlatform;
+          const waterHit=pr.kind==='food'&&liquid(pr.x,pr.y);
+          if(pr.kind==='orb'&&floorHit){
+            const floor=onPlatform?Math.floor(pr.y/TILE)*TILE:
+              level.surface?surfaceY(pr.x):Math.floor(pr.y/TILE)*TILE;
+            if(pr.vy>=0&&oldY<=floor+3&&pr.bounces<10){
+              pr.y=floor-2;
+              pr.vy=-Math.max(.85,Math.min(2.2,pr.vy*.5));
+              pr.vx*=.96;pr.bounces++;
+            }else{
+              projectiles.splice(i,1);removed=true;break;
+            }
+          }else if(floorHit||waterHit){
+            if(pr.kind==='food')placeFood(pr);
+            projectiles.splice(i,1);removed=true;break;
+          }
+          if(pr.kind!=='food'){
+            const a=animals.find(a=>a.alive&&Math.abs(pr.x-a.x)<18&&
+              Math.abs(pr.y-(a.y-14))<23);
+            if(a){
+              if(pr.kind==='orb')capture(a,pr.owner);
+              else affectAnimal(a,pr);
+              projectiles.splice(i,1);removed=true;break;
+            }
           }
         }
+        if(removed)continue;
       }
       for(let i=lures.length-1;i>=0;i--){
         lures[i].age+=dt;lures[i].ttl-=dt;
