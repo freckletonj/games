@@ -2077,17 +2077,18 @@
         "span": 28
       },
       {
-        "id": "reeds-and-shells",
+        "id": "lily-lagoon",
         "section": "first-lagoon",
-        "kind": "shell-cove",
+        "kind": "lily-garden",
         "role": "challenge",
         "x": 104,
-        "span": 29
+        "span": 29,
+        "y": 35
       },
       {
-        "id": "reed-sanctuary",
+        "id": "elder-refuge",
         "section": "reed-island",
-        "kind": "tide-temple",
+        "kind": "elder-tree",
         "role": "rest",
         "x": 159,
         "span": 24
@@ -2101,9 +2102,9 @@
         "span": 32
       },
       {
-        "id": "river-lights",
+        "id": "lantern-delta",
         "section": "home-water",
-        "kind": "pearl-shrine",
+        "kind": "firefly-ruins",
         "role": "reward",
         "x": 301,
         "span": 21

@@ -81,6 +81,14 @@ for (const [id, design] of Object.entries(designs)) {
     ' authored challenge sections, ' + world.diagnostics.metrics.waterCells + ' water cells');
 }
 
+const wetlands=compiler.compile(designs['willow-wetlands']);
+assert.deepEqual(
+  designs['willow-wetlands'].vistas.map(v=>v.kind),
+  ['willow-arch','lily-garden','elder-tree','sunken-ruin','firefly-ruins'],
+  'Wetland chapter must read as a river journey, not repeated ocean reefs'
+);
+assert.equal(wetlands.vistas[1].y,wetlands.waterBodies[0].surface,
+  'Lily lagoon scenery must sit on the true waterline, not the lake bottom');
 const meadow=compiler.compile(designs['first-forest']);
 assert.equal(meadow.grid[34][150],'platform','The lower lilypond bridge should remain walkable');
 assert.equal(meadow.grid[34][165],'platform','The lilypond bridge should reach the far bank');

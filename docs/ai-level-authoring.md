@@ -89,6 +89,14 @@ Each chapter is keyed by ID and has:
    "x":131,"y":30,"count":6,"dx":7,"width":5,"rise":8}.
   Types arc, staircase and ripples generate reusable, non-identical alternate
   routes; the whole pattern must fit inside its challenge section.
+The **Willow Wetlands** sequence is a visual narrative, not a random
+vegetation scatter: willow bank → lily-covered lagoon (exact waterline
+anchor) → elder-tree refuge → submerged library → lantern-lit delta.
+Keep this readable when generating new diffusion panels: do not repeat
+Crystal Coast's open-ocean coral formations in a freshwater river.
+The two sky chapters should likewise be distinguished through lighting
+and frame placement, without fabricating extra traversable geometry.
+
 - goalRoute: an ordered sequence of [tile x, tile y] authored world-space
   waypoints leading from a real platform or dive approach to the exact relic
   coordinates. The engine draws a few proximity-sensitive in-world motes;
