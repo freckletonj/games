@@ -100,10 +100,15 @@ for (const [index, [id, design]] of Object.entries(designs).entries()) {
       '</text>');
   }
   for (const item of level.objects) {
-    if (!['p1','exit',design.relic[0],'checkpoint'].includes(item.kind)) continue;
-    const fill = {p1:'#40e38e',exit:'#f48b78',checkpoint:'#ffffff'}[item.kind] || '#ffd873';
+    if (!['p1','exit',design.relic[0],'checkpoint','unicorn','pegasus'].includes(item.kind)) continue;
+    const fill = {p1:'#40e38e',exit:'#f48b78',checkpoint:'#ffffff',
+      unicorn:'#f19bd0',pegasus:'#b3dff9'}[item.kind] || '#ffd873';
     out.push('<circle cx="' + px(item.x) + '" cy="' + py(item.y) +
       '" r="3" fill="' + fill + '" stroke="#253347" stroke-width=".7"/>');
+    if(item.kind==='unicorn'||item.kind==='pegasus')
+      out.push('<text x="'+(px(item.x)+5)+'" y="'+(py(item.y)-3)+
+        '" font-size="8" font-weight="bold" fill="#253347">'+
+        (item.kind==='unicorn'?'U':'P')+'</text>');
   }
   out.push('</g>');
 }
