@@ -86,7 +86,7 @@ input[type=file] { max-width: 220px; font-size: 12px; }
 .home-layout { display: grid; grid-template-columns: minmax(0, 1.14fr) minmax(240px, .86fr); align-items: stretch; gap: clamp(10px,2.5vw,36px); }
 .home-copy { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 10px 0; }
 .home-copy .kicker { margin-bottom: 17px; }
-.home-copy h1 { font-size: clamp(56px,6.25vw,91px); letter-spacing: -.065em; white-space: nowrap; }
+.home-copy h1 { font-size: clamp(48px,5.2vw,76px); letter-spacing: -.065em; white-space: nowrap; }
 .home-copy h1 span { color: #e8f3db; }
 .home-copy h2 { max-width: 570px; margin: 8px 0; font-size: clamp(24px,2.7vw,37px); font-weight: normal; font-style: italic; letter-spacing: -.025em; }
 .home-copy p { max-width: 500px; margin: 15px 0 23px; }
