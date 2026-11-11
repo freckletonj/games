@@ -233,6 +233,9 @@ WW.worldCompiler = (() => {
          destination[1]>=sourceY-1){
         errors.push(piece.id+': target must be an elevated nearby destination in this section');
       }
+      if(piece.requires && (piece.kind!=='bounceBloom' ||
+          piece.requires!=='springaroo'))
+        errors.push(piece.id+': only Springaroo bloom landing cues can require a form');
       const basin = Array.isArray(spec.water) ? spec.water.find(b =>
         Array.isArray(b) && piece.x >= b[0] && piece.x < b[1]) : null;
       if (piece.kind === 'bounceBloom' && (piece.y !== undefined || basin)) {
@@ -363,7 +366,7 @@ WW.worldCompiler = (() => {
     }));
     const setpieces = (spec.setpieces || []).map(piece => ({
       id: piece.id, kind: piece.kind, section: piece.section, x: piece.x,
-      target:piece.target,
+      target:piece.target,requires:piece.requires||null,
       y: piece.kind === 'bounceBloom'
         ? (surface[piece.x] + surface[piece.x + 1]) / 2 : piece.y
     }));
@@ -386,6 +389,23 @@ WW.worldCompiler = (() => {
       const notes = [];
       if (b-a >= 65 && encounters === 0 && platforms < 2 && !waterRegions && !interactions.length) {
         notes.push('Long section has little authored interaction; consider a choice or encounter');
+      }
+      // Check the actual collision shelf and ballistic envelope; a visual
+      // route that ends in midair is worse than no route at all.
+      for(const piece of interactions.filter(p=>p.kind==='bounceBloom')){
+        const [x,y]=piece.target;
+        const landing=platformSegments.some(p=>p.kind==='platform'&&
+          x>=p.x&&x<p.x+p.length&&Math.abs(p.y-y)<.2);
+        if(!landing)notes.push(piece.id+': landing cue misses physical platform');
+        const rise=(piece.y-y)*16;
+        if(rise>100&&piece.requires!=='springaroo')
+          notes.push(piece.id+': landing rises beyond launch speed');
+        if(rise<=100){
+          const speed=7.35,gravity=.27;
+          const t=(speed+Math.sqrt(Math.max(0,speed*speed-2*gravity*rise)))/gravity;
+          if(Math.abs(x-piece.x)*16>t*2.25+25)
+            notes.push(piece.id+': landing exceeds run speed at launch height');
+        }
       }
       if (vistas.length && visualBeats.length === 0)
         notes.push('Section lacks a distinctive staged visual landmark');

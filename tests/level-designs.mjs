@@ -31,8 +31,19 @@ for (const [id, design] of Object.entries(designs)) {
     assert.ok(piece.target[1]<piece.y-1,
       id+'/'+piece.id+' should guide a player to a higher foothold');
   }
-  for(const section of world.diagnostics.sectionReports)
+  for(const section of world.diagnostics.sectionReports){
     assert.equal(section.intendedRoutes.length,section.interactions);
+    assert.ok(!section.notes.some(n=>n.includes('landing')),
+      id+'/'+section.id+' has disconnected bloom: '+section.notes.join('; '));
+  }
+  for(const piece of world.setpieces.filter(p=>p.kind==='bounceBloom')){
+    const [x,y]=piece.target;
+    assert.ok(world.platformSegments.some(segment=>
+      segment.kind==='platform'&&x>=segment.x&&x<segment.x+segment.length&&
+      segment.y===y),id+'/'+piece.id+' must launch toward a real shelf');
+    assert.ok((piece.y-y)*16<=100||piece.requires==='springaroo',
+      id+'/'+piece.id+' cannot promise more height than its spring offers');
+  }
   assert.equal(world.diagnostics.metrics.setpieces, design.setpieces.length);
   assert.equal(world.vistas.length, design.sections.length);
   assert.equal(world.dressing.length, design.dressing.length);

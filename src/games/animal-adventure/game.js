@@ -934,7 +934,7 @@ WW.games.animals = (() => {
         // destination only when a player with the useful form approaches.
         const nearby=players.some(p=>!p.bubble&&
           Math.abs(p.x-s.x)<180&&Math.abs(p.y-s.y)<165&&
-          (s.kind==='bounceBloom'||
+          (s.kind==='bounceBloom'&&(!s.requires||p.form===s.requires)||
            (s.kind==='windRing'&&p.form==='skyling')||
            (s.kind==='bubbleVent'&&p.form==='tideling')));
         if(nearby){
