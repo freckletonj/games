@@ -120,16 +120,22 @@ WW.scenery = (() => {
       glow.addColorStop(1,'#163f81cd');
       ctx.fillStyle=glow;
       ctx.fillRect(start*16,top,(end-start)*16,Math.max(180,basin.bottom*16-top));
-      ctx.globalAlpha=.23;
-      ctx.strokeStyle='#c9fff8';
-      ctx.lineWidth=1;
-      for (let y=top+26; y<basin.bottom*16; y+=28) {
-        ctx.beginPath();
-        for (let x=start*16; x<=end*16; x+=5) {
-          const wave=y+Math.sin(x*.06+time*1.2+y*.03)*2;
-          if (x===start*16) ctx.moveTo(x,wave); else ctx.lineTo(x,wave);
+      // Sparse, broken light caustics replace full-width horizontal stripes.
+      // Every glint is clipped to the actual basin geometry, never a tile cell.
+      ctx.lineWidth=1.1;
+      for(let row=0;row<Math.ceil((basin.bottom*16-top)/38);row++){
+        const cy=top+22+row*38;
+        const fade=Math.max(.04,.24-row*.027);
+        for(let x=start*16+18+row%3*13;x<end*16-8;x+=48){
+          const phase=x*.023+row*1.8+time*.8;
+          const yy=cy+Math.sin(phase)*4;
+          const len=11+6*Math.sin(x*.03+row);
+          ctx.globalAlpha=fade*(.65+.35*Math.sin(time*1.1+x*.016));
+          ctx.strokeStyle=row%2?'#b5edfa':'#dafff0';
+          ctx.beginPath();ctx.moveTo(x,yy);
+          ctx.quadraticCurveTo(x+len*.5,yy-2.2,x+len,yy+1);
+          ctx.stroke();
         }
-        ctx.stroke();
       }
       ctx.restore();
       ctx.strokeStyle='#d6fff0b3';
