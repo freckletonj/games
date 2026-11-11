@@ -80,8 +80,15 @@ Each chapter is keyed by ID and has:
 - bridges, ledges: [x,y,length] one-way platform spans.
 - thermals: optional [x,y,width,height] updrafts.
 - relic: [kind,x,y] containing springKey, diveKey, or skyKey.
-- creatures: [kind,x,optionalY] encounters. Use internal species identifiers
-  (tideling is Tidefox; skyling is Moonwing).
+- creatures: [kind,x,optionalY] capturable encounters. Use internal species
+  identifiers (tideling is Tidefox; skyling is Moonwing).
+- mounts: optional [kind,x,optionalY] rideable spawns, using **unicorn** or
+  **pegasus**. Two favorite treats (three other treats) earn trust; land on the
+  saddle to ride. Mounts are not capturable transformations. Omitting y
+  places the mount on continuous ground; to perch a Pegasus on an authored
+  platform at row 29, use ["pegasus",276,28]. Keep Pegasus locations on
+  meaningful elevated routes beyond the chapter's required Moonwing climb
+  so unlimited mounted flight does not invalidate the initial ability puzzle.
 - checkpoints, snacks: arrays of x positions.
 - stars: [x,y] optional pickups; landmarks: {x,type} descriptions.
 - motifs: optional, section-bound platform patterns, for example:
@@ -133,10 +140,10 @@ and frame placement, without fabricating extra traversable geometry.
     landing player upward. Springaroo can use its second jump afterward.
   - windRing (open air; y required): Moonwing gains a wingbeat boost and
     resets flap cooldown when passing through a luminous ring.
-  - bubbleVent (central deep water; y required): Tidefox holds Jump near
-    the vent to ride a stronger upward current, then releases it to dive.
-    Near the waterline, the same held Jump produces a short Tidefox breach to
-    get out onto steep banks without requiring a perfectly timed button tap.
+  - bubbleVent (central deep water; y required): a passive upward current
+    lifts entrants. Tidefox can hold Jump for a stronger boost or hold Down
+    to swim against the bubbles and reach deep relics.
+    Near the waterline, holding Jump produces a brief Tidefox breach.
   Example: {"id":"reef-rescue","kind":"bubbleVent","section":"shallow-reef",
   "x":81,"y":44}. The compiler rejects unknown kinds, duplicates, misplaced
   landmarks and wrong section references, and emits local interaction counts.
