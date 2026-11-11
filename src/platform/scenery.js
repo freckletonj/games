@@ -64,6 +64,54 @@ WW.scenery = (() => {
     return drawn;
   }
 
+  // A lake is a continuous contained volume, not a wall of blue tiles.
+  // Render its waterline once and use the same slope points as collision.
+  function waterVolume(ctx, level, cameraX, time) {
+    if (!level.surface || !level.waterBodies) return;
+    for (const basin of level.waterBodies) {
+      if (basin.end*16 < cameraX-16 || basin.start*16 > cameraX+496) continue;
+      const threshold = basin.surface + .35;
+      let start = basin.start, end = basin.end;
+      while (start < end && level.surface[start] <= threshold) start++;
+      while (end > start && level.surface[end] <= threshold) end--;
+      if (end - start < 2) continue;
+      const top = basin.surface*16;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(start*16, top);
+      ctx.lineTo(end*16, top);
+      for (let x=end; x>=start; x--) ctx.lineTo(x*16,level.surface[x]*16);
+      ctx.closePath();
+      ctx.clip();
+      const glow=ctx.createLinearGradient(0,top,0,top+140);
+      glow.addColorStop(0,'#9ae8dc9a');
+      glow.addColorStop(.42,'#318cb4c4');
+      glow.addColorStop(1,'#163f81cd');
+      ctx.fillStyle=glow;
+      ctx.fillRect(start*16,top,(end-start)*16,Math.max(180,basin.bottom*16-top));
+      ctx.globalAlpha=.23;
+      ctx.strokeStyle='#c9fff8';
+      ctx.lineWidth=1;
+      for (let y=top+26; y<basin.bottom*16; y+=28) {
+        ctx.beginPath();
+        for (let x=start*16; x<=end*16; x+=5) {
+          const wave=y+Math.sin(x*.06+time*1.2+y*.03)*2;
+          if (x===start*16) ctx.moveTo(x,wave); else ctx.lineTo(x,wave);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+      ctx.strokeStyle='#d6fff0b3';
+      ctx.lineWidth=1.4;
+      ctx.beginPath();
+      for (let x=start*16; x<=end*16; x+=3) {
+        const wave=top+Math.sin(x*.095+time*1.5)*.5;
+        if (x===start*16) ctx.moveTo(x,wave); else ctx.lineTo(x,wave);
+      }
+      ctx.stroke();
+    }
+  }
+
   function paintBackdrop(ctx, panels, cameraX, cameraY){
     return paintLayers(ctx,panels,cameraX,cameraY,true);
   }
@@ -351,5 +399,5 @@ WW.scenery = (() => {
     return true;
   }
 
-  return {background, paintBackdrop, paintLayers, slope, landmark, tile, url, ready};
+  return {background, paintBackdrop, paintLayers, waterVolume, slope, landmark, tile, url, ready};
 })();
