@@ -26,6 +26,13 @@ for (const [id, design] of Object.entries(designs)) {
   assert.equal(world.diagnostics.metrics.motifs, design.motifs.length);
   assert.equal(world.diagnostics.metrics.terrainFeatures, design.terrainFeatures.length);
   assert.equal(world.setpieces.length, design.setpieces.length);
+  for(const piece of world.setpieces){
+    assert.equal(piece.target.length,2);
+    assert.ok(piece.target[1]<piece.y-1,
+      id+'/'+piece.id+' should guide a player to a higher foothold');
+  }
+  for(const section of world.diagnostics.sectionReports)
+    assert.equal(section.intendedRoutes.length,section.interactions);
   assert.equal(world.diagnostics.metrics.setpieces, design.setpieces.length);
   assert.equal(world.vistas.length, design.sections.length);
   assert.equal(world.dressing.length, design.dressing.length);
@@ -86,6 +93,12 @@ assert.ok(compiler.analyze(brokenMotif).errors.some(e => e.includes('Invalid mot
 const misplaced = structuredClone(original);
 misplaced.setpieces[0].x = 150;
 assert.ok(compiler.analyze(misplaced).errors.some(e=>e.includes('Invalid setpiece')));
+const missingDestination=structuredClone(original);
+delete missingDestination.setpieces[0].target;
+assert.ok(compiler.analyze(missingDestination).errors.some(e=>e.includes('target must be')));
+const unreachableDestination=structuredClone(original);
+unreachableDestination.setpieces[0].target=[250,20];
+assert.ok(compiler.analyze(unreachableDestination).errors.some(e=>e.includes('target must be')));
 const floatingBloom = structuredClone(original);
 floatingBloom.setpieces[0].y = 20;
 assert.ok(compiler.analyze(floatingBloom).errors.some(e=>e.includes('omit y')));

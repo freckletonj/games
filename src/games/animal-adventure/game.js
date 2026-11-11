@@ -101,7 +101,8 @@ WW.games.animals = (() => {
     const projectiles=[],lures=[],captures=[],effects=[];
     // Level-authored interactive landmarks are independent of painted scenery.
     const setpieces=(level.setpieces||[]).map(piece=>({
-      ...piece,x:(piece.x+.5)*TILE,y:piece.y*TILE,ready:[0,0]
+      ...piece,x:(piece.x+.5)*TILE,y:piece.y*TILE,
+      target:{x:(piece.target[0]+.5)*TILE,y:piece.target[1]*TILE},ready:[0,0]
     }));
     let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,signIndex=-1;
     const message=document.getElementById('message');const hud=document.getElementById('hud');
@@ -929,6 +930,31 @@ WW.games.animals = (() => {
         if(s.x<cameraX-45||s.x>cameraX+W+45||
            s.y<cameraY-65||s.y>cameraY+H+65)continue;
         const pulse=Math.sin(now*3+s.x*.05);
+        // Keep navigational motes contextual. They reveal the *authored*
+        // destination only when a player with the useful form approaches.
+        const nearby=players.some(p=>!p.bubble&&
+          Math.abs(p.x-s.x)<180&&Math.abs(p.y-s.y)<165&&
+          (s.kind==='bounceBloom'||
+           (s.kind==='windRing'&&p.form==='skyling')||
+           (s.kind==='bubbleVent'&&p.form==='tideling')));
+        if(nearby){
+          const dx=s.target.x-s.x,color=s.kind==='bounceBloom'?'#fff0b2':
+            s.kind==='windRing'?'#d8edff':'#b4fff5';
+          ctx.save();ctx.globalAlpha=.25;ctx.strokeStyle=color;
+          ctx.lineWidth=1.4;ctx.setLineDash([3,8]);
+          ctx.beginPath();ctx.moveTo(s.x,s.y-12);
+          ctx.quadraticCurveTo(s.x+dx*.2,s.target.y-20,s.target.x,s.target.y);
+          ctx.stroke();ctx.setLineDash([]);
+          ctx.globalAlpha=.6;
+          for(let i=1;i<8;i++){
+            const t=((i+now*.6)%8)/8,u=1-t;
+            const px=u*u*s.x+2*u*t*(s.x+dx*.2)+t*t*s.target.x;
+            const py=u*u*(s.y-12)+2*u*t*(s.target.y-20)+t*t*s.target.y;
+            ctx.fillStyle=color;ctx.beginPath();
+            ctx.arc(px,py,1.5+(i%3)*.35,0,Math.PI*2);ctx.fill();
+          }
+          ctx.restore();
+        }
         ctx.save();ctx.translate(s.x,s.y);
         if(s.kind==='bounceBloom'){
           // A spring flower communicates launch through upright petals.

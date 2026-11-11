@@ -99,6 +99,12 @@ Each chapter is keyed by ID and has:
   and scale (.6–1.65). The built-in worlds no longer use randomly repeated
   ground decorations or the old landmark stamps. Keep quiet negative space
   between landmarks so characters and objectives remain readable.
+- Every interactive setpiece requires a target [tileX,tileY] inside its own
+  section and at most ten tiles horizontally from its origin. The compiler
+  reports intendedRoutes; during play, small directional motes appear only
+  nearby and only for a creature form that can use the mechanism. A launch
+  bloom leads to a ledge, a wind ring to higher flight, a bubble vent toward
+  the surface. These are specific route decisions, not filler.
 - setpieces: optional interactive route beats, with id, kind, section, x and
   (except bounceBloom) y in semantic cells:
   - bounceBloom (dry ground; omit y): an animated spring flower launches a

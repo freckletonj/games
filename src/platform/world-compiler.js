@@ -223,6 +223,16 @@ WW.worldCompiler = (() => {
         continue;
       }
       ids.add(piece.id);
+      const destination=piece.target;
+      const sourceY=piece.kind==='bounceBloom'?terrainAt(spec,piece.x):piece.y;
+      if(!Array.isArray(destination)||destination.length!==2||
+         !integer(destination[0])||!finite(destination[1])||
+         destination[0]<section.range[0]||destination[0]>=section.range[1]||
+         Math.abs(destination[0]-piece.x)>10||
+         destination[1]<3||destination[1]>=height-2||
+         destination[1]>=sourceY-1){
+        errors.push(piece.id+': target must be an elevated nearby destination in this section');
+      }
       const basin = Array.isArray(spec.water) ? spec.water.find(b =>
         Array.isArray(b) && piece.x >= b[0] && piece.x < b[1]) : null;
       if (piece.kind === 'bounceBloom' && (piece.y !== undefined || basin)) {
@@ -353,6 +363,7 @@ WW.worldCompiler = (() => {
     }));
     const setpieces = (spec.setpieces || []).map(piece => ({
       id: piece.id, kind: piece.kind, section: piece.section, x: piece.x,
+      target:piece.target,
       y: piece.kind === 'bounceBloom'
         ? (surface[piece.x] + surface[piece.x + 1]) / 2 : piece.y
     }));
@@ -384,6 +395,7 @@ WW.worldCompiler = (() => {
       return {id: section.id, challenge: section.challenge, from: a, to: b,
         requires: section.requires || null, encounters, checkpoints, platforms,
         waterRegions, interactions: interactions.length, setpieceKinds: kinds,
+        intendedRoutes:interactions.map(p=>({from:p.x,to:p.target,mechanic:p.kind})),
         visualBeats: visualBeats.map(v => ({id:v.id,kind:v.kind,role:v.role})),
         decorations, notes};
     });
