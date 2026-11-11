@@ -1000,8 +1000,14 @@ WW.games.animals = (() => {
       players.forEach(p=>{
         if(p.sleep){
           WW.art.draw(ctx,'hero',p.x,p.y+8,1,p.face<0,p.id,{action:'sleep',time:now});
-          ctx.font='bold 10px sans-serif';ctx.fillStyle='#f9fbff';
-          ctx.fillText('z',p.x+10,p.y-24-Math.sin(now*2)*3);ctx.fillText('Z',p.x+19,p.y-33-Math.sin(now*2+.8)*3);
+          // The dizzy stars are independently animated, never painted onto the KO sprite.
+          for(let i=0;i<3;i++){
+            const phase=now*2.8+i*Math.PI*2/3;
+            const sx=p.x+Math.cos(phase)*14;
+            const sy=p.y-29+Math.sin(phase)*5;
+            const size=8+(1+Math.sin(phase))*1.7;
+            WW.illustrations.draw(ctx,'spark',sx,sy+size/2,size,size,.7+.25*Math.sin(phase)**2);
+          }
         }else{
           if(p.form){ctx.save();ctx.globalAlpha=.19+.09*Math.sin(now*5);ctx.fillStyle=FORM[p.form].color;ctx.beginPath();ctx.ellipse(p.x,p.y-13,18,23,0,0,Math.PI*2);ctx.fill();ctx.restore();}
           if(p.invincible<=0||Math.floor(now*15)%2===0)
