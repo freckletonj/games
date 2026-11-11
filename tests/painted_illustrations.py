@@ -62,6 +62,53 @@ with sync_playwright() as playwright:
     assert checks['distinct'],checks
     assert all(painted and visible for name,painted,visible in checks['landmarks']),checks
 
+    # Every animal must draw its own painted eating graphic, rather than
+    # recycling the idle frame. The hero's KO image is also a separate cutout.
+    page.wait_for_function("""() => Object.keys(WW.catalog.creatures).every(
+      name => !!WW.spriteAtlas.portrait(name)) && !!WW.spriteAtlas.portrait('hero')""")
+    states=page.evaluate("""() => {
+      const c=document.createElement('canvas');c.width=c.height=100;
+      const ctx=c.getContext('2d');
+      function pixels(name,action){
+        ctx.clearRect(0,0,100,100);
+        const painted=WW.art.draw(ctx,name,50,81,0,false,null,{action,time:.35});
+        return [painted,[...ctx.getImageData(0,0,100,100).data]];
+      }
+      return [...Object.keys(WW.catalog.creatures),'hero'].map(name=>{
+        const [eatOkay,eat]=pixels(name,name==='hero'?'sleep':'eat');
+        const [idleOkay,idle]=pixels(name,'idle');
+        const count=eat.filter((v,i)=>i%4===3&&v>32).length;
+        return [name,eatOkay,idleOkay,count,eat.some((v,i)=>v!==idle[i])];
+      });
+    }""")
+    assert len(states)==9, states
+    assert all(eat and idle and count>100 and distinct
+               for name,eat,idle,count,distinct in states), states
+
+    page.evaluate('WW.main.play(0)')
+    page.locator('#menu').wait_for(state='hidden')
+    stars=page.evaluate("""() => {
+      const state=WW.main.game.state,player=state.players[0];
+      player.sleep=true;player.health=0;
+      state.animals.forEach(animal=>animal.alive=false);
+      const c=document.createElement('canvas');c.width=1440;c.height=810;
+      const ctx=c.getContext('2d');
+      const original=WW.illustrations.draw,positions=[];
+      WW.illustrations.draw=(context,name,x,y,w,h,opacity)=>{
+        if(name==='spark')positions.push([x,y]);
+        return original(context,name,x,y,w,h,opacity);
+      };
+      WW.main.game.render(ctx,1.3);
+      const first=positions.map(pair=>pair.slice());
+      positions.length=0;
+      WW.main.game.render(ctx,2.0);
+      const second=positions.map(pair=>pair.slice());
+      WW.illustrations.draw=original;
+      return {first,second};
+    }""")
+    assert len(stars['first'])==len(stars['second'])==3,stars
+    assert stars['first']!=stars['second'],'Dizzy stars must orbit independently of the hero image'
+
     # One contact sheet records the actual integrated art at in-game scale.
     page.evaluate("""() => {
       const names=WW.illustrations.names;
