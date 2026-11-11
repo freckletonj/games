@@ -642,7 +642,7 @@ WW.games.animals = (() => {
           <div class="compact-quest" title="${chapter.name}">
             <span class="quest-gem ${goals.every(g=>shared.keys[g.kind])?'found':''}">◆</span>
             <small>✦ ${shared.shards}/${shared.totalShards}</small>
-          </div>``;
+          </div>`;
       }
     }
     function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
