@@ -70,12 +70,20 @@ WW.games.animals = (() => {
         unlocked:Object.fromEntries(TYPES.map(kind=>[kind,false]))};
     });
     const animals=level.objects.filter(o=>CREATURE[o.kind]).map((o,i)=>({
-      kind:o.kind,...location(o),homeX:(o.x+.5)*TILE,homeY:(o.y+1)*TILE,
+      kind:o.kind,...location(o),homeX:(o.x+.5)*TILE,homeY:location(o).y,
       dir:i%2?1:-1,alive:true,respawn:0,trust:0,distractedUntil:0,
       eating:0,windup:0,dashTime:0,dashDir:1,chargeCooldown:1+i*.3,phase:i*.9,frame:0,homeDir:i%2?1:-1,
       stunned:0,stuck:0,trapped:0,gustTime:0,gustHit:[],moving:false
     }));
-    const items=level.objects.filter(o=>(['snack','starShard','checkpoint','exit'].includes(o.kind)||goalKinds.has(o.kind))).map(o=>({kind:o.kind,x:(o.x+.5)*TILE,y:(o.y+.5)*TILE,used:false}));
+    const items=level.objects.filter(o=>(['snack','starShard','checkpoint','exit'].includes(o.kind)||goalKinds.has(o.kind))).map(o=>{
+      const x=(o.x+.5)*TILE;
+      // Gate, camp and basket paintings sit on the *actual* sloping ground,
+      // not the top of the next whole semantic tile. Keep platform markers
+      // at their authored heights instead.
+      const paintedFoot={snack:9,checkpoint:8,exit:8}[o.kind];
+      const onGround=level.surface&&paintedFoot&&map[o.y+1]?.[o.x]==='ground';
+      return {kind:o.kind,x,y:onGround?surfaceY(x)-paintedFoot:(o.y+.5)*TILE,used:false};
+    });
     const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),keys:Object.fromEntries(goals.map(g=>[g.kind,false])),checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,won:false};
     const challenges=(chapter.events||[]).map(e=>({...e,completed:false,active:false,time:0,owner:null}));
     const projectiles=[],lures=[],captures=[],effects=[];
@@ -739,7 +747,8 @@ WW.games.animals = (() => {
         if(x<cameraX-130||x>cameraX+W+130)continue;
         const row=map.findIndex(line=>line[place.x]==='ground'||line[place.x]==='water');
         if(row<0)continue;
-        ctx.save();ctx.translate(x,row*TILE);
+        const foot=level.surface&&map[row][place.x]==='ground'?surfaceY(x):row*TILE;
+        ctx.save();ctx.translate(x,foot);
         WW.scenery.landmark(ctx,chapter.biome,place.type,time);
         ctx.restore();
       }
@@ -886,7 +895,7 @@ WW.games.animals = (() => {
         const x=sign.x*TILE;if(x<cameraX-65||x>cameraX+W+65)continue;
         const ground=Array.from({length:level.height},(_,y)=>y).find(y=>map[y]?.[sign.x]==='ground');
         if(ground===undefined)continue;
-        const y=ground*TILE;
+        const y=level.surface?surfaceY(x):ground*TILE;
         WW.props.sign(ctx,x,y,sign.title,chapter.biome,now);
       }
       for(const c of challenges){
