@@ -301,7 +301,7 @@ WW.worldCompiler = (() => {
     return {width, height, grid, objects, chapter, biome: spec.biome,
       landmarks: spec.landmarks, surface, waterBodies: basins,
       platformSegments,
-      waterZones: spec.water, sections: spec.sections, art:spec.art||null,
+      waterZones: spec.water, sections: spec.sections, art:spec.art,
       decorSeed: spec.id, diagnostics, warnings: report.warnings};
   }
   return {analyze, compile};
