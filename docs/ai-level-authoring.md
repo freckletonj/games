@@ -41,6 +41,15 @@ Amber means this specific approach stalled. Neither proves that a human can
 or cannot complete the level. The JSON gives the exact furthest tile so an
 LLM can revise a limited area and compare the same probe again.
 
+Compare two revisions with:
+
+   node scripts/compare-route-reports.mjs before.json after.json
+
+This writes dist/route-comparison.json with normalized progress deltas and
+named improved/regressed/unchanged challenges. Compare the same chapter
+and probe settings across revisions; the comparison is evidence for which
+scripted approaches improved, not an automatic aesthetic or fun score.
+
 CI performs these steps and uploads the offline game and review previews.
 
 Important: a structurally valid design does NOT prove a successful run, good
