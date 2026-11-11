@@ -86,6 +86,25 @@ with sync_playwright() as pw:
     assert result['mask']['wet']['sky']==result['mask']['dry']['sky'],result
     assert result['mask']['wet']['water']!=result['mask']['dry']['water'],result
     assert result['supportWithWorld']>result['supportWithoutWorld'],result
+    # Capture the real playable waterline in both coastal chapters, not just
+    # an offscreen art-only swatch; these screenshots are CI review assets.
+    for chapter in [1,3]:
+        page.evaluate('(i)=>WW.main.play(i)',chapter)
+        page.locator('#menu').wait_for(state='hidden')
+        page.evaluate("""() => {
+          const game=WW.main.game,s=game.state,p=s.players[0];
+          const level=WW.worlds.create(s.chapter);
+          const basin=level.waterBodies[0];
+          p.x=basin.start*16+80;
+          p.y=basin.surface*16-5;
+          p.form='tideling';p.caught='tideling';
+          p.vx=p.vy=0;p.health=3;p.invincible=999;
+          s.animals.forEach(a=>{a.alive=false;a.respawn=9999});
+          for(let i=0;i<90;i++)game.update(1/60);
+          game.render(document.querySelector('#game').getContext('2d'),6);
+        }""")
+        name='crystal-coast' if chapter==1 else 'willow-wetlands'
+        page.screenshot(path=str(root/'dist'/f'preview-composition-{name}.png'))
     assert not errors,errors
     browser.close()
     print('PASS: single uninterrupted panorama per chapter, distinct palettes,')
