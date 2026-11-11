@@ -206,6 +206,23 @@ WW.worldCompiler = (() => {
         errors.push('Invalid scene dressing: x, asset and scale must be authored');
       }
     }
+    // Optional route directions are keyed to the real relic: this is a
+    // visual breadcrumb plan, not invisible platforms or forced movement.
+    if(spec.goalRoute!==undefined){
+      const route=spec.goalRoute;
+      const valid=Array.isArray(route)&&route.length>=3&&route.length<=8&&
+        route.every(point=>Array.isArray(point)&&point.length===2&&
+          integer(point[0])&&finite(point[1])&&
+          point[0]>=0&&point[0]<width&&point[1]>=2&&point[1]<height-1)&&
+        route.every((point,i)=>!i||
+          (point[0]>route[i-1][0]&&
+           point[0]-route[i-1][0]<=20&&
+           Math.abs(point[1]-route[i-1][1])<=15))&&
+        Array.isArray(spec.relic)&&
+        Math.abs(route.at(-1)[0]-spec.relic[1])<.01&&
+        Math.abs(route.at(-1)[1]-spec.relic[2])<.01;
+      if(!valid)errors.push('Invalid goalRoute: 3..8 ordered, bounded waypoints ending exactly at the relic');
+    }
     // Author named playable beats instead of executable arbitrary scripts.
     if (spec.setpieces !== undefined && !Array.isArray(spec.setpieces))
       errors.push('setpieces must be an array');
@@ -427,11 +444,12 @@ WW.worldCompiler = (() => {
       ledges: spec.ledges.length, motifs: (spec.motifs || []).length,
       terrainFeatures: (spec.terrainFeatures || []).length,
       setpieces: setpieces.length, vistas: vistas.length,
-      dressing: dressing.length, creatures: spec.creatures.length
+      dressing: dressing.length, goalWaypoints: (spec.goalRoute||[]).length,
+      creatures: spec.creatures.length
     }};
     return {width, height, grid, objects, chapter, biome: spec.biome,
       landmarks: spec.landmarks, surface, waterBodies: basins,
-      platformSegments, setpieces, vistas, dressing,
+      platformSegments, setpieces, vistas, dressing, goalRoute: spec.goalRoute || [],
       waterZones: spec.water, sections: spec.sections, art:spec.art,
       decorSeed: spec.id, diagnostics, warnings: report.warnings};
   }

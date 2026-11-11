@@ -83,6 +83,14 @@ Each chapter is keyed by ID and has:
    "x":131,"y":30,"count":6,"dx":7,"width":5,"rise":8}.
   Types arc, staircase and ripples generate reusable, non-identical alternate
   routes; the whole pattern must fit inside its challenge section.
+- goalRoute: an ordered sequence of [tile x, tile y] authored world-space
+  waypoints leading from a real platform or dive approach to the exact relic
+  coordinates. The engine draws a few proximity-sensitive in-world motes;
+  routes never create collisions, auto-move the player or grant abilities.
+  The compiler rejects out-of-range steps and any endpoint that misses the
+  relic; the diffusion layout exporter includes these anchors for visual
+  storytelling and route review. Place paths through physically reachable
+  landings, wind currents or water volumes, not empty impossible space.
 - vistas: one major authored composition per section in the included
   campaign. Each has an id, section, kind, role, x (semantic tile center),
   span (12–34 tiles), and an optional y anchor (otherwise grounded to the

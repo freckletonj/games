@@ -46,6 +46,9 @@ for (const [id, design] of Object.entries(designs)) {
   }
   assert.equal(world.diagnostics.metrics.setpieces, design.setpieces.length);
   assert.equal(world.vistas.length, design.sections.length);
+  assert.equal(world.goalRoute.length,design.goalRoute.length);
+  assert.ok(world.goalRoute.length>=3);
+  assert.deepEqual(Array.from(world.goalRoute.at(-1)),design.relic.slice(1));
   assert.equal(world.dressing.length, design.dressing.length);
   assert.equal(world.diagnostics.metrics.vistas, design.vistas.length);
   assert.equal(world.diagnostics.metrics.dressing, design.dressing.length);
@@ -119,6 +122,9 @@ assert.ok(compiler.analyze(coast).errors.some(e=>e.includes('deep-water')));
 const summit = structuredClone(designs['starfall-summit']);
 summit.setpieces.find(s=>s.kind==='windRing').y = 70;
 assert.ok(compiler.analyze(summit).errors.some(e=>e.includes('open air')));
+const brokenGoal=structuredClone(original);
+brokenGoal.goalRoute[2]=[110,20];
+assert.ok(compiler.analyze(brokenGoal).errors.some(e=>e.includes('Invalid goalRoute')));
 const brokenVista=structuredClone(original);
 brokenVista.vistas[0].section='nowhere';
 assert.ok(compiler.analyze(brokenVista).errors.some(e=>e.includes('Invalid vista')));

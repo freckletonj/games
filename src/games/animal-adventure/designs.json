@@ -516,6 +516,20 @@
         "asset": "mushrooms",
         "scale": 1
       }
+    ],
+    "goalRoute": [
+      [
+        101,
+        27
+      ],
+      [
+        108,
+        24
+      ],
+      [
+        112,
+        16
+      ]
     ]
   },
   "crystal-coast": {
@@ -1058,6 +1072,20 @@
         "asset": "shells",
         "scale": 0.9
       }
+    ],
+    "goalRoute": [
+      [
+        167,
+        31
+      ],
+      [
+        177,
+        42
+      ],
+      [
+        187,
+        49
+      ]
     ]
   },
   "starfall-summit": {
@@ -1609,6 +1637,20 @@
         "asset": "moonStone",
         "scale": 1.3
       }
+    ],
+    "goalRoute": [
+      [
+        239,
+        17
+      ],
+      [
+        249,
+        13
+      ],
+      [
+        252,
+        6
+      ]
     ]
   },
   "willow-wetlands": {
@@ -2123,6 +2165,20 @@
         "asset": "flowers",
         "scale": 1.1
       }
+    ],
+    "goalRoute": [
+      [
+        222,
+        30
+      ],
+      [
+        235,
+        44
+      ],
+      [
+        245,
+        52
+      ]
     ]
   },
   "cloud-gardens": {
@@ -2672,6 +2728,20 @@
         "asset": "flowers",
         "scale": 1
       }
+    ],
+    "goalRoute": [
+      [
+        269,
+        17
+      ],
+      [
+        282,
+        14
+      ],
+      [
+        285,
+        6
+      ]
     ]
   }
 }

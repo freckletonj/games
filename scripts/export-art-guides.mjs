@@ -105,6 +105,10 @@ for(const [id,design] of Object.entries(designs)){
           v.y*TILE>=cameraY-180 && v.y*TILE<cameraY+H+240)
           .map(v=>({id:v.id,kind:v.kind,role:v.role,
             x:(v.x+.5)*TILE,y:v.y*TILE,span:v.span*TILE}));
+        const goalWaypoints=(level.goalRoute||[])
+          .filter(([x,y])=>x*TILE>=cameraX&&x*TILE<=cameraX+W&&
+            y*TILE>=cameraY&&y*TILE<=cameraY+H)
+          .map(([x,y])=>({x:(x+.5)*TILE,y:y*TILE}));
         const overlay=[...anchors,...interactions].map(o=>
           '<circle cx="'+o.x+'" cy="'+o.y+'" r="6" fill="#ffe3aa" stroke="#153a51" stroke-width="2"/>'+
           '<text x="'+(o.x+9)+'" y="'+(o.y+3)+'" fill="#11293b" font-size="9" '+
@@ -116,7 +120,13 @@ for(const [id,design] of Object.entries(designs)){
           '<text x="'+(v.x-40)+'" y="'+(v.y-115)+
           '" fill="#192d3d" font-size="12" paint-order="stroke" stroke="#fff9e6" '+
           'stroke-width="3">'+escape(v.role+': '+v.kind)+'</text>').join('\n');
-        writeFileSync(path+'/'+annotatedFile,svg(overlay+sceneLabels));
+        const routeLabels=goalWaypoints.map((v,i)=>
+          '<circle cx="'+v.x+'" cy="'+v.y+'" r="5" fill="#9ef2da" '+
+          'stroke="#133c51" stroke-width="1"/>'+
+          '<text x="'+(v.x+7)+'" y="'+(v.y-7)+
+          '" fill="#113648" font-size="8" paint-order="stroke" '+
+          'stroke="#f8f4dd" stroke-width="3">RELIC ROUTE '+(i+1)+'</text>').join('\n');
+        writeFileSync(path+'/'+annotatedFile,svg(overlay+sceneLabels+routeLabels));
         const asset=idPart.replaceAll('-','_');
         jobs.push({
           id:idPart,world:id,section:section.id,challenge:section.challenge,
@@ -124,7 +134,7 @@ for(const [id,design] of Object.entries(designs)){
           biome:design.biome,viewport:{x:cameraX,y:cameraY,width:W,height:H},
           output:{width:960,height:540,aspectRatio:'16:9',overlapWorldUnits:80},
           mask:'art-guides/'+maskFile,annotated:'art-guides/'+annotatedFile,
-          anchors,interactions,compositions,backgroundAsset:asset+'_background',foregroundAsset:asset+'_foreground',
+          anchors,interactions,compositions,goalWaypoints,backgroundAsset:asset+'_background',foregroundAsset:asset+'_foreground',
           notes:[
             'The semantic mask is a geometry constraint, NOT a texture to copy literally',
             'Ground boundaries, bridges and waterlines must align with the supplied mask',

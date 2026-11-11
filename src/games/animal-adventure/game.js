@@ -930,6 +930,31 @@ WW.games.animals = (() => {
         }
       }
     }
+    function paintGoalRoute(ctx,now){
+      const goal=goals[0];
+      if(!goal||shared.keys[goal.kind]||!level.goalRoute?.length)return;
+      const player=players[0],match={springKey:'springaroo',
+        diveKey:'tideling',skyKey:'skyling'}[goal.kind];
+      const color={springKey:'#f9d991',diveKey:'#9debe9',
+        skyKey:'#edddff'}[goal.kind]||'#f9d991';
+      for(let i=0;i<level.goalRoute.length-1;i++){
+        const [tx,ty]=level.goalRoute[i];
+        const x=(tx+.5)*TILE,y=ty*TILE-9;
+        const distance=Math.hypot(x-player.x,y-player.y+12);
+        if(distance>260||x<cameraX-22||x>cameraX+W+22||
+           y<cameraY-24||y>cameraY+H+24)continue;
+        const near=1-Math.min(1,distance/260);
+        const pulse=.67+.33*Math.sin(now*2.4+i*2);
+        const opacity=(player.form===match?.65:.34)*(.3+near*.7)*pulse;
+        ctx.save();ctx.globalAlpha=opacity;
+        ctx.strokeStyle=color;ctx.lineWidth=1.1;
+        ctx.beginPath();ctx.arc(x,y,7+Math.sin(now*1.7+i)*1.6,
+          Math.PI*.1,Math.PI*1.75);ctx.stroke();
+        WW.illustrations.draw(ctx,goal.kind==='diveKey'?'bubble':'spark',
+          x,y+5,12,12,.9);
+        ctx.restore();
+      }
+    }
     function paintSetpieces(ctx,now){
       const colors={meadow:['#f9b5c5','#f4e49e'],coast:['#80e7dc','#fff0b0'],
         summit:['#bea5f5','#f6d0f4']}[chapter.biome] || ['#f9b5c5','#fff0b0'];
@@ -1122,6 +1147,7 @@ WW.games.animals = (() => {
       }
       WW.scenery.paintLayers(ctx,level.art?.foreground,cameraX,cameraY);
       groundDetails(ctx,now);
+      paintGoalRoute(ctx,now);
        paintSetpieces(ctx,now);
       // Narrative hints remain proximity-triggered, but enormous repeated
       // sign sprites no longer compete with each area's focal architecture.
