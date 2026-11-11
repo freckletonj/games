@@ -141,7 +141,7 @@ with sync_playwright() as pw:
     assert state('players[0].vy') < 0
 
     # Each aggressive pattern begins with a readable warning, not a surprise hit.
-    for chapter, kind in [(0,'emberkit'),(0,'prismtail'),(2,'cloudwhisp')]:
+    for chapter, kind in [(0,'emberkit'),(1,'prismtail'),(2,'cloudwhisp')]:
         play(chapter)
         page.evaluate("""kind => {
           const s=WW.main.game.state,p=s.players[0],a=s.animals.find(a=>a.kind===kind);
