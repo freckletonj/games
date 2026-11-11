@@ -46,6 +46,7 @@ jobs:
           python tests/painted_illustrations.py
           python tests/semantic_pipeline.py
           python tests/character_packer.py
+          python scripts/evaluate-routes.py
           python tests/performance.py
       - name: Upload playable offline preview
         if: always()
@@ -63,5 +64,7 @@ jobs:
             dist/preview-*.png
             dist/preview-levels.svg
             dist/level-diagnostics.json
+            dist/route-probes.json
+            dist/preview-route-probes.svg
             dist/performance-report.json
           if-no-files-found: ignore
