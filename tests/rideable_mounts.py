@@ -79,6 +79,8 @@ with sync_playwright() as pw:
 
     play(0)
     tame_and_board("unicorn")
+    advance(52)
+    assert state("mounts[0].eating")==0, "Riding must not freeze chewing animation"
 
     # Relocate to a real continuous dry ramp for repeatable movement checks.
     page.evaluate("""()=>{
