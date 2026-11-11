@@ -24,6 +24,7 @@ for (const [id, design] of Object.entries(designs)) {
   assert.equal(world.diagnostics.sectionReports.length, design.sections.length);
   assert.equal(world.waterBodies.length, design.water.length);
   assert.equal(world.diagnostics.metrics.motifs, design.motifs.length);
+  assert.equal(world.diagnostics.metrics.terrainFeatures, design.terrainFeatures.length);
   assert.ok(world.platformSegments.length > design.ledges.length + design.bridges.length);
   assert.ok(world.diagnostics.metrics.waterCells > 0);
   for (const basin of world.waterBodies) {
@@ -55,6 +56,9 @@ const brokenWater = structuredClone(original);
 brokenWater.water[0][2] = 10;
 brokenWater.water[0][3] = 2;
 assert.ok(compiler.analyze(brokenWater).errors.some(e => e.includes('no depth')));
+const brokenFeature = structuredClone(original);
+brokenFeature.terrainFeatures[0].radius = 3;
+assert.ok(compiler.analyze(brokenFeature).errors.some(e => e.includes('Invalid terrain feature')));
 const brokenMotif = structuredClone(original);
 brokenMotif.motifs[0].x = 250;
 assert.ok(compiler.analyze(brokenMotif).errors.some(e => e.includes('Invalid motif')));
