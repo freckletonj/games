@@ -33,8 +33,11 @@ WW.scenery = (() => {
       ctx.restore();
     }
     }
-    if(painted){
-      const atlas=images['painted-biomes'],index={meadow:0,coast:1,summit:2}[biome];
+    // Keep the full-resolution painted panorama for forests and mountains:
+    // the tiny atlas was getting magnified and made the game look blurry.
+    // Its underwater image is reserved for actual coastal lagoons.
+    if(painted && biome==='coast' && level?.waterBodies?.length){
+      const atlas=images['painted-biomes'],index=1;
       const span=atlas.naturalWidth*(292/(atlas.naturalHeight/3));
       const scroll=cameraX*.12,first=Math.floor(scroll/span)-1;
       let strength=.87;
@@ -50,7 +53,7 @@ WW.scenery = (() => {
           const retreat=Math.max(0,Math.min(1,(b+240-center)/300));
           strength=Math.max(strength,approach*retreat);
         }
-        strength*=.9;
+        strength*=.42;
       }
       ctx.globalAlpha=strength;
       for(let i=first;i<first+4;i++){
@@ -182,7 +185,7 @@ WW.scenery = (() => {
     // the centerline/kaleidoscope artifacts of mirrored 128px terrain swatches.
     // Fine-grained, native-pixel brush detail. The old 320px repeat was
     // nearly a full camera wide, making leaf/rock swatches enormous.
-    const px=128,py=top?16:128; // one cap swatch per 16px tile, regardless of world Y
+    const px=64,py=top?16:64; // fine brush detail; cap repeats at exact tile-row pitch
     const canvas=document.createElement('canvas');
     canvas.width=px;canvas.height=py;
     const g=canvas.getContext('2d',{willReadFrequently:true});
@@ -279,16 +282,35 @@ WW.scenery = (() => {
     ctx.fillRect(x,Math.min(y0,y1),16,bottom-Math.min(y0,y1));
     ctx.fillStyle=p.ground;
     ctx.fillRect(x,Math.min(y0,y1),16,bottom-Math.min(y0,y1));
-    if(Math.abs(y0-y1)>0.01){
-      ctx.strokeStyle=edge.rim;
-      ctx.lineWidth=2.3;
-      ctx.beginPath();ctx.moveTo(x,y0+1);ctx.lineTo(x+16,y1+1);ctx.stroke();
-      ctx.strokeStyle='#eff7d077';
-      ctx.lineWidth=.8;
-      ctx.beginPath();ctx.moveTo(x,y0);ctx.lineTo(x+16,y1);ctx.stroke();
-    }else{
-      ctx.fillStyle=p.groundTop;
-      ctx.fillRect(x,y0,16,5);
+    // The same painted cap follows the continuous authored heightfield.
+    // No rectangular grass strips or floating tile corners on steep banks.
+    ctx.beginPath();ctx.moveTo(x,y0);ctx.lineTo(x+16,y1);
+    ctx.lineTo(x+16,y1+5);ctx.lineTo(x,y0+5);ctx.closePath();
+    ctx.fillStyle=p.groundTop;ctx.fill();
+    ctx.restore();
+    ctx.save();
+    const palette={
+      meadow:['#87bb82','#d4dea3'],coast:['#89b9a9','#dfddbd'],
+      summit:['#9294b6','#c5d4db']
+    }[biome]||['#87bb82','#d4dea3'];
+    // Irregular small tufts follow *real* ground coordinates; their spacing
+    // is fixed in world space, so no seams appear at tile boundaries.
+    ctx.lineCap='round';
+    for(let px=x+4;px<x+16;px+=8){
+      const yy=y0+(y1-y0)*(px-x)/16;
+      const seed=Math.sin(px*.81)*2;
+      const height=2.3+Math.abs(seed);
+      ctx.strokeStyle=palette[0];ctx.lineWidth=1.15;
+      ctx.beginPath();ctx.moveTo(px,yy+1);
+      ctx.quadraticCurveTo(px-1.8,yy-height*.65,px-2.4,yy-height);
+      ctx.moveTo(px+.4,yy);
+      ctx.quadraticCurveTo(px+1,yy-height*.8,px+2.3,yy-height*.85);
+      ctx.stroke();
+      if(px%3<1.7){
+        ctx.strokeStyle=palette[1];ctx.lineWidth=.7;
+        ctx.beginPath();ctx.moveTo(px+.1,yy);ctx.lineTo(px+1.1,yy-height*.83);
+        ctx.stroke();
+      }
     }
     ctx.restore();
     return true;
