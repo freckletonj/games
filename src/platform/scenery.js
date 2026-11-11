@@ -182,7 +182,7 @@ WW.scenery = (() => {
     // the centerline/kaleidoscope artifacts of mirrored 128px terrain swatches.
     // Fine-grained, native-pixel brush detail. The old 320px repeat was
     // nearly a full camera wide, making leaf/rock swatches enormous.
-    const px=128,py=top?10:128;
+    const px=128,py=top?16:128; // one cap swatch per 16px tile, regardless of world Y
     const canvas=document.createElement('canvas');
     canvas.width=px;canvas.height=py;
     const g=canvas.getContext('2d',{willReadFrequently:true});
