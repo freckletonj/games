@@ -70,6 +70,33 @@ with sync_playwright() as pw:
     assert page.evaluate('WW.main.game.state.shared.trails') == 1
     page.evaluate('WW.main.game.render(document.querySelector("#game").getContext("2d"),5)')
 
+    # Two players can relay rings; taking turns earns one extra Stardrop.
+    page.evaluate('WW.storage.data.settings.players=2')
+    play(2)
+    def relay_node(index,runner):
+        page.evaluate("""([index,runner])=>{
+          const s=WW.main.game.state,node=s.challenges[0].nodes[index];
+          s.players.forEach((p,i)=>{
+            p.x=node[0]*16+(i===runner?0:25);p.y=node[1]*16+13;
+            p.vx=p.vy=0;p.grounded=false;p.invincible=999;
+          });
+        }""", [index,runner])
+        advance()
+
+    team_stock=page.evaluate('WW.main.game.state.shared.foods.star')
+    relay_node(0,0)
+    relay_node(1,1)
+    relay_node(2,0)
+    relay_node(3,1)
+    team=page.evaluate("""() => {
+      const s=WW.main.game.state;
+      return {completed:s.challenges[0].completed,relay:s.challenges[0].relay,
+        players:s.players.length,star:s.shared.foods.star};
+    }""")
+    assert team=={'completed':True,'relay':True,'players':2,
+                  'star':team_stock+4}, team
+    page.evaluate('WW.storage.data.settings.players=1')
+
     play(1)
     touch_node(0)
     seconds = page.evaluate('WW.main.game.state.challenges[0].seconds')
@@ -88,4 +115,4 @@ with sync_playwright() as pw:
     assert page.evaluate('WW.main.game.state.challenges[0].next') == 1
     assert not errors, errors
     browser.close()
-    print('PASS: five Wonder Trails, ordering, rewards, expiry, retry, rendering')
+    print('PASS: five Wonder Trails, solo rewards, co-op relays, expiry, retry, rendering')

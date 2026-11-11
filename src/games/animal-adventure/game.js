@@ -85,7 +85,7 @@ WW.games.animals = (() => {
       return {kind:o.kind,x,y:onGround?surfaceY(x)-paintedFoot:(o.y+.5)*TILE,used:false};
     });
     const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),keys:Object.fromEntries(goals.map(g=>[g.kind,false])),checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,trails:0,won:false};
-    const challenges=(chapter.events||[]).map(e=>({...e,completed:false,active:false,time:0,owner:null,next:0,cooldown:0}));
+    const challenges=(chapter.events||[]).map(e=>({...e,completed:false,active:false,time:0,owner:null,next:0,cooldown:0,lastRunner:null,relay:false}));
     const projectiles=[],lures=[],captures=[],effects=[];
     let cameraX=0,cameraY=0,clock=0,hudTime=0,shake=0,lastLeashHint=-10,signIndex=-1;
     const message=document.getElementById('message');const hud=document.getElementById('hud');
@@ -549,30 +549,32 @@ WW.games.animals = (() => {
           c.cooldown=Math.max(0,c.cooldown-dt);
           if(c.active){
             c.time=Math.max(0,c.time-dt);
-            if(c.time===0||players[c.owner].sleep){
-              c.active=false;c.owner=null;c.next=0;c.cooldown=1.2;
+            if(c.time===0||players.every(p=>p.sleep)){
+              c.active=false;c.owner=null;c.next=0;c.cooldown=1.2;c.lastRunner=null;c.relay=false;
               say('The rings faded. Touch the first glow to retry.',1600);
               continue;
             }
           }
           for(const p of players){
-            if(p.sleep||c.cooldown>0||(c.active&&c.owner!==p.id))continue;
+            if(p.sleep||c.cooldown>0)continue;
             const node=c.nodes[c.active?c.next:0];
             if(Math.abs(p.x-node[0]*TILE)>17||Math.abs(p.y-13-node[1]*TILE)>22)continue;
             if(!c.active){
-              c.active=true;c.owner=p.id;c.time=c.seconds;c.next=1;
+              c.active=true;c.owner=p.id;c.time=c.seconds;c.next=1;c.lastRunner=p.id;c.relay=false;
               WW.audio.play('ready');particles(node[0]*TILE,node[1]*TILE,'#c9f6ff',12);
               say(c.name+' — follow the glowing rings!',1650);
             }else{
-              c.next++;WW.audio.play('gem');
+              if(p.id!==c.lastRunner)c.relay=true;
+              c.lastRunner=p.id;c.next++;WW.audio.play('gem');
               particles(node[0]*TILE,node[1]*TILE,'#ffeab1',13);
               if(c.next===c.nodes.length){
                 c.completed=true;c.active=false;c.owner=null;
-                shared.trails++;shared.foods.star+=3;
+                const bonus=c.relay?4:3;
+                shared.trails++;shared.foods.star+=bonus;
                 players.forEach(player=>{if(!player.sleep)player.health=Math.min(3,player.health+1);});
                 WW.input.rumble(p.id,.6,220);
                 particles(node[0]*TILE,node[1]*TILE,'#fff6bd',26);
-                say('Wonder Trail complete! +3 Stardrops and a heart.',2200);
+                say((c.relay?'Team':'Wonder')+' Trail complete! +'+bonus+' Stardrops and a heart.',2200);
               }
             }
             break;
@@ -898,6 +900,12 @@ WW.games.animals = (() => {
       for(const gem of items.filter(item=>goalKinds.has(item.kind))){
         const gx=left+bar*gem.x/width;
         box(ctx,gx-1,top-3,3,9,shared.keys[gem.kind]?'#ffd68b':'#92afb3');
+      }
+      // A tiny marker on the existing progress rail makes optional routes discoverable.
+      for(const c of challenges){
+        if(c.type!=='trail')continue;
+        const tx=left+bar*clamp(c.nodes[0][0]*TILE/width,0,1);
+        box(ctx,tx-2,top-4,5,8,c.completed?'#96ddb4':'#f4d98a');
       }
       for(const player of players){
         const px=left+bar*clamp(player.x/width,0,1);
