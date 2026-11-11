@@ -292,8 +292,8 @@ WW.worldCompiler = (() => {
     const objects = [], platformSegments = [];
     const floorAt = x => Math.min(height - 1, Math.ceil(Math.max(surface[x], surface[x + 1])));
     const stamp = (kind, x, y) => objects.push({kind, x, y});
-    const platform = (x, y, length, kind = 'platform') => {
-      platformSegments.push({x, y, length, kind});
+    const platform = (x, y, length, kind = 'platform', style = 'ledge') => {
+      platformSegments.push({x, y, length, kind, style});
       for (let i = x; i < Math.min(width, x + length); i++) {
         if (i >= 0 && y >= 0 && y < height) grid[y][i] = kind;
       }
@@ -309,8 +309,8 @@ WW.worldCompiler = (() => {
       }
       for (let y = floor; y < height; y++) grid[y][x] = 'ground';
     }
-    for (const [x, y, length] of spec.bridges) platform(x, y, length);
-    for (const [x, y, length] of spec.ledges) platform(x, y, length);
+    for (const [x, y, length] of spec.bridges) platform(x, y, length, 'platform', 'bridge');
+    for (const [x, y, length] of spec.ledges) platform(x, y, length, 'platform', 'ledge');
     for (const [x, y, w, h] of spec.thermals || []) {
       for (let row = y; row < y + h; row++) platform(x, row, w, 'thermal');
     }
@@ -323,14 +323,14 @@ WW.worldCompiler = (() => {
             ? -motif.rise * t
             : (i % 2 ? motif.rise : -motif.rise);
         platform(motif.x + motif.dx*i, Math.round(motif.y + offset),
-          motif.width);
+          motif.width, 'platform', 'step');
       }
     }
     // Optional shelves offer meaningful underwater routes instead of an empty
     // column of water; deeper platforms remain independently traversable.
     for (const basin of basins) {
       for (let x = basin.start + 8; x < basin.end - 7; x += 15) {
-        platform(x, Math.floor((basin.surface + basin.bottom) / 2), 5);
+        platform(x, Math.floor((basin.surface + basin.bottom) / 2), 5, 'platform', 'shelf');
       }
     }
     stamp('p1', 4, floorAt(4) - 1);
