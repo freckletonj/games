@@ -1098,7 +1098,9 @@ WW.games.animals = (() => {
       WW.scenery.paintLayers(ctx,level.art?.foreground,cameraX,cameraY);
       groundDetails(ctx,now);
        paintSetpieces(ctx,now);
-      for(const sign of chapter.signs||[]){
+      // Narrative hints remain proximity-triggered, but enormous repeated
+      // sign sprites no longer compete with each area's focal architecture.
+      for(const sign of level.vistas?.length?[]:(chapter.signs||[])){
         const x=sign.x*TILE;if(x<cameraX-65||x>cameraX+W+65)continue;
         const ground=Array.from({length:level.height},(_,y)=>y).find(y=>map[y]?.[sign.x]==='ground');
         if(ground===undefined)continue;
@@ -1139,7 +1141,8 @@ WW.games.animals = (() => {
         if(goalKinds.has(it.kind)){
           const tint=({springKey:'#ff94d5',skyKey:'#f5dfa9',diveKey:'#91f5ff',prismKey:'#ffaf68',mossKey:'#a7f8a0',cloudKey:'#d9bfff',emberKey:'#ff8d6d'})[it.kind]||'#ffe79f';
           WW.props.light(ctx,it.x,it.y+bob,tint,now);
-          ctx.fillStyle='#fff4dd';ctx.font='bold 8px sans-serif';ctx.fillText('LIGHT',it.x-12,it.y-19+bob);
+          // The illuminated relic painting itself communicates the reward;
+          // world-space text labels would spoil the scene composition.
         }
         if(it.kind==='exit'){
           WW.props.gate(ctx,it.x,it.y,goals.every(g=>shared.keys[g.kind]),chapter.biome,now);

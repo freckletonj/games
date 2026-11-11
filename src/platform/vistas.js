@@ -281,7 +281,40 @@ WW.vistas = (() => {
     const scale=v.span*16/340;
     g.save();g.translate((v.x+.5)*T,v.y*T);g.scale(scale,scale);
     g.globalAlpha=.93;
-    // Mass and silhouette are intentionally subdued behind playable elements.
+    // Composite existing painted atlases into each architectural arrangement:
+    // procedural geometry makes the pieces connect, while hand-painted
+    // foliage, stone and coral give the scene an organic tactile surface.
+    const painted={
+      'root-arch':[['lanternTree',-98,12,112,143,.65],
+        ['lanternTree',101,13,108,139,.61]],
+      'lily-garden':[['pond',0,14,167,79,.78],
+        ['flowers',-93,2,63,48,.87],['flowers',94,1,61,51,.87]],
+      'firefly-ruins':[['lantern',-105,3,62,100,.84],
+        ['stones',77,4,77,63,.76]],
+      'shell-cove':[['shells',-104,16,94,74,.86],
+        ['shells',104,14,94,69,.81]],
+      'reef-arch':[['reef',-94,8,113,105,.82],
+        ['reef',99,11,107,100,.78]],
+      'tide-temple':[['shells',-108,13,92,61,.73],
+        ['reef',96,11,91,100,.65]],
+      'sunken-ruin':[['reef',-112,12,116,105,.8],
+        ['shells',105,13,103,72,.79]],
+      'pearl-shrine':[['crystal',-99,14,89,114,.67],
+        ['shells',101,11,99,76,.72]],
+      'willow-arch':[['lanternTree',-103,13,117,148,.65],
+        ['lanternTree',101,11,115,145,.57]],
+      'moon-gate':[['observatory',-80,14,97,122,.55],
+        ['moonStone',99,5,65,71,.83]],
+      'wind-temple':[['observatory',-106,14,99,125,.66],
+        ['moonStone',110,7,87,91,.68]],
+      'floating-garden':[['island',0,26,226,159,.89],
+        ['moonStone',-92,1,75,81,.75]],
+      'aurora-spire':[['crystal',-87,8,117,147,.72],
+        ['crystal',99,11,90,118,.63]]
+    }[v.kind]||[];
+    for(const [asset,x,y,w,h,opacity] of painted)
+      WW.illustrations.draw(g,asset,x,y,w,h,opacity);
+    // Connected silhouette geometry gives the individual paintings purpose.
     light(g,0,-120,170,v.kind.includes('reef')?c.water:c.glow,.19);
     if(['root-arch','elder-tree','willow-arch'].includes(v.kind))
       wooded(g,c,t,v.kind,time);
