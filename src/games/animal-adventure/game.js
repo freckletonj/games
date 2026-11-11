@@ -1048,7 +1048,8 @@ WW.games.animals = (() => {
         const t=map[y][x];
         // Paint contained water as one basin, never striped texture cells.
         if(t==='empty'||(t==='water'&&level.waterBodies?.length)||
-           (t==='platform'&&platformSpans.length))continue;
+           (t==='platform'&&platformSpans.length)||
+           (t==='thermal'&&level.thermalVolumes?.length))continue;
         const px=x*TILE,py=y*TILE,h=hash(x,y);
         // The authored slope skin draws one continuous grass line. Suppress
         // coarse ground-tile caps beneath it to avoid floating bright stripes.
@@ -1140,6 +1141,7 @@ WW.games.animals = (() => {
       }
       WW.scenery.terrainRelief(ctx,level,chapter.biome,cameraX,cameraY);
       WW.scenery.waterVolume(ctx,level,cameraX,now);
+      WW.scenery.thermalColumns(ctx,level,cameraX,cameraY,now);
       for(const span of platformSpans){
         if((span.x+span.length)*TILE<cameraX-24||
             span.x*TILE>cameraX+W+24||span.y*TILE<cameraY-48||

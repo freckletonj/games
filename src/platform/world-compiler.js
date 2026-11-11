@@ -459,6 +459,7 @@ WW.worldCompiler = (() => {
     return {width, height, grid, objects, chapter, biome: spec.biome,
       landmarks: spec.landmarks, surface, waterBodies: basins,
       platformSegments, setpieces, vistas, dressing, goalRoute: spec.goalRoute || [],
+      thermalVolumes:(spec.thermals||[]).map(([x,y,width,height])=>({x,y,width,height})),
       waterZones: spec.water, sections: spec.sections, art:spec.art,
       decorSeed: spec.id, diagnostics, warnings: report.warnings};
   }

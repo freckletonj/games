@@ -522,6 +522,48 @@ WW.scenery = (() => {
     ctx.restore();
   }
 
+  // Each authored updraft is one soft volume, not a wall of flickering
+  // 16px tiles. Physics still samples 'thermal' in the compiled collision grid;
+  // this painter only reveals that force through long, coherent air currents.
+  function thermalColumns(ctx,level,cameraX,cameraY,time){
+    for(const current of level.thermalVolumes||[]){
+      const x=current.x*16,y=current.y*16,w=current.width*16,h=current.height*16;
+      if(x>cameraX+510||x+w<cameraX-30||
+         y>cameraY+290||y+h<cameraY-25)continue;
+      ctx.save();
+      const haze=ctx.createLinearGradient(x,0,x+w,0);
+      haze.addColorStop(0,'#a6e8ff00');
+      haze.addColorStop(.3,'#b5fcff16');
+      haze.addColorStop(.56,'#c1fcff27');
+      haze.addColorStop(1,'#9ad8ff00');
+      ctx.fillStyle=haze;
+      ctx.fillRect(x,y,w,h);
+      for(let i=0;i<5;i++){
+        const seed=(i+.5)/5;
+        const center=x+w*seed+Math.sin(time*.5+i*2.3)*5;
+        const bottom=y+h+4,top=y-8;
+        ctx.strokeStyle=i%2?'#dbf5ffa1':'#a0f1ef77';
+        ctx.globalAlpha=.26+.14*Math.sin(time*1.4+i);
+        ctx.lineWidth=i%2?1.3:2.2;ctx.lineCap='round';
+        ctx.beginPath();ctx.moveTo(center-5,bottom);
+        ctx.bezierCurveTo(center+16,y+h*.68,
+          center-16,y+h*.3,center+3,top);
+        ctx.stroke();
+      }
+      for(let i=0;i<7;i++){
+        const u=(i*37+current.x*7)%83/83;
+        const drift=(time*18+i*31)%(h+38);
+        const cx=x+w*.22+u*w*.58+Math.sin(time*.75+i)*4;
+        const cy=y+h+18-drift;
+        ctx.fillStyle='#e1fffa';
+        ctx.globalAlpha=.17+.2*(.5+.5*Math.sin(time*1.9+i));
+        ctx.beginPath();ctx.ellipse(cx,cy,1.2,4.2,-.3,0,Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+
   // A whole semantic span is illustrated as one connected object. Painting
   // independent 16px blocks made bridges look like detached little squares.
   // Exact top and horizontal bounds still correspond to real collision.
@@ -673,5 +715,5 @@ WW.scenery = (() => {
     return true;
   }
 
-  return {background, paintBackdrop, paintLayers, waterVolume, slope, landmark, tile, platformSpan, terrainRelief, url, ready};
+  return {background, paintBackdrop, paintLayers, waterVolume, slope, landmark, tile, platformSpan, terrainRelief, thermalColumns, url, ready};
 })();
