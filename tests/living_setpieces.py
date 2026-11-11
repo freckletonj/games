@@ -4,8 +4,8 @@ from playwright.sync_api import sync_playwright
 
 html = Path(__file__).parents[1] / 'dist' / 'wonderwood.html'
 source = html.read_text().replace('requestAnimationFrame(frame);', '')
-source = source.replace('<script>\\nwindow.WW',
-    '<script>Object.defineProperty(window,"localStorage",{value:{getItem:()=>null,setItem:()=>{}}});</script><script>\\nwindow.WW', 1)
+source = source.replace('<script>\nwindow.WW',
+    '<script>Object.defineProperty(window,"localStorage",{value:{getItem:()=>null,setItem:()=>{}}});</script><script>\nwindow.WW', 1)
 
 with sync_playwright() as pw:
     browser = pw.chromium.launch(headless=True, args=['--no-sandbox'])
