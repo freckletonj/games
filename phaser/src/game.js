@@ -455,7 +455,7 @@ class Wonderwood extends Phaser.Scene {
     const food=FRUITS[p.food];
     const sprite=this.add.image(x,y,'flora',p.food).setOrigin(.5,1)
       .setScale(.07).setDepth(18);
-    this.lures.push({x,y,food,visual:sprite,expires:this.time.now+14000});
+    this.lures.push({x,y,food,visual:sprite,life:24*60});
     this.flash('A '+food+' treat is waiting',800);
   }
 
@@ -561,7 +561,10 @@ class Wonderwood extends Phaser.Scene {
       }
     }
     for(const lure of [...this.lures]){
-      if(time>lure.expires){
+      // Food lifetime and creature approach both use simulation frames.
+      // Wall-clock expiry was shorter than traversal on low-FPS browsers.
+      lure.life-=step;
+      if(lure.life<=0){
         lure.visual.destroy();this.lures.splice(this.lures.indexOf(lure),1);
       }
     }
