@@ -78,6 +78,7 @@ class Wonderwood extends Phaser.Scene {
           jumps:p.jumps,flaps:p.flaps,food:FRUITS[p.food],form:p.form,
           caught:p.caught,health:p.health,sleep:p.sleep,
           checkpoint:p.checkpoint,bubble:p.bubble,mount:p.mount?.kind||null,
+          ground:this.groundAt(p.x),inWater:this.inWater(p.x,p.y-8),
           bloomWindow:p.bloomWindow||0,bloomBoosts:p.bloomBoosts||0,
           recalls:p.recalls||0}))||[],
         animals:this.animals?.map(a=>({kind:a.kind,x:a.x,y:a.y,action:a.action,
@@ -602,8 +603,8 @@ class Wonderwood extends Phaser.Scene {
     m.rider=p.id;p.mount=m;m.perched=false;
     p.visual.shadow?.setVisible(false);
     p.invincible=.45;
-    this.flash('Riding '+m.kind+'! Jump to '+(m.kind==='pegasus'?
-      'flap; Down to descend':'leap')+' · T / Y to dismount',2200);
+    this.flash(m.kind==='pegasus'?'Pegasus — take to the sky!':
+      'Unicorn — gallop!',1300);
     this.sparkle(m.x,m.y-35,0xfff6cb);
     return true;
   }
@@ -1108,7 +1109,7 @@ class Wonderwood extends Phaser.Scene {
       p.vy-=.48*step;
       if(p.form==='skyling')p.flaps=0;
     }
-    p.vy=clamp(p.vy,-8,7.5);
+    p.vy=clamp(p.vy,-11,7.5);
     const nextX=clamp(p.x+p.vx*step,10,this.worldW-10);
     const safeX=safeHorizontalX(p.x,nextX,p.y,
       x=>this.groundAt(x),swimmer);
@@ -1255,8 +1256,8 @@ class Wonderwood extends Phaser.Scene {
     const teaching=this.chapter.id==='first-forest'&&first;
     this.help.setText(lead.mount?
       (lead.mount.kind==='pegasus'?
-        'Pegasus · Tap Jump for wingbeats · Down descends · T / Y dismount':
-        'Unicorn · Gallop with stick · Jump to leap · T / Y dismount'):
+        'Pegasus · Tap Jump to flap · Down to descend · T dismount':
+        'Unicorn · Run fast · Jump to leap · T dismount'):
       this.mounts.some(m=>m.trust>=100&&m.rider===null&&
         Math.abs(m.x-lead.x)<100)?
         'Friendly mount nearby · T / Y to ride':
