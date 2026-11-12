@@ -394,8 +394,9 @@ export function moveParallaxAtmosphere(scene){
   // while it moves a fraction of the foreground's total travel distance.
   const progress=Math.max(0,Math.min(1,scrollX/Math.max(1,scene.worldW-480)));
   scene.backdrop.x=480+32-64*progress;
-  for(const {visual,speed} of scene.parallaxLayers||[])
-    visual.tilePositionX=scrollX*speed;
+  for(const {visual,speed,sway=0,phase=0} of scene.parallaxLayers||[])
+    visual.tilePositionX=scrollX*speed+
+      sway*Math.sin(scene.time.now*.00042+phase);
 }
 
 export function addMeadowAtmosphere(scene){
