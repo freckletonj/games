@@ -36,6 +36,14 @@ jobs:
         run: |
           test -s dist/wonderwood-phaser.html
           ! grep -E '<script[^>]+src=|<link[^>]+href=' dist/wonderwood-phaser.html
+      - name: Export art masks from compiled semantic worlds
+        run: node phaser/scripts/export-art-guides.mjs
+      - name: Publish editable art masks and anchor metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: wonderwood-art-guides
+          path: dist/art-guides/
+          if-no-files-found: error
       - name: Install Chromium for actual gameplay smoke
         run: |
           python -m pip install playwright
