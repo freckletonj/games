@@ -13,14 +13,22 @@ const atlases = Object.fromEntries(await Promise.all(characterDirs.map(async nam
   const directory = `src/assets/characters/${name}`;
   const manifest = JSON.parse(await read(`${directory}/manifest.json`));
   const image = await readFile(resolve(root, directory, manifest.image));
-  const format = manifest.image.endsWith('.png') ? 'png' : 'webp';
-  // PNG dimensions are big-endian in IHDR; transparent WebP uses the VP8X header.
+  const format = manifest.image.split('.').at(-1).toLowerCase();
+  // PNG IHDR, WebP VP8X and AVIF ispe all contain the real dimensions.
+  const avifSize = format === 'avif' ? image.indexOf('ispe') : -1;
   const validHeader = format === 'png'
     ? image.subarray(1, 4).toString('ascii') === 'PNG'
-    : image.toString('ascii', 0, 4) === 'RIFF' &&
-      image.toString('ascii', 8, 16) === 'WEBPVP8X';
-  const width = format === 'png' ? image.readUInt32BE(16) : 1 + image.readUIntLE(24, 3);
-  const height = format === 'png' ? image.readUInt32BE(20) : 1 + image.readUIntLE(27, 3);
+    : format === 'webp'
+      ? image.toString('ascii', 0, 4) === 'RIFF' &&
+        image.toString('ascii', 8, 16) === 'WEBPVP8X'
+      : format === 'avif' && image.toString('ascii', 4, 12) === 'ftypavif' &&
+        avifSize > 0 && avifSize + 16 <= image.length;
+  const width = format === 'png' ? image.readUInt32BE(16)
+    : format === 'webp' ? 1 + image.readUIntLE(24, 3)
+    : validHeader ? image.readUInt32BE(avifSize + 8) : 0;
+  const height = format === 'png' ? image.readUInt32BE(20)
+    : format === 'webp' ? 1 + image.readUIntLE(27, 3)
+    : validHeader ? image.readUInt32BE(avifSize + 12) : 0;
   const rows = height / manifest.frameHeight;
   const cellCount = rows * manifest.columns;
   if (!validHeader || width !== manifest.columns * manifest.frameWidth ||
