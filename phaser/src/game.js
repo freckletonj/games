@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
 import './bootstrap.js';
 import designs from '../../src/games/animal-adventure/designs.json';
-import {characters,backgrounds,sheets,silhouettes,terrainAtlas} from './assets.js';
+import {characters,backgrounds,sheets,silhouettes,forestKit,terrainAtlas} from './assets.js';
 import {bindings,readActions} from './input.js';
+import {landingY,orbHitsAnimal} from './physics.js';
 
 const TILE=16;
 const VIEW_W=480;
@@ -32,6 +33,9 @@ class Wonderwood extends Phaser.Scene {
     }
     for(const [name,url] of Object.entries(backgrounds))this.load.image('back-'+name,url);
     this.load.image('painted-terrain',terrainAtlas);
+    this.load.spritesheet('forest-trees',forestKit.forestTrees,{frameWidth:256,frameHeight:256});
+    this.load.image('forest-misc',forestKit.forestMisc);
+    this.load.image('forest-platform',forestKit.forestPlatform);
     for(const [name,url] of Object.entries(sheets))
       this.load.spritesheet(name,url,{frameWidth:180,frameHeight:270});
     for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
@@ -52,7 +56,13 @@ class Wonderwood extends Phaser.Scene {
     window.__wonderwoodPhaser={
       engine:'Phaser 4',
       snapshot:()=>({stage:this.stage,chapter:this.chapter?.id||null,
-        players:this.players?.map(p=>({x:p.x,y:p.y,form:p.form,caught:p.caught,health:p.health}))||[],
+        players:this.players?.map(p=>({x:p.x,y:p.y,vx:p.vx,vy:p.vy,grounded:p.grounded,
+          jumps:p.jumps,flaps:p.flaps,food:FRUITS[p.food],form:p.form,
+          caught:p.caught,health:p.health,checkpoint:p.checkpoint,bubble:p.bubble}))||[],
+        animals:this.animals?.map(a=>({kind:a.kind,x:a.x,y:a.y,trust:a.trust,
+          captured:a.captured,windup:a.windup,dash:a.dash}))||[],
+        lures:this.lures?.map(f=>({x:f.x,food:f.food}))||[],
+        orbs:this.orbs?.length||0,paused:this.paused,
         relic:this.shared?.relic||false,shards:this.shared?.shards||0})
     };
   }
@@ -257,6 +267,12 @@ class Wonderwood extends Phaser.Scene {
       graphics.lineBetween(x+2,y,x+w-2,y);
       graphics.lineStyle(1,0xffffff,.25);
       graphics.lineBetween(x+3,y+4,x+w-3,y+4);
+      // A natural, repeating platform edge from the same illustrated kit,
+      // independent of the platform's rectangular collision surface.
+      this.add.tileSprite(x,y-4,w,27,'forest-platform').setOrigin(0,0)
+        .setTileScale(.42,.42).setTint(
+          biome==='coast'?0xb9f4e3:biome==='summit'?0xd1c3eb:0xffffff
+        ).setDepth(-18);
     }
     const water=this.add.graphics().setDepth(-23);
     for(const pool of level.waterBodies){
@@ -285,28 +301,42 @@ class Wonderwood extends Phaser.Scene {
 
   paintScenery(){
     const l=this.level;
-    for(const vista of l.vistas||[]){
+    const tint={meadow:0xffffff,coast:0xb0ecdf,summit:0xc0b8e7}[l.biome];
+    // Reuse one compatible, illustrated forest set for distant and midground
+    // silhouettes. Change spacing, scale, and hue, never aspect ratio.
+    for(let i=0,cell=16;cell<l.width;cell+=34+(i%4)*9,i++){
+      const x=cell*TILE+((i*13)%23)*TILE/3;
+      if(l.waterBodies.some(pool=>cell>=pool.start&&cell<=pool.end))continue;
+      this.add.image(x,this.groundAt(x)+15,'forest-trees',i%4)
+        .setOrigin(.5,1).setScale(.32+(i%3)*.035)
+        .setAlpha(.37).setTint(tint).setDepth(-42);
+    }
+    for(const [i,vista] of (l.vistas||[]).entries()){
       const x=vista.x*TILE,y=this.groundAt(x);
-      const kind=l.biome==='summit'?'pine':'tree';
-      this.add.image(x,y+8,'kenney-'+kind).setOrigin(.5,1)
-        .setScale(vista.span>25?.65:.48).setAlpha(.28).setDepth(-39);
+      this.add.image(x,y+18,'forest-trees',(i+2)%4)
+        .setOrigin(.5,1).setScale(vista.span>25?.53:.43)
+        .setAlpha(.82).setTint(tint).setDepth(-38);
       if(vista.role==='reveal'||vista.role==='reward')
         this.add.image(x,y,'landmarks',l.biome==='summit'?3:0)
-          .setOrigin(.5,1).setScale(.45).setAlpha(.82).setDepth(-18);
+          .setOrigin(.5,1).setScale(.36).setAlpha(.88).setDepth(-18);
     }
     for(const [i,mark] of (l.landmarks||[]).entries()){
       const x=mark.x*TILE;
       this.add.image(x,this.groundAt(x)+3,'landmarks',LANDMARKS[mark.type]??0)
         .setOrigin(.5,1).setScale(.27+(i%3)*.04).setDepth(-17).setAlpha(.94);
     }
+    const sprite=this.textures.get('forest-misc');
+    if(!sprite.has('stump'))sprite.add('stump',0,105,69,110,155);
+    if(!sprite.has('mushrooms'))sprite.add('mushrooms',0,392,0,120,189);
     for(const [i,decoration] of (l.dressing||[]).entries()){
-      const x=decoration.x*TILE, y=this.groundAt(x);
+      const x=decoration.x*TILE,y=this.groundAt(x);
       const frame=FLORA[decoration.asset]??4;
       this.add.image(x,y+2,'flora',frame).setOrigin(.5,1)
         .setScale(.12*(decoration.scale||1)).setAlpha(.94).setDepth(-16);
-      if(i%3===0){
-        this.add.image(x+19,y+2,'kenney-bush').setOrigin(.5,1)
-          .setScale(.4).setAlpha(.25).setDepth(-38);
+      if(i%4===0 && !l.waterBodies.some(pool=>x>=pool.start*TILE&&x<=pool.end*TILE)){
+        const kind=i%8===0?'stump':'mushrooms';
+        this.add.image(x+27,y+3,'forest-misc',kind).setOrigin(.5,1)
+          .setScale(kind==='stump'?.28:.17).setTint(tint).setAlpha(.72).setDepth(-17);
       }
     }
   }
@@ -340,14 +370,19 @@ class Wonderwood extends Phaser.Scene {
   spawnObjects(){
     const relicKind=this.chapter.key;
     for(const object of this.level.objects){
-      const x=(object.x+.5)*TILE;
+      // Put the first friendly Springaroo within teaching range of spawn.
+      // Later creatures retain the semantic layout's intended placements.
+      const intro= this.chapter.id==='first-forest'&&object.kind==='springaroo'&&object.x===19;
+      const x=(intro?12.5:object.x+.5)*TILE;
       if(FORMS[object.kind]){
         const flying=['skyling','glimmermoth','cloudwhisp'].includes(object.kind);
         const y=flying?(object.y+.5)*TILE:this.groundAt(x);
         this.animals.push({kind:object.kind,x,y,homeX:x,homeY:y,
-          face:1,trust:0,stun:0,attack:0,captured:false,flying,
-          action:'',animationTime:0,
-          visual:this.actor(object.kind,x,y).setDepth(12)});
+          face:1,trust:0,stun:0,attack:0,windup:0,dash:0,attackFace:1,
+          captured:false,flying,action:'',animationTime:0,
+          visual:this.actor(object.kind,x,y).setDepth(12),
+          warning:this.add.image(x,y-39,'effects',7).setScale(.08)
+            .setDepth(24).setVisible(false)});
       } else if(['starShard','snack','checkpoint','exit',relicKind].includes(object.kind)){
         const rooted=['snack','checkpoint','exit'].includes(object.kind);
         const y=rooted?this.groundAt(x):(object.y+.5)*TILE;
@@ -450,11 +485,20 @@ class Wonderwood extends Phaser.Scene {
       if(animal.captured)continue;
       animal.stun=Math.max(0,animal.stun-step/60);
       animal.attack=Math.max(0,animal.attack-step/60);
+      const friendly=animal.trust>=100;
+      if(friendly||animal.stun>0){
+        animal.windup=0;animal.dash=0;
+      }
       const lure=this.lures.find(f=>Math.abs(f.x-animal.x)<125);
       let target=lure?.x ?? (animal.homeX+Math.sin(time*.00055+animal.homeX)*32);
       const diff=target-animal.x;
-      const speed=animal.stun ? 0 : lure ? .55 : animal.kind==='prismtail' ? .76 : .36;
+      const speed=animal.stun ? 0 : animal.windup>0 ? 0 :
+        lure ? .55 : animal.kind==='prismtail' ? .76 : .36;
       animal.x+=clamp(diff,-speed*step,speed*step);
+      if(animal.dash>0){
+        animal.x=clamp(animal.x+animal.attackFace*2.6*step,10,this.worldW-10);
+        animal.dash=Math.max(0,animal.dash-step/60);
+      }
       if(Math.abs(diff)>2)animal.face=Math.sign(diff);
       if(animal.flying){
         const rest=animal.homeY+Math.sin(time*.0014+animal.homeX)*7;
@@ -473,19 +517,33 @@ class Wonderwood extends Phaser.Scene {
       const action=animal.stun?'hurt':lure?'run':animal.flying?'idle':
         Math.abs(diff)>6?'run':'idle';
       this.animate(animal,animal.kind,action,step/60);
-      // Visible telegraph before the two more assertive enemy encounters.
-      if(['emberkit','prismtail'].includes(animal.kind)&&animal.attack===0){
-        for(const p of this.players){
-          if(!p.bubble&&Math.abs(p.x-animal.x)<20&&Math.abs(p.y-animal.y)<20&&
-            p.invincible<=0&&animal.stun<=0){
-            if(p.vy>1&&p.y<animal.y-6){
-              animal.stun=2.1;p.vy=-4.4;this.sparkle(animal.x,animal.y);
-            }else{
-              p.health--;p.invincible=1.5;p.vx=animal.x<p.x?3:-3;
-              p.vy=-3.3;animal.attack=1.2;this.flash('Watch the wildlife!',1000);
-              if(p.health<=0)this.recall(p);
-            }
-          }
+      // Threats explicitly warn before a short, directional dash.
+      // Merely touching a calm animal never causes damage.
+      const hostile=animal.kind==='emberkit'||animal.kind==='prismtail';
+      const close=this.players.find(p=>!p.bubble&&
+        Math.abs(p.x-animal.x)<52&&Math.abs(p.y-animal.y)<28);
+      if(hostile&&!friendly&&animal.stun===0){
+        if(animal.windup>0){
+          animal.windup=Math.max(0,animal.windup-step/60);
+          if(animal.windup===0){animal.dash=.22;animal.attack=1.25;}
+        }else if(animal.attack===0&&animal.dash===0&&close&&!lure){
+          animal.windup=.55;
+          animal.attackFace=close.x>=animal.x?1:-1;
+        }
+      }
+      animal.warning.setPosition(animal.x,animal.y-37)
+        .setVisible(animal.windup>0)
+        .setAlpha(.55+.45*Math.sin(time*.02));
+      for(const p of this.players){
+        if(p.bubble||Math.abs(p.x-animal.x)>19||Math.abs(p.y-animal.y)>24)continue;
+        if(p.vy>1&&p.y<animal.y-6){
+          animal.stun=2.1;animal.windup=0;animal.dash=0;
+          p.vy=-4.4;this.sparkle(animal.x,animal.y);
+        }else if(animal.dash>0&&p.invincible<=0){
+          p.health--;p.invincible=1.5;p.vx=animal.x<p.x?3:-3;
+          p.vy=-3.3;animal.dash=0;animal.attack=1.25;
+          this.flash('Look for the warning, then jump over!',1200);
+          if(p.health<=0)this.recall(p);
         }
       }
     }
@@ -495,12 +553,13 @@ class Wonderwood extends Phaser.Scene {
       }
     }
     for(const orb of [...this.orbs]){
+      const fromX=orb.x,fromY=orb.y;
       orb.x+=orb.vx*step;orb.y+=orb.vy*step;orb.vy+=.075*step;orb.life-=step;
       orb.visual.setPosition(orb.x,orb.y);
       const animal=this.animals.find(a=>!a.captured&&a.trust>=100&&
-        Math.abs(a.x-orb.x)<20&&Math.abs(a.y-13-orb.y)<23);
+        orbHitsAnimal(fromX,fromY,orb.x,orb.y,a.x,a.y));
       if(animal){
-        animal.captured=true;animal.visual.destroy();
+        animal.captured=true;animal.visual.destroy();animal.warning.destroy();
         orb.owner.caught=animal.kind;
         orb.owner.form=null;
         this.sparkle(animal.x,animal.y,0xe1ffb5);
@@ -579,16 +638,9 @@ class Wonderwood extends Phaser.Scene {
     p.x=clamp(p.x+p.vx*step,10,this.worldW-10);
     const priorY=p.y;
     p.y+=p.vy*step;
-    let landing=Infinity;
-    const floor=this.groundAt(p.x);
-    if(p.y>=floor&&priorY<=floor+12)landing=floor;
-    for(const segment of this.level.platformSegments){
-      if(segment.kind!=='platform'||p.x<segment.x*TILE-4||
-        p.x>(segment.x+segment.length)*TILE+4)continue;
-      const top=segment.y*TILE;
-      if(p.vy>=0&&priorY<=top+3&&p.y>=top)landing=Math.min(landing,top);
-    }
-    if(landing!==Infinity&&p.vy>=0){
+    const landing=landingY(priorY,p.y,p.vy,p.grounded,
+      p.x,this.groundAt(p.x),this.level.platformSegments,TILE);
+    if(landing!==null){
       p.y=landing;p.vy=0;p.grounded=true;p.jumps=0;p.flaps=0;p.coyote=5;
     }else p.grounded=false;
     if(p.y>this.worldH-10)this.recall(p);

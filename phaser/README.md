@@ -3,8 +3,8 @@
 A playable, parallel Phaser 4 remake, created **from main**. The established
 Canvas game remains intact while this implementation earns gameplay parity.
 Five canonical JSON worlds are compiled through the existing deterministic
-`world-compiler.js`. Painted source assets are reused, with a small CC0 Kenney
-background set. No CDN, external images or fetches are needed to play.
+`world-compiler.js`. Painted source assets are reused alongside the ArtByte illustrated
+forest kit (CC BY 4.0, attributed in the HTML), with subtle CC0 Kenney sky art. No CDN, external images or fetches are needed to play.
 
 ## Build
 
@@ -52,3 +52,17 @@ regression suite remain untouched for comparisons.
 
 Playability/visual review is essential before declaring this a replacement
 for the current game's full campaign.
+
+## Art system and gameplay verification
+
+The [asset manifest](ASSETS.md) inventories exactly where the illustrated
+ArtByte platform, tree and vegetation frames come from and their CC BY 4.0
+attribution. Forest, Coast, and Summit reuse the same **uniformly scaled**
+illustrated silhouettes with cool/warm tint differences; artwork is always
+visual-only and uses the original heightfield for foot placement and collision.
+
+The standalone Chromium suite in `tests/gameplay.py` now exercises a full
+keyboard-driven **feed twice → capture orb → transform → double jump → pause →
+recall** loop in the game itself (no direct player-state cheating). Pure
+physics tests cover slope snapping, one-way platform collision and swept
+projectile contact, and a browser smoke visits the built offline HTML.

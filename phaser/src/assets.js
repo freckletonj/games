@@ -1,5 +1,6 @@
 // Original Wonderwood painted artwork is reused directly from main.
-// Kenney CC0 background silhouettes are supplemental, never used as collision.
+// ArtByte's illustrated CC-BY-4.0 forest environment is the cohesive scenery kit.
+// Native Wonderwood characters and collision surfaces remain independent.
 import hero from '../../src/assets/characters/hero/sheet.png';
 import heroManifest from '../../src/assets/characters/hero/manifest.json';
 import springaroo from '../../src/assets/characters/springaroo/sheet.png';
@@ -27,9 +28,9 @@ import flora from '../../src/assets/illustrations/flora.webp';
 import props from '../../src/assets/illustrations/props.webp';
 import landmarks from '../../src/assets/illustrations/landmarks.webp';
 import effects from '../../src/assets/illustrations/effects.webp';
-import kenneyTree from '../assets/kenney/treeLong.png';
-import kenneyPine from '../assets/kenney/treePine.png';
-import kenneyBush from '../assets/kenney/bush1.png';
+import forestTrees from '../assets/artbyte/jungle-trees.png';
+import forestMisc from '../assets/artbyte/jungle-misc.png';
+import forestPlatform from '../assets/artbyte/platform-jungle.png';
 import kenneyCloud from '../assets/kenney/cloud1.png';
 import kenneyCloudAlt from '../assets/kenney/cloud3.png';
 import kenneyMoon from '../assets/kenney/moonFull.png';
@@ -46,9 +47,9 @@ export const characters = {
   emberkit:{url:emberkit,manifest:emberManifest}
 };
 export const backgrounds = {meadow,coast,summit};
+export const forestKit = {forestTrees,forestMisc,forestPlatform};
 export {terrainAtlas};
 export const sheets = {flora,props,landmarks,effects};
 export const silhouettes = {
-  tree:kenneyTree,pine:kenneyPine,bush:kenneyBush,
   cloud:kenneyCloud,cloudAlt:kenneyCloudAlt,moon:kenneyMoon
 };
