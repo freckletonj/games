@@ -436,7 +436,7 @@ class Wonderwood extends Phaser.Scene {
 
   board(p,m){
     if(m.trust<100||m.rider!==null||p.mount)return false;
-    p.form=null;p.bubble=false;
+    p.form=null;p.bubble=false;p.creatureBounceWindow=0;
     m.rider=p.id;p.mount=m;m.perched=false;
     p.visual.shadow?.setVisible(false);
     p.invincible=.45;
@@ -806,7 +806,7 @@ class Wonderwood extends Phaser.Scene {
   recall(p){
     p.x=p.checkpoint.x;p.y=p.checkpoint.y;p.vx=0;p.vy=0;
     if(p.mount)this.dismount(p);
-    p.recalls++;p.bloomWindow=0;
+    p.recalls++;p.bloomWindow=0;p.creatureBounceWindow=0;
     p.grounded=true;p.bubble=false;p.sleep=false;
     p.invincible=1.5;p.health=3;
     p.visual.setPosition(p.x,p.y);
@@ -1026,7 +1026,8 @@ class Wonderwood extends Phaser.Scene {
       (this.twoPlayers?'    P2 ♥ '+this.players[1]?.health:''));
     const first=this.animals.find(a=>a.kind==='springaroo'&&!a.captured);
     const teaching=this.chapter.id==='first-forest'&&first;
-    this.help.setText(lead.mount?
+    this.help.setText(lead.creatureBounceWindow>0?
+      'Tap Jump now for a super spring!':lead.mount?
       (lead.mount.kind==='pegasus'?
         'Pegasus · Tap Jump to flap · Down to descend · T dismount':
         'Unicorn · Run fast · Jump to leap · T dismount'):
