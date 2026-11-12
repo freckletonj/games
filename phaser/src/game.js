@@ -134,6 +134,7 @@ class Wonderwood extends Phaser.Scene {
     for(const key of this.generatedTextures||[])this.textures.remove(key);
     this.generatedTextures=[];
     this.soilTiles=[];
+    this.ledgeVisuals=[];
     this.cameras.main.setZoom(2);
     this.cameras.main.setScroll(0,0);
     this.cameras.main.setBounds(0,0,VIEW_W,VIEW_H);
