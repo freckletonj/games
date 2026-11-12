@@ -1,26 +1,27 @@
 #!/usr/bin/env bash
-# Local verification for PR #8. GitHub Actions is intentionally disabled.
+# PR #8 local verification; GitHub Actions is intentionally disabled.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-# PR #7's local-first script verifies the Phaser build and gameplay;
-# the cave script adds its own geometry/image-model pipeline checks.
-if [[ "${1:-focused}" == full ]]; then
-  bash phaser/scripts/verify-local.sh full
-else
-  npm test --prefix phaser
-  npm run quality --prefix phaser
-  npm run build --prefix phaser
-  python phaser/tests/smoke.py
-fi
-
-node phaser/scripts/export-cave-guides.mjs --hires
-python phaser/tests/cave_painted.py
+npm test --prefix phaser
+npm run quality --prefix phaser
+node phaser/scripts/export-cave-guides.mjs
+npm run build --prefix phaser
 test -s dist/wonderwood-phaser.html
 test -s dist/cave-guides/world-physical-rock.png
-test -s dist/cave-guides/manifest.json
+
+# Uses real Chromium with unchanged offline HTML (works when file:// is blocked).
+python -u phaser/scripts/run-playwright-inline.py phaser/tests/smoke.py
+python -u phaser/scripts/run-playwright-inline.py phaser/tests/cave_painted.py
+
+if [[ "${1:-focused}" == full ]]; then
+  for suite in gameplay dynamics creature_bounce water-slope mounts complete_meadow chapters; do
+    python -u phaser/scripts/run-playwright-inline.py "phaser/tests/$suite.py"
+  done
+fi
+
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"
 digest="$(sha256sum dist/wonderwood-phaser.html | cut -c1-8)"
 preview="dist/wonderwood-cave-preview-${stamp}-${digest}.html"
 cp dist/wonderwood-phaser.html "$preview"
-printf 'Verified offline Phaser cave build: %s\n' "$preview"
+printf 'Fresh single-image Phaser preview: %s\n' "$preview"

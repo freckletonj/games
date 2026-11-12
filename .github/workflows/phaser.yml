@@ -40,14 +40,6 @@ jobs:
           ! grep -E '<script[^>]+src=|<link[^>]+href=' dist/wonderwood-phaser.html
       - name: Export art masks from compiled semantic worlds
         run: node phaser/scripts/export-art-guides.mjs
-      - name: Export full-level and per-plane cave geometry bitmaps
-        run: node phaser/scripts/export-cave-guides.mjs
-      - name: Publish cave painting control images
-        uses: actions/upload-artifact@v4
-        with:
-          name: luminous-grotto-guides
-          path: dist/cave-guides/
-          if-no-files-found: error
       - name: Publish editable art masks and anchor metadata
         uses: actions/upload-artifact@v4
         with:
@@ -68,7 +60,6 @@ jobs:
           python phaser/tests/mounts.py
           python phaser/tests/complete_meadow.py
           python phaser/tests/chapters.py
-          python phaser/tests/cave_painted.py
       - name: Publish playable single-file HTML
         if: always()
         uses: actions/upload-artifact@v4
@@ -100,7 +91,6 @@ jobs:
             dist/phaser-pegasus-mounted.png
             dist/phaser-pegasus-flight.png
             dist/phaser-chapter-*.png
-            dist/phaser-grotto-painted.png
             dist/phaser-meadow-portrait.png
             dist/phaser-meadow-compact-landscape.png
           if-no-files-found: ignore
