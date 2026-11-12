@@ -50,6 +50,7 @@ def main():
                 "Menu confirm must not trigger a jump when gameplay begins", state
             )
             assert state["animalCount"] > 0, state
+            assert state["paintedStateFrames"] == 9, state
             assert state["platformCount"] > 0, state
             # Each painted soil texture must fit a modest WebGL texture
             # dimension; slices must exactly cover the semantic world width.

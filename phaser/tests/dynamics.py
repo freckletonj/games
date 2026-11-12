@@ -54,6 +54,7 @@ def main():
             timeout=10000)
         page.keyboard.up("g")
         launched=state(page)["orbStates"][0]
+        assert launched["texture"]=="effects" and launched["frame"]==2, launched
         assert 1.8 <= abs(launched["vx"]) <= 2.2, launched
         page.wait_for_function(
             "window.__wonderwoodPhaser.snapshot().orbStates.some(orb=>"

@@ -74,6 +74,17 @@ test('Moonwing wingbeats, cooldown and thermal recharge remain independent of vi
   assert.equal(p.flaps,0,'Thermal resets wingbeat budget');
 });
 
+test('active Glimmermoth hover selects illustrated glide, not a generic fall pose',()=>{
+  const p=explorer('glimmermoth');
+  p.y=300;p.vy=0;p.grounded=false;p.coyote=0;p.hover=3.2;
+  const result=stepPlayerMotion(p,controls,1,world);
+  assert.equal(result.action,'glide');
+  assert.ok(p.vy>0&&p.vy<.9);
+  p.hover=0;
+  const fallen=stepPlayerMotion(p,controls,1,world);
+  assert.equal(fallen.action,'fall');
+});
+
 test('Landing emits visual cues but motion function has no Phaser dependency',()=>{
   const p=explorer();
   p.y=494;p.vy=5.5;p.grounded=false;p.coyote=0;

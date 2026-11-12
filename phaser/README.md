@@ -308,3 +308,27 @@ then make a `gameplay-quality.test.mjs` threshold fail. Fix the production
 rule and check both the scenario report and the real-input Chromium test.
 Metrics are a guardrail, not a substitute for human judgments of the
 illustration, encounter delight, or subjective game feel.
+
+## Illustrated action polish
+
+The Phaser version now uses the **same committed painted effect vocabulary** as
+the original Canvas game: honey, sticky puddles, free bubbles, trapped-creature
+bubbles, gusts, petals, splashes, and sparks. Casting, capture orbs, landing
+and reward bursts no longer use generic bright circle particles. The 3x3
+`states.webp` illustration sheet supplies species-specific eating art and
+the hero's sleeping pose; normal locomotion remains on the native character
+animation atlas. This adds no third-party artwork or licenses.
+
+Gusts now apply damped physical knockback across simulation steps, with a
+regression on displacement over time. Honey puddles follow the creature while
+stunned; bubble-trap artwork follows a creature throughout its real simulated
+rise and return. Springboards use the painted petal frame (previously a
+bubble-trap frame), water vents expose their lift column with drifting
+painted bubbles, and Glimmermoth's active hover selects the glide action.
+`action-art.test.mjs` locks down the existing source atlas mapping.
+
+The scene pauses tweens as well as simulation, so illustrated effects stop
+moving while the game is paused. Real-input Chromium checks the first
+creature's painted eating pose and the capture orb's actual atlas frame.
+These are fidelity improvements, not a claim of newly illustrated
+intermediate wingbeats or a complete animation-art replacement.
