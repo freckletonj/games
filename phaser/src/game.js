@@ -490,7 +490,9 @@ class Wonderwood extends Phaser.Scene {
       const lure=this.lures.find(f=>Math.abs(f.x-animal.x)<125);
       let target=lure?.x ?? (animal.homeX+Math.sin(time*.00055+animal.homeX)*32);
       const diff=target-animal.x;
-      const speed=animal.stun ? 0 : animal.windup>0 ? 0 :
+      // At full trust, pause in place for the player's capture attempt.
+      // Without this a friendly animal immediately wandered out of orb range.
+      const speed=animal.stun || friendly || animal.windup>0 ? 0 :
         lure ? .55 : animal.kind==='prismtail' ? .76 : .36;
       animal.x+=clamp(diff,-speed*step,speed*step);
       if(animal.dash>0){
@@ -515,6 +517,7 @@ class Wonderwood extends Phaser.Scene {
       const action=animal.stun?'hurt':lure?'run':animal.flying?'idle':
         Math.abs(diff)>6?'run':'idle';
       this.animate(animal,animal.kind,action,step/60);
+      animal.visual.setTint(friendly?0xc7ffda:0xffffff);
       // Threats explicitly warn before a short, directional dash.
       // Merely touching a calm animal never causes damage.
       const hostile=animal.kind==='emberkit'||animal.kind==='prismtail';
