@@ -23,20 +23,20 @@ with sync_playwright() as pw:
         const atlas=WW_EMBEDDED_ATLASES[name];
         const image=new Image();image.src=atlas.image;
         await image.decode();
-        const canvas=document.createElement('canvas');canvas.width=320;canvas.height=160;
+        const canvas=document.createElement('canvas');canvas.width=640;canvas.height=320;
         const ctx=canvas.getContext('2d');
         const pixels=WW.spriteAtlas.portrait(name);
         const root=WW.catalog.mounts[name];
         const cells=[];
-        const native=document.createElement('canvas');native.width=320;native.height=160;
+        const native=document.createElement('canvas');native.width=640;native.height=320;
         const nctx=native.getContext('2d');
         nctx.drawImage(image,0,0);
         for(let frame=0;frame<8;frame++){
-          const ox=frame%4*80,oy=Math.floor(frame/4)*80;
-          const data=nctx.getImageData(ox,oy,80,80).data;
-          let opaque=0,top=80,bottom=-1,colorChecksum=0;
-          for(let y=0;y<80;y++)for(let x=0;x<80;x++){
-            const i=(y*80+x)*4,alpha=data[i+3];
+          const ox=frame%4*160,oy=Math.floor(frame/4)*160;
+          const data=nctx.getImageData(ox,oy,160,160).data;
+          let opaque=0,top=160,bottom=-1,colorChecksum=0;
+          for(let y=0;y<160;y++)for(let x=0;x<160;x++){
+            const i=(y*160+x)*4,alpha=data[i+3];
             if(alpha>32){
               opaque++;top=Math.min(top,y);bottom=Math.max(bottom,y);
               colorChecksum=(colorChecksum*33+data[i]+data[i+1]*3+data[i+2]*7+alpha)>>>0;
@@ -47,19 +47,20 @@ with sync_playwright() as pw:
         }
         report[name]={size:[image.naturalWidth,image.naturalHeight],cells,
           origin:atlas.manifest.origin,scale:atlas.manifest.worldScale,
-          portrait:!!pixels,capturable:root.capturable};
+          portrait:!!pixels,capturable:root.capturable,seats:atlas.manifest.seats};
       }
       return report;
     }""")
-    for name, expected in (("unicorn",70),("pegasus",67)):
+    for name, expected in (("unicorn",140),("pegasus",134)):
         specimen=result[name]
-        assert specimen["size"]==[320,160],specimen
-        assert specimen["origin"]=={"x":40,"y":expected},specimen
-        assert specimen["scale"]>=1.0,specimen
+        assert specimen["size"]==[640,320],specimen
+        assert specimen["origin"]=={"x":80,"y":expected},specimen
+        assert 0.5 <= specimen["scale"] <= 0.65,specimen
         assert specimen["portrait"] and specimen["capturable"] is False,specimen
-        assert all(c["opaque"]>950 and c["corner"]<32 for c in specimen["cells"]),specimen
+        assert all(x in specimen["seats"] for x in ("idle","run","jump")),specimen
+        assert all(c["opaque"]>3200 and c["corner"]<32 for c in specimen["cells"]),specimen
         assert len({c["checksum"] for c in specimen["cells"]})>=7,specimen
-    assert result["pegasus"]["cells"][6]["top"]<result["pegasus"]["cells"][0]["top"]-12
+    assert result["pegasus"]["cells"][6]["top"]<result["pegasus"]["cells"][0]["top"]-20
 
     # A contact sheet records the actual new game-asset frames, not a
     # hand-composed promotional image. It exposes identity/foot-pivot errors.
