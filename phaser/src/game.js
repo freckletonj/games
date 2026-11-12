@@ -326,17 +326,15 @@ class Wonderwood extends Phaser.Scene {
         .setOrigin(.5,1).setScale(.27+(i%3)*.04).setDepth(-17).setAlpha(.94);
     }
     const sprite=this.textures.get('forest-misc');
-    if(!sprite.has('stump'))sprite.add('stump',0,210,138,220,310);
     if(!sprite.has('mushrooms'))sprite.add('mushrooms',0,784,0,240,378);
     for(const [i,decoration] of (l.dressing||[]).entries()){
       const x=decoration.x*TILE,y=this.groundAt(x);
       const frame=FLORA[decoration.asset]??4;
       this.add.image(x,y+2,'flora',frame).setOrigin(.5,1)
         .setScale(.12*(decoration.scale||1)).setAlpha(.94).setDepth(-16);
-      if(i%4===0 && !l.waterBodies.some(pool=>x>=pool.start*TILE&&x<=pool.end*TILE)){
-        const kind=i%8===0?'stump':'mushrooms';
-        this.add.image(x+27,y+3,'forest-misc',kind).setOrigin(.5,1)
-          .setScale(kind==='stump'?.14:.085).setTint(tint).setAlpha(.72).setDepth(-17);
+      if(i%6===2 && !l.waterBodies.some(pool=>x>=pool.start*TILE&&x<=pool.end*TILE)){
+        this.add.image(x+27,y+3,'forest-misc','mushrooms').setOrigin(.5,1)
+          .setScale(.085).setTint(tint).setAlpha(.62).setDepth(-17);
       }
     }
   }
