@@ -17,11 +17,12 @@ with sync_playwright() as pw:
       WW_EMBEDDED_ATLASES[kind]?.image.startsWith('data:image/avif;base64,') &&
       !!WW.spriteAtlas.portrait(kind))""")
 
-    result=page.evaluate("""() => {
+    result=page.evaluate("""async () => {
       const names=['unicorn','pegasus'],report={};
       for(const name of names){
         const atlas=WW_EMBEDDED_ATLASES[name];
         const image=new Image();image.src=atlas.image;
+        await image.decode();
         const canvas=document.createElement('canvas');canvas.width=320;canvas.height=160;
         const ctx=canvas.getContext('2d');
         const pixels=WW.spriteAtlas.portrait(name);
