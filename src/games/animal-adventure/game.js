@@ -103,8 +103,8 @@ WW.games.animals = (() => {
       const onGround=level.surface&&paintedFoot&&map[o.y+1]?.[o.x]==='ground';
       return {kind:o.kind,x,y:onGround?surfaceY(x)-paintedFoot:(o.y+.5)*TILE,used:false};
     });
-    const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),keys:Object.fromEntries(goals.map(g=>[g.kind,false])),checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,trails:0,won:false};
-    const challenges=(chapter.events||[]).map(e=>({...e,completed:false,active:false,time:0,owner:null,next:0,cooldown:0,lastRunner:null,relay:false}));
+    const shared={foods:Object.fromEntries(FOODS.map(f=>[f, f==='berry'?14:6])),keys:Object.fromEntries(goals.map(g=>[g.kind,false])),checkpoint:{...spawn},shards:0,totalShards:level.objects.filter(o=>o.kind==='starShard').length,trails:0,mountCourses:0,won:false};
+    const challenges=[...(chapter.events||[]),...(level.mountCourses||[])].map(e=>({...e,completed:false,active:false,time:0,owner:null,next:0,cooldown:0,lastRunner:null,relay:false}));
     const projectiles=[],lures=[],captures=[],effects=[];
     // Level-authored interactive landmarks are independent of painted scenery.
     const setpieces=(level.setpieces||[]).map(piece=>({
@@ -851,37 +851,50 @@ WW.games.animals = (() => {
     }
     function updateChallenges(dt){
       for(const c of challenges){
-        if(c.type==='trail'){
+        if(c.type==='trail'||c.type==='mountCourse'){
           if(c.completed)continue;
+          const riding=c.type==='mountCourse';
           c.cooldown=Math.max(0,c.cooldown-dt);
           if(c.active){
             c.time=Math.max(0,c.time-dt);
-            if(c.time===0||players.every(p=>p.sleep||p.bubble)){
+            const owner=players[c.owner];
+            const leftSaddle=riding&&(!owner||owner.mount===null||
+              mounts[owner.mount].kind!==c.mount);
+            if(c.time===0||leftSaddle||players.every(p=>p.sleep||p.bubble)){
               c.active=false;c.owner=null;c.next=0;c.cooldown=1.2;c.lastRunner=null;c.relay=false;
-              say('The rings faded. Touch the first glow to retry.',1600);
+              say(riding?'The riding course reset. Mount up and try again.':
+                'The rings faded. Touch the first glow to retry.',1600);
               continue;
             }
           }
           for(const p of players){
             if(p.sleep||p.bubble||c.cooldown>0)continue;
+            if(riding&&(p.mount===null||mounts[p.mount].kind!==c.mount||
+              (c.active&&c.owner!==p.id)))continue;
             const node=c.nodes[c.active?c.next:0];
-            if(Math.abs(p.x-node[0]*TILE)>17||Math.abs(p.y-13-node[1]*TILE)>22)continue;
+            const ringY=riding?p.y+16:p.y-13;
+            if(Math.abs(p.x-node[0]*TILE)>17||
+              Math.abs(ringY-node[1]*TILE)>(riding?28:22))continue;
             if(!c.active){
               c.active=true;c.owner=p.id;c.time=c.seconds;c.next=1;c.lastRunner=p.id;c.relay=false;
               WW.audio.play('ready');particles(node[0]*TILE,node[1]*TILE,'#c9f6ff',12);
-              say(c.name+' — follow the glowing rings!',1650);
+              say(c.name+(riding?' — ride through the golden gates!':
+                ' — follow the glowing rings!'),1650);
             }else{
               if(p.id!==c.lastRunner)c.relay=true;
               c.lastRunner=p.id;c.next++;WW.audio.play('gem');
               particles(node[0]*TILE,node[1]*TILE,'#ffeab1',13);
               if(c.next===c.nodes.length){
                 c.completed=true;c.active=false;c.owner=null;
-                const bonus=c.relay?4:3;
-                shared.trails++;shared.foods.star+=bonus;
+                const bonus=riding?5:c.relay?4:3;
+                if(riding)shared.mountCourses++;
+                else shared.trails++;
+                shared.foods.star+=bonus;
                 players.forEach(player=>{if(!player.sleep)player.health=Math.min(3,player.health+1);});
                 WW.input.rumble(p.id,.6,220);
                 particles(node[0]*TILE,node[1]*TILE,'#fff6bd',26);
-                say((c.relay?'Team':'Wonder')+' Trail complete! +'+bonus+' Stardrops and a heart.',2200);
+                say((riding?'Mount Course':c.relay?'Team Trail':'Wonder Trail')+
+                  ' complete! +'+bonus+' Stardrops and a heart.',2200);
               }
             }
             break;
@@ -1003,7 +1016,7 @@ WW.games.animals = (() => {
           }).join('')}</div>
           <div class="compact-quest" title="${chapter.name}">
             <span class="quest-gem ${goals.every(g=>shared.keys[g.kind])?'found':''}">◆</span>
-            <small>✦ ${shared.shards}/${shared.totalShards}${shared.trails?' · ✧':''}</small>
+            <small>✦ ${shared.shards}/${shared.totalShards}${shared.trails?' · ✧':''}${shared.mountCourses?' · ♞':''}</small>
           </div>`;
       }
     }
@@ -1399,9 +1412,10 @@ WW.games.animals = (() => {
           ctx.fillStyle='#fff2c6';ctx.font='bold 7px sans-serif';ctx.fillText(word,x-12,top+1);
         }
       }
-      // Show only the current ring and a faint preview: skill, not HUD prose.
+      // Show only the next skill ring and a faint preview, with distinct
+      // amber mount gates that only respond to the named riding species.
       for(const c of challenges){
-        if(c.type!=='trail'||c.completed)continue;
+        if(!['trail','mountCourse'].includes(c.type)||c.completed)continue;
         for(let i=0;i<c.nodes.length;i++){
           const current=i===(c.active?c.next:0);
           if(!current&&i!==(c.active?c.next+1:1))continue;
@@ -1409,8 +1423,12 @@ WW.games.animals = (() => {
           if(x<cameraX-26||x>cameraX+W+26||y<cameraY-26||y>cameraY+H+26)continue;
           const pulse=Math.sin(now*4+i)*1.2;
           ctx.save();ctx.globalAlpha=current?.95:.36;
-          ctx.strokeStyle=current?'#ffedaa':'#a4edff';ctx.lineWidth=current?2.5:1.5;
-          ctx.beginPath();ctx.ellipse(x,y,12+pulse,16+pulse,0,0,Math.PI*2);ctx.stroke();
+          const riding=c.type==='mountCourse';
+          ctx.strokeStyle=riding?(current?'#ffe39b':'#d9c59f'):
+            current?'#ffedaa':'#a4edff';
+          ctx.lineWidth=current?2.5:1.5;
+          ctx.beginPath();ctx.ellipse(x,y,riding?17+pulse:12+pulse,
+            riding?21+pulse:16+pulse,0,0,Math.PI*2);ctx.stroke();
           WW.illustrations.draw(ctx,'spark',x,y+5,16,16);
           ctx.restore();
         }
@@ -1654,11 +1672,12 @@ WW.games.animals = (() => {
       ctx.fillStyle=edge;ctx.fillRect(0,0,W,H);
       const race=challenges.find(c=>c.type==='sprint'&&c.active);
       if(race){box(ctx,140,32,200,20,'#203252d5');ctx.font='bold 12px sans-serif';ctx.fillStyle='#ffebb9';ctx.fillText(`CRYSTAL DASH: ${race.time.toFixed(1)}s`,164,46);}
-      const trail=challenges.find(c=>c.type==='trail'&&c.active);
+      const trail=challenges.find(c=>['trail','mountCourse'].includes(c.type)&&c.active);
       if(trail){
         const x=W/2-40;
         box(ctx,x,15,80,4,'#203252b8');
-        box(ctx,x,15,80*trail.time/trail.seconds,4,'#ffe4a3');
+        box(ctx,x,15,80*trail.time/trail.seconds,4,
+          trail.type==='mountCourse'?'#f8c7a3':'#ffe4a3');
         for(let i=0;i<trail.nodes.length;i++)
           box(ctx,x+i*25,23,5,5,i<trail.next?'#ffe4a3':'#7097ad');
       }
