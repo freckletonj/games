@@ -44,9 +44,11 @@ export function paintCave(scene){
       }
     }
     if(id==='distant-arches'){
-      ctx.globalAlpha=.62;
+      ctx.save();
+      ctx.globalAlpha=.38;
+      ctx.filter='blur(6px)';
       ctx.drawImage(ambientImage,0,0,canvas.width,canvas.height);
-      ctx.globalAlpha=1;
+      ctx.restore();
     }
     const key='cave-plane-'+id;
     scene.textures.addCanvas(key,canvas);
