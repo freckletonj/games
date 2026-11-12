@@ -382,3 +382,15 @@ the Y coordinate snaps vertically. Deterministic tests bound actual 2D
 travel for Unicorn, Pegasus and berry-following wildlife. The in-game
 help now shows the **active** form's real control and action instead of
 incorrectly telling an already-transformed player to transform again.
+
+## Grounded illustration anchors
+
+A local inspection of the actual bundled painted `props.webp` and
+`effects.webp` 4×2 atlases found 24–115 transparent pixels below
+many frame illustrations. Previously every sprite was positioned with a
+bottom-of-frame origin, causing baskets, gates, campfires, spring blooms,
+and bubble vents to appear detached from their collision/support
+surfaces. `paintedFootOrigin()` now uses frame-specific alpha baselines
+for these grounded objects, while collectible stars and relics retain
+their deliberately floating placement. Tests lock down the baselines;
+semantic terrain and collision shapes remain unchanged.

@@ -22,6 +22,22 @@ export function enemyTellFrame(kind){
     kind==='emberkit'?EFFECT_FRAMES.spark:null;
 }
 
+// The 180×270 illustrated frames include substantial transparent bottom
+// padding. These observed opaque baselines keep props attached to terrain
+// without shifting semantic collision coordinates. A <=10% alpha threshold
+// was used to locate each source-painted bottom pixel.
+export const ILLUSTRATION_FRAME_HEIGHT=270;
+export const PROP_FEET=Object.freeze({
+  snack:229,checkpoint:243,exit:246
+});
+export const SETPIECE_FEET=Object.freeze({
+  bounceBloom:162,bubbleVent:211,windRing:155
+});
+export function paintedFootOrigin(kind){
+  return (PROP_FEET[kind]??SETPIECE_FEET[kind]??ILLUSTRATION_FRAME_HEIGHT)/
+    ILLUSTRATION_FRAME_HEIGHT;
+}
+
 export function setpieceFrame(kind){
   return {bounceBloom:EFFECT_FRAMES.petal,
     windRing:EFFECT_FRAMES.gust,

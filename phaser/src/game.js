@@ -2,7 +2,8 @@ import Phaser from 'phaser';
 import './bootstrap.js';
 import designs from '../../src/games/animal-adventure/designs.json';
 import {characters,mounts,backgrounds,sheets,silhouettes,terrainAtlas,paintedStates} from './assets.js';
-import {EFFECT_FRAMES,paintedAction,powerFrame,setpieceFrame,enemyTellFrame} from './action-art.js';
+import {EFFECT_FRAMES,paintedAction,powerFrame,setpieceFrame,enemyTellFrame,
+  paintedFootOrigin} from './action-art.js';
 import {MOUNTS,LOCATIONS,seatFor,stepMountedMotion} from './mounts.js';
 import {bindings,readActions} from './input.js';
 import {landingY,safeHorizontalX,orbStep,orbHitsAnimal} from './physics.js';
@@ -422,7 +423,8 @@ class Wonderwood extends Phaser.Scene {
         if(halo)this.tweens.add({targets:halo,alpha:{from:.17,to:.48},
           scale:{from:.91,to:1.11},duration:1200+(object.x%5)*120,
           ease:'Sine.easeInOut',yoyo:true,repeat:-1});
-        const icon=this.add.image(x,y,'props',frame).setOrigin(.5,1)
+        const icon=this.add.image(x,y,'props',frame)
+          .setOrigin(.5,paintedFootOrigin(object.kind))
           .setScale(object.kind===relicKind?.19:.16).setDepth(10);
         // A little authored motion makes collectibles readable in the
         // painterly scenery without adding a row of HUD markers.
@@ -440,7 +442,8 @@ class Wonderwood extends Phaser.Scene {
       const x=part.x*TILE,y=(part.y||0)*TILE;
       const base=part.kind==='bounceBloom'?this.groundAt(x):y;
       const art=this.add.image(x,base,'effects',setpieceFrame(part.kind))
-        .setOrigin(.5,1).setScale(.12).setAlpha(.82).setDepth(4);
+        .setOrigin(.5,paintedFootOrigin(part.kind))
+        .setScale(.12).setAlpha(.82).setDepth(4);
       if(part.kind==='bubbleVent'){
         // A small illustrated bubble plume exposes the actual lift column.
         // It is scenery only: the semantic vent volume supplies the force.

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {EFFECT_FRAMES,paintedAction,powerFrame,setpieceFrame,enemyTellFrame}
+import {EFFECT_FRAMES,paintedAction,powerFrame,setpieceFrame,enemyTellFrame,
+  paintedFootOrigin,PROP_FEET,SETPIECE_FEET,ILLUSTRATION_FRAME_HEIGHT}
   from '../src/action-art.js';
 
 const species=['springaroo','tideling','skyling','mossback','prismtail',
@@ -31,4 +32,19 @@ test('each species uses its own illustrated feeding pose and hero has real sleep
   for(const s of species)
     assert.equal(paintedAction(s,'run'),null,'Run uses the original moving atlas');
   assert.equal(paintedAction('hero','eat'),null);
+});
+
+test('illustrated prop and setpiece baselines stay planted on authored ground',()=>{
+  assert.equal(ILLUSTRATION_FRAME_HEIGHT,270);
+  for(const [kind,bottom] of Object.entries({...PROP_FEET,...SETPIECE_FEET})){
+    const origin=paintedFootOrigin(kind);
+    assert.ok(origin>0.5&&origin<1,kind);
+    assert.ok(Math.abs(origin*270-bottom)<1e-7,kind);
+  }
+  assert.equal(paintedFootOrigin('snack'),229/270);
+  assert.equal(paintedFootOrigin('checkpoint'),243/270);
+  assert.equal(paintedFootOrigin('exit'),246/270);
+  assert.equal(paintedFootOrigin('bounceBloom'),162/270);
+  assert.equal(paintedFootOrigin('starShard'),1,
+    'Floating collectible stars deliberately keep their original pivot');
 });
