@@ -4,6 +4,7 @@ This script does not mutate player, level, creature, or objective state.
 It navigates using the same controls as a human. The read-only snapshot
 only establishes physical milestones and prevents fixed-FPS assumptions.
 """
+import json
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
@@ -48,6 +49,18 @@ def jump_twice(page, first_height, pause=120):
     )
 
 
+def milestone(page, label):
+    current = state(page)
+    player = current["players"][0]
+    return {
+        "event": label, "chapter": current["chapter"],
+        "simulationSeconds": current["simulationSeconds"],
+        "x": round(player["x"], 1), "y": round(player["y"], 1),
+        "health": player["health"], "recalls": player["recalls"],
+        "shards": current["shards"]
+    }
+
+
 def main():
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(
@@ -68,6 +81,7 @@ def main():
             "window.__wonderwoodPhaser?.snapshot().stage === -1", timeout=30000
         )
         press(page, "Space", "window.__wonderwoodPhaser.snapshot().stage === 0")
+        route = [milestone(page, "start")]
 
         # The first skill is earned by genuine trust and projectile contact.
         for threshold in (60, 100):
@@ -91,6 +105,8 @@ def main():
             "window.__wonderwoodPhaser.snapshot().players[0].form === 'springaroo'",
         )
 
+        route.append(milestone(page, "springaroo-transformed"))
+
         # Cross the introductory garden and the telegraphed enemy by walking.
         # Take the real x97 ledge, 55 world units above the underlying slope.
         move(page, 1600, timeout=110000)
@@ -112,6 +128,7 @@ def main():
         assert ledge_end["grounded"] and abs(ledge_end["y"] - 432) < 1, (
             ledge_start, ledge_end
         )
+        route.append(milestone(page, "first-ledge-standing"))
         # Run and double-jump right onto the second authentic ledge at y=384.
         page.keyboard.down("d")
         jump_twice(page, 398)
@@ -129,6 +146,7 @@ def main():
         page.wait_for_timeout(1000)
         second = state(page)["players"][0]
         assert second["grounded"] and abs(second["y"] - 384) < 1, second
+        route.append(milestone(page, "second-ledge-standing"))
         move(page, 1790, timeout=20000)
 
         # The final high light is deliberately an optional high-path jump;
@@ -141,6 +159,7 @@ def main():
         page.keyboard.up("Space")
         found = state(page)
         assert found["stage"] == 0 and found["relic"], found
+        route.append(milestone(page, "relic-recovered"))
         page.screenshot(path=str(GAME.parent / "phaser-meadow-relic.png"))
 
         # Follow the real ground route to the gate, which should trigger the
@@ -167,6 +186,18 @@ def main():
         assert resumed["choice"] == 1, resumed
         assert resumed["progress"]["completed"] == ["first-forest"], resumed
         assert page.locator("#ww-menu-chapter").inner_text() == "Crystal Coast"
+        report = {
+            "chapter": "first-forest", "completed": True,
+            "relicRecovered": found["relic"],
+            "shards": found["shards"],
+            "healthAtRelic": found["players"][0]["health"],
+            "recallsToRelic": found["players"][0]["recalls"],
+            "simulationSecondsToRelic": found["simulationSeconds"],
+            "milestones": route
+        }
+        (GAME.parent / "phaser-meadow-route-metrics.json").write_text(
+            json.dumps(report, indent=2) + "\\n"
+        )
         page.locator("#ww-menu-prev").click()
         assert "COMPLETED" in page.locator("#ww-menu-counter").inner_text()
         assert not errors, errors
