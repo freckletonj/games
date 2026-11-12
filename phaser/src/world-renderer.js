@@ -82,12 +82,12 @@ export function paintSoil(scene,contour){
       const y=scene.groundAt(x)+34+(i%4)*28;
       const scale=1+.19*Math.sin(i*2.7);
       ctx.fillStyle=tones[i%5===0?3:1];
-      ctx.globalAlpha=i%5===0?.048:.075;
+      ctx.globalAlpha=i%5===0?.10:.13;
       ctx.beginPath();
       ctx.ellipse(x,y,58*scale,12+(i%4)*4,-.13+
         Math.sin(i*2.12)*.21,0,Math.PI*2);
       ctx.fill();
-      ctx.globalAlpha=.09;
+      ctx.globalAlpha=.13;
       ctx.strokeStyle=tones[3];
       ctx.lineWidth=1.3+(i%3)*.45;
       ctx.beginPath();
@@ -146,12 +146,19 @@ function paintLedge(scene,platform,index,biome){
   }[biome];
   const canvas=document.createElement('canvas');
   canvas.width=Math.ceil((w+16)*2);
-  canvas.height=76;
+  canvas.height=84;
   const ctx=canvas.getContext('2d');
   ctx.scale(2,2);
   const left=6,right=w+10,top=7;
-  const bottom=at=>23+2.9*Math.sin(at*.043+index*2.3)+
-    1.6*Math.sin(at*.127-index*.71);
+  const bottom=at=>{
+    // Floating soil shelves taper at both ends. Their ledge top stays
+    // perfectly flat for jumping, but the underside is an eroded island,
+    // not a rectangular block with two clipped corners.
+    const t=Math.max(0,Math.min(1,(at-left)/(right-left)));
+    const taper=Math.pow(Math.sin(Math.PI*t),.68);
+    return top+5+(18+3.2*Math.sin(at*.043+index*2.3)+
+      2.3*Math.sin(at*.127-index*.71))*taper;
+  };
   ctx.beginPath();
   ctx.moveTo(left+2,top);
   ctx.lineTo(right-2,top);
