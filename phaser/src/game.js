@@ -23,7 +23,8 @@ import {meadowDesign} from './meadow-design.js';
 import {grottoChapter} from './cave-chapter.js';
 import {compileCave,caveContainsWater} from './cave-layout.js';
 import {paintCave,paintCaveForeground} from './cave-renderer.js';
-import {cavePaintings} from './cave-generated-art.js';
+import caveRockUrl from '../assets/generated/luminous-grotto-rock.webp';
+import caveAmbientUrl from '../assets/generated/luminous-grotto-ambient.webp';
 import {readProgress,playChapter,completeChapter,writeProgress} from './progress.js';
 import {addMeadowIllustration} from './meadow-art.js';
 import {validateEncounters} from './encounters.js';
@@ -73,8 +74,8 @@ class Wonderwood extends Phaser.Scene {
       this.load.spritesheet(name,url,{frameWidth:180,frameHeight:270});
     for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
     this.load.image('painted-states',paintedStates);
-    for(const [name,url] of Object.entries(cavePaintings))
-      this.load.image('cave-painted-'+name,url);
+    this.load.image('cave-painted-rock',caveRockUrl);
+    this.load.image('cave-painted-ambient',caveAmbientUrl);
   }
 
   create(){
