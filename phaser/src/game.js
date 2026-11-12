@@ -23,7 +23,7 @@ import {meadowDesign} from './meadow-design.js';
 import {grottoChapter} from './cave-chapter.js';
 import {compileCave,caveContainsWater} from './cave-layout.js';
 import {paintCave,paintCaveGeometryOverlay} from './cave-renderer.js';
-import caveRockUrl from '../assets/generated/luminous-grotto-rock.webp';
+import caveRockUrl from '../assets/generated/luminous-grotto-single.png';
 import {readProgress,playChapter,completeChapter,writeProgress} from './progress.js';
 import {addMeadowIllustration} from './meadow-art.js';
 import {validateEncounters} from './encounters.js';

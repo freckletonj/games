@@ -12,7 +12,7 @@ test('single-world cave guide and gameplay share smooth splines',()=>{
   assert.equal(level.height*16,1792);
   assert.deepEqual(image.world,{width:3200,height:1792});
   assert.equal(image.dynamicExcluded,true);
-  assert.equal(image.painting,'phaser/assets/generated/luminous-grotto-rock.webp');
+  assert.equal(image.painting,'phaser/assets/generated/luminous-grotto-single.png');
   assert.ok(svg.includes('viewBox="0 0 3200 1792"'));
   assert.ok(!svg.includes('tideling'));
   assert.ok(!svg.includes('starShard'));

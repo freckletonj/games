@@ -38,7 +38,7 @@ export function caveArtManifest(level){
     schema:'wonderwood-single-image-cave-v1',
     world:{width:level.width*TILE,height:level.height*TILE},
     guide:'world-physical-rock.png',
-    painting:'phaser/assets/generated/luminous-grotto-rock.webp',
+    painting:'phaser/assets/generated/luminous-grotto-single.png',
     referenceAspectRatio:level.width/level.height,
     recommendedPainting:{
       width:level.width*TILE,height:level.height*TILE
