@@ -13,10 +13,10 @@ test('licensed illustrated environment kit ships complete, non-placeholder atlas
   const trees=png('jungle-trees.png');
   const misc=png('jungle-misc.png');
   const platform=png('platform-jungle.png');
-  assert.equal(trees.width,512);
-  assert.equal(trees.height,512);
-  assert.equal(misc.width,512);
-  assert.equal(misc.height,512);
+  assert.equal(trees.width,1024);
+  assert.equal(trees.height,1024);
+  assert.equal(misc.width,1024);
+  assert.equal(misc.height,1024);
   assert.ok(platform.width>=64 && platform.height>=20);
   assert.ok([trees,misc,platform].every(p=>p.size>5000));
 });
