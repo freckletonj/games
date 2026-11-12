@@ -1,5 +1,6 @@
 import {tickDistraction} from './creatures.js';
 import {advanceBubbleLift} from './gameplay-rules.js';
+import {safeHorizontalX} from './physics.js';
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
@@ -47,16 +48,22 @@ export function stepCreatureMotion(animal,lure,step,time,world){
         speed/Math.hypot(1,slope);
       animal.x+=clamp(diff,-groundSpeed*step,groundSpeed*step);
       if(animal.knockVX){
-        // A gust pushes over multiple simulation frames. No instantaneous
-        // teleport into collision geometry or misleading one-frame impulse.
-        animal.x=clamp(animal.x+animal.knockVX*step,10,world.width-10);
-        animal.knockVX*=Math.pow(.82,step);
+        // A gust moves over several ticks, but cannot punch a grounded
+        // creature through a steep wall or snap it up a cliff.
+        const nextX=clamp(animal.x+animal.knockVX*step,10,world.width-10);
+        const safeX=safeHorizontalX(animal.x,nextX,animal.y,
+          x=>world.groundAt(x));
+        animal.knockVX=Math.abs(safeX-nextX)>.2?0:
+          animal.knockVX*Math.pow(.82,step);
+        animal.x=safeX;
         if(Math.abs(animal.knockVX)<.08)animal.knockVX=0;
       }
       if(animal.dash>0){
         const attack=ATTACKS[animal.kind];
-        animal.x=clamp(animal.x+animal.attackFace*attack.speed*step,
+        const nextX=clamp(animal.x+animal.attackFace*attack.speed*step,
           10,world.width-10);
+        animal.x=safeHorizontalX(animal.x,nextX,animal.y,
+          x=>world.groundAt(x));
         animal.dash=Math.max(0,animal.dash-step/60);
       }
       if(animal.windup>0||animal.dash>0)animal.face=animal.attackFace;

@@ -409,3 +409,9 @@ in real Chromium (`tests/smoke.py`) after checking Node mechanics and build
 output. Animation frame names are normalized to numeric indices in the
 read-only browser snapshot, so tests do not depend on whether Phaser stores
 texture frame keys as strings or numbers.
+
+Creature gust knockback and telegraphed enemy dashes now use swept
+terrain collision, preventing hostile charges and wind abilities from
+passing through uphill walls or instantly lifting grounded wildlife up
+cliff faces. The regression suite includes a sharp blocking cliff for
+both motion types.

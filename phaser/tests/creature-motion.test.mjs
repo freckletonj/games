@@ -83,6 +83,23 @@ test('a gust moves a stunned creature over time, with easing rather than telepor
   assert.equal(p.knockVX,0,'Gust does not cause endless sliding');
 });
 
+test('gust and hostile dash cannot tunnel through steep blocking terrain',()=>{
+  const cliff={width:1000,groundAt:x=>x<114?500:400};
+  const hit=animal('mossback');
+  hit.x=110;hit.homeX=110;hit.y=500;
+  hit.stun=1.8;hit.knockVX=4.3;
+  for(let i=0;i<5;i++)stepCreatureMotion(hit,null,1,i*1000/60,cliff);
+  assert.ok(hit.x<114,hit);
+  assert.equal(hit.knockVX,0);
+
+  const attacker=animal('emberkit');
+  attacker.x=110;attacker.homeX=110;attacker.y=500;
+  attacker.dash=.22;attacker.attackFace=1;
+  for(let i=0;i<14;i++)stepCreatureMotion(attacker,null,1,i*1000/60,cliff);
+  assert.ok(attacker.x<114,attacker);
+  assert.equal(attacker.dash,0);
+});
+
 test('captured creatures return exactly once when their simulation timer expires',()=>{
   const p=animal('glimmermoth');
   p.captured=true;p.respawn=17;p.trust=100;p.distraction=9;
