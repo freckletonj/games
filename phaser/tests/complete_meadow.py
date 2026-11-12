@@ -196,8 +196,11 @@ def main():
             "milestones": route
         }
         (GAME.parent / "phaser-meadow-route-metrics.json").write_text(
-            json.dumps(report, indent=2) + "\\n"
+            json.dumps(report, indent=2)
         )
+        assert json.loads(
+            (GAME.parent / "phaser-meadow-route-metrics.json").read_text()
+        ) == report
         page.locator("#ww-menu-prev").click()
         assert "COMPLETED" in page.locator("#ww-menu-counter").inner_text()
         assert not errors, errors
