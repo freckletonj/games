@@ -1,11 +1,19 @@
 import {caveArtManifest} from './cave-art-guide.js';
 
-// Deterministic in-browser placeholder art, which can be replaced with
-// image-model-painted chunk textures using the exact exported mask metadata.
+// The painted sources cover the entire authored world. Cropping them per chunk
+// must not change world coordinates or introduce a tile-repeat seam.
+export function caveArtworkCrop(chunk,level,imageWidth,imageHeight){
+  const x=imageWidth*chunk.from/level.width;
+  const width=imageWidth*(chunk.to-chunk.from)/level.width;
+  return {x,y:0,width,height:imageHeight};
+}
+
 export function paintCave(scene){
   const level=scene.level,layout=level.cave.layout;
   const manifest=caveArtManifest(level,{chunkCells:48,overlapCells:0});
   scene.cavePaintedChunks=[];
+  const rockImage=scene.textures.get('cave-painted-rock').getSourceImage();
+  const ambientImage=scene.textures.get('cave-painted-ambient').getSourceImage();
   // Two true camera-independent parallax planes; use the same authored
   // optical depths advertised in the art manifest. All physical rock/water
   // remains at scroll factor 1 and never moves relative to collision.
@@ -35,6 +43,11 @@ export function paintCave(scene){
         ctx.fillStyle=light;ctx.fillRect(x-240,y-240,480,480);
       }
     }
+    if(id==='distant-arches'){
+      ctx.globalAlpha=.62;
+      ctx.drawImage(ambientImage,0,0,canvas.width,canvas.height);
+      ctx.globalAlpha=1;
+    }
     const key='cave-plane-'+id;
     scene.textures.addCanvas(key,canvas);
     scene.generatedTextures.push(key);
@@ -58,28 +71,21 @@ export function paintCave(scene){
       ctx.lineTo(right,top?0:height);
       ctx.closePath();
     };
-    // Transparent navigable space reveals the independent parallax planes.
-    // Only the exact physical roof, floor and water are painted here.
-    // Rock fills follow the exact roof and floor contour used by collision.
+    // Only exact authoring masks receive painted terrain. Traversable air
+    // stays transparent so a separate distant plane remains visible.
+    const crop=caveArtworkCrop(chunk,level,rockImage.width,rockImage.height);
+    function drawPaintedSource(){
+      ctx.drawImage(rockImage,crop.x,crop.y,crop.width,crop.height,
+        left,0,right-left,height);
+    }
     for(const top of [true,false]){
       contour(top?level.ceiling:level.surface,top);
-      const wash=ctx.createLinearGradient(0,top?0:540,0,top?310:height);
-      wash.addColorStop(0,top?'#242c48':'#19354b');
-      wash.addColorStop(1,top?'#64536a':'#53495f');
-      ctx.fillStyle=wash;ctx.fill();
       ctx.save();ctx.clip();
-      for(let x=Math.floor(left/38)*38;x<right+50;x+=38){
-        const y0=top?0:500;
-        const offset=13*Math.sin(x*.13)+9*Math.cos(x*.053);
-        ctx.strokeStyle=x%3===0?'#e4b98f3d':'#88e9d52a';
-        ctx.lineWidth=1+Math.abs(Math.sin(x))*1.7;
-        ctx.beginPath();ctx.moveTo(x,y0+offset);
-        ctx.bezierCurveTo(x+32,y0+85,x-28,y0+177,x+24,y0+340);
-        ctx.stroke();
-      }
+      drawPaintedSource();
       ctx.restore();
     }
-    ctx.strokeStyle='#8ce4ccab';ctx.lineWidth=2.3;
+    // Thin geometry-accurate edges, visible if the painting wanders a pixel.
+    ctx.strokeStyle='#a3d6cb6a';ctx.lineWidth=1.4;
     for(const samples of [level.ceiling,level.surface]){
       ctx.beginPath();
       for(let x=chunk.from;x<=chunk.to;x++){
@@ -95,7 +101,9 @@ export function paintCave(scene){
       ctx.beginPath();ctx.moveTo(a*16,pool.surface*16);
       ctx.lineTo(b*16,pool.surface*16);
       for(let x=b;x>=a;x--)ctx.lineTo(x*16,level.surface[x]*16);
-      ctx.closePath();ctx.fillStyle='#1b9fb58c';ctx.fill();
+      ctx.closePath();
+      ctx.save();ctx.clip();drawPaintedSource();ctx.restore();
+      ctx.fillStyle='#1b9fb53b';ctx.fill();
       ctx.strokeStyle='#d9fff0ba';ctx.lineWidth=2;
       ctx.beginPath();ctx.moveTo(a*16,pool.surface*16);
       ctx.lineTo(b*16,pool.surface*16);ctx.stroke();
@@ -121,8 +129,7 @@ export function paintCave(scene){
     shelves.lineStyle(2,0xc8efd4,.9);
     shelves.lineBetween(x+2,y,x+w-2,y);
   }
-  // Lightweight per-world visual atmosphere. The exported distant-arches
-  // and mist-and-crystals image assets can later replace these placeholders.
+  // Small dynamic highlights sit above the static generated paintings.
   for(let i=0;i<29;i++){
     const x=66+i*81,y=level.ceiling[Math.min(level.width,Math.floor(x/16))]*16+26+i%5*21;
     const glimmer=scene.add.ellipse(x,y,18+i%3*9,3+i%4,0x9af5e1,.08+i%3*.035)
