@@ -287,8 +287,7 @@ uses real keyboard input to land on the first Springaroo and earn the boost.
 The deterministic 60 Hz gameplay rules can now be probed without a canvas,
 random input timing or an LLM judging a video. Run `npm test --prefix phaser`
 for regression assertions, or `npm run quality --prefix phaser` to write
-`dist/phaser-mechanics-quality.json`. CI publishes that report alongside
-screenshots. Both commands use `tests/quality-scenarios.mjs`, which directly
+`dist/phaser-mechanics-quality.json`. The local verification command generates that report beside the playable bundle. Both commands use `tests/quality-scenarios.mjs`, which directly
 calls the production movement, orb, lure selection and creature functions.
 The JSON contains world-unit trajectories/speeds for capture orb hills,
 ground and underwater slopes, unreachable-vs-reachable food, bubble rise and
@@ -309,109 +308,67 @@ rule and check both the scenario report and the real-input Chromium test.
 Metrics are a guardrail, not a substitute for human judgments of the
 illustration, encounter delight, or subjective game feel.
 
-## Illustrated action polish
+## Action and interaction fidelity
 
-The Phaser version now uses the **same committed painted effect vocabulary** as
-the original Canvas game: honey, sticky puddles, free bubbles, trapped-creature
-bubbles, gusts, petals, splashes, and sparks. Casting, capture orbs, landing
-and reward bursts no longer use generic bright circle particles. The 3x3
-`states.webp` illustration sheet supplies species-specific eating art and
-the hero's sleeping pose; normal locomotion remains on the native character
-animation atlas. This adds no third-party artwork or licenses.
+The Phaser version reuses the existing painted `effects.webp` and
+`states.webp` atlases for bubble, honey, gust, spark, petal, splash,
+eight species-specific eating poses, and the explorer's sleep pose.
+Ordinary locomotion remains on the painted character atlases;
+intermediate wingbeats and several distinct action keyframes still need
+dedicated art.
 
-Gusts now apply damped physical knockback across simulation steps, with a
-regression on displacement over time. Honey puddles follow the creature while
-stunned; bubble-trap artwork follows a creature throughout its real simulated
-rise and return. Springboards use the painted petal frame (previously a
-bubble-trap frame), water vents expose their lift column with drifting
-painted bubbles, and Glimmermoth's active hover selects the glide action.
-`action-art.test.mjs` locks down the existing source atlas mapping.
+Mossback, Prismtail, Skyling, Cloudwhisp and Emberkit cast **real**
+fixed-clock projectiles with finite ranges, swept creature contact and
+terrain collision. Honey can leave a temporary sticky puddle. Prismtail
+creates a floating trapped-creature bubble, wind applies eased physical
+knockback, and knockback/hostile dashes respect steep terrain. Hover and
+swimming/double-jump operate through their own movement controls.
+The creature-target and projectile rules are in `src/power-projectiles.js`,
+`src/creature-motion.js` and `src/gameplay-rules.js`.
 
-The scene pauses tweens as well as simulation, so illustrated effects stop
-moving while the game is paused. Real-input Chromium checks the first
-creature's painted eating pose and the capture orb's actual atlas frame.
-These are fidelity improvements, not a claim of newly illustrated
-intermediate wingbeats or a complete animation-art replacement.
+Actual ground-distance speed is capped on inclines for explorers,
+Unicorn, Pegasus and grounded wildlife. Rooted scenery uses measured
+illustration foot anchors instead of the transparent bottom padding of
+the source atlases, so baskets, gates, checkpoints and vents meet the
+terrain. The on-screen help tracks the active transformation.
 
-## Transformation projectiles and status tests
+`tests/action-art.test.mjs`, `tests/power-projectiles.test.mjs`, and
+`tests/gameplay-quality.test.mjs` guard art mapping, impact, projectiles,
+inclines, bubble lift, swim currents, hovering and target selection.
+The deterministic quality report uses **schema version 2**, including
+impact travel ticks for all five offensive powers and slope speeds for
+both mounts. These metrics are regression limits, not a substitute for
+watching actual gameplay.
 
-Mossback honey, Prismtail bubbles, Skyling and Cloudwhisp gusts, and
-Emberkit sparks are now real fixed-tick projectiles rather than immediate,
-range-based status mutations. The illustrated shot is visible for its full
-travel, collides with animals using a swept path, and expires at the
-terrain/world edge or after a finite lifetime. Each form applies a distinct
-mechanical effect on actual contact; missed Mossback honey leaves a short
-grounded sticky field. Glimmermoth hover remains a self-cast power, while
-Springaroo and Tideling remain jump/swim controls instead of fake F-key
-abilities. See `tests/power-projectiles.test.mjs` for power range,
-collision, miss, duration and effect regressions.
+## Build, package and test locally (CI is deliberately disabled)
 
-## Local verification policy (GitHub Actions intentionally disabled)
+GitHub Actions has been disabled by the repository owner to avoid
+excessive automatic runs. **Do not reactivate it, rerun its failures or
+treat its status as a merge-readiness signal.**
 
-GitHub CI is intentionally **disabled by the repository owner** because
-automatic runs were too frequent. Red or unavailable Actions checks are
-not useful evidence about this PR. Do not keep retrying or re-enabling CI.
-
-Install dependencies once in a local checkout:
+From a checkout with Node.js, npm, Python and Chromium available:
 
 ```sh
-npm install --prefix phaser
+npm ci --prefix phaser
 python -m pip install playwright
 python -m playwright install chromium
+bash phaser/scripts/verify-local.sh
+bash phaser/scripts/package-preview.sh
 ```
 
-Then use `bash phaser/scripts/verify-local.sh` for the focused mechanical
-regressions, numeric quality report and **actual bundled standalone HTML**.
-Use `bash phaser/scripts/verify-local.sh full` before a merge decision for
-all Node tests, a fresh standalone build and all existing real-input
-Chromium checks (including the complete Meadow route).
+`verify-local.sh` runs focused Node regressions, writes the numeric
+quality report, bundles `dist/wonderwood-phaser.html` and boots that
+**fresh** offline HTML in real Chromium with `tests/smoke.py`.
+`package-preview.sh` performs the same verification and copies the HTML
+to a **uniquely named** `dist/wonderwood-preview-*.html` suitable for
+sharing without stale-file caching. Use either command with `full`
+before a merge decision to run all Node and Chromium gameplay routes,
+including chapter completion. Browser checks use real keyboard input.
 
-The browser scripts exercise `dist/wonderwood-phaser.html` with real
-keyboard actions. Both commands fail if a test or the bundle fails, and
-`dist/phaser-mechanics-quality.json` contains the numbers used for
-gameplay tuning. Check the file's timestamp before playtesting; an older
-downloadable artifact is **not** evidence that the current source builds.
-
-Local verification is required before marking a change merge-ready.
-
-## Surface-speed parity and contextual help
-
-Mounts and grounded creatures now follow slopes using the same surface-distance
-normalization as the explorer, rather than traversing steep hills faster as
-the Y coordinate snaps vertically. Deterministic tests bound actual 2D
-travel for Unicorn, Pegasus and berry-following wildlife. The in-game
-help now shows the **active** form's real control and action instead of
-incorrectly telling an already-transformed player to transform again.
-
-## Grounded illustration anchors
-
-A local inspection of the actual bundled painted `props.webp` and
-`effects.webp` 4×2 atlases found 24–115 transparent pixels below
-many frame illustrations. Previously every sprite was positioned with a
-bottom-of-frame origin, causing baskets, gates, campfires, spring blooms,
-and bubble vents to appear detached from their collision/support
-surfaces. `paintedFootOrigin()` now uses frame-specific alpha baselines
-for these grounded objects, while collectible stars and relics retain
-their deliberately floating placement. Tests lock down the baselines;
-semantic terrain and collision shapes remain unchanged.
-
-## Expanded quality report and realistic browser timing
-
-`dist/phaser-mechanics-quality.json` now has schema version 2, with per-form
-projectile travel time, range, stun duration, bubble duration and gust
-knockback, plus Unicorn/Pegasus actual on-slope speed. Threshold tests use
-these numbers as regression gates. The real-input feeding test now waits
-for the first *rendered* painted eating pose rather than assuming the same
-simulation tick that awards trust has already advanced the animation.
-
-The focused local verification also boots the freshly built standalone HTML
-in real Chromium (`tests/smoke.py`) after checking Node mechanics and build
-output. Animation frame names are normalized to numeric indices in the
-read-only browser snapshot, so tests do not depend on whether Phaser stores
-texture frame keys as strings or numbers.
-
-Creature gust knockback and telegraphed enemy dashes now use swept
-terrain collision, preventing hostile charges and wind abilities from
-passing through uphill walls or instantly lifting grounded wildlife up
-cliff faces. The regression suite includes a sharp blocking cliff for
-both motion types.
+If the build host has no network access, provide a ZIP of the PR branch
+and the npm package tarballs for Phaser 4.2.1, esbuild 0.25.12, and the
+corresponding esbuild platform executable. Extract those into
+`phaser/node_modules` before invoking the verification command.
+A pre-existing playable HTML from an older commit is **not** proof the
+current source builds. Keep PR #7 in draft until its new bundle has
+passed local Chromium checks and visual review.
