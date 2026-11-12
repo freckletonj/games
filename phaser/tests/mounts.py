@@ -49,11 +49,15 @@ def main():
         page.screenshot(path=str(GAME.parent/"phaser-unicorn-mounted.png"))
 
         start=mounted["players"][0]["x"]
-        hold_until(page,"d",
-            "window.__wonderwoodPhaser.snapshot().players[0].x > "+str(start+90))
+        page.keyboard.down("d")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().players[0].x > "+str(start+90),
+            timeout=30000)
         gallop=snapshot(page)
         assert gallop["mounts"][0]["vx"]>2.5,gallop
-        height=gallop["mounts"][0]["y"]
+        page.keyboard.up("d")
+        page.wait_for_timeout(130)
+        height=snapshot(page)["mounts"][0]["y"]
         hold_until(page,"Space",
             "window.__wonderwoodPhaser.snapshot().mounts[0].y < "+str(height-22))
         assert snapshot(page)["mounts"][0]["rider"]==0
