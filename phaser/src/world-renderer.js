@@ -219,24 +219,20 @@ export function paintScenery(scene){
       const x=(cell+((i*13)%17)/3)*TILE;
       if(l.waterBodies.some(pool=>cell>=pool.start&&cell<=pool.end))continue;
       if(l.biome==='meadow')continue; // The painted backdrop already has trees.
-      {
-        const coast=l.biome==='coast';
-        scene.add.image(x,scene.groundAt(x)+12,'landmarks',
-          coast?(i%2?2:5):(i%3?1:4))
-          .setOrigin(.5,1).setScale(.17+(i%3)*.025)
-          .setAlpha(.22).setTint(distantTint).setDepth(-43);
-      }
+      const coast=l.biome==='coast';
+      scene.add.image(x,scene.groundAt(x)+12,'landmarks',
+        coast?(i%2?2:5):(i%3?1:4))
+        .setOrigin(.5,1).setScale(.17+(i%3)*.025)
+        .setAlpha(.22).setTint(distantTint).setDepth(-43);
     }
     for(const [i,vista] of (l.vistas||[]).entries()){
       const x=vista.x*TILE,y=scene.groundAt(x);
       if(l.biome==='meadow')continue;
-      {
-        const coast=l.biome==='coast';
-        scene.add.image(x,y+12,'landmarks',
-          coast?[2,1,5][i%3]:[1,4,3][i%3])
-          .setOrigin(.5,1).setScale(vista.span>25?.36:.29)
-          .setAlpha(.37).setTint(distantTint).setDepth(-39);
-      }
+      const coast=l.biome==='coast';
+      scene.add.image(x,y+12,'landmarks',
+        coast?[2,1,5][i%3]:[1,4,3][i%3])
+        .setOrigin(.5,1).setScale(vista.span>25?.36:.29)
+        .setAlpha(.37).setTint(distantTint).setDepth(-39);
     }
     for(const [i,mark] of (l.landmarks||[]).entries()){
       // Large bright prop illustrations next to enemies used to masquerade
