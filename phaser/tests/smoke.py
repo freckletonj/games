@@ -30,6 +30,19 @@ def main():
             "window.__wonderwoodPhaser?.snapshot().stage === -1", timeout=30000
         )
         assert page.locator("canvas").count() == 1, "A Phaser canvas must render"
+        assert page.locator("#ww-menu").is_visible()
+        assert page.locator(".ww-menu-title").inner_text() == "Wonderwood"
+        assert page.locator("#ww-menu-chapter").inner_text() == "Mosslight Meadow"
+        # Native HTML buttons are sharp at the viewport's real resolution.
+        page.locator("#ww-menu-next").click()
+        page.wait_for_function("window.__wonderwoodPhaser.snapshot().choice === 1")
+        page.locator("#ww-menu-prev").click()
+        page.wait_for_function("window.__wonderwoodPhaser.snapshot().choice === 0")
+        page.locator("#ww-menu-coop").click()
+        assert "Two explorers" in page.locator("#ww-menu-mode").inner_text()
+        page.locator("#ww-menu-coop").click()
+        assert "One explorer" in page.locator("#ww-menu-mode").inner_text()
+        page.evaluate("document.activeElement.blur()")
 
         page.screenshot(path=str(ROOT / "dist" / "phaser-title.png"))
         page.keyboard.down("Space")
@@ -38,6 +51,7 @@ def main():
         page.wait_for_function(
             "window.__wonderwoodPhaser?.snapshot().stage === 0", timeout=15000
         )
+        assert page.locator("#ww-menu").is_hidden()
         before = page.evaluate("window.__wonderwoodPhaser.snapshot()")
         assert before["chapter"] == "first-forest"
         assert before["players"][0]["health"] == 3
