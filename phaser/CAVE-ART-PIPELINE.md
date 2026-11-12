@@ -26,13 +26,46 @@ one-way ledge tops in amber. Foreground masks isolate ceiling occlusion.
 Do not send object positions, enemy sprites, collectible anchors or HUD into
 the diffusion image inputs. The world image should remain static art.
 
-Generated output should retain exactly the original pixel dimensions, not
-auto-crop or scale. Blend overlapping painted chunks in the overlap strip.
-The prototype renderer currently paints a deterministic cave texture in
-bounded canvases, a proof that the coordinate mapping works without waiting
-for image-model credentials or making online inference a build requirement.
-Its shelves and waterlines match the physics coordinates. Image swapping and
-seam blending are a subsequent integration task, not yet shipped.
+## First static-only generated art integration
+
+Two image-model-painted, **static-only** cavern paintings now ship as local WebP:
+`assets/generated/luminous-grotto-rock.webp` and
+`assets/generated/luminous-grotto-ambient.webp`. Both were generated from
+a structural guide showing **only** the authored ceiling, floor, two bounded
+water chambers and ledges. They intentionally have no characters, HUD,
+creatures, collectibles, projectiles, signs, bubbles, or moving effects.
+
+The rock painting is divided into non-overlapping 48-cell-wide runtime chunks.
+Their crop boundaries are computed from the absolute world span, not from a
+repeating texture pattern. The painterly source is drawn **only** inside masks
+formed from the same roof, floor and water coordinates that the simulation
+uses. Waterlines and solid shelves remain geometry-driven. The second
+painting provides a subdued atmospheric backdrop; a second lighter parallax
+plane remains procedural. All assets are embedded by esbuild in the one-file
+offline HTML. No image-generation service is invoked at runtime.
+
+These are **first-pass, full-level 16:9 paintings**, encoded at 1280x720 for
+this prototype. The physical world is 2560x992; therefore the artistic image
+is stretched to the canonical world-space guide coordinates. Geometry masks
+make collision exact but cannot guarantee that **internal painted features**
+match the physical boundary pixel-for-pixel. The next quality pass should
+generate each 768x992 chunk from its own exact-aspect static guide, blend
+4-cell overlaps and reject visible collision/art mismatch. The artist must
+never decide or move colliders.
+
+The artwork comes from model-generated scenery, not from baked gameplay
+screenshots. Keeping dynamic objects out of the generation prompt prevents
+duplicate creatures and HUD elements during player movement.
+
+### Reproducibility checks
+
+`npm test --prefix phaser` verifies the packaged WebP blobs, no-gap source
+crops and water physics. The existing Phaser workflow now also runs
+`phaser/tests/cave_painted.py` against the exact built standalone HTML:
+it checks both art textures load without external requests, four terrain
+chunks span the world, and a real keyboard input moves the real player in
+Chromium. The script saves `dist/phaser-grotto-painted.png` for visual
+comparison.
 
 The physical cave geometry is authoritative regardless of artwork. The
 ceilings block the player, and the water chamber controls swimming. The
@@ -49,10 +82,11 @@ right-hand exit. Check that the cave's ceiling blocks upward travel and
 that no water extends beyond the rock geometry. Compare the exported SVG
 guides to screenshots of the geometry at identical x coordinates.
 
-**Limitations:** this is a vertical slice, not finished commissioned
-diffusion artwork. The current procedural rock coloring has texture and
-atmospheric lighting but not the detail an image model can provide; the
-occlusion guide is intentionally conservative. Player collision uses a
+**Limitations:** this remains a vertical slice, not final production
+art. The generated rock detail is substantially richer than the procedural
+placeholder but the 16:9 source is resampled to the physical world ratio,
+so detailed edge registration is approximate; the occlusion guide is
+intentionally conservative. Player collision uses a
 continuous floor and roof; complex overhangs, tunnels, variable vertical
 walkable chambers at the same x coordinate, and full wall contact for
 projectiles require a generalized polygon collision engine later. The
