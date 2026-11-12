@@ -51,6 +51,7 @@ def main():
             )
             assert state["animalCount"] > 0, state
             assert state["platformCount"] > 0, state
+            assert state["parallaxLayers"] == 2, (chapter, state)
             assert not errors, (chapter, errors)
             page.screenshot(path=str(ROOT / "dist" / f"phaser-chapter-{chapter}.png"))
         browser.close()
