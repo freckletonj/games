@@ -82,7 +82,7 @@ jobs:
             dist/preview-levels.svg
             dist/level-diagnostics.json
             dist/route-probes.json
-          dist/mount-course-routes.json
+            dist/mount-course-routes.json
             dist/preview-route-probes.svg
             dist/art-jobs.json
             dist/art-guides/*.svg
