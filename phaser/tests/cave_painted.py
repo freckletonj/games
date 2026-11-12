@@ -38,8 +38,10 @@ def main():
         assert all(c["x"] == c["displayX"] and
             c["width"]==c["displayWidth"] and c["width"]<=768
             for c in chunks),chunks
-        assert all(chunks[i]["x"]+chunks[i]["width"]==chunks[i+1]["x"]
+        assert all(chunks[i]["x"]+chunks[i]["width"]-
+            chunks[i+1]["overlapPixels"]==chunks[i+1]["x"]
             for i in range(len(chunks)-1)),chunks
+        assert all(c["source"] in ("fallback","chunk") for c in chunks),chunks
         assert chunks[-1]["x"]+chunks[-1]["width"]==before["worldWidth"]
         page.screenshot(path=str(ROOT/"dist"/"phaser-grotto-painted.png"))
         page.keyboard.press("g")

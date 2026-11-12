@@ -44,10 +44,14 @@ export function caveArtManifest(level,{chunkCells=48,overlapCells=4}={}){
     const to=Math.min(level.width,from+chunkCells);
     chunks.push({id:`chunk-${String(index).padStart(2,'0')}`,from,to,
       pixelBounds:{x:from*16,y:0,width:(to-from)*16,height:level.height*16},
-      overlapPixels:overlapCells*16});
+      overlapPixels:overlapCells*16,
+      recommendedPainting:{width:(to-from)*32,height:level.height*32}});
     if(to===level.width)break;
   }
-  return {schema:'wonderwood-painted-cave-v1',tileSize:16,
+  return {schema:'wonderwood-painted-cave-v2',tileSize:16,
+    masterGuide:'world-physical-rock.png',
+    paintingDirectory:'phaser/assets/generated/cave-chunks',
+    paintingScale:2,
     world:{width:level.width*16,height:level.height*16},chunks,
     planes:level.cave.layout.strata,
     staticMasks:['physical-rock','foreground-occlusion','distant-arches','mist-and-crystals'],

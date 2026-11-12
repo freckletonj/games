@@ -25,6 +25,7 @@ import {compileCave,caveContainsWater} from './cave-layout.js';
 import {paintCave,paintCaveForeground,paintCaveGeometryOverlay} from './cave-renderer.js';
 import caveRockUrl from '../assets/generated/luminous-grotto-rock.webp';
 import caveAmbientUrl from '../assets/generated/luminous-grotto-ambient.webp';
+import {cavePaintedChunkUrls} from 'virtual:cave-paintings';
 import {readProgress,playChapter,completeChapter,writeProgress} from './progress.js';
 import {addMeadowIllustration} from './meadow-art.js';
 import {validateEncounters} from './encounters.js';
@@ -76,6 +77,8 @@ class Wonderwood extends Phaser.Scene {
     this.load.image('painted-states',paintedStates);
     this.load.image('cave-painted-rock',caveRockUrl);
     this.load.image('cave-painted-ambient',caveAmbientUrl);
+    for(const [id,url] of Object.entries(cavePaintedChunkUrls))
+      this.load.image('cave-tile-'+id,url);
   }
 
   create(){
@@ -132,8 +135,9 @@ class Wonderwood extends Phaser.Scene {
           geometryOverlay:this.caveGeometryOverlay?.visible||false,
           rockLoaded:this.textures.exists('cave-painted-rock'),
           ambientLoaded:this.textures.exists('cave-painted-ambient'),
-          chunks:this.cavePaintedChunks.map(({x,width,visual})=>({
-            x,width,displayX:visual.x,displayWidth:visual.displayWidth
+          chunks:this.cavePaintedChunks.map(({x,width,overlapPixels,source,visual})=>({
+            x,width,overlapPixels,source,
+            displayX:visual.x,displayWidth:visual.displayWidth
           }))
         }:null,
         // Read-only alignment probes for actual painted platform geometry.
@@ -1156,10 +1160,8 @@ class Wonderwood extends Phaser.Scene {
       }
       return;
     }
-    if(this.level.cave){
-      for(const {speed,visual} of this.parallaxLayers)
-        visual.tilePositionX=this.cameras.main.scrollX*speed;
-    }else moveParallaxAtmosphere(this);
+    // Cave planes use camera scroll factors, not repeating tile offsets.
+    if(!this.level.cave)moveParallaxAtmosphere(this);
     if(actions.some(a=>a.pausePressed)){
       this.paused=!this.paused;
       if(this.paused)this.tweens.pauseAll();

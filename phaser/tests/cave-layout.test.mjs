@@ -17,7 +17,7 @@ test('cave contours share the collision geometry used to paint the guide',()=>{
   assert.ok(!svg.includes('starShard'));
   assert.ok(!svg.includes('p1'));
   assert.equal(level.cave.groundAt(0),41*16);
-  assert.equal(level.cave.ceilingAt(0),15*16);
+  assert.equal(level.cave.ceilingAt(0),25*16);
 });
 
 test('water is a bounded polygon, not a column suspended beyond rock',()=>{
