@@ -76,3 +76,26 @@ The cave is a side-scrolling heightfield with two underwater bowls and
 one-way shelves, not a general polygon-tunnel collision system. Image
 generation remains a human-driven external step; the pipeline deliberately
 does not change collision when paintings are replaced.
+
+## Local-only verification (GitHub Actions intentionally disabled)
+
+PR #7 already provides the local-first verification scripts and a Chromium
+workflow. Do **not** enable or rerun Actions. From a complete checkout with
+Phaser/esbuild dependencies and Playwright/Chromium installed:
+
+```sh
+bash phaser/scripts/verify-cave-local.sh
+# Before merging, include all five existing chapters' browser routes:
+bash phaser/scripts/verify-cave-local.sh full
+```
+
+The wrapper runs the real standalone Phaser build, checks gameplay in Chromium,
+generates the full-level and 2× cave painting guides, verifies the cave's live
+physics/art alignment, and copies the **newly built** playable HTML to a unique
+timestamp-and-content-hash filename. The output is a self-contained offline
+HTML; no GitHub Actions artifacts are needed.
+
+For a quick **independent layout/painting experiment**, a separate offline
+HTML preview can be built without Phaser; unlike the standalone Phaser game,
+its small canvas movement loop is not a validation of transformations, animal
+AI, pickups, or campaign completion. Keep the two verification targets distinct.
