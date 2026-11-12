@@ -46,3 +46,23 @@ test('real player movement is equivalent under 30/60/120Hz render schedules',()=
     assert.equal(actual.grounded,expected.grounded);
   }
 });
+
+test('a second jump after creature impact gives one stronger bounce',()=>{
+  const player={id:0,x:100,y:440,vx:0,vy:-4.4,face:1,grounded:false,
+    coyote:0,jumpBuffer:0,jumps:0,flaps:0,flapWait:0,powers:0,
+    hover:0,breach:0,bloomWindow:0,bloomBoosts:0,
+    creatureBounceWindow:14,creatureBounceBoosts:0,form:null};
+  const boosted=stepPlayerMotion(player,{jump:true,jumpPressed:true},1,world);
+  assert.ok(boosted.events.includes('creatureBounceBoost'));
+  assert.ok(player.vy< -7,'More lift than the automatic -4.4 stomp hop');
+  assert.equal(player.creatureBounceWindow,0);
+  assert.equal(player.creatureBounceBoosts,1);
+  stepPlayerMotion(player,{jump:true,jumpPressed:false},1,world);
+  assert.equal(player.creatureBounceBoosts,1,'Held jump does not retrigger');
+
+  player.creatureBounceWindow=2;player.jumps=0;player.vy=-1;
+  stepPlayerMotion(player,{jump:false},2,world);
+  const late=stepPlayerMotion(player,{jump:true,jumpPressed:true},1,world);
+  assert.ok(!late.events.includes('creatureBounceBoost'));
+  assert.equal(player.creatureBounceBoosts,1);
+});
