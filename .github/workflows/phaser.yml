@@ -45,6 +45,7 @@ jobs:
           python phaser/tests/smoke.py
           python phaser/tests/gameplay.py
           python phaser/tests/dynamics.py
+          python phaser/tests/creature_bounce.py
           python phaser/tests/water-slope.py
           python phaser/tests/mounts.py
           python phaser/tests/complete_meadow.py
@@ -71,6 +72,7 @@ jobs:
             dist/phaser-painted-berry.png
             dist/phaser-bouncing-orb.png
             dist/phaser-bloom-boost.png
+            dist/phaser-creature-bounce.png
             dist/phaser-water-slope.png
             dist/phaser-unicorn-mounted.png
             dist/phaser-unicorn-leap.png
