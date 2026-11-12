@@ -47,7 +47,9 @@ def main():
         )
         press_until(
             page, "f",
-            "window.__wonderwoodPhaser.snapshot().lures.length > 0",
+            """window.__wonderwoodPhaser.snapshot().lures.length > 0 ||
+               window.__wonderwoodPhaser.snapshot().animals
+               .some(a => a.kind === 'springaroo' && a.trust === 100)""",
         )
         page.wait_for_function(
             """window.__wonderwoodPhaser.snapshot().animals
