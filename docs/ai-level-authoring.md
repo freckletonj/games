@@ -107,7 +107,7 @@ Each chapter is keyed by ID and has:
   Example in Mosslight Meadow:
   {"id":"lantern-gallop","section":"lantern-grove",
    "name":"Lantern Leap","mount":"unicorn","seconds":13,
-   "nodes":[[182,31],[199,25],[218,24],[235,28],[250,27]]}.
+   "nodes":[[182,33],[199,25],[218,24],[235,28],[250,27]]}.
   The art guide exports these rings as separate anchors, not static paint.
 - checkpoints, snacks: arrays of x positions.
 - stars: [x,y] optional pickups; landmarks: {x,type} descriptions.
