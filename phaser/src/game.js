@@ -22,7 +22,7 @@ import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatu
 import {meadowDesign} from './meadow-design.js';
 import {grottoChapter} from './cave-chapter.js';
 import {compileCave,caveContainsWater} from './cave-layout.js';
-import {paintCave,paintCaveForeground} from './cave-renderer.js';
+import {paintCave,paintCaveForeground,paintCaveGeometryOverlay} from './cave-renderer.js';
 import caveRockUrl from '../assets/generated/luminous-grotto-rock.webp';
 import caveAmbientUrl from '../assets/generated/luminous-grotto-ambient.webp';
 import {readProgress,playChapter,completeChapter,writeProgress} from './progress.js';
@@ -111,6 +111,10 @@ class Wonderwood extends Phaser.Scene {
         this.stateFrameWidth,this.stateFrameHeight);
     // Revive has the same binding as the legacy game. H returns to the menu.
     this.input.keyboard.on('keydown-H',()=>{if(this.stage>=0)this.showMenu();});
+    this.input.keyboard.on('keydown-G',()=>{
+      if(this.level?.cave&&this.caveGeometryOverlay)
+        this.caveGeometryOverlay.setVisible(!this.caveGeometryOverlay.visible);
+    });
     this.showMenu();
     // The smoke test reads state but never mutates gameplay state directly.
     window.__wonderwoodPhaser={
@@ -125,6 +129,7 @@ class Wonderwood extends Phaser.Scene {
         paintedStateFrames:this.textures.get('painted-states').frameTotal-1,
         generatedTextureCount:this.generatedTextures?.length||0,
         caveArt:this.level?.cave?{
+          geometryOverlay:this.caveGeometryOverlay?.visible||false,
           rockLoaded:this.textures.exists('cave-painted-rock'),
           ambientLoaded:this.textures.exists('cave-painted-ambient'),
           chunks:this.cavePaintedChunks.map(({x,width,visual})=>({
@@ -209,6 +214,7 @@ class Wonderwood extends Phaser.Scene {
     this.lures=[];
     this.setpieces=[];
     this.parallaxLayers=[];
+    this.caveGeometryOverlay=null;
     this.lastInput=[{},{}];
     this.pendingActions=[{},{}];
     this.pendingMs=0;
@@ -328,6 +334,7 @@ class Wonderwood extends Phaser.Scene {
     if(this.level.cave){
       paintCave(this);
       paintCaveForeground(this);
+      paintCaveGeometryOverlay(this);
     }else{
       addParallaxAtmosphere(this);
       addMeadowIllustration(this);
