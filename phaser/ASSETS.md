@@ -5,33 +5,33 @@ slope materials, props and chapter backgrounds from the repo's `src/assets/`.
 The Phaser renderer **does not use the original low-resolution Kenney tree/pine/
 bush PNGs as main scenery**. They clashed with the hand-painted sprites.
 
-## Main illustrated environment collection: ArtByte (CC BY 4.0)
+## Licensed environment source library: ArtByte (CC BY 4.0)
 
 - **Pack:** [2D Platformer Forest Kit](https://opengameart.org/content/2d-platformer-forest-kit)
 - **Creator:** ArtByte
 - **License:** [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/)
-- **Active rendered asset:** `platform-jungle.png` (repeatable natural
-  Meadow platform edge).
-- **Retained sources, not currently rendered:** `jungle-trees.png` (four
-  illustrated tree variants) and `jungle-misc.png` (mushroom/vegetation
-  cutouts). They remain in the repository for future use after in-context
-  scale/style review, but no longer clutter the actual levels or offline HTML.
+- **Retained sources, not currently bundled into the standalone game:**
+  `platform-jungle.png`, `jungle-trees.png` and `jungle-misc.png`.
+  The game now renders biome-specific painted ledge silhouettes derived
+  directly from collision geometry, and no longer shows the kit's
+  mismatched bright jungle tiles or decorative props. The source PNGs
+  remain in the repository for future use and license review.
 - **Redistributable upstream copy:** `tilnewman/halloween` on GitHub at
   `media/image/map/jungle-*.png` and `media/image/platform-jungle.png`.
   The upstream project credits ArtByte and identifies the jungle artwork as
   CC BY 4.0 in `media/image/map/license.txt`.
-- **Modifications:** The illustrated platform texture is repeated at uniform
-  scale. Non-uniform stretching of illustrated scenery is prohibited. Coast
-  and Summit use original Wonderwood biome assets for their scenery.
-- **Credit:** "Forest environment artwork by ArtByte, CC BY 4.0" is included
-  in the bundled HTML. Original art is available at the linked pack.
+- **Modifications:** Older commits cropped, scaled and tinted this source art.
+  The current renderer instead uses its own painted ledge textures for all
+  three biome families, preserving the source artwork unmodified in-repo.
+- **Credit:** The provenance of the retained source pack remains in this
+  file and in the project's third-party notice.
 
 The source kit also provides a seamless layered background and tile atlas.
-We intentionally continue to use Wonderwood's original chapter backgrounds
-and slope surfaces for now; those were painted specifically for the current
-world layouts. The borrowed **platform edge** provides a cohesive forest
-surface; the game's current atmospheric scenery uses chapter backdrops and
-subdued original Wonderwood illustrations without replacing collision data.
+Wonderwood continues to use its original painted chapter backdrops and
+slope surfaces. Every floating shelf is now generated from the **same
+semantic platform geometry** as its collider and painted with its biome's
+earth/stone palette. Distant haze scrolls at two independent fractions of
+camera movement, behind the world and never as interactive scenery.
 
 ## Supplemental CC0 assets
 
@@ -86,14 +86,14 @@ character style indiscriminately:
   A strong candidate for a first distinct gentle forest enemy; it has a
   more rendered appearance and must be tested in context before adoption.
   Not bundled.
-- **ArtByte Forest Kit** — existing hand-painted trees, mushrooms and
-  platform edges used in this game, CC BY 4.0. Animate foliage as world
-  scenery; do not present those decorative cutouts as catchable creatures
-  without distinct recognizable gameplay states.
+- **ArtByte Forest Kit** — licensed and retained in the source tree but
+  excluded from the current offline game. Reconsider only after verifying
+  brushwork and scale in gameplay screenshots; never turn decorative art
+  into misleading catchable silhouettes.
 
 The critical distinction: **external pack candidates are researched, not
 claimed as imported**. The visible gameplay art reuses the original
-Wonderwood character sprites and licensed ArtByte/Kenney environments.
+Wonderwood character sprites, original biome illustrations, and subtle Kenney skies.
 
 ## Original painted mounts returned from PR #6
 
