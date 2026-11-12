@@ -36,7 +36,9 @@ def main():
         )
         initial = snapshot(page)
         spring = next(a for a in initial["animals"] if a["kind"] == "springaroo")
-        assert 150 <= spring["x"] <= 220, "First ability must be taught near spawn"
+        assert 0 < spring["x"] - (initial["players"][0]["x"] + 32) <= 85, (
+            "First Springaroo must be within normal treat range", initial
+        )
 
         # Feeding must really lure a wildlife creature across terrain.
         press_until(page, "f", "window.__wonderwoodPhaser.snapshot().lures.length > 0")
