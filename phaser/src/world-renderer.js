@@ -12,9 +12,8 @@ const DRESSING={flowers:4,reeds:5,stones:6,shells:6};
 const LANDMARKS={tree:0,crystal:1,reef:2,observatory:3,island:4,pond:5,lantern:6,shells:7};
 
 export function paintSoil(scene,contour){
-    // Bake the original hand-painted swatch into a continuous slope-clipped
-    // world texture. One Phaser image is cheaper and more coherent than
-    // thousands of repeated rectangles or independently stretched tiles.
+    // Paint in bounded, seam-aligned world-coordinate chunks. Long worlds
+    // exceed 4096px horizontally, the texture limit of some mobile GPUs.
     const source=scene.textures.get('painted-terrain').getSourceImage();
     const cw=source.width/4,ch=source.height/2;
     const swatch=document.createElement('canvas');
@@ -46,10 +45,15 @@ export function paintSoil(scene,contour){
     }
     brush.putImageData(data,0,0);
     const top=Math.max(0,Math.floor(Math.min(...scene.level.surface)*TILE)-5);
+    const chunkWidth=768;
+    scene.soilTiles=[];
+    for(let left=0,index=0;left<scene.worldW;left+=chunkWidth,index++){
     const paint=document.createElement('canvas');
-    paint.width=scene.worldW;paint.height=scene.worldH-top;
+    paint.width=Math.min(chunkWidth,scene.worldW-left);
+    paint.height=scene.worldH-top;
     const ctx=paint.getContext('2d');
-    ctx.translate(0,-top);
+    // The same world-space gradients, linework and grain touch both edges.
+    ctx.translate(-left,-top);
     ctx.beginPath();
     ctx.moveTo(0,scene.worldH);
     for(const point of contour)ctx.lineTo(point.x,point.y);
@@ -120,10 +124,14 @@ export function paintSoil(scene,contour){
       ctx.stroke();
     }
     ctx.globalAlpha=1;
-    const key='painted-soil-'+scene.chapter.id;
+    const key='painted-soil-'+scene.chapter.id+'-'+index;
     if(scene.textures.exists(key))scene.textures.remove(key);
     scene.textures.addCanvas(key,paint);
-    scene.add.image(0,top,key).setOrigin(0).setDepth(-29).setAlpha(.96);
+    scene.generatedTextures.push(key);
+    const visual=scene.add.image(left,top,key)
+      .setOrigin(0).setDepth(-29).setAlpha(.96);
+    scene.soilTiles.push({x:left,width:paint.width,height:paint.height,visual});
+    }
     const rim=scene.add.graphics().setDepth(-28);
     rim.lineStyle(2,0x1e4650,.26);
     rim.strokePoints(contour.map(point=>({x:point.x,y:point.y+2})));
@@ -211,6 +219,7 @@ function paintLedge(scene,platform,index,biome){
   const key='ledge-paint-'+scene.chapter.id+'-'+index;
   if(scene.textures.exists(key))scene.textures.remove(key);
   scene.textures.addCanvas(key,canvas);
+  scene.generatedTextures.push(key);
   // The canvas was painted at 2x for antialiasing, so it MUST be displayed
   // at half-size. Otherwise the visible shelf is twice its collision width.
   return scene.add.image(x-8,y-7,key).setOrigin(0).setScale(.5).setDepth(-18);
@@ -377,6 +386,7 @@ export function addParallaxAtmosphere(scene){
   const key='painted-atmosphere-'+biome;
   if(scene.textures.exists(key))scene.textures.remove(key);
   scene.textures.addCanvas(key,canvas);
+  scene.generatedTextures.push(key);
   const layers=[
     {y:174,alpha:.20,speed:.065},
     {y:258,alpha:.13,speed:.17}
