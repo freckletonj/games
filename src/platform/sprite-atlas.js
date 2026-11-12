@@ -59,6 +59,12 @@ WW.spriteAtlas = (() => {
     } else if (action === 'alert') {
       stretchY = 1.035;
     }
+    if (pose.flying && action === 'jump') {
+      // Let the painted Pegasus wing silhouette breathe without stretching
+      // the actual collision shape or shifting the saddle.
+      rise -= Math.sin(seconds * 6) * .8;
+      lean += Math.sin(seconds * 5) * .014;
+    }
 
     ctx.save();
     ctx.translate(Math.round(x), Math.round(y));
