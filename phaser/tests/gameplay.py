@@ -40,8 +40,6 @@ def main():
 
         # Feeding must really lure a wildlife creature across terrain.
         press_until(page, "f", "window.__wonderwoodPhaser.snapshot().lures.length > 0")
-        page.wait_for_timeout(4300)
-        print("first-feeding-state:", snapshot(page), flush=True)
         page.wait_for_function(
             """window.__wonderwoodPhaser.snapshot().animals
                .some(a => a.kind === 'springaroo' && a.trust >= 60)""",
