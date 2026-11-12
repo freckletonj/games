@@ -23,6 +23,7 @@ import {meadowDesign} from './meadow-design.js';
 import {grottoChapter} from './cave-chapter.js';
 import {compileCave,caveContainsWater} from './cave-layout.js';
 import {paintCave,paintCaveForeground} from './cave-renderer.js';
+import {cavePaintings} from './cave-generated-art.js';
 import {readProgress,playChapter,completeChapter,writeProgress} from './progress.js';
 import {addMeadowIllustration} from './meadow-art.js';
 import {validateEncounters} from './encounters.js';
@@ -72,6 +73,8 @@ class Wonderwood extends Phaser.Scene {
       this.load.spritesheet(name,url,{frameWidth:180,frameHeight:270});
     for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
     this.load.image('painted-states',paintedStates);
+    for(const [name,url] of Object.entries(cavePaintings))
+      this.load.image('cave-painted-'+name,url);
   }
 
   create(){
@@ -205,7 +208,7 @@ class Wonderwood extends Phaser.Scene {
     this.paused=false;
   }
 
-  addBackground(biome){
+  addBackground(biome,cave=false){
     this.cameras.main.setBackgroundColor(SKY[biome]);
     // Scroll-factor-zero objects are screen-space in Phaser 4. The game camera
     // is zoomed to 2x, but backgrounds must fill the full 960x540 viewport.
@@ -214,12 +217,14 @@ class Wonderwood extends Phaser.Scene {
     const fit=Math.max(960/back.width,540/back.height);
     back.setScale(fit);
     this.backdrop=back;
+    if(!cave){
     const cloudKinds=['kenney-cloud','kenney-cloudAlt'];
-    for(let n=0;n<7;n++){
-      const x=55+n*145+(n%2)*15;
-      this.add.image(x,50+(n%3)*42,cloudKinds[n%2])
-        .setScale(.72+(n%3)*.14).setAlpha(.2).setScrollFactor(0).setDepth(-90);
-    }
+      for(let n=0;n<7;n++){
+        const x=55+n*145+(n%2)*15;
+        this.add.image(x,50+(n%3)*42,cloudKinds[n%2])
+          .setScale(.72+(n%3)*.14).setAlpha(.2).setScrollFactor(0).setDepth(-90);
+      }
+      }
     if(biome==='summit')
       this.add.image(820,75,'kenney-moon').setScale(.8).setAlpha(.45)
         .setScrollFactor(0).setDepth(-89);
@@ -307,7 +312,7 @@ class Wonderwood extends Phaser.Scene {
     this.worldH=this.level.height*TILE;
     this.shared={relic:false,shards:0,collected:new Set(),checkpoint:null,
       picnics:0,foods:{berry:14,nectar:6,star:6}};
-    this.addBackground(this.level.biome);
+    this.addBackground(this.level.biome,!!this.level.cave);
     // A small overscan prevents bright seams as the distant illustration
     // pans more slowly than the camera through the chapter.
     this.backdrop.setScale(Math.max(1050/this.backdrop.width,
