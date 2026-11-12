@@ -41,8 +41,10 @@ export function orbStep(orb,groundY,step=1){
   const floor=groundY-8;
   if(y>=floor&&vy>0){
     y=floor;
-    vy=-Math.max(.7,Math.min(2.2,vy*.62));
-    vx*=.88;
+    // A substantial rebound clears ordinary inclines instead of skimming
+    // along the floor. Damping still makes successive hops shorter.
+    vy=-Math.max(3.1,Math.min(4.3,vy*.8));
+    vx*=.93;
     bounces++;
   }
   return {x,y,vx,vy,bounces,life:orb.life-step};

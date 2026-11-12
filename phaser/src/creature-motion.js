@@ -1,4 +1,5 @@
 import {tickDistraction} from './creatures.js';
+import {advanceBubbleLift} from './gameplay-rules.js';
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
@@ -16,7 +17,7 @@ export function tickCreatureRespawn(animal,step){
   animal.respawn-=step/60;
   if(animal.respawn>0)return 'waiting';
   animal.captured=false;animal.trust=0;animal.distraction=0;
-  animal.respawn=0;animal.stun=0;animal.bubble=0;
+  animal.respawn=0;animal.stun=0;animal.bubble=0;animal.bubbleRise=0;
   animal.windup=0;animal.dash=0;
   animal.x=animal.homeX;animal.y=animal.homeY;
   return 'returned';
@@ -25,6 +26,7 @@ export function tickCreatureRespawn(animal,step){
 export function stepCreatureMotion(animal,lure,step,time,world){
       animal.stun=Math.max(0,animal.stun-step/60);
       animal.bubble=Math.max(0,animal.bubble-step/60);
+      const bubbleLift=advanceBubbleLift(animal,step);
       const trust=tickDistraction(animal.trust,animal.distraction,step/60);
       animal.trust=trust.trust;animal.distraction=trust.seconds;
       animal.attack=Math.max(0,animal.attack-step/60);
@@ -36,7 +38,7 @@ export function stepCreatureMotion(animal,lure,step,time,world){
       const diff=target-animal.x;
       // At full trust, pause in place for the player's capture attempt.
       // Without this a friendly animal immediately wandered out of orb range.
-      const speed=animal.stun || animal.bubble>0 || friendly || animal.windup>0 ? 0 :
+      const speed=animal.stun || bubbleLift>0 || friendly || animal.windup>0 ? 0 :
         lure ? .55 : animal.kind==='prismtail' ? .76 : .36;
       animal.x+=clamp(diff,-speed*step,speed*step);
       if(animal.dash>0){
@@ -50,19 +52,19 @@ export function stepCreatureMotion(animal,lure,step,time,world){
       if(animal.flying){
         const rest=animal.homeY+Math.sin(time*.0014+animal.homeX)*7;
         const wanted=lure?Math.min(rest+40,lure.y-15):rest;
-        animal.y+=(wanted-animal.y)*.035*step;
+        animal.y+=(wanted-bubbleLift-animal.y)*.035*step;
       }else{
         const attack=ATTACKS[animal.kind];
         const hop=attack?.lift&&animal.dash>0?
           attack.lift*Math.sin(Math.PI*(1-animal.dash/attack.duration)):0;
-        animal.y=world.groundAt(animal.x)-(animal.bubble>0?22:0)-hop;
+        animal.y=world.groundAt(animal.x)-bubbleLift-hop;
       }
       return {friendly,diff};
 
 }
 
 export function creatureAction(animal,lure,diff){
-  return animal.stun||animal.bubble>0?'stunned':
+  return animal.stun||animal.bubbleRise>0?'stunned':
     animal.windup>0?'alert':animal.dash>0?'dash':
     animal.distraction>0?'happy':lure?'run':
     animal.flying?'flap':Math.abs(diff)>6?'run':'idle';

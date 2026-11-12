@@ -11,6 +11,8 @@ import {TICK_MS,simulationTicks,queueInputEdges,withoutInputEdges} from './fixed
 import {poseFor,gesture} from './animation.js';
 import {feedTrust,RESPAWN_SECONDS,DISTRACTION_SECONDS} from './creatures.js';
 import {advanceTreatFlight} from './treat-motion.js';
+import {chooseCreatureLure,BUBBLE_DURATION,HOVER_SECONDS,ventContains,
+  applyVentLift} from './gameplay-rules.js';
 import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat,
   stompCreature} from './creature-motion.js';
 import {meadowDesign} from './meadow-design.js';
@@ -111,10 +113,15 @@ class Wonderwood extends Phaser.Scene {
         animals:this.animals?.map(a=>({kind:a.kind,x:a.x,y:a.y,action:a.action,
           frame:a.visual?.frame?.name,trust:a.trust,
           distracted:a.distraction,respawn:a.respawn,
-          captured:a.captured,windup:a.windup,dash:a.dash}))||[],
+          captured:a.captured,windup:a.windup,dash:a.dash,
+          bubble:a.bubble,bubbleRise:a.bubbleRise||0,
+          lureTarget:a.lureTarget??null}))||[],
         lures:this.lures?.map(f=>({x:f.x,food:f.food,landed:f.landed,age:f.age}))||[],
         orbs:this.orbs?.length||0,
-        orbStates:this.orbs?.map(o=>({x:o.x,y:o.y,bounces:o.bounces}))||[],
+        orbStates:this.orbs?.map(o=>({x:o.x,y:o.y,vx:o.vx,vy:o.vy,
+          life:o.life,bounces:o.bounces}))||[],
+        vents:this.setpieces?.filter(p=>p.kind==='bubbleVent')
+          .map(p=>({x:p.x,y:p.y}))||[],
         paused:this.paused,
         simulationSeconds:Number((this.simulationTime/1000).toFixed(3)),
         parallaxLayers:this.parallaxLayers?.length||0,
@@ -355,7 +362,8 @@ class Wonderwood extends Phaser.Scene {
       this.animals.push({kind:object.kind,x,y,homeX:x,homeY:y,
           face:1,trust:0,distraction:0,respawn:0,bubble:0,
           stun:0,attack:0,windup:0,dash:0,attackFace:1,
-          captured:false,flying,action:'',animationTime:0,halo,
+          captured:false,flying,bubbleRise:0,lureTarget:null,
+          bubbleVisual:null,action:'',animationTime:0,halo,
           visual:this.actor(object.kind,x,y).setDepth(12),
           warning:this.add.graphics().setDepth(24)});
       } else if(['starShard','snack','checkpoint','exit',relicKind].includes(object.kind)){
@@ -393,6 +401,11 @@ class Wonderwood extends Phaser.Scene {
       const frame=part.kind==='bounceBloom'?3:part.kind==='windRing'?4:2;
       const art=this.add.image(x,base,'effects',frame).setOrigin(.5,1)
         .setScale(.12).setAlpha(.82).setDepth(4);
+      if(part.kind==='bubbleVent'){
+        // The existing painted bubble artwork pulses above an actual updraft.
+        this.tweens.add({targets:art,y:base-11,alpha:.46,
+          scale:.15,duration:1050,yoyo:true,repeat:-1});
+      }
       this.setpieces.push({kind:part.kind,x,y:base,time:0,visual:art});
     }
   }
@@ -630,10 +643,12 @@ class Wonderwood extends Phaser.Scene {
       cloudwhisp:0xb2e8ed,emberkit:0xffca9d};
     const color=colors[kind]||0xffffff;
     if(kind==='prismtail'){
-      const ring=this.add.ellipse(x,y-18,33,38,0xa6f8ff,.08)
-        .setStrokeStyle(2,0xd2fcff,.83).setDepth(37);
-      this.tweens.add({targets:ring,y:y-35,scale:1.17,alpha:0,
-        duration:1150,onComplete:()=>ring.destroy()});
+      // Use the existing illustrated effects atlas rather than a wire ring.
+      const swirl=this.add.image(x,y-18,'effects',2)
+        .setScale(.11).setAlpha(.7).setDepth(37);
+      this.tweens.add({targets:swirl,y:y-32,scale:.15,alpha:0,
+        duration:800,onComplete:()=>swirl.destroy()});
+      return;
     }
     for(let i=0;i<7;i++){
       const dot=this.add.circle(x,y-12,(i%3+1)*.8,color,.8).setDepth(39);
@@ -652,7 +667,7 @@ class Wonderwood extends Phaser.Scene {
     p.powers=.8;
     gesture(p,'alert',.28);
     if(p.form==='glimmermoth'){
-      p.hover=.85;this.powerEffect(p.form,p.x,p.y,p.face);
+      p.hover=HOVER_SECONDS;this.powerEffect(p.form,p.x,p.y,p.face);
       return;
     }
     if(p.form==='springaroo'||p.form==='tideling'){
@@ -666,8 +681,14 @@ class Wonderwood extends Phaser.Scene {
       this.powerEffect(p.form,p.x+p.face*30,p.y-10,p.face);
       return;
     }
-    target.stun=p.form==='mossback'?3.7:p.form==='prismtail'?2.5:1.8;
-    if(p.form==='prismtail')target.bubble=2.5;
+    target.stun=p.form==='mossback'?3.7:p.form==='prismtail'?BUBBLE_DURATION:1.8;
+    if(p.form==='prismtail'){
+      target.bubble=BUBBLE_DURATION;
+      target.bubbleRise=0;
+      target.bubbleVisual?.destroy();
+      target.bubbleVisual=this.add.image(target.x,target.y-18,'effects',2)
+        .setScale(.19).setAlpha(.78).setDepth(25);
+    }
     if(p.form==='cloudwhisp'||p.form==='skyling')
       target.x=clamp(target.x+p.face*26,10,this.worldW-10);
     if(p.form==='emberkit')target.stun=1.4;
@@ -682,7 +703,7 @@ class Wonderwood extends Phaser.Scene {
       .setStrokeStyle(1.5,0xffffff,.86).setDepth(32);
     // A *fixed*, slow, predictably bouncing trajectory. No target-aware
     // adjustments, homing, or hidden capture assistance.
-    this.orbs.push({x,y,vx:p.face*3,vy:-.7,
+    this.orbs.push({x,y,vx:p.face*2.15,vy:-1,
       visual,life:150,bounces:0,owner:p});
   }
 
@@ -712,7 +733,8 @@ class Wonderwood extends Phaser.Scene {
         animal.visual.shadow?.setVisible(true);
         if(animal.halo)animal.halo.setVisible(true);
       }
-      const lure=this.lures.find(f=>f.landed&&Math.abs(f.x-animal.x)<155);
+      const lure=chooseCreatureLure(animal,this.lures,x=>this.groundAt(x));
+      animal.lureTarget=lure?.x??null;
       const {friendly,diff}=stepCreatureMotion(animal,lure,step,time,{
         width:this.worldW,groundAt:x=>this.groundAt(x)
       });
@@ -726,6 +748,14 @@ class Wonderwood extends Phaser.Scene {
         this.flash(animal.trust>=100?
           animal.kind+' is friendly — throw a capture orb!':
           animal.kind+' enjoyed the treat',1300);
+      }
+      if(animal.bubbleVisual){
+        if(animal.bubbleRise>0)
+          animal.bubbleVisual.setPosition(animal.x,animal.y-14);
+        else {
+          animal.bubbleVisual.destroy();
+          animal.bubbleVisual=null;
+        }
       }
       const action=creatureAction(animal,lure,diff);
       this.animate(animal,animal.kind,action,step/60);
@@ -804,6 +834,7 @@ class Wonderwood extends Phaser.Scene {
         orbHitsAnimal(fromX,fromY,orb.x,orb.y,a.x,a.y));
       if(animal){
         animal.captured=true;animal.respawn=RESPAWN_SECONDS;
+        animal.bubbleVisual?.destroy();animal.bubbleVisual=null;
         animal.visual.setVisible(false);
         animal.visual.shadow?.setVisible(false);
         animal.warning.clear();
@@ -957,6 +988,11 @@ class Wonderwood extends Phaser.Scene {
     }
     for(const piece of this.setpieces){
       piece.time=Math.max(0,piece.time-step/60);
+      if(piece.kind==='bubbleVent'){
+        if(ventContains(p,piece,this.inWater(p.x,p.y-8)))
+          applyVentLift(p,step);
+        continue;
+      }
       if(Math.abs(piece.x-p.x)>13||Math.abs(piece.y-p.y)>23)continue;
       if(piece.kind==='bounceBloom'&&piece.time===0&&p.vy>=0){
         triggerBloom(p,p.jumpBuffer>0);
@@ -970,7 +1006,7 @@ class Wonderwood extends Phaser.Scene {
           'Spring bloom! Tap jump again for a super bounce!':
           'Perfectly timed springboard boost!',1350);
       }else if(piece.kind==='windRing')p.vy=Math.min(p.vy,-4.1);
-      else if(piece.kind==='bubbleVent'&&this.inWater(p.x,p.y))p.vy-=.22*step;
+
     }
   }
 

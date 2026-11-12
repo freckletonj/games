@@ -20,7 +20,9 @@ export function stepPlayerMotion(p,actions,step,world){
     const swimmer=p.form==='tideling'&&inWater;
     const direction=Number(actions.right)-Number(actions.left);
     if(direction)p.face=direction;
-    const desired=direction*(swimmer?2.15:p.form==='springaroo'?2.65:2.3);
+    // Emberkit gets a modest sprint, not a game-breaking traversal power.
+    const desired=direction*(swimmer?2.15:
+      p.form==='springaroo'?2.65:p.form==='emberkit'?2.6:2.3);
     const traction=p.grounded ? .22 : .14;
     p.vx+=(desired-p.vx)*Math.min(1,traction*step);
     if(swimmer){
@@ -55,6 +57,8 @@ export function stepPlayerMotion(p,actions,step,world){
       if(!actions.jump&&p.vy<-2.3&&p.form!=='skyling')p.vy+=.28*step;
       const hover=p.form==='glimmermoth'&&p.hover>0&&p.vy>0;
       p.vy+=(p.vy>=0 ? (hover ? .12 : .52) : .34)*step;
+      // Hover must remain a real slow descent for its entire duration.
+      if(hover)p.vy=Math.min(p.vy,.9);
       if(world.inWater(p.x,p.y-6))p.vy=Math.min(p.vy,1.4);
     }
     const updraft=world.thermalVolumes.some(c=>
@@ -65,7 +69,13 @@ export function stepPlayerMotion(p,actions,step,world){
       if(p.form==='skyling')p.flaps=0;
     }
     p.vy=clamp(p.vy,-11,7.5);
-    const nextX=clamp(p.x+p.vx*step,10,world.width-10);
+    // Horizontal velocity is input intent. On a steep slope constrain
+    // travel along the surface, otherwise a 2.3 px/tick run can teleport
+    // 8+ world pixels vertically every tick.
+    const slope=p.grounded?
+      (world.groundAt(p.x+2)-world.groundAt(p.x-2))/4:0;
+    const surfaceVx=p.grounded?p.vx/Math.hypot(1,slope):p.vx;
+    const nextX=clamp(p.x+surfaceVx*step,10,world.width-10);
     const safeX=safeHorizontalX(p.x,nextX,p.y,
       x=>world.groundAt(x),swimmer);
     if(Math.abs(safeX-nextX)>.2)p.vx=0;
