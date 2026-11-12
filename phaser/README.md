@@ -394,3 +394,12 @@ surfaces. `paintedFootOrigin()` now uses frame-specific alpha baselines
 for these grounded objects, while collectible stars and relics retain
 their deliberately floating placement. Tests lock down the baselines;
 semantic terrain and collision shapes remain unchanged.
+
+## Expanded quality report and realistic browser timing
+
+`dist/phaser-mechanics-quality.json` now has schema version 2, with per-form
+projectile travel time, range, stun duration, bubble duration and gust
+knockback, plus Unicorn/Pegasus actual on-slope speed. Threshold tests use
+these numbers as regression gates. The real-input feeding test now waits
+for the first *rendered* painted eating pose rather than assuming the same
+simulation tick that awards trust has already advanced the animation.

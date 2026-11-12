@@ -47,9 +47,14 @@ def main():
                .some(a => a.kind === 'springaroo' && a.trust >= 60)""",
             timeout=30000,
         )
-        eating=next(a for a in snapshot(page)["animals"]
-            if a["kind"]=="springaroo")
-        assert eating["texture"]=="painted-states" and eating["frame"]==0, eating
+        # Feeding sets the gesture after this tick's sprite update, so wait
+        # for the NEXT simulation tick before asserting the rendered frame.
+        page.wait_for_function(
+            """window.__wonderwoodPhaser.snapshot().animals
+               .some(a => a.kind === 'springaroo' &&
+                    a.texture === 'painted-states' && a.frame === 0)""",
+            timeout=5000,
+        )
         press_until(
             page, "f",
             """window.__wonderwoodPhaser.snapshot().lures.length > 0 ||

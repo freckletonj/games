@@ -66,6 +66,26 @@ test('water vents provide a meaningful controlled lift within their authored col
   assert.equal(result.rejectsDistantPlayer,true);
 });
 
+test('all five transformation spells hit through flight and produce distinct impacts',()=>{
+  assert.equal(Object.keys(metrics.powerProjectiles).length,5);
+  for(const [kind,impact] of Object.entries(metrics.powerProjectiles)){
+    assert.ok(impact.hitAtTick>=8&&impact.hitAtTick<45,{kind,impact});
+    assert.ok(impact.travel>30,{kind,impact});
+    assert.ok(impact.stunSeconds>=1.4,{kind,impact});
+    assert.equal(impact.bubbleSeconds>0,kind==='prismtail',{kind,impact});
+    assert.equal(impact.knockback>0,
+      kind==='skyling'||kind==='cloudwhisp',{kind,impact});
+  }
+});
+
+test('both rideable mounts cap their actual uphill travel speed',()=>{
+  for(const [kind,run] of Object.entries(metrics.mountedSlopes)){
+    assert.ok(run.travelX>100,{kind,run});
+    assert.ok(run.maxSurfaceSpeed<=(kind==='unicorn'?4.21:3.46),{kind,run});
+    assert.ok(Math.abs(run.groundError)<2,{kind,run});
+  }
+});
+
 test('all quality metrics are valid numeric JSON for automatic tuning',()=>{
   const json=JSON.stringify(metrics);
   assert.ok(json.length>400);

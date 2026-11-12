@@ -3,6 +3,9 @@
 import {stepPlayerMotion} from '../src/player-motion.js';
 import {stepCreatureMotion} from '../src/creature-motion.js';
 import {orbStep} from '../src/physics.js';
+import {stepMountedMotion,MOUNTS} from '../src/mounts.js';
+import {PROJECTILE_POWERS,launchPower,stepPower,powerHitsCreature,
+  applyPowerHit} from '../src/power-projectiles.js';
 import {chooseCreatureLure,advanceBubbleLift,BUBBLE_DURATION,HOVER_SECONDS,
   ventContains,applyVentLift} from '../src/gameplay-rules.js';
 
@@ -133,8 +136,49 @@ export function underwaterVent(){
     rejectsDistantPlayer:!ventContains({x:260,y:490},vent,true)};
 }
 
+export function powerImpactReport(){
+  return Object.fromEntries(Object.keys(PROJECTILE_POWERS).map(kind=>{
+    const shot=launchPower(kind,100,500,1,0);
+    const animal={x:175,y:500,captured:false,stun:0,bubble:0,
+      bubbleRise:0,windup:0,dash:0,knockVX:0};
+    let hitAtTick=null;
+    for(let tick=1;tick<=100;tick++){
+      const result=stepPower(shot,1,()=>500,2200);
+      if(powerHitsCreature(shot,result.fromX,result.fromY,animal)){
+        hitAtTick=tick;
+        applyPowerHit(shot,animal);
+        break;
+      }
+      if(result.expired)break;
+    }
+    return [kind,{hitAtTick,travel:shot.x-115,
+      stunSeconds:animal.stun,bubbleSeconds:animal.bubble,
+      knockback:animal.knockVX}];
+  }));
+}
+
+export function mountedSlopeReport(){
+  return Object.fromEntries(Object.keys(MOUNTS).map(kind=>{
+    const surface=x=>500-1.35*(x-100);
+    const terrain=world(surface);
+    const m={kind,x:100,y:500,vx:0,vy:0,face:1,
+      grounded:true,flapWait:0,flaps:0};
+    let maxSurfaceSpeed=0;
+    for(let tick=0;tick<100;tick++){
+      const beforeX=m.x,beforeY=m.y;
+      stepMountedMotion(m,{...controls,right:true},1,terrain);
+      maxSurfaceSpeed=Math.max(maxSurfaceSpeed,
+        Math.hypot(m.x-beforeX,m.y-beforeY));
+    }
+    return [kind,{maxSurfaceSpeed,travelX:m.x-100,
+      groundError:m.y-surface(m.x)}];
+  }));
+}
+
 export function qualityReport(){
-  return {schemaVersion:1,tickRate:60,
+  return {schemaVersion:2,tickRate:60,
+    powerProjectiles:powerImpactReport(),
+    mountedSlopes:mountedSlopeReport(),
     captureOrb:orbOnHill(),
     slope:{walk:slopeRun(),swim:slopeRun('tideling')},
     berryTargeting:berryReacquisition(),
