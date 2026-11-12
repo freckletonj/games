@@ -3,7 +3,7 @@
 export const caveLayout={
   id:'luminous-grotto',width:160,height:62,tile:16,
   // Non-overlapping rock roof and floor contours, in world-cell coordinates.
-  ceiling:[[0,15],[15,12],[30,15],[45,19],[59,18],[77,13],[92,19],[109,16],[127,20],[143,15],[160,16]],
+  ceiling:[[0,25],[15,22],[30,25],[45,29],[59,28],[77,23],[92,29],[109,26],[127,30],[143,25],[160,26]],
   floor:[[0,41],[14,41],[29,44],[42,45],[59,48],[74,46],[90,51],[104,50],[119,47],[134,46],[148,42],[160,41]],
   // Immersed chambers have a flat physical waterline and a varying rock floor.
   pools:[{id:'tidal-entrance',from:29,to:69,surface:36},
