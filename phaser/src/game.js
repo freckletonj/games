@@ -82,6 +82,12 @@ class Wonderwood extends Phaser.Scene {
           action:m.action,frame:m.visual?.frame?.name}))||[],
         animalCount:this.animals?.length||0,
         platformCount:this.level?.platformSegments?.length||0,
+        // Read-only alignment probes for actual painted platform geometry.
+        ledgeBounds:this.ledgeVisuals?.map(({platform,visual})=>({
+          x:platform.x*TILE,y:platform.y*TILE,width:platform.length*TILE,
+          artX:visual.x,artY:visual.y,artWidth:visual.displayWidth,
+          artScale:visual.scaleX
+        }))||[],
         players:this.players?.map(p=>({x:p.x,y:p.y,face:p.face,vx:p.vx,vy:p.vy,
           action:p.action,frame:p.visual?.frame?.name,grounded:p.grounded,
           jumps:p.jumps,flaps:p.flaps,food:FRUITS[p.food],form:p.form,
