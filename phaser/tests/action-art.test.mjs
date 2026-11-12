@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {EFFECT_FRAMES,paintedAction,powerFrame,setpieceFrame}
+import {EFFECT_FRAMES,paintedAction,powerFrame,setpieceFrame,enemyTellFrame}
   from '../src/action-art.js';
 
 const species=['springaroo','tideling','skyling','mossback','prismtail',
@@ -19,6 +19,9 @@ test('all power effects select an authored frame from the original painted atlas
   assert.equal(setpieceFrame('bounceBloom'),EFFECT_FRAMES.petal,
     'Springboards must not display the trapped-creature bubble artwork');
   assert.equal(setpieceFrame('bubbleVent'),EFFECT_FRAMES.bubble);
+  assert.equal(enemyTellFrame('prismtail'),EFFECT_FRAMES.bubble);
+  assert.equal(enemyTellFrame('emberkit'),EFFECT_FRAMES.spark);
+  assert.equal(enemyTellFrame('springaroo'),null);
 });
 
 test('each species uses its own illustrated feeding pose and hero has real sleep art',()=>{

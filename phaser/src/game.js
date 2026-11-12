@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import './bootstrap.js';
 import designs from '../../src/games/animal-adventure/designs.json';
 import {characters,mounts,backgrounds,sheets,silhouettes,terrainAtlas,paintedStates} from './assets.js';
-import {EFFECT_FRAMES,paintedAction,powerFrame,setpieceFrame} from './action-art.js';
+import {EFFECT_FRAMES,paintedAction,powerFrame,setpieceFrame,enemyTellFrame} from './action-art.js';
 import {MOUNTS,LOCATIONS,seatFor,stepMountedMotion} from './mounts.js';
 import {bindings,readActions} from './input.js';
 import {landingY,safeHorizontalX,orbStep,orbHitsAnimal} from './physics.js';
@@ -129,7 +129,9 @@ class Wonderwood extends Phaser.Scene {
           distracted:a.distraction,respawn:a.respawn,
           captured:a.captured,windup:a.windup,dash:a.dash,
           bubble:a.bubble,bubbleRise:a.bubbleRise||0,
-          lureTarget:a.lureTarget??null}))||[],
+          lureTarget:a.lureTarget??null,
+          warningFrame:a.warningArt?.frame?.name??null,
+          warningAlpha:a.warningArt?.alpha??null}))||[],
         lures:this.lures?.map(f=>({x:f.x,food:f.food,landed:f.landed,age:f.age}))||[],
         orbs:this.orbs?.length||0,
         orbStates:this.orbs?.map(o=>({x:o.x,y:o.y,vx:o.vx,vy:o.vy,
@@ -384,7 +386,10 @@ class Wonderwood extends Phaser.Scene {
           captured:false,flying,bubbleRise:0,lureTarget:null,knockVX:0,
           bubbleVisual:null,honeyVisual:null,action:'',animationTime:0,halo,
           visual:this.actor(object.kind,x,y).setDepth(12),
-          warning:this.add.graphics().setDepth(24)});
+          warning:this.add.graphics().setDepth(24),
+          warningArt:enemyTellFrame(object.kind)===null?null:
+            this.add.image(x,y-15,'effects',enemyTellFrame(object.kind))
+              .setScale(.1).setAlpha(0).setDepth(24)});
       } else if(['starShard','snack','checkpoint','exit',relicKind].includes(object.kind)){
         const rooted=['snack','checkpoint','exit'].includes(object.kind);
         const y=rooted?this.groundAt(x):(object.y+.5)*TILE;
@@ -752,6 +757,7 @@ class Wonderwood extends Phaser.Scene {
       if(respawn==='returned'){
         animal.honeyVisual?.destroy();animal.honeyVisual=null;
         animal.visual.setVisible(true);
+        animal.warningArt?.setVisible(true);
         animal.visual.shadow?.setVisible(true);
         if(animal.halo)animal.halo.setVisible(true);
       }
@@ -797,12 +803,16 @@ class Wonderwood extends Phaser.Scene {
       stepCreatureThreat(animal,close,Boolean(lure),step);
       if(animal.halo)animal.halo.setPosition(animal.x,animal.y-17);
       animal.warning.clear();
+      animal.warningArt?.setAlpha(0);
       if(animal.windup>0){
         const attack=ATTACKS[animal.kind];
         const progress=1-animal.windup/attack.windup;
         const distance=animal.kind==='prismtail'?46:51;
         const end=animal.x+animal.attackFace*distance;
         const shimmer=.48+.32*Math.sin(progress*Math.PI*4)**2;
+        animal.warningArt?.setPosition(end,animal.y-15)
+          .setFlipX(animal.attackFace<0).setAlpha(shimmer)
+          .setScale(.085+.025*progress);
         if(animal.kind==='prismtail'){
           // A dotted arcing threat conveys "hop over the approach" instead
           // of looking like Emberkit's straight, low ground rush.
@@ -815,20 +825,13 @@ class Wonderwood extends Phaser.Scene {
               animal.x+animal.attackFace*distance*n,
               animal.y-7-27*Math.sin(Math.PI*n));
           }
-          animal.warning.fillStyle(0xdcb2f8,.14+.14*progress);
-          animal.warning.fillEllipse(end,animal.y-6,24,9);
-          animal.warning.lineStyle(1.5,0xf0d5ff,.62);
-          animal.warning.strokeEllipse(end,animal.y-6,24,9);
+          // The endpoint is painted bubble artwork; retain only the honest
+          // trajectory as gameplay information.
         }else{
-          const left=Math.min(animal.x,end);
-          animal.warning.fillStyle(0xffb77b,.10+.08*Math.sin(time*.02)**2);
-          animal.warning.fillRoundedRect(left,animal.y-15,distance,18,5);
-          animal.warning.lineStyle(2,0xffc785,shimmer);
+          animal.warning.lineStyle(1.5,0xffc785,shimmer*.72);
           animal.warning.lineBetween(animal.x,animal.y-7,end,animal.y-7);
-          animal.warning.fillStyle(0xffe3b6,.8);
-          animal.warning.fillTriangle(end+animal.attackFace*7,animal.y-7,
-            end-animal.attackFace*3,animal.y-12,
-            end-animal.attackFace*3,animal.y-2);
+          // A painted spark marks the charged rush; avoid a giant
+          // translucent vector rectangle over the landscape.
         }
       }
       for(const p of this.players){
@@ -869,6 +872,7 @@ class Wonderwood extends Phaser.Scene {
         animal.visual.setVisible(false);
         animal.visual.shadow?.setVisible(false);
         animal.warning.clear();
+        animal.warningArt?.setVisible(false);
         if(animal.halo)animal.halo.setVisible(false);
         orb.owner.caught=animal.kind;
         orb.owner.form=null;

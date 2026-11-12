@@ -17,6 +17,11 @@ export function paintedAction(kind,action){
   return null;
 }
 
+export function enemyTellFrame(kind){
+  return kind==='prismtail'?EFFECT_FRAMES.bubble:
+    kind==='emberkit'?EFFECT_FRAMES.spark:null;
+}
+
 export function setpieceFrame(kind){
   return {bounceBloom:EFFECT_FRAMES.petal,
     windRing:EFFECT_FRAMES.gust,
