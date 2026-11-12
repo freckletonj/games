@@ -51,6 +51,7 @@ jobs:
           python tests/interaction_feel.py
           python tests/creature_feel.py
           python tests/rideable_mounts.py
+          python tests/painted_mount_atlases.py
           python tests/mount_courses.py
           python tests/mounted_routes.py
           python tests/projectile_sweep.py
