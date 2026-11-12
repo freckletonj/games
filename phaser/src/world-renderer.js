@@ -218,11 +218,8 @@ export function paintScenery(scene){
     for(let i=0,cell=20;cell<l.width;cell+=48+(i%3)*17,i++){
       const x=(cell+((i*13)%17)/3)*TILE;
       if(l.waterBodies.some(pool=>cell>=pool.start&&cell<=pool.end))continue;
-      if(l.biome==='meadow'){
-        scene.add.image(x,scene.groundAt(x)+18,'forest-trees',i%4)
-          .setOrigin(.5,1).setScale(.078+(i%3)*.010)
-          .setAlpha(.13).setTint(distantTint).setDepth(-43);
-      }else{
+      if(l.biome==='meadow')continue; // The painted backdrop already has trees.
+      {
         const coast=l.biome==='coast';
         scene.add.image(x,scene.groundAt(x)+12,'landmarks',
           coast?(i%2?2:5):(i%3?1:4))
@@ -232,13 +229,8 @@ export function paintScenery(scene){
     }
     for(const [i,vista] of (l.vistas||[]).entries()){
       const x=vista.x*TILE,y=scene.groundAt(x);
-      if(l.biome==='meadow'){
-        const tree=scene.add.image(x,y+18,'forest-trees',(i+2)%4)
-          .setOrigin(.5,1).setScale(vista.span>25?.14:.12)
-          .setAlpha(.22).setTint(distantTint).setDepth(-39);
-        scene.tweens.add({targets:tree,rotation:{from:-.008,to:.010},
-          duration:4300+i*431,ease:'Sine.easeInOut',yoyo:true,repeat:-1});
-      }else{
+      if(l.biome==='meadow')continue;
+      {
         const coast=l.biome==='coast';
         scene.add.image(x,y+12,'landmarks',
           coast?[2,1,5][i%3]:[1,4,3][i%3])
