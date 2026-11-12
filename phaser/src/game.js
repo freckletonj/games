@@ -763,7 +763,9 @@ class Wonderwood extends Phaser.Scene {
     for(const shot of [...this.powerShots]){
       const result=stepPower(shot,step,x=>this.groundAt(x),this.worldW);
       shot.visual.setPosition(shot.x,shot.y);
-      const animal=this.animals.find(a=>powerHitsCreature(
+      // Terrain takes precedence at a wall: a creature behind solid rock
+      // cannot be stunned by a projectile whose trajectory is blocked.
+      const animal=result.ground?null:this.animals.find(a=>powerHitsCreature(
         shot,result.fromX,result.fromY,a));
       if(animal)this.powerImpact(shot,animal);
       if(animal||result.expired){

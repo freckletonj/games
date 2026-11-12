@@ -20,12 +20,29 @@ export function launchPower(form,x,y,face,owner){
 export function stepPower(shot,step,groundAt,worldWidth){
   const fromX=shot.x,fromY=shot.y;
   const settings=PROJECTILE_POWERS[shot.kind];
-  shot.x=clamp(shot.x+shot.vx*step,0,worldWidth);
-  // Sum per-tick gravity exactly, even when a test advances N ticks at once.
-  shot.y+=shot.vy*step+settings.gravity*step*(step-1)/2;
+  const endX=clamp(fromX+shot.vx*step,0,worldWidth);
+  // Sum per-tick gravity exactly even when tests advance N ticks at once.
+  const endY=fromY+shot.vy*step+settings.gravity*step*(step-1)/2;
+  const count=Math.max(1,Math.ceil(Math.hypot(endX-fromX,endY-fromY)/2));
+  let ground=false;
+  let lastX=fromX,lastY=fromY;
+  shot.x=endX;shot.y=endY;
+  for(let i=1;i<=count;i++){
+    const t=i/count;
+    const x=fromX+(endX-fromX)*t;
+    const elapsed=step*t;
+    const y=fromY+shot.vy*elapsed+
+      settings.gravity*elapsed*(elapsed-1)/2;
+    if(y>=groundAt(x)-7){
+      // Stop at the near side of the wall, not inside or beyond it.
+      shot.x=lastX;shot.y=lastY;
+      ground=true;
+      break;
+    }
+    lastX=x;lastY=y;
+  }
   shot.vy+=settings.gravity*step;
   shot.life-=step;
-  const ground=shot.y>=groundAt(shot.x)-7;
   return {fromX,fromY,ground,
     expired:ground||shot.life<=0||shot.x<=0||shot.x>=worldWidth};
 }

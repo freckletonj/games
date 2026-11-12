@@ -102,3 +102,17 @@ test('all five offensive forms hit an ordinary nearby creature through actual fl
     assert.ok(target.stun>0,form);
   }
 });
+
+test('projectiles stop at uphill walls rather than travelling through terrain',()=>{
+  const hill=x=>x<135?500:450;
+  for(const kind of Object.keys(PROJECTILE_POWERS)){
+    const shot=launchPower(kind,100,500,1,0);
+    let stopped=false;
+    for(let tick=0;tick<50;tick++){
+      const {ground}=stepPower(shot,1,hill,2000);
+      if(ground){stopped=true;break;}
+    }
+    assert.equal(stopped,true,kind);
+    assert.ok(shot.x<135,kind+' crossed an uphill wall');
+  }
+});
