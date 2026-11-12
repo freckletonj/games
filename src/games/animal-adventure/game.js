@@ -500,10 +500,16 @@ WW.games.animals = (() => {
       const floor=level.surface?Math.min(surfaceY(m.x-half+3),surfaceY(m.x+half-3)):null;
       const onSlope=floor!==null&&m.y<=floor+12&&ny>=floor&&
         !liquid(m.x,m.y-6)&&!liquid(m.x,ny-6);
-      const platform=at(m.x,ny)==='platform'&&
-        m.y<=Math.floor(ny/TILE)*TILE;
-      if(m.vy>=0&&(onSlope||solid(m.x-half+3,ny)||solid(m.x+half-3,ny)||platform)){
-        ny=onSlope?floor:Math.floor(ny/TILE)*TILE;
+      // Read one-way bridge geometry, not only the destination's tile.
+      // A fast gallop can move beyond a row of platform cells before a
+      // frame-end sample, especially when two adjacent spans join.
+      const support=(level.platformSegments||[]).find(span=>
+        span.kind==='platform'&&
+        m.x+half-4>span.x*TILE&&
+        m.x-half+4<(span.x+span.length)*TILE&&
+        m.y<=span.y*TILE+6&&ny>=span.y*TILE);
+      if(m.vy>=0&&(onSlope||solid(m.x-half+3,ny)||solid(m.x+half-3,ny)||support)){
+        ny=onSlope?floor:support?support.y*TILE:Math.floor(ny/TILE)*TILE;
         m.vy=0;m.grounded=true;
       }else m.grounded=false;
       if(m.vy<0&&(solid(m.x-half+3,ny-upper)||solid(m.x+half-3,ny-upper))){
