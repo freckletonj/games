@@ -11,7 +11,7 @@ bush PNGs as main scenery**. They clashed with the hand-painted sprites.
 - **Creator:** ArtByte
 - **License:** [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/)
 - **Files incorporated:** `jungle-trees.png` (four illustrated tree variants),
-  `jungle-misc.png` (stumps, mushrooms, vines and shrubs),
+  `jungle-misc.png` (mushrooms and vegetation cutouts),
   `platform-jungle.png` (repeatable natural platform edge).
 - **Redistributable upstream copy:** `tilnewman/halloween` on GitHub at
   `media/image/map/jungle-*.png` and `media/image/platform-jungle.png`.
