@@ -281,3 +281,30 @@ a stronger spring. A held button does not retrigger it, the boost consumes
 the normal extra-jump budget, and it is available without a transformation.
 Unit tests verify the single-use timing and a Chromium integration test
 uses real keyboard input to land on the first Springaroo and earn the boost.
+
+## Measurable gameplay quality gates
+
+The deterministic 60 Hz gameplay rules can now be probed without a canvas,
+random input timing or an LLM judging a video. Run `npm test --prefix phaser`
+for regression assertions, or `npm run quality --prefix phaser` to write
+`dist/phaser-mechanics-quality.json`. CI publishes that report alongside
+screenshots. Both commands use `tests/quality-scenarios.mjs`, which directly
+calls the production movement, orb, lure selection and creature functions.
+The JSON contains world-unit trajectories/speeds for capture orb hills,
+ground and underwater slopes, unreachable-vs-reachable food, bubble rise and
+release, hover duration, running speed bonus, and water-vent ascent.
+
+Tests assert *behavioral* thresholds (rebound height, slope speed, animal
+reacquisition, airborne duration, ability strength), not only that an input
+event fired. The browser suite additionally verifies the live Scene's orb
+launch/rebound and measures uphill water-shore traversal speed under real
+keyboard input. Browser `window.__wonderwoodPhaser.snapshot()` exposes
+read-only orb velocities, animal bubble height/target, and vent locations
+for further observations; it never grants an ability or teleports a player.
+
+To reproduce a bug, build a small deterministic world and action trace in
+`tests/quality-scenarios.mjs`, record its metrics in `qualityReport()`,
+then make a `gameplay-quality.test.mjs` threshold fail. Fix the production
+rule and check both the scenario report and the real-input Chromium test.
+Metrics are a guardrail, not a substitute for human judgments of the
+illustration, encounter delight, or subjective game feel.

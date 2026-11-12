@@ -71,14 +71,25 @@ def main():
 
         # Read-only frame observer; no game state is changed or abilities granted.
         page.evaluate("""()=>{
-            window.__waterProbe={maxPenetration:0,recalls:0,submerged:0};
+            window.__waterProbe={maxPenetration:0,recalls:0,submerged:0,
+                maxSurfaceSpeed:0,last:null};
             window.__waterWatch=setInterval(()=>{
-                const p=window.__wonderwoodPhaser.snapshot().players[0];
+                const snapshot=window.__wonderwoodPhaser.snapshot();
+                const p=snapshot.players[0];
                 if(!p)return;
-                window.__waterProbe.maxPenetration=Math.max(
-                    window.__waterProbe.maxPenetration,p.y-p.ground);
-                window.__waterProbe.recalls=p.recalls;
-                if(p.inWater)window.__waterProbe.submerged++;
+                const probe=window.__waterProbe;
+                probe.maxPenetration=Math.max(probe.maxPenetration,p.y-p.ground);
+                probe.recalls=p.recalls;
+                if(p.inWater)probe.submerged++;
+                const previous=probe.last;
+                if(previous && p.grounded && previous.grounded){
+                    const ticks=(snapshot.simulationSeconds-previous.time)*60;
+                    if(ticks>0.5)
+                        probe.maxSurfaceSpeed=Math.max(probe.maxSurfaceSpeed,
+                            Math.hypot(p.x-previous.x,p.y-previous.y)/ticks);
+                }
+                probe.last={x:p.x,y:p.y,grounded:p.grounded,
+                    time:snapshot.simulationSeconds};
             },25);
         }""")
         page.keyboard.down("d")
@@ -105,6 +116,7 @@ def main():
         assert player["recalls"]==0,(player,observed)
         assert observed["recalls"]==0 and observed["submerged"]>0,observed
         assert observed["maxPenetration"]<5,observed
+        assert observed["maxSurfaceSpeed"]<4.2,observed
         page.screenshot(path=str(GAME.parent/"phaser-water-slope.png"))
         assert not errors,errors
         browser.close()

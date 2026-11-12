@@ -30,6 +30,8 @@ jobs:
         run: npm install --prefix phaser --no-audit --no-fund
       - name: Check input mapping and semantic world compilation
         run: npm test --prefix phaser
+      - name: Export reproducible gameplay quality metrics
+        run: node phaser/scripts/mechanics-report.mjs
       - name: Bundle Phaser, source artwork and levels into a single HTML
         run: npm run build --prefix phaser
       - name: Verify self-contained release output
@@ -78,6 +80,7 @@ jobs:
             dist/phaser-meadow-relic.png
             dist/phaser-meadow-complete.png
             dist/phaser-meadow-route-metrics.json
+            dist/phaser-mechanics-quality.json
             dist/phaser-painted-berry.png
             dist/phaser-bouncing-orb.png
             dist/phaser-bloom-boost.png

@@ -53,9 +53,14 @@ def main():
         page.wait_for_function("window.__wonderwoodPhaser.snapshot().orbs > 0",
             timeout=10000)
         page.keyboard.up("g")
+        launched=state(page)["orbStates"][0]
+        assert 1.8 <= abs(launched["vx"]) <= 2.2, launched
         page.wait_for_function(
-            "window.__wonderwoodPhaser.snapshot().orbStates.some(orb=>orb.bounces>=1)",
+            "window.__wonderwoodPhaser.snapshot().orbStates.some(orb=>"
+            "orb.bounces>=1 && orb.vy < -2.7)",
             timeout=25000)
+        bounced_orb=state(page)["orbStates"][0]
+        assert bounced_orb["vy"] < -2.7, bounced_orb
         page.screenshot(path=str(GAME.parent/"phaser-bouncing-orb.png"))
 
         # The first Meadow bloom activates automatically by walking over it.
