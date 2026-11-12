@@ -256,3 +256,28 @@ scrolling, subdued atmospheric layers. Actor gait responds to speed,
 takeoff stretch eases into flight, and Pegasus wingbeats have a less
 abrupt illustrated cadence plus a brief painted wind cue. No new
 third-party license or gameplay collision change is involved.
+
+
+### Chapter 1: platform alignment, painted canopy and creature rebound
+
+The illustrated ledges are painted on a 2×-resolution canvas **and displayed
+at 0.5× scale**. This is essential: allowing Phaser to display a supersampled
+canvas at full size made the drawn platforms twice as wide as their actual
+one-way collision spans. The regression suite now checks the alignment of
+every displayed ledge in all five chapters and keeps the player stationary
+on both upper Meadow platforms for a full second.
+
+Mosslight Meadow now adds two chapter-exclusive, 2048×512 transparent
+illustration layers in `src/meadow-art.js`: soft watercolor canopy leaves and
+warm dappled sunbeams. Their movement is gentle, at different fractions of
+camera motion, and entirely behind the gameplay plane. This art is generated
+from deterministic canvas brushwork at runtime, so there are no new
+third-party assets, fake platforms, or source-bitmap stretches. The other
+four chapters are unchanged.
+
+Landing feet-first on the back of a creature retains the automatic soft hop
+and opens a 14-tick (~0.23s at 60Hz) opportunity to **tap Jump again** for
+a stronger spring. A held button does not retrigger it, the boost consumes
+the normal extra-jump budget, and it is available without a transformation.
+Unit tests verify the single-use timing and a Chromium integration test
+uses real keyboard input to land on the first Springaroo and earn the boost.
