@@ -237,12 +237,13 @@ class Wonderwood extends Phaser.Scene {
     if(this.twoPlayers)this.makePlayer(1);
     this.cameras.main.setBounds(0,0,this.worldW,this.worldH);
     this.cameras.main.startFollow(this.players[0].visual,true,.085,.12);
-    this.cameras.main.setFollowOffset(0,12);
+    // Let players see upcoming climbs and sky rather than half a screen of soil.
+    this.cameras.main.setFollowOffset(0,-26);
     this.makeHud();
+    // The menu already explains the chapter objective. Avoid covering the
+    // first moments of play with a long sentence across the entire sky.
     this.flash(this.chapter.id==='first-forest'?
-      'The lost light shines beyond the canopy':
-      this.chapter.name+'  ·  '+this.chapter.intro,
-      this.chapter.id==='first-forest'?2100:4200);
+      'The lost light shines beyond the canopy':this.chapter.name,2100);
   }
 
   groundAt(x){
