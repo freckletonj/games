@@ -242,3 +242,12 @@ Actual hardware-controller and campaign-wide QA remain necessary.
 These refinements are aimed at control readability and moment-to-moment
 world cohesion, not a redesign of campaign logic. The existing full Meadow
 playthrough and multi-biome browser suites remain regression gates.
+
+### Biome-specific visual materials
+
+Meadow keeps ArtByte's illustrated forest trees and leafy platform edges.
+Crystal Coast instead uses the original painted reefs, crystal and pond
+vignettes with sea-polished shelves, while Starfall Summit uses the
+crystalline/floating-island illustrations with thinner frosted-stone
+platform edges. These changes reuse already licensed/owned art; there is
+**no new third-party asset license** and no geometry or collision change.

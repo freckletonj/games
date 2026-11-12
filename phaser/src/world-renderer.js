@@ -147,10 +147,27 @@ export function paintTerrain(scene){
       graphics.lineBetween(x+3,y+4,x+w-3,y+4);
       // A natural, repeating platform edge from the same illustrated kit,
       // independent of the platform's rectangular collision surface.
-      scene.add.tileSprite(x,y-4,w,19,'forest-platform').setOrigin(0,0)
-        .setTileScale(.42,.36).setTint(
-          biome==='coast'?0xb9f4e3:biome==='summit'?0xd1c3eb:0xffffff
-        ).setDepth(-18);
+      if(biome==='meadow'){
+        scene.add.tileSprite(x,y-4,w,19,'forest-platform').setOrigin(0,0)
+          .setTileScale(.42,.36).setDepth(-18);
+      }else{
+        // The jungle leaf bitmap belongs only in the forest. The coast has
+        // sea-polished stone shelves, while the summit has frosted rock.
+        const shelf=scene.add.graphics().setDepth(-18);
+        const coast=biome==='coast';
+        shelf.fillStyle(coast?0x4e7880:0x62637e,.93);
+        shelf.fillRoundedRect(x,y-3,w,13,4);
+        shelf.fillStyle(coast?0x93c7bf:0xbab4d9,.52);
+        shelf.fillRoundedRect(x+2,y-3,Math.max(1,w-4),3,2);
+        shelf.lineStyle(1,coast?0xd6f3dc:0xf1dff5,.43);
+        shelf.lineBetween(x+4,y+3,x+w-4,y+3);
+        for(let offset=12;offset<w-6;offset+=23){
+          const px=x+offset+(Math.floor(offset/23)%2)*4;
+          shelf.fillStyle(coast?0xa3d7cf:0xc1b9de,.24);
+          if(coast)shelf.fillEllipse(px,y+9,9,3);
+          else shelf.fillTriangle(px-3,y+8,px+4,y+8,px+1,y+15);
+        }
+      }
     }
     const water=scene.add.graphics().setDepth(-23);
     for(const pool of level.waterBodies){
@@ -196,21 +213,38 @@ export function paintScenery(scene){
     for(let i=0,cell=16;cell<l.width;cell+=34+(i%4)*9,i++){
       const x=cell*TILE+((i*13)%23)*TILE/3;
       if(l.waterBodies.some(pool=>cell>=pool.start&&cell<=pool.end))continue;
-      scene.add.image(x,scene.groundAt(x)+15,'forest-trees',i%4)
-        .setOrigin(.5,1).setScale(.16+(i%3)*.0175)
-        .setAlpha(.37).setTint(tint).setDepth(-42);
+      if(l.biome==='meadow'){
+        scene.add.image(x,scene.groundAt(x)+15,'forest-trees',i%4)
+          .setOrigin(.5,1).setScale(.16+(i%3)*.0175)
+          .setAlpha(.37).setTint(tint).setDepth(-42);
+      }else{
+        const coast=l.biome==='coast';
+        scene.add.image(x,scene.groundAt(x)+9,'landmarks',
+          coast?(i%2?2:5):(i%3?1:4))
+          .setOrigin(.5,1).setScale(.22+(i%3)*.025)
+          .setAlpha(.34).setTint(tint).setDepth(-42);
+      }
     }
     for(const [i,vista] of (l.vistas||[]).entries()){
       const x=vista.x*TILE,y=scene.groundAt(x);
-      const tree=scene.add.image(x,y+18,'forest-trees',(i+2)%4)
-        .setOrigin(.5,1).setScale(vista.span>25?.265:.215)
-        .setAlpha(.82).setTint(tint).setDepth(-38);
-      if(l.biome==='meadow')scene.tweens.add({
-        targets:tree,rotation:{from:-.012,to:.013},
-        duration:3800+i*431,ease:'Sine.easeInOut',yoyo:true,repeat:-1
-      });
+      if(l.biome==='meadow'){
+        const tree=scene.add.image(x,y+18,'forest-trees',(i+2)%4)
+          .setOrigin(.5,1).setScale(vista.span>25?.265:.215)
+          .setAlpha(.82).setTint(tint).setDepth(-38);
+        scene.tweens.add({targets:tree,rotation:{from:-.012,to:.013},
+          duration:3800+i*431,ease:'Sine.easeInOut',yoyo:true,repeat:-1});
+      }else{
+        // Use the original painted biome atlas rather than a ghostly
+        // jungle tree in the coastal and mountain landscapes.
+        const coast=l.biome==='coast';
+        scene.add.image(x,y+8,'landmarks',
+          coast?[2,1,5][i%3]:[1,4,3][i%3])
+          .setOrigin(.5,1).setScale(vista.span>25?.53:.40)
+          .setAlpha(.66).setTint(tint).setDepth(-38);
+      }
       if(vista.role==='reveal'||vista.role==='reward')
-        scene.add.image(x,y,'landmarks',l.biome==='summit'?3:0)
+        scene.add.image(x,y,'landmarks',
+          l.biome==='meadow'?0:l.biome==='coast'?2:3)
           .setOrigin(.5,1).setScale(.36).setAlpha(.88).setDepth(-18);
     }
     for(const [i,mark] of (l.landmarks||[]).entries()){
