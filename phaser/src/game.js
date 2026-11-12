@@ -218,13 +218,13 @@ class Wonderwood extends Phaser.Scene {
     back.setScale(fit);
     this.backdrop=back;
     if(!cave){
-    const cloudKinds=['kenney-cloud','kenney-cloudAlt'];
+      const cloudKinds=['kenney-cloud','kenney-cloudAlt'];
       for(let n=0;n<7;n++){
         const x=55+n*145+(n%2)*15;
         this.add.image(x,50+(n%3)*42,cloudKinds[n%2])
           .setScale(.72+(n%3)*.14).setAlpha(.2).setScrollFactor(0).setDepth(-90);
       }
-      }
+    }
     if(biome==='summit')
       this.add.image(820,75,'kenney-moon').setScale(.8).setAlpha(.45)
         .setScrollFactor(0).setDepth(-89);
