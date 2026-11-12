@@ -1,0 +1,58 @@
+name: Wonderwood Phaser 4 standalone
+
+on:
+  push:
+    branches:
+      - feat/phaser-wonderwood-rebuild
+  pull_request:
+    paths:
+      - 'phaser/**'
+      - 'src/assets/**'
+      - 'src/games/animal-adventure/designs.json'
+      - 'src/games/animal-adventure/chapters.js'
+      - 'src/platform/world-compiler.js'
+      - '.github/workflows/phaser.yml'
+  workflow_dispatch:
+
+jobs:
+  phaser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Phaser and bundler
+        run: npm install --prefix phaser --no-audit --no-fund
+      - name: Check input mapping and semantic world compilation
+        run: npm test --prefix phaser
+      - name: Bundle Phaser, source artwork and levels into a single HTML
+        run: npm run build --prefix phaser
+      - name: Verify self-contained release output
+        run: |
+          test -s dist/wonderwood-phaser.html
+          ! grep -E '<script[^>]+src=|<link[^>]+href=' dist/wonderwood-phaser.html
+      - name: Install Chromium for actual gameplay smoke
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Test the exact offline artifact in Chromium
+        run: python phaser/tests/smoke.py
+      - name: Publish playable single-file HTML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wonderwood-phaser-playable
+          path: dist/wonderwood-phaser.html
+          if-no-files-found: error
+      - name: Publish visual smoke preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wonderwood-phaser-preview
+          path: dist/phaser-preview.png
+          if-no-files-found: ignore

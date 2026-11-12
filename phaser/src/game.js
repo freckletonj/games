@@ -1,0 +1,633 @@
+import Phaser from 'phaser';
+import './bootstrap.js';
+import designs from '../../src/games/animal-adventure/designs.json';
+import {characters,backgrounds,sheets,silhouettes} from './assets.js';
+import {bindings,readActions} from './input.js';
+
+const TILE=16;
+const VIEW_W=480;
+const VIEW_H=270;
+const SKY={meadow:0xa4d9c2,coast:0xa8dbe0,summit:0x98a4ce};
+const SOIL={meadow:0x456b65,coast:0x426b7f,summit:0x545879};
+const EDGE={meadow:0x9bd695,coast:0x9ce2ce,summit:0xe1c5ed};
+const FORMS={springaroo:'Double jump',tideling:'Swim and dive',skyling:'Four wingbeats',
+  mossback:'Honey',prismtail:'Bubbles',glimmermoth:'Hover',cloudwhisp:'Gust',emberkit:'Spark'};
+const FRUITS=['berry','nectar','star'];
+const FAVORITES={springaroo:'berry',tideling:'nectar',skyling:'star',mossback:'berry',
+  prismtail:'berry',glimmermoth:'star',cloudwhisp:'nectar',emberkit:'berry'};
+const FLORA={berryBush:0,nectarFruit:1,stardropFruit:2,mushrooms:3,flowers:4,
+  reeds:5,stones:6,moonStone:7,shells:6};
+const LANDMARKS={tree:0,crystal:1,reef:2,observatory:3,island:4,pond:5,lantern:6,shells:7};
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+
+class Wonderwood extends Phaser.Scene {
+  constructor(){super('Wonderwood');}
+
+  preload(){
+    for(const [name,{url,manifest}] of Object.entries(characters)){
+      this.load.spritesheet('actor-'+name,url,{
+        frameWidth:manifest.frameWidth,frameHeight:manifest.frameHeight
+      });
+    }
+    for(const [name,url] of Object.entries(backgrounds))this.load.image('back-'+name,url);
+    for(const [name,url] of Object.entries(sheets))
+      this.load.spritesheet(name,url,{frameWidth:180,frameHeight:270});
+    for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
+  }
+
+  create(){
+    this.keyboard=bindings.map(layout=>Object.fromEntries(Object.entries(layout)
+      .map(([action,codes])=>[action,codes.map(code=>this.input.keyboard.addKey(code))])));
+    this.lastInput=[{},{}];
+    this.choice=0;
+    this.twoPlayers=false;
+    this.paused=false;
+    this.stage=-1;
+    this.input.keyboard.on('keydown-TWO',()=>this.toggleSecondPlayer());
+    this.input.keyboard.on('keydown-R',()=>{if(this.stage>=0)this.showMenu();});
+    this.showMenu();
+    // The smoke test reads state but never mutates gameplay state directly.
+    window.__wonderwoodPhaser={
+      engine:'Phaser 4',
+      snapshot:()=>({stage:this.stage,chapter:this.chapter?.id||null,
+        players:this.players?.map(p=>({x:p.x,y:p.y,form:p.form,caught:p.caught,health:p.health}))||[],
+        relic:this.shared?.relic||false,shards:this.shared?.shards||0})
+    };
+  }
+
+  pad(index){return this.input.gamepad?.getPad(index)||null;}
+
+  clearScene(){
+    this.cameras.main.stopFollow();
+    this.children.removeAll(true);
+    this.cameras.main.setZoom(2);
+    this.cameras.main.setScroll(0,0);
+    this.cameras.main.setBounds(0,0,VIEW_W,VIEW_H);
+    this.players=[];
+    this.animals=[];
+    this.items=[];
+    this.orbs=[];
+    this.lures=[];
+    this.setpieces=[];
+    this.lastInput=[{},{}];
+    this.paused=false;
+  }
+
+  addBackground(biome){
+    this.cameras.main.setBackgroundColor(SKY[biome]);
+    const back=this.add.image(VIEW_W/2,VIEW_H/2,'back-'+biome)
+      .setScrollFactor(0).setDepth(-100);
+    const fit=Math.max(VIEW_W/back.width,VIEW_H/back.height);
+    back.setScale(fit);
+    const cloudKinds=['kenney-cloud','kenney-cloudAlt'];
+    for(let n=0;n<7;n++){
+      const x=22+n*72+(n%2)*17;
+      this.add.image(x,25+(n%3)*24,cloudKinds[n%2])
+        .setScale(.42+(n%3)*.11).setAlpha(.18).setScrollFactor(0).setDepth(-90);
+    }
+    if(biome==='summit')
+      this.add.image(410,38,'kenney-moon').setScale(.52).setAlpha(.48)
+        .setScrollFactor(0).setDepth(-89);
+  }
+
+  showMenu(){
+    this.clearScene();
+    this.stage=-1;
+    this.chapter=null;
+    this.addBackground('meadow');
+    this.add.rectangle(240,137,400,218,0x16243c,.76).setDepth(0);
+    this.add.rectangle(240,38,310,2,0xe9d9a6,.72);
+    this.add.text(240,48,'WONDERWOOD',{fontFamily:'Georgia, serif',fontSize:'34px',
+      color:'#fff5d6',fontStyle:'bold'}).setOrigin(.5).setDepth(2);
+    this.add.text(240,84,'a little world worth exploring',{fontFamily:'Georgia, serif',
+      fontSize:'12px',color:'#bfe4d7'}).setOrigin(.5);
+    this.menuWorld=this.add.text(240,126,'',{fontFamily:'Georgia, serif',fontSize:'20px',
+      color:'#fff0bc'}).setOrigin(.5);
+    this.menuHint=this.add.text(240,151,'',{fontFamily:'Arial',fontSize:'10px',
+      color:'#d7e6e1',align:'center'}).setOrigin(.5);
+    this.add.text(240,204,'A / D or stick   ·   SPACE / A to begin\n2 toggles co-op   ·   controllers supported',
+      {fontFamily:'Arial',fontSize:'10px',color:'#c9d6d9',align:'center'})
+      .setOrigin(.5);
+    this.updateMenuText();
+  }
+
+  updateMenuText(){
+    const chapter=WW.chapters[this.choice];
+    this.menuWorld.setText('‹  '+chapter.name+'  ›');
+    this.menuHint.setText(chapter.tagline+'\n'+(this.twoPlayers?'Two explorers':'Solo explorer'));
+  }
+
+  toggleSecondPlayer(){
+    this.twoPlayers=!this.twoPlayers;
+    if(this.stage<0)this.updateMenuText();
+    else if(this.twoPlayers && this.players.length===1)this.makePlayer(1);
+    else if(!this.twoPlayers && this.players.length===2){
+      this.players.pop().visual.destroy();
+    }
+    if(this.stage>=0)this.flash(this.twoPlayers?'Co-op enabled':'Solo play');
+  }
+
+  startStage(index){
+    this.clearScene();
+    this.choice=index;
+    this.stage=index;
+    this.chapter=WW.chapters[index];
+    const spec=designs[this.chapter.id];
+    this.level=WW.worldCompiler.compile(spec,this.chapter);
+    this.worldW=this.level.width*TILE;
+    this.worldH=this.level.height*TILE;
+    this.shared={relic:false,shards:0,collected:new Set(),checkpoint:null};
+    this.addBackground(this.level.biome);
+    this.paintTerrain();
+    this.paintScenery();
+    this.spawnObjects();
+    this.makePlayer(0);
+    if(this.twoPlayers)this.makePlayer(1);
+    this.cameras.main.setBounds(0,0,this.worldW,this.worldH);
+    this.cameras.main.startFollow(this.players[0].visual,true,.085,.12);
+    this.cameras.main.setFollowOffset(0,12);
+    this.makeHud();
+    this.flash(this.chapter.name+'  ·  '+this.chapter.intro,4200);
+  }
+
+  groundAt(x){
+    const position=clamp(x/TILE,0,this.level.width);
+    const cell=Math.min(Math.floor(position),this.level.width-1);
+    const t=position-cell;
+    return (this.level.surface[cell]*(1-t)+this.level.surface[cell+1]*t)*TILE;
+  }
+
+  inWater(x,y){
+    return this.level.waterBodies.some(b=>x>=b.start*TILE&&x<=b.end*TILE&&
+      y>=b.surface*TILE&&y<=this.groundAt(x)+3);
+  }
+
+  paintTerrain(){
+    const level=this.level,biome=level.biome;
+    const graphics=this.add.graphics().setDepth(-30);
+    const contour=level.surface.map((height,x)=>({x:x*TILE,y:height*TILE}));
+    graphics.fillStyle(SOIL[biome]);
+    graphics.fillPoints([{x:0,y:this.worldH},...contour,{x:this.worldW,y:this.worldH}],true);
+    graphics.lineStyle(7,0x233d45,.32);
+    graphics.strokePoints(contour);
+    graphics.lineStyle(3,EDGE[biome],.96);
+    graphics.strokePoints(contour);
+    graphics.lineStyle(1,0xfaf2c4,.52);
+    graphics.strokePoints(contour.map(p=>({x:p.x,y:p.y-3})));
+    // Broken strata and clusters add scale without showing repeated square tiles.
+    graphics.lineStyle(1,0xe5e1c7,.12);
+    for(let x=12;x<this.worldW;x+=79){
+      const y=this.groundAt(x)+18+(x%7)*2;
+      graphics.lineBetween(x,y,x+28,y+3);
+      graphics.lineBetween(x+8,y+12,x+38,y+16);
+    }
+    for(const platform of level.platformSegments.filter(p=>p.kind==='platform')){
+      const x=platform.x*TILE,y=platform.y*TILE,w=platform.length*TILE;
+      graphics.fillStyle(0x354c62,.96);
+      graphics.fillRoundedRect(x,y,w,9,4);
+      graphics.lineStyle(3,EDGE[biome],.92);
+      graphics.lineBetween(x+2,y,x+w-2,y);
+      graphics.lineStyle(1,0xffffff,.25);
+      graphics.lineBetween(x+3,y+4,x+w-3,y+4);
+    }
+    const water=this.add.graphics().setDepth(-23);
+    for(const pool of level.waterBodies){
+      const top=pool.surface*TILE;
+      const contour=[{x:pool.start*TILE,y:top},{x:pool.end*TILE,y:top}];
+      for(let x=pool.end;x>=pool.start;x--)
+        contour.push({x:x*TILE,y:this.groundAt(x*TILE)});
+      water.fillStyle(0x3faaca,.43);
+      water.fillPoints(contour,true);
+      water.lineStyle(2,0xc4f6ef,.83);
+      water.lineBetween(pool.start*TILE,top,pool.end*TILE,top);
+      water.lineStyle(1,0xd8fff5,.22);
+      for(let x=pool.start*TILE+18;x<pool.end*TILE-10;x+=39)
+        water.lineBetween(x,top+16,x+16,top+15);
+    }
+    const winds=this.add.graphics().setDepth(-21);
+    for(const column of level.thermalVolumes){
+      const x=column.x*TILE,y=column.y*TILE,w=column.width*TILE,h=column.height*TILE;
+      winds.fillStyle(0xdbfafa,.09);
+      winds.fillRoundedRect(x,y,w,h,24);
+      winds.lineStyle(1,0xcffafa,.29);
+      for(let offset=12;offset<w;offset+=20)
+        winds.lineBetween(x+offset,y+h-8,x+offset+8,y+10);
+    }
+  }
+
+  paintScenery(){
+    const l=this.level;
+    for(const vista of l.vistas||[]){
+      const x=vista.x*TILE,y=this.groundAt(x);
+      const kind=l.biome==='summit'?'pine':'tree';
+      this.add.image(x,y+8,'kenney-'+kind).setOrigin(.5,1)
+        .setScale(vista.span>25?.65:.48).setAlpha(.28).setDepth(-39);
+      if(vista.role==='reveal'||vista.role==='reward')
+        this.add.image(x,y,'landmarks',l.biome==='summit'?3:0)
+          .setOrigin(.5,1).setScale(.45).setAlpha(.82).setDepth(-18);
+    }
+    for(const [i,mark] of (l.landmarks||[]).entries()){
+      const x=mark.x*TILE;
+      this.add.image(x,this.groundAt(x)+3,'landmarks',LANDMARKS[mark.type]??0)
+        .setOrigin(.5,1).setScale(.27+(i%3)*.04).setDepth(-17).setAlpha(.94);
+    }
+    for(const [i,decoration] of (l.dressing||[]).entries()){
+      const x=decoration.x*TILE, y=this.groundAt(x);
+      const frame=FLORA[decoration.asset]??4;
+      this.add.image(x,y+2,'flora',frame).setOrigin(.5,1)
+        .setScale(.12*(decoration.scale||1)).setAlpha(.94).setDepth(-16);
+      if(i%3===0){
+        this.add.image(x+19,y+2,'kenney-bush').setOrigin(.5,1)
+          .setScale(.4).setAlpha(.25).setDepth(-38);
+      }
+    }
+  }
+
+  actor(name,x,y){
+    const {manifest}=characters[name];
+    return this.add.sprite(x,y,'actor-'+name,0)
+      .setOrigin(manifest.origin.x/manifest.frameWidth,
+        manifest.origin.y/manifest.frameHeight)
+      .setScale(manifest.worldScale).setDepth(20);
+  }
+
+  animate(entity,name,action,delta){
+    const manifest=characters[name].manifest;
+    if(entity.textureName!==name){
+      entity.textureName=name;
+      entity.visual.setTexture('actor-'+name);
+      entity.visual.setOrigin(manifest.origin.x/manifest.frameWidth,
+        manifest.origin.y/manifest.frameHeight);
+      entity.visual.setScale(manifest.worldScale);
+      entity.action='';
+    }
+    if(entity.action!==action){entity.action=action;entity.animationTime=0;}
+    entity.animationTime+=delta;
+    const animation=manifest.animations[action]||manifest.animations.idle;
+    entity.visual.setFrame(animation.frames[Math.floor(entity.animationTime*animation.fps)%animation.frames.length]);
+    entity.visual.setPosition(entity.x,entity.y);
+    entity.visual.setFlipX((entity.face||1)<0);
+  }
+
+  spawnObjects(){
+    const relicKind=this.chapter.key;
+    for(const object of this.level.objects){
+      const x=(object.x+.5)*TILE;
+      if(FORMS[object.kind]){
+        const flying=['skyling','glimmermoth','cloudwhisp'].includes(object.kind);
+        const y=flying?(object.y+.5)*TILE:this.groundAt(x);
+        this.animals.push({kind:object.kind,x,y,homeX:x,homeY:y,
+          face:1,trust:0,stun:0,attack:0,captured:false,flying,
+          action:'',animationTime:0,
+          visual:this.actor(object.kind,x,y).setDepth(12)});
+      } else if(['starShard','snack','checkpoint','exit',relicKind].includes(object.kind)){
+        const rooted=['snack','checkpoint','exit'].includes(object.kind);
+        const y=rooted?this.groundAt(x):(object.y+.5)*TILE;
+        const frame=object.kind==='starShard'?6:object.kind==='snack'?5:
+          object.kind==='checkpoint'?2:object.kind==='exit'?0:7;
+        const icon=this.add.image(x,y,'props',frame).setOrigin(.5,1)
+          .setScale(object.kind===relicKind?.19:.16).setDepth(10);
+        this.items.push({kind:object.kind,x,y,visual:icon,used:false});
+      }
+    }
+    for(const part of this.level.setpieces||[]){
+      const x=part.x*TILE,y=(part.y||0)*TILE;
+      const base=part.kind==='bounceBloom'?this.groundAt(x):y;
+      const frame=part.kind==='bounceBloom'?3:part.kind==='windRing'?4:2;
+      const art=this.add.image(x,base,'effects',frame).setOrigin(.5,1)
+        .setScale(.12).setAlpha(.82).setDepth(4);
+      this.setpieces.push({kind:part.kind,x,y:base,time:0,visual:art});
+    }
+  }
+
+  makePlayer(id){
+    const spawn=this.level.objects.find(o=>o.kind==='p1');
+    const x=(spawn.x+.5)*TILE+(id?14:0), y=this.groundAt(x);
+    const visual=this.actor('hero',x,y).setDepth(30+id);
+    if(id===1)visual.setTint(0xcacaff);
+    const player={id,x,y,vx:0,vy:0,face:1,grounded:true,coyote:5,
+      jumpBuffer:0,jumps:0,flaps:0,flapWait:0,health:3,invincible:0,
+      form:null,caught:null,food:0,powers:0,bubble:false,
+      checkpoint:{x,y},action:'',animationTime:0,visual};
+    this.players.push(player);
+    return player;
+  }
+
+  makeHud(){
+    this.add.rectangle(240,13,480,27,0x12233e,.66)
+      .setDepth(98).setScrollFactor(0);
+    this.hud=this.add.text(10,7,'',{fontFamily:'Arial',fontSize:'10px',
+      color:'#fff9d9'}).setDepth(100).setScrollFactor(0);
+    this.notice=this.add.text(240,39,'',{fontFamily:'Georgia, serif',
+      fontSize:'12px',color:'#fff5d7',align:'center'})
+      .setOrigin(.5,0).setDepth(100).setScrollFactor(0);
+    this.help=this.add.text(240,245,'',{fontFamily:'Arial',fontSize:'9px',
+      color:'#fff5dc',align:'center'}).setOrigin(.5)
+      .setDepth(100).setScrollFactor(0);
+    this.pausedOverlay=this.add.rectangle(240,135,480,270,0x091b2c,.74)
+      .setDepth(110).setScrollFactor(0).setVisible(false);
+    this.pauseMessage=this.add.text(240,132,'PAUSED\nSTART / ESC to resume',{fontFamily:'Georgia, serif',
+      fontSize:'22px',color:'#fff5cf',align:'center'}).setOrigin(.5)
+      .setDepth(111).setScrollFactor(0).setVisible(false);
+    this.noticeUntil=0;
+  }
+
+  flash(message,duration=1800){
+    if(!this.notice)return;
+    this.notice.setText(message);
+    this.noticeUntil=this.time.now+duration;
+  }
+
+  sparkle(x,y,color=0xffedb3){
+    for(let i=0;i<7;i++){
+      const dot=this.add.circle(x,y-12,1.5+Math.random()*1.6,color,.9).setDepth(40);
+      const angle=i*Math.PI*2/7;
+      this.tweens.add({targets:dot,x:x+Math.cos(angle)*(12+Math.random()*16),
+        y:y-12+Math.sin(angle)*(10+Math.random()*14),alpha:0,scale:0,
+        duration:400+Math.random()*250,onComplete:()=>dot.destroy()});
+    }
+  }
+
+  throwFood(p){
+    const x=clamp(p.x+p.face*32,16,this.worldW-16);
+    const y=this.groundAt(x);
+    const food=FRUITS[p.food];
+    const sprite=this.add.image(x,y,'flora',p.food).setOrigin(.5,1)
+      .setScale(.07).setDepth(18);
+    this.lures.push({x,y,food,visual:sprite,expires:this.time.now+14000});
+    this.flash('A '+food+' treat is waiting',800);
+  }
+
+  castPower(p){
+    if(!p.form||p.powers>0)return;
+    p.powers=.75;
+    if(p.form==='glimmermoth'){p.vy=Math.min(p.vy,-.4);this.sparkle(p.x,p.y,0xf7c9fa);return;}
+    const target=this.animals.filter(a=>!a.captured&&a.stun<=0&&Math.abs(a.x-p.x)<90)
+      .sort((a,b)=>distance(a,p)-distance(b,p))[0];
+    if(target){
+      target.stun=p.form==='mossback'?3.7:2.2;
+      if(p.form==='prismtail')target.y-=16;
+      if(p.form==='cloudwhisp')target.x+=p.face*22;
+      this.sparkle(target.x,target.y,0xd6e7ff);
+    }
+  }
+
+  throwOrb(p){
+    const x=p.x+p.face*7,y=p.y-17;
+    const visual=this.add.circle(x,y,5,0xd5faff,.72)
+      .setStrokeStyle(1.4,0xffffff,.9).setDepth(32);
+    this.orbs.push({x,y,vx:p.face*5.3,vy:-1.3,visual,life:100,owner:p});
+  }
+
+  updateAnimals(step,time){
+    for(const animal of this.animals){
+      if(animal.captured)continue;
+      animal.stun=Math.max(0,animal.stun-step/60);
+      animal.attack=Math.max(0,animal.attack-step/60);
+      const lure=this.lures.find(f=>Math.abs(f.x-animal.x)<125);
+      let target=lure?.x ?? (animal.homeX+Math.sin(time*.00055+animal.homeX)*32);
+      const diff=target-animal.x;
+      const speed=animal.stun ? 0 : lure ? .55 : animal.kind==='prismtail' ? .76 : .36;
+      animal.x+=clamp(diff,-speed*step,speed*step);
+      if(Math.abs(diff)>2)animal.face=Math.sign(diff);
+      if(animal.flying){
+        const rest=animal.homeY+Math.sin(time*.0014+animal.homeX)*7;
+        const wanted=lure?Math.min(rest+40,lure.y-15):rest;
+        animal.y+=(wanted-animal.y)*.035*step;
+      }else animal.y=this.groundAt(animal.x);
+      if(lure&&Math.abs(animal.x-lure.x)<12&&Math.abs(animal.y-lure.y)<25){
+        animal.trust=Math.min(100,animal.trust+(FAVORITES[animal.kind]===lure.food?60:36));
+        lure.visual.destroy();
+        this.lures.splice(this.lures.indexOf(lure),1);
+        this.sparkle(animal.x,animal.y,0xffd4ee);
+        this.flash(animal.trust>=100?
+          animal.kind+' is friendly — throw a capture orb!':
+          animal.kind+' enjoyed the treat',1300);
+      }
+      const action=animal.stun?'hurt':lure?'run':animal.flying?'idle':
+        Math.abs(diff)>6?'run':'idle';
+      this.animate(animal,animal.kind,action,step/60);
+      // Visible telegraph before the two more assertive enemy encounters.
+      if(['emberkit','prismtail'].includes(animal.kind)&&animal.attack===0){
+        for(const p of this.players){
+          if(!p.bubble&&Math.abs(p.x-animal.x)<20&&Math.abs(p.y-animal.y)<20&&
+            p.invincible<=0&&animal.stun<=0){
+            if(p.vy>1&&p.y<animal.y-6){
+              animal.stun=2.1;p.vy=-4.4;this.sparkle(animal.x,animal.y);
+            }else{
+              p.health--;p.invincible=1.5;p.vx=animal.x<p.x?3:-3;
+              p.vy=-3.3;animal.attack=1.2;this.flash('Watch the wildlife!',1000);
+              if(p.health<=0)this.recall(p);
+            }
+          }
+        }
+      }
+    }
+    for(const lure of [...this.lures]){
+      if(time>lure.expires){
+        lure.visual.destroy();this.lures.splice(this.lures.indexOf(lure),1);
+      }
+    }
+    for(const orb of [...this.orbs]){
+      orb.x+=orb.vx*step;orb.y+=orb.vy*step;orb.vy+=.075*step;orb.life-=step;
+      orb.visual.setPosition(orb.x,orb.y);
+      const animal=this.animals.find(a=>!a.captured&&a.trust>=100&&
+        Math.abs(a.x-orb.x)<20&&Math.abs(a.y-13-orb.y)<23);
+      if(animal){
+        animal.captured=true;animal.visual.destroy();
+        orb.owner.caught=animal.kind;
+        orb.owner.form=null;
+        this.sparkle(animal.x,animal.y,0xe1ffb5);
+        this.flash('Befriended '+animal.kind+'! Press T / Y to transform',3000);
+        orb.life=0;
+      }
+      if(orb.life<=0||orb.x<0||orb.x>this.worldW||
+        (orb.y>this.groundAt(orb.x)-1&&orb.vy>0)){
+        orb.visual.destroy();this.orbs.splice(this.orbs.indexOf(orb),1);
+      }
+    }
+  }
+
+  recall(p){
+    p.x=p.checkpoint.x;p.y=p.checkpoint.y;p.vx=0;p.vy=0;
+    p.grounded=true;p.bubble=false;p.invincible=1.5;p.health=3;
+    p.visual.setPosition(p.x,p.y);
+    this.flash('Back at the last safe camp',1300);
+  }
+
+  movePlayer(p,actions,step){
+    if(p.bubble){
+      const lead=this.players[0];
+      const action=actions.jumpPressed||actions.foodPressed||actions.capturePressed||
+        actions.transformPressed||actions.leftPressed||actions.rightPressed;
+      if(action){p.bubble=false;p.x=lead.x-22;p.y=lead.y-12;p.vx=0;p.vy=0;}
+      else {
+        p.x=lead.x-25;p.y=lead.y-28;
+        p.visual.setPosition(p.x,p.y).setAlpha(.35);
+        return;
+      }
+    }
+    p.visual.setAlpha(p.invincible>0&&Math.floor(this.time.now/100)%2===0?.53:1);
+    if(actions.nextPressed)p.food=(p.food+1)%FRUITS.length;
+    if(actions.recallPressed)this.recall(p);
+    if(actions.transformPressed&&p.caught){
+      p.form=p.form?null:p.caught;
+      p.flaps=0;p.jumps=0;
+      this.flash(p.form?FORMsName(p.form)+' form':'Explorer form',1300);
+    }
+    if(actions.foodPressed) p.form?this.castPower(p):this.throwFood(p);
+    if(actions.capturePressed&&!p.form)this.throwOrb(p);
+    p.invincible=Math.max(0,p.invincible-step/60);
+    p.powers=Math.max(0,p.powers-step/60);
+    p.flapWait=Math.max(0,p.flapWait-step);
+    p.coyote=p.grounded?5:Math.max(0,p.coyote-step);
+    p.jumpBuffer=actions.jumpPressed?6:Math.max(0,p.jumpBuffer-step);
+    const inWater=this.inWater(p.x,p.y-8);
+    const swimmer=p.form==='tideling'&&inWater;
+    const direction=Number(actions.right)-Number(actions.left);
+    if(direction)p.face=direction;
+    const desired=direction*(swimmer?2.15:p.form==='springaroo'?2.65:2.3);
+    const traction=p.grounded ? .22 : .14;
+    p.vx+=(desired-p.vx)*Math.min(1,traction*step);
+    if(swimmer){
+      p.vy+=((actions.jump?-.23:actions.down?.24:.046)-p.vy*.035)*step;
+      p.vy=clamp(p.vy,-2.3,2.6);
+    }else{
+      if(p.jumpBuffer>0&&p.coyote>0){
+        p.vy=-5.4;p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumps=1;
+      }else if(actions.jumpPressed&&p.form==='springaroo'&&p.jumps===1){
+        p.vy=-6.6;p.jumps=2;p.jumpBuffer=0;this.sparkle(p.x,p.y);
+      }else if(actions.jumpPressed&&p.form==='skyling'&&p.flaps<4&&p.flapWait<=0){
+        p.vy=-5.65;p.flaps++;p.flapWait=8;p.jumpBuffer=0;
+        this.sparkle(p.x,p.y,0xd3f6ff);
+      }
+      if(!actions.jump&&p.vy<-2.3&&p.form!=='skyling')p.vy+=.28*step;
+      const hover=p.form==='glimmermoth'&&actions.food&&p.vy>0;
+      p.vy+=(p.vy>=0 ? (hover ? .12 : .52) : .34)*step;
+      if(this.inWater(p.x,p.y-6))p.vy=Math.min(p.vy,1.4);
+    }
+    if(this.level.thermalVolumes.some(c=>p.x>=c.x*TILE&&p.x<=(c.x+c.width)*TILE&&
+      p.y>c.y*TILE&&p.y<(c.y+c.height)*TILE))
+      p.vy-=.48*step;
+    p.vy=clamp(p.vy,-8,7.5);
+    p.x=clamp(p.x+p.vx*step,10,this.worldW-10);
+    const priorY=p.y;
+    p.y+=p.vy*step;
+    let landing=Infinity;
+    const floor=this.groundAt(p.x);
+    if(p.y>=floor&&priorY<=floor+12)landing=floor;
+    for(const segment of this.level.platformSegments){
+      if(segment.kind!=='platform'||p.x<segment.x*TILE-4||
+        p.x>(segment.x+segment.length)*TILE+4)continue;
+      const top=segment.y*TILE;
+      if(p.vy>=0&&priorY<=top+3&&p.y>=top)landing=Math.min(landing,top);
+    }
+    if(landing!==Infinity&&p.vy>=0){
+      p.y=landing;p.vy=0;p.grounded=true;p.jumps=0;p.flaps=0;p.coyote=5;
+    }else p.grounded=false;
+    if(p.y>this.worldH-10)this.recall(p);
+    const action=p.grounded?(Math.abs(p.vx)>.3?'run':'idle'):p.vy<0?'jump':'fall';
+    this.animate(p,p.form||'hero',action,step/60);
+    if(p.id===1&&this.players[0]&&
+      (Math.abs(p.x-this.players[0].x)>210||Math.abs(p.y-this.players[0].y)>145))
+      p.bubble=true;
+  }
+
+  touchWorld(p,step){
+    if(p.bubble)return;
+    for(const item of this.items){
+      if(item.used||Math.abs(item.x-p.x)>19||Math.abs(item.y-12-p.y)>26)continue;
+      if(item.kind==='starShard'){
+        item.used=true;item.visual.destroy();this.shared.shards++;
+        this.sparkle(item.x,item.y);this.flash('A hidden Stardrop!',900);
+      }else if(item.kind==='snack'){
+        item.used=true;item.visual.destroy();
+        this.sparkle(item.x,item.y,0xffd2ad);
+      }else if(item.kind==='checkpoint'){
+        this.shared.checkpoint={x:item.x,y:item.y};
+        for(const explorer of this.players)explorer.checkpoint={...this.shared.checkpoint};
+        item.visual.setFrame(3);
+      }else if(item.kind===this.chapter.key){
+        const required=this.chapter.goals[0].form;
+        if(p.form===required){
+          item.used=true;item.visual.destroy();this.shared.relic=true;
+          this.sparkle(item.x,item.y,0xfffac1);
+          this.flash('You recovered the '+this.chapter.goals[0].name+'! Find the gate.',3400);
+        }else if(this.time.now>this.noticeUntil)
+          this.flash('The light needs '+FORMsName(required),1200);
+      }else if(item.kind==='exit'&&this.shared.relic){
+        this.flash('Chapter complete! The next light awakens.',1600);
+        const next=this.stage+1;
+        if(next<WW.chapters.length)this.startStage(next);
+        else this.showMenu();
+        return;
+      }
+    }
+    for(const piece of this.setpieces){
+      piece.time=Math.max(0,piece.time-step/60);
+      if(Math.abs(piece.x-p.x)>13||Math.abs(piece.y-p.y)>23)continue;
+      if(piece.kind==='bounceBloom'&&piece.time===0&&p.vy>=0){
+        p.vy=-7.1;p.grounded=false;piece.time=1.1;this.sparkle(piece.x,piece.y);
+      }else if(piece.kind==='windRing')p.vy=Math.min(p.vy,-4.1);
+      else if(piece.kind==='bubbleVent'&&this.inWater(p.x,p.y))p.vy-=.22*step;
+    }
+  }
+
+  update(_time,delta){
+    const time=this.time.now,step=clamp(delta/16.6667,.25,2);
+    const actions=[0,1].map(i=>readActions(this.keyboard[i],this.pad(i),this.lastInput[i]));
+    this.lastInput=actions;
+    if(this.stage<0){
+      if(actions[0].leftPressed||actions[1].leftPressed){
+        this.choice=(this.choice+WW.chapters.length-1)%WW.chapters.length;
+        this.updateMenuText();
+      }else if(actions[0].rightPressed||actions[1].rightPressed){
+        this.choice=(this.choice+1)%WW.chapters.length;this.updateMenuText();
+      }
+      if(actions.some(a=>a.jumpPressed||a.foodPressed))this.startStage(this.choice);
+      return;
+    }
+    if(actions.some(a=>a.pausePressed)){
+      this.paused=!this.paused;
+      this.pausedOverlay.setVisible(this.paused);
+      this.pauseMessage.setVisible(this.paused);
+    }
+    if(this.paused)return;
+    if(this.pad(1)&&this.players.length===1){
+      this.twoPlayers=true;this.makePlayer(1);
+    }
+    for(const p of [...this.players])this.movePlayer(p,actions[p.id],step);
+    this.updateAnimals(step,time);
+    for(const p of [...this.players])this.touchWorld(p,step);
+    if(this.stage<0)return;
+    const lead=this.players[0];
+    this.hud.setText(this.chapter.name+'   ♥ '+lead.health+
+      '   '+(lead.form?FORMsName(lead.form):'Explorer')+
+      '   '+FRUITS[lead.food]+'   ★ '+this.shared.shards+
+      '   '+(this.shared.relic?'LIGHT FOUND':'FIND THE LIGHT')+
+      (this.twoPlayers?'   P2: '+this.players[1]?.health+'♥':''));
+    this.help.setText(lead.caught?
+      'F / B power or food   ·   G / X capture   ·   T / Y transform':
+      'Offer two favorite treats, then capture the friendly creature');
+    if(time>this.noticeUntil)this.notice.setText('');
+  }
+}
+
+function FORMsName(name){
+  return {springaroo:'Springaroo',tideling:'Tidefox',skyling:'Moonwing',
+    mossback:'Mossback',prismtail:'Prismtail',glimmermoth:'Glimmermoth',
+    cloudwhisp:'Cloudwhisp',emberkit:'Emberkit'}[name]||name;
+}
+
+new Phaser.Game({
+  type:Phaser.AUTO,
+  parent:'game',
+  width:960,
+  height:540,
+  backgroundColor:'#101b31',
+  render:{pixelArt:false,antialias:true},
+  input:{gamepad:true},
+  scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
+  scene:[Wonderwood]
+});
