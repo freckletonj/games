@@ -109,15 +109,17 @@ def main():
         assert player["health"] == 3 and not player["sleep"]
 
         # Treats are finite, and the first picnic basket refills them.
-        food_before = snapshot(page)["foods"]["berry"]
-        assert food_before == 12, food_before
-        page.keyboard.down("d")
-        page.wait_for_function(
-            "window.__wonderwoodPhaser.snapshot().foods.berry >= 16",
-            timeout=30000,
-        )
-        page.keyboard.up("d")
+        # A fast player may have collected it during the earlier run.
+        supplies = snapshot(page)
+        if supplies["picnics"] == 0:
+            page.keyboard.down("d")
+            page.wait_for_function(
+                "window.__wonderwoodPhaser.snapshot().picnics > 0",
+                timeout=30000,
+            )
+            page.keyboard.up("d")
         restocked = snapshot(page)
+        assert restocked["picnics"] >= 1, restocked
         assert restocked["foods"]["berry"] >= 16, restocked
         assert not errors, "Page errors: " + "; ".join(errors)
         browser.close()
