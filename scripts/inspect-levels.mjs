@@ -99,6 +99,21 @@ for (const [index, [id, design]] of Object.entries(designs).entries()) {
       escape({bounceBloom:'B',windRing:'W',bubbleVent:'V'}[piece.kind]) +
       '</text>');
   }
+  for(const course of level.mountCourses||[]){
+    const points=course.nodes.map(([x,y])=>px(x)+','+py(y)).join(' ');
+    out.push('<polyline points="'+points+
+      '" stroke="#fff4d6" stroke-width="3.5" fill="none"/>');
+    out.push('<polyline points="'+points+
+      '" stroke="'+(course.mount==='unicorn'?'#d977b4':'#7f91dc')+
+      '" stroke-width="2" stroke-dasharray="5 3" fill="none"/>');
+    for(const [i,[x,y]] of course.nodes.entries()){
+      out.push('<circle cx="'+px(x)+'" cy="'+py(y)+'" r="4.1" '+
+        'fill="#ffe6a4" stroke="#624d7b" stroke-width="1"/>');
+      if(i===0)out.push('<text x="'+(px(x)+5)+'" y="'+(py(y)-5)+
+        '" font-size="8" font-weight="bold" fill="#38456c">'+
+        escape(course.name)+'</text>');
+    }
+  }
   for (const item of level.objects) {
     if (!['p1','exit',design.relic[0],'checkpoint','unicorn','pegasus'].includes(item.kind)) continue;
     const fill = {p1:'#40e38e',exit:'#f48b78',checkpoint:'#ffffff',
