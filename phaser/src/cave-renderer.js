@@ -149,3 +149,27 @@ export function paintCaveForeground(scene){
     g.fillTriangle(x-8,y,x+9,y,x+1,y+length);
   }
 }
+
+export function paintCaveGeometryOverlay(scene){
+  const g=scene.add.graphics().setDepth(100).setVisible(false);
+  const level=scene.level;
+  // The same subpixel contours drive collision and the generated-art masks.
+  g.lineStyle(1.5,0xffe4a0,.95);
+  for(const samples of [level.ceiling,level.surface]){
+    g.beginPath();
+    for(let x=0;x<=level.width;x++){
+      const xx=x*16,y=samples[x]*16;
+      if(x===0)g.moveTo(xx,y);
+      else g.lineTo(xx,y);
+    }
+    g.strokePath();
+  }
+  for(const pool of level.waterBodies){
+    g.lineStyle(1.5,0x5bf5e8,.95);
+    g.lineBetween(pool.start*16,pool.surface*16,pool.end*16,pool.surface*16);
+  }
+  g.lineStyle(2,0xffd28d,1);
+  for(const s of level.platformSegments)
+    g.lineBetween(s.x*16,s.y*16,(s.x+s.length)*16,s.y*16);
+  scene.caveGeometryOverlay=g;
+}
