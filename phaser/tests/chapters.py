@@ -59,7 +59,9 @@ def main():
                 assert abs(ledge["artWidth"] - (ledge["width"] + 16)) < 1, ledge
                 assert abs(ledge["artX"] - (ledge["x"] - 8)) < 1, ledge
                 assert abs(ledge["artY"] - (ledge["y"] - 7)) < 1, ledge
-            assert state["parallaxLayers"] == 2, (chapter, state)
+            assert state["parallaxLayers"] == (4 if i == 0 else 2), (
+                chapter, state
+            )
             assert not errors, (chapter, errors)
             page.screenshot(path=str(ROOT / "dist" / f"phaser-chapter-{chapter}.png"))
         browser.close()
