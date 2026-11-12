@@ -228,6 +228,10 @@ class Wonderwood extends Phaser.Scene {
     this.shared={relic:false,shards:0,collected:new Set(),checkpoint:null,
       picnics:0,foods:{berry:14,nectar:6,star:6}};
     this.addBackground(this.level.biome);
+    // A small overscan prevents bright seams as the distant illustration
+    // pans more slowly than the camera through the chapter.
+    this.backdrop.setScale(Math.max(1050/this.backdrop.width,
+      590/this.backdrop.height));
     addParallaxAtmosphere(this);
     paintTerrain(this);
     paintScenery(this);
