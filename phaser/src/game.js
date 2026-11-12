@@ -59,6 +59,16 @@ class Wonderwood extends Phaser.Scene {
     this.choice=0;
     this.twoPlayers=false;
     this.paused=false;
+    // The title is native-resolution HTML, independent of the 2x world camera.
+    this.menuEl=document.getElementById('ww-menu');
+    this.menuWorld=document.getElementById('ww-menu-chapter');
+    this.menuHint=document.getElementById('ww-menu-description');
+    this.menuCounter=document.getElementById('ww-menu-counter');
+    this.menuMode=document.getElementById('ww-menu-mode');
+    document.getElementById('ww-menu-prev').addEventListener('click',()=>this.changeChapter(-1));
+    document.getElementById('ww-menu-next').addEventListener('click',()=>this.changeChapter(1));
+    document.getElementById('ww-menu-play').addEventListener('click',()=>this.startStage(this.choice));
+    document.getElementById('ww-menu-coop').addEventListener('click',()=>this.toggleSecondPlayer());
     this.stage=-1;
     this.input.keyboard.on('keydown-TWO',()=>this.toggleSecondPlayer());
     this.makeBerryTexture();
@@ -106,6 +116,7 @@ class Wonderwood extends Phaser.Scene {
     this.cameras.main.setScroll(0,0);
     this.cameras.main.setBounds(0,0,VIEW_W,VIEW_H);
     document.getElementById('ww-ui').hidden=true;
+    this.menuEl.hidden=true;
     this.players=[];
     this.animals=[];
     this.mounts=[];
@@ -158,32 +169,29 @@ class Wonderwood extends Phaser.Scene {
     this.textures.addCanvas('painted-berry',canvas);
   }
 
-    showMenu(){
+  showMenu(){
     this.clearScene();
     this.stage=-1;
     this.chapter=null;
     this.addBackground('meadow');
-    // Menu geometry uses world-space coordinates and the 2x camera zoom.
-    this.add.rectangle(240,135,400,218,0x16243c,.78).setDepth(0);
-    this.add.rectangle(240,43,310,1,0xe9d9a6,.72);
-    this.add.text(240,67,'WONDERWOOD',{fontFamily:'Georgia, serif',fontSize:'34px',
-      color:'#fff5d6',fontStyle:'bold'}).setOrigin(.5).setDepth(2);
-    this.add.text(240,98,'a little world worth exploring',{fontFamily:'Georgia, serif',
-      fontSize:'12px',color:'#bfe4d7'}).setOrigin(.5);
-    this.menuWorld=this.add.text(240,137,'',{fontFamily:'Georgia, serif',fontSize:'20px',
-      color:'#fff0bc'}).setOrigin(.5);
-    this.menuHint=this.add.text(240,167,'',{fontFamily:'Arial',fontSize:'10px',
-      color:'#d7e6e1',align:'center'}).setOrigin(.5);
-    this.add.text(240,210,'A / D or stick   ·   SPACE / A to begin\n2 toggles co-op   ·   controllers supported',
-      {fontFamily:'Arial',fontSize:'10px',color:'#c9d6d9',align:'center'})
-      .setOrigin(.5);
+    this.menuEl.hidden=false;
+    this.updateMenuText();
+  }
+
+  changeChapter(direction){
+    this.choice=(this.choice+direction+WW.chapters.length)%WW.chapters.length;
     this.updateMenuText();
   }
 
   updateMenuText(){
     const chapter=WW.chapters[this.choice];
-    this.menuWorld.setText('‹  '+chapter.name+'  ›');
-    this.menuHint.setText(chapter.tagline+'\n'+(this.twoPlayers?'Two explorers':'Solo explorer'));
+    this.menuWorld.textContent=chapter.name;
+    this.menuHint.textContent=chapter.tagline;
+    this.menuCounter.textContent='CHAPTER '+String(this.choice+1).padStart(2,'0')+
+      ' / '+String(WW.chapters.length).padStart(2,'0');
+    this.menuMode.textContent=this.twoPlayers?'Two explorers · Local co-op':'One explorer · Solo play';
+    document.getElementById('ww-menu-coop').textContent=
+      this.twoPlayers?'Switch to solo':'Enable local co-op';
   }
 
   toggleSecondPlayer(){
@@ -907,10 +915,9 @@ class Wonderwood extends Phaser.Scene {
     this.lastInput=actions;
     if(this.stage<0){
       if(actions[0].leftPressed||actions[1].leftPressed){
-        this.choice=(this.choice+WW.chapters.length-1)%WW.chapters.length;
-        this.updateMenuText();
+        this.changeChapter(-1);
       }else if(actions[0].rightPressed||actions[1].rightPressed){
-        this.choice=(this.choice+1)%WW.chapters.length;this.updateMenuText();
+        this.changeChapter(1);
       }
       if(actions.some(a=>a.jumpPressed||a.foodPressed)){
         this.startStage(this.choice);
