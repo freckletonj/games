@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import './bootstrap.js';
 import designs from '../../src/games/animal-adventure/designs.json';
-import {characters,mounts,backgrounds,sheets,silhouettes,forestKit,terrainAtlas} from './assets.js';
+import {characters,mounts,backgrounds,sheets,silhouettes,terrainAtlas} from './assets.js';
 import {MOUNTS,LOCATIONS,seatFor,stepMountedMotion} from './mounts.js';
 import {bindings,readActions} from './input.js';
 import {landingY,safeHorizontalX,orbStep,orbHitsAnimal} from './physics.js';
@@ -45,7 +45,6 @@ class Wonderwood extends Phaser.Scene {
     }
     for(const [name,url] of Object.entries(backgrounds))this.load.image('back-'+name,url);
     this.load.image('painted-terrain',terrainAtlas);
-    this.load.image('forest-platform',forestKit.forestPlatform);
     for(const [name,url] of Object.entries(sheets))
       this.load.spritesheet(name,url,{frameWidth:180,frameHeight:270});
     for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
