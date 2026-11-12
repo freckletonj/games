@@ -25,7 +25,7 @@ WW.catalog = {
   // Two favorite treats (or three other treats) earn permission to mount.
   mounts: {
     unicorn: {name:'Unicorn',favorite:'berry',color:'#eec0ff',capturable:false,
-      speed:5.2,jump:10.7,role:'swift land mount'},
+      speed:5.2,jump:8.1,role:'swift land mount'},
     pegasus: {name:'Pegasus',favorite:'star',color:'#d9e9ff',capturable:false,
       speed:4.25,jump:7.3,role:'unlimited flying mount'}
   },
