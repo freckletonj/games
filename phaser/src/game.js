@@ -373,7 +373,7 @@ class Wonderwood extends Phaser.Scene {
       // Put the first friendly Springaroo within teaching range of spawn.
       // Later creatures retain the semantic layout's intended placements.
       const intro= this.chapter.id==='first-forest'&&object.kind==='springaroo'&&object.x===19;
-      const x=(intro?12.5:object.x+.5)*TILE;
+      const x=(intro?10:object.x+.5)*TILE;
       if(FORMS[object.kind]){
         const flying=['skyling','glimmermoth','cloudwhisp'].includes(object.kind);
         const y=flying?(object.y+.5)*TILE:this.groundAt(x);
