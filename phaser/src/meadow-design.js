@@ -1,3 +1,5 @@
+import {encounter} from './encounters.js';
+
 // A deliberately shorter, paced first chapter rather than a 260-cell march.
 // Uses the SAME semantic compiler and physics as the rest of Wonderwood.
 // No special collision cases or painted scenery masquerading as geometry.
@@ -23,12 +25,18 @@ export function meadowDesign(source){
       {x:38,type:'tree'},{x:105,type:'tree'},{x:139,type:'lantern'}
     ],
     sections:[
-      {id:'picnic-trail',range:[0,61],challenge:'lure-and-befriend',
-        goal:'Practice feeding and catching Springaroo in a safe garden'},
-      {id:'canopy-ascent',range:[61,124],challenge:'vertical-traversal',
-        requires:'springaroo',goal:'Read the enemy dash, find an optional star and double-jump to the light'},
-      {id:'lantern-grove',range:[124,148],challenge:'gentle-finale',
-        goal:'Rest at the lantern, meet Mossback and step through the glowing gate'}
+      encounter('befriend-creature','picnic-trail',[0,61],{
+        goal:'Practice feeding and catching Springaroo in a safe garden',
+        recovery:57,reward:'springaroo',route:[10,45,57]
+      }),
+      encounter('ability-ascent','canopy-ascent',[61,124],{
+        goal:'Read the enemy dash, then double-jump toward the light',
+        recovery:101,reward:'springKey',route:[72,101,106,112]
+      }),
+      encounter('rest-and-exit','lantern-grove',[124,148],{
+        goal:'Rest at the lantern, meet Mossback and pass through the gate',
+        recovery:139,reward:'exit',route:[132,139,147]
+      })
     ],
     motifs:[],
     // The upper route ends at a generous double-jump height rather than an
