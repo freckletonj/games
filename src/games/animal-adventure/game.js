@@ -338,7 +338,7 @@ WW.games.animals = (() => {
         const pool=(level.waterBodies||[]).find(b=>
           p.x>=b.start*TILE&&p.x<b.end*TILE);
         if(controls.jump && pool && p.vy<0 &&
-                 p.y-pool.surface*TILE<25 && p.breachCooldown===0){
+                 p.y-pool.surface*TILE<30 && p.breachCooldown===0){
           // One breach impulse per surfacing, never a launch every frame.
           p.vy=-4.4;p.breachCooldown=.55;
           particles(p.x,p.y-13,'#b9f8f2',10);
