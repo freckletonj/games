@@ -234,7 +234,8 @@ WW.games.animals = (() => {
       particles(partner.x,partner.y-14,'#b4eeff',15);
       say('P2 is riding along! Press a button to pop the bubble.',1800);
     }
-    function touchSetpieces(p,controls,swimming){
+    function touchSetpieces(p,controls,swimming,dt){
+      const step=dt*60;
       for(const s of setpieces){
         if(Math.abs(p.x-s.x)>25)continue;
         if(s.kind==='bounceBloom' && p.grounded &&
@@ -429,7 +430,7 @@ WW.games.animals = (() => {
         p.waterTime=0;
         if(p.grounded&&!nowWater&&!liquid(p.x+14,p.y-8)&&!liquid(p.x-14,p.y-8))p.lastSafe={x:p.x,y:p.y};
       }
-      touchSetpieces(p,controls,swimming);
+      touchSetpieces(p,controls,swimming,dt);
       if(controls.pressed.snack){if(p.form)usePower(p);else throwThing(p,'food');}
       if(controls.pressed.orb)throwThing(p,'orb');
       if(controls.pressed.foodCycle){p.selectedFood=(p.selectedFood+1)%FOODS.length;const food=FOODS[p.selectedFood];say(`P${p.id+1}: ${FOOD[food].name} · ${shared.foods[food]} left`,1350);}
