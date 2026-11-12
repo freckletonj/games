@@ -724,7 +724,8 @@ class Wonderwood extends Phaser.Scene {
 
   addHoneyPuddle(x){
     const visual=this.add.image(x,this.groundAt(x),'effects',
-      EFFECT_FRAMES.honeyPuddle).setOrigin(.5,1).setScale(.125)
+      EFFECT_FRAMES.honeyPuddle)
+      .setOrigin(.5,paintedFootOrigin('honeyPuddle')).setScale(.125)
       .setAlpha(.82).setDepth(13);
     this.honeyPuddles.push({x,life:HONEY_PUDDLE_TICKS,visual});
   }
@@ -741,7 +742,8 @@ class Wonderwood extends Phaser.Scene {
       animal.honeyVisual?.destroy();
       animal.honeyVisual=this.add.image(animal.x,animal.y,
         'effects',EFFECT_FRAMES.honeyPuddle)
-        .setOrigin(.5,1).setScale(.125).setAlpha(.9).setDepth(13);
+        .setOrigin(.5,paintedFootOrigin('honeyPuddle'))
+        .setScale(.125).setAlpha(.9).setDepth(13);
     }
     this.powerEffect(shot.kind,animal.x,animal.y,
       Math.sign(shot.vx));

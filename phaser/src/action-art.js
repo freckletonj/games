@@ -31,7 +31,8 @@ export const PROP_FEET=Object.freeze({
   snack:229,checkpoint:243,exit:246
 });
 export const SETPIECE_FEET=Object.freeze({
-  bounceBloom:162,bubbleVent:211,windRing:155
+  bounceBloom:162,bubbleVent:211,windRing:155,
+  honeyPuddle:241
 });
 export function paintedFootOrigin(kind){
   return (PROP_FEET[kind]??SETPIECE_FEET[kind]??ILLUSTRATION_FRAME_HEIGHT)/

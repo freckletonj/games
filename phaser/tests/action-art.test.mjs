@@ -45,6 +45,7 @@ test('illustrated prop and setpiece baselines stay planted on authored ground',(
   assert.equal(paintedFootOrigin('checkpoint'),243/270);
   assert.equal(paintedFootOrigin('exit'),246/270);
   assert.equal(paintedFootOrigin('bounceBloom'),162/270);
+  assert.equal(paintedFootOrigin('honeyPuddle'),241/270);
   assert.equal(paintedFootOrigin('starShard'),1,
     'Floating collectible stars deliberately keep their original pivot');
 });

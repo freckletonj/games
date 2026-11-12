@@ -41,11 +41,10 @@ test('all projectiles have bounded reach, including a shot that misses',()=>{
 
 test('swept collision hits a moving target in the projectile path, not behind it',()=>{
   const shot=launchPower('prismtail',100,490,1,0);
-  const before=shot.x;
-  stepPower(shot,8,groundAt,2000);
-  assert.equal(powerHitsCreature(shot,before,shot.y,animal(133,500)),true);
-  assert.equal(powerHitsCreature(shot,before,shot.y,animal(180,500)),false);
-  assert.equal(powerHitsCreature(shot,before,shot.y,animal(100,450)),false);
+  const {fromX,fromY}=stepPower(shot,8,groundAt,2000);
+  assert.equal(powerHitsCreature(shot,fromX,fromY,animal(133,500)),true);
+  assert.equal(powerHitsCreature(shot,fromX,fromY,animal(180,500)),false);
+  assert.equal(powerHitsCreature(shot,fromX,fromY,animal(100,450)),false);
 });
 
 test('bubble, honey, wind and spark have distinct semantic effects',()=>{
