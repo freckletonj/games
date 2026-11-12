@@ -29,22 +29,34 @@ export function poseFor(manifest, action, elapsed, motion=0, phase=0) {
     case 'idle':
       sx=1+.014*breath;sy=1-.014*breath;dy=-.4*(breath+1);break;
     case 'run': {
-      const gait=Math.sin(cycle*2.35);
-      sx=1+.035*gait;
-      sy=1-.048*Math.abs(gait);
-      dy=-2.1*Math.abs(gait);
-      rotation=.035*Math.sign(motion)*clamp(Math.abs(motion)/2,0,1);
+      const pace=clamp(Math.abs(motion)/2.5,.3,1.2);
+      const gait=Math.sin(cycle*(1.35+pace));
+      sx=1+(.018+.016*pace)*gait;
+      sy=1-(.025+.025*pace)*Math.abs(gait);
+      dy=-(.8+1.4*pace)*Math.abs(gait);
+      rotation=.028*Math.sign(motion)*pace+.008*gait;
       break;
     }
-    case 'jump':sx=.89;sy=1.13;dy=-2;break;
-    case 'fall':sx=1.06;sy=.96;rotation=clamp(motion,-3,3)*.012;break;
+    case 'jump': {
+      // Stretch most strongly at takeoff, then settle back toward the
+      // painted silhouette instead of staying permanently elongated.
+      const launch=Math.exp(-elapsed*4.5);
+      sx=1-.12*launch;sy=1+.15*launch;dy=-2.3*launch;
+      break;
+    }
+    case 'fall':{
+      const hang=1-Math.exp(-elapsed*6);
+      sx=1+.045*hang;sy=1-.035*hang;
+      rotation=clamp(motion,-3,3)*.012;
+      break;
+    }
     case 'land': {
-      const impact=Math.exp(-elapsed*13);
-      sx=1+.19*impact;sy=1-.23*impact;break;
+      const impact=Math.exp(-elapsed*12);
+      sx=1+.15*impact;sy=1-.17*impact;dy=1.2*impact;break;
     }
     case 'flap': {
       const wings=Math.sin(cycle*4);
-      sy=1+.075*wings;sx=1-.045*wings;dy=-1.7*wings;break;
+      sy=1+.052*wings;sx=1-.027*wings;dy=-2.3*wings;break;
     }
     case 'glide':sy=.91;sx=1.08;dy=.4*Math.sin(cycle);break;
     case 'swim':
