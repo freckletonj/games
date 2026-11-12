@@ -20,6 +20,8 @@ From the repository root:
    water, platforms, spawns, key objectives, checkpoints and challenge sections).
 4. Run: node scripts/build.mjs
    This produces one fully offline dist/wonderwood.html file.
+  Optional mount courses remain world-space runtime gates and are included
+  in the same offline build, not downloaded externally.
 5. Run: python scripts/evaluate-routes.py
    Chromium drives the real game physics at 60 Hz, probing each named challenge
    with walking, jumping, and the chapter's intended transformation.
@@ -91,6 +93,22 @@ Each chapter is keyed by ID and has:
   The compiler rejects floating or submerged mounts. Keep Pegasus locations on
   meaningful elevated routes beyond the chapter's required Moonwing climb
   so unlimited mounted flight does not invalidate the initial ability puzzle.
+- mountCourses: optional species-gated, timed riding challenges. A course has a
+  unique id, section, name, mount ("unicorn" or "pegasus"), seconds (6–30),
+  and 4–7 strictly increasing [tileX,tileY] ring coordinates. Every ring
+  must stay inside its named section and have a preceding matching mount
+  spawn no more than 12 tiles before the first ring. Adjacent rings span
+  at most 24 tiles horizontally and climb no more than 11 tiles for Unicorn
+  or 17 for Pegasus. The first ring starts the timer **only while riding
+  that species**, and later rings must be reached in order. Dismounting,
+  running out of time or entering a follow bubble resets the run. Completing
+  the optional course awards 5 Stardrops and a heart once; it never
+  locks the chapter relic or overrides required transformations.
+  Example in Mosslight Meadow:
+  {"id":"lantern-gallop","section":"lantern-grove",
+   "name":"Lantern Leap","mount":"unicorn","seconds":13,
+   "nodes":[[182,31],[199,25],[218,24],[235,28],[250,27]]}.
+  The art guide exports these rings as separate anchors, not static paint.
 - checkpoints, snacks: arrays of x positions.
 - stars: [x,y] optional pickups; landmarks: {x,type} descriptions.
 - motifs: optional, section-bound platform patterns, for example:
