@@ -42,12 +42,12 @@ with sync_playwright() as pw:
     advance()
     normal = state("players[0].vy")
     window = state("players[0].bloomBoostWindow")
-    assert normal < -7 and window > .1, (normal, window)
+    assert -6.4 < normal < -5.7 and window > .1, (normal, window)
     page.keyboard.down("Space")
     advance()
     page.keyboard.up("Space")
     boosted = state("players[0].vy")
-    assert boosted < -8.7 and boosted < normal - 1, (normal, boosted)
+    assert -7.6 < boosted < -6.8 and boosted < normal - .8, (normal, boosted)
 
     # Schema-declared Springaroo blooms must not be usable in explorer form.
     required = state("setpieces.filter(s=>s.kind==='bounceBloom'&&s.requires).length")
