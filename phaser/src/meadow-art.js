@@ -67,6 +67,7 @@ export function addMeadowIllustration(scene){
   const key='mosslight-illustrated-canopy';
   if(scene.textures.exists(key))scene.textures.remove(key);
   scene.textures.addCanvas(key,canvas);
+  scene.generatedTextures.push(key);
 
   const light=document.createElement('canvas');
   light.width=2048;light.height=512;
@@ -93,6 +94,7 @@ export function addMeadowIllustration(scene){
   const lightKey='mosslight-dappled-light';
   if(scene.textures.exists(lightKey))scene.textures.remove(lightKey);
   scene.textures.addCanvas(lightKey,light);
+  scene.generatedTextures.push(lightKey);
 
   const sunbeams=scene.add.tileSprite(480,187,960,270,lightKey)
     .setScrollFactor(0).setTileScale(.5,.5).setAlpha(.33).setDepth(-91);
