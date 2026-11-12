@@ -58,12 +58,10 @@ def main():
         )
 
         # Catching requires genuine projectile contact with a fed creature.
-        print("Ready to capture:", snapshot(page), flush=True)
         page.keyboard.down("g")
         page.wait_for_timeout(2200)
         page.keyboard.up("g")
         caught = snapshot(page)
-        print("After capture attempt:", caught, flush=True)
         assert caught["players"][0]["caught"] == "springaroo", caught
         press_until(
             page, "t",
@@ -80,6 +78,11 @@ def main():
         )
         assert snapshot(page)["players"][0]["form"] == "springaroo"
         page.screenshot(path=str(GAME.parent / "phaser-befriending.png"))
+        # Move away before recall, to verify a real checkpoint reset.
+        press_until(
+            page, "d",
+            f"window.__wonderwoodPhaser.snapshot().players[0].x > {initial['players'][0]['x'] + 45}",
+        )
 
         press_until(page, "Escape", "window.__wonderwoodPhaser.snapshot().paused")
         frozen = snapshot(page)["players"][0]["x"]
@@ -90,7 +93,7 @@ def main():
         press_until(page, "Escape", "!window.__wonderwoodPhaser.snapshot().paused")
         press_until(
             page, "c",
-            "window.__wonderwoodPhaser.snapshot().players[0].grounded",
+            f"window.__wonderwoodPhaser.snapshot().players[0].x < {initial['players'][0]['x'] + 3} && window.__wonderwoodPhaser.snapshot().players[0].grounded",
         )
         player = snapshot(page)["players"][0]
         assert abs(player["x"] - initial["players"][0]["x"]) < 3
