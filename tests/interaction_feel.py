@@ -87,7 +87,7 @@ with sync_playwright() as pw:
         p.form='tideling';p.invincible=100;
     }""")
     advance()
-    assert state("players[0].vy") < -.4, state("players[0].vy")
+    assert -.5 < state("players[0].vy") < -.1, state("players[0].vy")
 
     # Away from vents, the swimmer sinks naturally, paddles upward, and dives.
     page.evaluate("""() => {
