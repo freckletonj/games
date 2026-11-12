@@ -94,8 +94,11 @@ with sync_playwright() as pw:
           p.mount=m.id;p.form=null;p.caught=null;p.invincible=100;
           m.rider=0;m.trust=100;m.vx=m.vy=0;m.phase=1;
           p.x=m.x;p.y=m.y-32;p.vx=p.vy=0;p.grounded=m.grounded;
-          for(let i=0;i<5;i++)WW.main.game.update(1/60);
-          WW.main.game.render(document.querySelector('#game').getContext('2d'),3);
+          // The aerial camera needs time to settle on distant mount perches;
+          // invincibility flashes must not hide the player in the visual proof.
+          for(let i=0;i<45;i++)WW.main.game.update(1/60);
+          p.invincible=0;
+          WW.main.game.render(document.querySelector('#game').getContext('2d'),4);
         }""")
         page.locator("#game").screenshot(path=str(html.parent/f"preview-painted-{kind}-mounted.png"))
         played=page.evaluate("""kind => {
