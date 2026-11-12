@@ -1,6 +1,6 @@
 # Mount character-art production brief
 
-Unicorn and Pegasus are playable using interim Canvas illustrations in src/platform/art.js. Their collision, food friendship, mounting and saddle pivots are functional. Replace the temporary art with original painted RGBA character atlases before marking issues 14–16 complete.
+**Implemented:** Unicorn and Pegasus now use the generated original painted artwork as two compact, transparent 4×2 eight-frame AVIF character atlases in `src/assets/characters/{unicorn,pegasus}/sheet.avif`. Their manifests provide idle, gallop, jump/flight, eat, happy, and recovery mappings; the game embeds them into the single offline HTML and no longer renders interim Canvas mount bodies. Their fixed foot anchors and separate player saddle positioning are checked in Chromium. This brief now serves as the remaining visual-polish acceptance specification; manual art sign-off and a more fully articulated wingbeat cycle remain open under the separate visual QA issue.
 
 ## Locked silhouette
 
@@ -28,7 +28,7 @@ Place files in src/assets/characters/unicorn/poses/ and src/assets/characters/pe
 
 The existing packer outputs a fixed-pivot 4×2 sheet.png and manifest.json. Tune worldScale from **real in-game screenshots** so feet contact terrain and the rider sits on the saddle. Do not change collision just to compensate for mismatched art. WW.art.drawMount already delegates to the sprite atlas when it is ready, then falls back to the temporary illustration.
 
-The basic eight-frame set is a starting point: Pegasus may require more wing-extension/fold frames and an adjusted atlas manifest so sustained flight animates beautifully. Keep input/physics separate from the painting.
+The integrated sheets now have eight distinct usable pose frames, but Pegasus currently holds the painted wings-extended jump frame during flight with subtle secondary motion. Additional authored wing-fold/flap frames would improve sustained flight without changing input/physics. The master generated output and cleaned atlas should be reviewed for identity, alpha edges, palette, and anatomical continuity at native game scale.
 
 ## Acceptance
 
