@@ -66,3 +66,7 @@ keyboard-driven **feed twice → capture orb → transform → double jump → p
 recall** loop in the game itself (no direct player-state cheating). Pure
 physics tests cover slope snapping, one-way platform collision and swept
 projectile contact, and a browser smoke visits the built offline HTML.
+
+`tests/chapters.py` loads all five chapters in the real browser and saves
+per-chapter screenshots. License notices are embedded into the standalone
+HTML and ArtByte attribution is visible in the footer.
