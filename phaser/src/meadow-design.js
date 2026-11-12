@@ -31,6 +31,10 @@ export function meadowDesign(source){
         goal:'Rest at the lantern, meet Mossback and step through the glowing gate'}
     ],
     motifs:[],
+    // The upper route ends at a generous double-jump height rather than an
+    // exact theoretical apex that is frustrating on controllers.
+    relic:['springKey',112,19],
+    goalRoute:[[106,24],[109,22],[112,19]],
     terrainFeatures:source.terrainFeatures.filter(f=>f.center<148),
     setpieces:[
       source.setpieces[0],
