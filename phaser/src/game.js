@@ -74,6 +74,7 @@ class Wonderwood extends Phaser.Scene {
         lures:this.lures?.map(f=>({x:f.x,food:f.food}))||[],
         orbs:this.orbs?.length||0,paused:this.paused,
         foods:this.shared?.foods?{...this.shared.foods}:null,
+        picnics:this.shared?.picnics||0,
         relic:this.shared?.relic||false,shards:this.shared?.shards||0})
     };
   }
@@ -166,7 +167,7 @@ class Wonderwood extends Phaser.Scene {
     this.worldW=this.level.width*TILE;
     this.worldH=this.level.height*TILE;
     this.shared={relic:false,shards:0,collected:new Set(),checkpoint:null,
-      foods:{berry:14,nectar:6,star:6}};
+      picnics:0,foods:{berry:14,nectar:6,star:6}};
     this.addBackground(this.level.biome);
     this.paintTerrain();
     this.paintScenery();
@@ -907,6 +908,7 @@ class Wonderwood extends Phaser.Scene {
         this.sparkle(item.x,item.y);this.flash('A hidden Stardrop!',900);
       }else if(item.kind==='snack'){
         item.used=true;item.respawn=11;
+        this.shared.picnics++;
         item.visual.setVisible(false);
         for(const food of FRUITS)
           this.shared.foods[food]+=food==='berry'?4:2;
