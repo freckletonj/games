@@ -10,7 +10,7 @@ test('cave contours share the collision geometry used to paint the guide',()=>{
   assert.equal(level.objects.find(o=>o.kind==='p1').x,4);
   assert.ok(svg.includes('viewBox="0 0 768 992"'));
   assert.ok(svg.includes('0.0,656.0')); // floor start: 41 * 16
-  assert.ok(svg.includes('0.0,240.0')); // ceiling start: 15 * 16
+  assert.ok(svg.includes('0.0,400.0')); // ceiling start: 25 * 16
   assert.ok(svg.includes('464.0,576.0')); // water start: x29, y36
   assert.ok(!svg.includes('tideling'));
   assert.ok(!svg.includes('starShard'));
