@@ -39,3 +39,16 @@ test('action gestures do not mutate the canonical atlas',()=>{
   gesture(entity,'capture',.42);
   assert.deepEqual(entity,{gesture:'capture',gestureTime:.42});
 });
+
+test('gait responds to speed and takeoff stretch relaxes in flight',()=>{
+  const manifest=JSON.parse(readFileSync(new URL('springaroo/manifest.json',base)));
+  const slow=poseFor(manifest,'run',.19,.7);
+  const fast=poseFor(manifest,'run',.19,3);
+  assert.notEqual(slow.dy,fast.dy);
+  assert.notEqual(slow.rotation,fast.rotation);
+  const launch=poseFor(manifest,'jump',0,0);
+  const settle=poseFor(manifest,'jump',.35,0);
+  assert.ok(launch.sy>settle.sy && launch.sx<settle.sx);
+  const landing=poseFor(manifest,'land',.3,0);
+  assert.ok(landing.sy>poseFor(manifest,'land',0,0).sy);
+});
