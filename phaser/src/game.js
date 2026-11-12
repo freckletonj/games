@@ -1135,7 +1135,10 @@ class Wonderwood extends Phaser.Scene {
       }
       return;
     }
-    if(!this.level.cave)moveParallaxAtmosphere(this);
+    if(this.level.cave){
+      for(const {speed,visual} of this.parallaxLayers)
+        visual.tilePositionX=this.cameras.main.scrollX*speed;
+    }else moveParallaxAtmosphere(this);
     if(actions.some(a=>a.pausePressed)){
       this.paused=!this.paused;
       if(this.paused)this.tweens.pauseAll();
