@@ -44,8 +44,6 @@ class Wonderwood extends Phaser.Scene {
     }
     for(const [name,url] of Object.entries(backgrounds))this.load.image('back-'+name,url);
     this.load.image('painted-terrain',terrainAtlas);
-    this.load.spritesheet('forest-trees',forestKit.forestTrees,{frameWidth:512,frameHeight:512});
-    this.load.image('forest-misc',forestKit.forestMisc);
     this.load.image('forest-platform',forestKit.forestPlatform);
     for(const [name,url] of Object.entries(sheets))
       this.load.spritesheet(name,url,{frameWidth:180,frameHeight:270});
