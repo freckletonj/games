@@ -104,6 +104,14 @@ def main():
             timeout=20000,
         )
 
+        # A successful landing is not enough: the explorer must remain on
+        # this platform without holding jump or movement for a full second.
+        ledge_start = state(page)["players"][0]
+        page.wait_for_timeout(1100)
+        ledge_end = state(page)["players"][0]
+        assert ledge_end["grounded"] and abs(ledge_end["y"] - 432) < 1, (
+            ledge_start, ledge_end
+        )
         # Run and double-jump right onto the second authentic ledge at y=384.
         page.keyboard.down("d")
         jump_twice(page, 398)
@@ -118,6 +126,9 @@ def main():
             timeout=20000,
         )
         page.keyboard.up("d")
+        page.wait_for_timeout(1000)
+        second = state(page)["players"][0]
+        assert second["grounded"] and abs(second["y"] - 384) < 1, second
         move(page, 1790, timeout=20000)
 
         # The final high light is deliberately an optional high-path jump;
