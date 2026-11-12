@@ -54,7 +54,7 @@ def main():
         after = page.evaluate("window.__wonderwoodPhaser.snapshot()")
         assert after["players"][0]["x"] > before["players"][0]["x"] + 12
         assert page.locator("#ww-ui").is_visible()
-        assert "Mosslight Meadow" in page.locator("#ww-status").inner_text()
+        assert "FIND THE LIGHT" in page.locator("#ww-status").inner_text()
         page.screenshot(path=str(ROOT / "dist" / "phaser-preview.png"))
 
         page.keyboard.press("2")
