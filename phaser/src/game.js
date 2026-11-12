@@ -88,6 +88,9 @@ class Wonderwood extends Phaser.Scene {
         animalCount:this.animals?.length||0,
         platformCount:this.level?.platformSegments?.length||0,
         // Read-only alignment probes for actual painted platform geometry.
+        soilTiles:this.soilTiles?.map(({x,width,height,visual})=>({
+          x,width,height,displayX:visual.x,displayWidth:visual.displayWidth
+        }))||[],
         ledgeBounds:this.ledgeVisuals?.map(({platform,visual})=>({
           x:platform.x*TILE,y:platform.y*TILE,width:platform.length*TILE,
           artX:visual.x,artY:visual.y,artWidth:visual.displayWidth,
@@ -126,6 +129,9 @@ class Wonderwood extends Phaser.Scene {
     this.cameras.main.stopFollow();
     this.tweens.killAll();
     this.children.removeAll(true);
+    for(const key of this.generatedTextures||[])this.textures.remove(key);
+    this.generatedTextures=[];
+    this.soilTiles=[];
     this.cameras.main.setZoom(2);
     this.cameras.main.setScroll(0,0);
     this.cameras.main.setBounds(0,0,VIEW_W,VIEW_H);
