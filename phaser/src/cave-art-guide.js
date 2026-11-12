@@ -11,13 +11,11 @@ export function caveMaskSvg(level){
   const w=level.width*TILE,h=level.height*TILE;
   const roof=pathAlong(level,level.cave.ceilingAt);
   const bed=pathAlong(level,level.cave.groundAt);
-  const water=level.waterBodies.map(p=>{
-    const left=p.start*TILE,right=p.end*TILE,y=p.surface*TILE;
-    const xs=Array.from({length:Math.ceil((right-left)/8)+1},
-      (_,i)=>Math.min(right,left+i*8)).reverse();
-    const bottom=xs.map(x=>x+','+level.cave.groundAt(x).toFixed(2)).join(' ');
-    return '<polygon points="'+left+','+y+' '+right+','+y+' '+bottom+'"/>';
-  }).join('');
+  // Paint water first and opaque rock on top, exactly as in the PNG raster.
+  // Thus a rock island always interrupts the water even at a level waterline.
+  const water=level.waterBodies.map(p=>
+    '<rect x="'+p.start*TILE+'" y="'+p.surface*TILE+
+    '" width="'+(p.end-p.start)*TILE+'" height="'+(h-p.surface*TILE)+'"/>').join('');
   const shelves=level.platformSegments.map(p=>
     '<rect x="'+p.x*TILE+'" y="'+p.y*TILE+
     '" width="'+p.length*TILE+'" height="5"/>').join('');
@@ -26,10 +24,10 @@ export function caveMaskSvg(level){
     '<title>Luminous Grotto static world guide</title>'+
     '<desc>Smooth cave silhouette and water; no characters, enemies, items or HUD</desc>'+
     '<rect width="'+w+'" height="'+h+'" fill="#183147"/>'+
+    '<g fill="#2388af">'+water+'</g>'+
     '<g fill="#645468"><polygon points="0,0 '+w+',0 '+
     pathAlong(level,level.cave.ceilingAt,true)+'"/>'+
     '<polygon points="'+bed+' '+w+','+h+' 0,'+h+'"/></g>'+
-    '<g fill="#2388af">'+water+'</g>'+
     '<g fill="#f3cc76">'+shelves+'</g></svg>';
 }
 

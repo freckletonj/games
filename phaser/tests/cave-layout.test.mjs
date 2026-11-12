@@ -17,6 +17,9 @@ test('single-world cave guide and gameplay share smooth splines',()=>{
   assert.ok(!svg.includes('tideling'));
   assert.ok(!svg.includes('starShard'));
   assert.ok(!svg.includes('p1'));
+  assert.ok(svg.indexOf('<g fill="#2388af">')<
+    svg.indexOf('<g fill="#645468">'),
+    'solid rock must mask dry islands above the waterline');
   const left=level.cave.groundAt(500);
   const right=level.cave.groundAt(524);
   assert.ok(Math.abs(left-right)<60,'smooth floor should not have sharp steps');
