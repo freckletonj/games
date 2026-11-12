@@ -44,6 +44,8 @@ jobs:
         run: |
           python phaser/tests/smoke.py
           python phaser/tests/gameplay.py
+          python phaser/tests/dynamics.py
+          python phaser/tests/mounts.py
           python phaser/tests/complete_meadow.py
           python phaser/tests/chapters.py
       - name: Publish playable single-file HTML
@@ -65,5 +67,12 @@ jobs:
             dist/phaser-motion.png
             dist/phaser-meadow-relic.png
             dist/phaser-meadow-complete.png
+            dist/phaser-painted-berry.png
+            dist/phaser-bouncing-orb.png
+            dist/phaser-bloom-boost.png
+            dist/phaser-unicorn-mounted.png
+            dist/phaser-unicorn-leap.png
+            dist/phaser-pegasus-mounted.png
+            dist/phaser-pegasus-flight.png
             dist/phaser-chapter-*.png
           if-no-files-found: ignore
