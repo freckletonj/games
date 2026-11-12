@@ -21,7 +21,8 @@ export function stepPower(shot,step,groundAt,worldWidth){
   const fromX=shot.x,fromY=shot.y;
   const settings=PROJECTILE_POWERS[shot.kind];
   shot.x=clamp(shot.x+shot.vx*step,0,worldWidth);
-  shot.y+=shot.vy*step;
+  // Sum per-tick gravity exactly, even when a test advances N ticks at once.
+  shot.y+=shot.vy*step+settings.gravity*step*(step-1)/2;
   shot.vy+=settings.gravity*step;
   shot.life-=step;
   const ground=shot.y>=groundAt(shot.x)-7;

@@ -82,3 +82,23 @@ test('simulated projectile trajectory is independent of rendering chunk size',()
     assert.equal(a.life,b.life);
   }
 });
+
+test('all five offensive forms hit an ordinary nearby creature through actual flight',()=>{
+  for(const form of Object.keys(PROJECTILE_POWERS)){
+    const shot=launchPower(form,100,500,1,0);
+    const target=animal(175,500);
+    let hitAt=-1;
+    for(let tick=1;tick<=100;tick++){
+      const result=stepPower(shot,1,groundAt,2000);
+      if(powerHitsCreature(shot,result.fromX,result.fromY,target)){
+        hitAt=tick;
+        applyPowerHit(shot,target);
+        break;
+      }
+      if(result.expired)break;
+    }
+    assert.ok(hitAt>=8&&hitAt<45,
+      form+' should travel visibly to an ordinary in-range target');
+    assert.ok(target.stun>0,form);
+  }
+});

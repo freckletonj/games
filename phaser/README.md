@@ -345,3 +345,31 @@ grounded sticky field. Glimmermoth hover remains a self-cast power, while
 Springaroo and Tideling remain jump/swim controls instead of fake F-key
 abilities. See `tests/power-projectiles.test.mjs` for power range,
 collision, miss, duration and effect regressions.
+
+## Local verification policy (GitHub Actions intentionally disabled)
+
+GitHub CI is intentionally **disabled by the repository owner** because
+automatic runs were too frequent. Red or unavailable Actions checks are
+not useful evidence about this PR. Do not keep retrying or re-enabling CI.
+
+Install dependencies once in a local checkout:
+
+```sh
+npm install --prefix phaser
+python -m pip install playwright
+python -m playwright install chromium
+```
+
+Then use `bash phaser/scripts/verify-local.sh` for the focused mechanical
+regressions, numeric quality report and **actual bundled standalone HTML**.
+Use `bash phaser/scripts/verify-local.sh full` before a merge decision for
+all Node tests, a fresh standalone build and all existing real-input
+Chromium checks (including the complete Meadow route).
+
+The browser scripts exercise `dist/wonderwood-phaser.html` with real
+keyboard actions. Both commands fail if a test or the bundle fails, and
+`dist/phaser-mechanics-quality.json` contains the numbers used for
+gameplay tuning. Check the file's timestamp before playtesting; an older
+downloadable artifact is **not** evidence that the current source builds.
+
+Local verification is required before marking a change merge-ready.
