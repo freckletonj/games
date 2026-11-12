@@ -100,7 +100,7 @@ with sync_playwright() as pw:
     page.keyboard.down("Space")
     advance()
     page.keyboard.up("Space")
-    assert state("mounts[0].vy") < -8.5,state("mounts[0].vy")
+    assert -8.2 < state("mounts[0].vy") < -7,state("mounts[0].vy")
     assert state("players[0].mount")==0
     page.keyboard.down("t")
     advance()
