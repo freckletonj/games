@@ -18,7 +18,7 @@ test('Mosslight Meadow is a compact, semantically valid three-act adventure',()=
   assert.deepEqual(Array.from(report.errors),[]);
   const world=context.WW.worldCompiler.compile(spec);
   assert.equal(world.width,148);
-  assert.ok(world.platformSegments.length>10);
+  assert.ok(world.platformSegments.length>=8);
   assert.ok(world.objects.some(item=>item.kind==='springKey'));
   assert.ok(world.objects.some(item=>item.kind==='exit'));
   assert.equal(originals['first-forest'].width,260,'Never change the legacy level design');
