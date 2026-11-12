@@ -43,6 +43,12 @@ def main():
         page.locator("#ww-menu-coop").click()
         assert "One explorer" in page.locator("#ww-menu-mode").inner_text()
         page.evaluate("document.activeElement.blur()")
+        # Landscape handheld viewports must show the play action without
+        # hiding it below a scrollable menu panel.
+        page.set_viewport_size({"width": 640, "height": 360})
+        play = page.locator("#ww-menu-play").bounding_box()
+        assert 0 <= play["y"] and play["y"] + play["height"] <= 360, play
+        page.set_viewport_size({"width": 960, "height": 540})
 
         page.screenshot(path=str(ROOT / "dist" / "phaser-title.png"))
         page.keyboard.down("Space")
