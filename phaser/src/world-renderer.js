@@ -4,7 +4,7 @@ import Phaser from 'phaser';
 // world compiler and remains independent of every painted texture.
 const TILE=16;
 const SOIL={meadow:0x456b65,coast:0x426b7f,summit:0x545879};
-const EDGE={meadow:0x9bd695,coast:0x9ce2ce,summit:0xe1c5ed};
+const EDGE={meadow:0xa5cbaa,coast:0xa1d2c9,summit:0xc8bcdd};
 const FLORA={berryBush:0,nectarFruit:1,stardropFruit:2,mushrooms:3,flowers:4,
   reeds:5,stones:6,moonStone:7,shells:6};
 const LANDMARKS={tree:0,crystal:1,reef:2,observatory:3,island:4,pond:5,lantern:6,shells:7};
@@ -54,28 +54,67 @@ export function paintSoil(scene,contour){
     ctx.lineTo(scene.worldW,scene.worldH);
     ctx.closePath();
     ctx.clip();
+    // The former full-strength 64px stone repeat looked like wallpaper,
+    // especially on long slopes. A broad color wash establishes the soil
+    // first; a faint sample retains the original painted material language.
+    const tones={
+      meadow:['#68877a','#43615f','#293e48','#a2c4a1'],
+      coast:['#6b9998','#476f77','#294b5e','#a7d9cb'],
+      summit:['#82859d','#5b607e','#343b57','#c5bbdb']
+    }[scene.level.biome];
+    const wash=ctx.createLinearGradient(0,top,0,top+520);
+    wash.addColorStop(0,tones[0]);
+    wash.addColorStop(.4,tones[1]);
+    wash.addColorStop(1,tones[2]);
+    ctx.fillStyle=wash;ctx.fillRect(0,top,scene.worldW,scene.worldH-top);
+    ctx.globalAlpha=.17;
     ctx.fillStyle=ctx.createPattern(swatch,'repeat');
     ctx.fillRect(0,top,scene.worldW,scene.worldH-top);
-    const tint={meadow:'#385e4d',coast:'#567a84',summit:'#5c547c'}[scene.level.biome];
-    ctx.globalAlpha=.24;ctx.fillStyle=tint;
-    ctx.fillRect(0,top,scene.worldW,scene.worldH-top);
-    // Push repeated paint into the deep ground. Keep the painted top edge
-    // luminous, while darkening the far underground to avoid wallpaper seams.
     ctx.globalAlpha=1;
-    const depth=ctx.createLinearGradient(0,top,0,top+340);
-    depth.addColorStop(0,'rgba(15,31,40,0)');
-    depth.addColorStop(.38,'rgba(18,32,41,0.08)');
-    depth.addColorStop(1,'rgba(13,28,38,0.50)');
-    ctx.fillStyle=depth;ctx.fillRect(0,top,scene.worldW,scene.worldH-top);
+
+    // Long, irregular strata and soft earth pockets are world-scale marks
+    // rather than dozens of identical tile-sized rock faces.
+    for(let i=0,x=23;x<scene.worldW+60;i++,x+=108+(i%3)*21){
+      const y=scene.groundAt(x)+34+(i%4)*28;
+      const scale=1+.19*Math.sin(i*2.7);
+      ctx.fillStyle=tones[i%5===0?3:1];
+      ctx.globalAlpha=i%5===0?.065:.14;
+      ctx.beginPath();
+      ctx.ellipse(x,y,58*scale,12+(i%4)*4,-.13+
+        Math.sin(i*2.12)*.21,0,Math.PI*2);
+      ctx.fill();
+      ctx.globalAlpha=.16;
+      ctx.strokeStyle=tones[3];
+      ctx.lineWidth=1.3+(i%3)*.45;
+      ctx.beginPath();
+      ctx.moveTo(x-18,y+9);
+      ctx.quadraticCurveTo(x+11,y+4,x+38,y+11);
+      ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+    // A narrow, irregular topsoil band visually connects the dirt to the
+    // grassy painted world. It is clipped by the same collision contour.
+    ctx.beginPath();
+    for(const [i,p] of contour.entries())
+      i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);
+    for(let i=contour.length-1;i>=0;i--){
+      const p=contour[i];
+      ctx.lineTo(p.x,p.y+16+4*Math.sin(p.x/43));
+    }
+    ctx.closePath();
+    ctx.globalAlpha=.17;ctx.fillStyle=tones[3];ctx.fill();
+    ctx.globalAlpha=1;
     const key='painted-soil-'+scene.chapter.id;
     if(scene.textures.exists(key))scene.textures.remove(key);
     scene.textures.addCanvas(key,paint);
     scene.add.image(0,top,key).setOrigin(0).setDepth(-29).setAlpha(.85);
     const rim=scene.add.graphics().setDepth(-28);
-    rim.lineStyle(3,EDGE[scene.level.biome],.92);
+    rim.lineStyle(4,0x1e4650,.33);
+    rim.strokePoints(contour.map(point=>({x:point.x,y:point.y+2})));
+    rim.lineStyle(2,EDGE[scene.level.biome],.81);
     rim.strokePoints(contour);
-    rim.lineStyle(1,0xfaf6c8,.45);
-    rim.strokePoints(contour.map(point=>({x:point.x,y:point.y-2})));
+    rim.lineStyle(1,0xfaf6dc,.19);
+    rim.strokePoints(contour.map(point=>({x:point.x,y:point.y-1})));
   }
 
 export function paintTerrain(scene){
@@ -108,8 +147,8 @@ export function paintTerrain(scene){
       graphics.lineBetween(x+3,y+4,x+w-3,y+4);
       // A natural, repeating platform edge from the same illustrated kit,
       // independent of the platform's rectangular collision surface.
-      scene.add.tileSprite(x,y-4,w,27,'forest-platform').setOrigin(0,0)
-        .setTileScale(.42,.42).setTint(
+      scene.add.tileSprite(x,y-4,w,19,'forest-platform').setOrigin(0,0)
+        .setTileScale(.42,.36).setTint(
           biome==='coast'?0xb9f4e3:biome==='summit'?0xd1c3eb:0xffffff
         ).setDepth(-18);
     }

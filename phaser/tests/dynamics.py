@@ -29,6 +29,24 @@ def main():
         thrown=state(page)
         page.keyboard.up("f")
         assert thrown["lures"][0]["x"]>x+80,thrown
+
+        # A paused scene must not secretly finish an airborne food throw.
+        page.keyboard.down("Escape")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().paused === true",timeout=12000)
+        page.keyboard.up("Escape")
+        airborne=state(page)["lures"][0]
+        page.wait_for_timeout(750)
+        frozen=state(page)["lures"][0]
+        assert airborne["age"]==frozen["age"] and not frozen["landed"],(airborne,frozen)
+        page.keyboard.down("Escape")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().paused === false",timeout=12000)
+        page.keyboard.up("Escape")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().lures.length === 0 || "
+            "window.__wonderwoodPhaser.snapshot().lures[0].landed",
+            timeout=20000)
         page.screenshot(path=str(GAME.parent/"phaser-painted-berry.png"))
 
         page.keyboard.down("g")

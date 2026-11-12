@@ -2,6 +2,13 @@ import {tickDistraction} from './creatures.js';
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
+// Both enemies tell the player what is coming. Emberkit rushes along the
+// floor; Prismtail has a longer tell, then hops in an avoidable arc.
+export const ATTACKS=Object.freeze({
+  emberkit:{windup:.55,duration:.22,speed:2.6,lift:0},
+  prismtail:{windup:.75,duration:.42,speed:1.85,lift:25}
+});
+
 // Pure simulation state updates; visuals, treat consumption and contacts
 // remain with the scene. All timer values are in seconds.
 export function tickCreatureRespawn(animal,step){
@@ -33,15 +40,23 @@ export function stepCreatureMotion(animal,lure,step,time,world){
         lure ? .55 : animal.kind==='prismtail' ? .76 : .36;
       animal.x+=clamp(diff,-speed*step,speed*step);
       if(animal.dash>0){
-        animal.x=clamp(animal.x+animal.attackFace*2.6*step,10,world.width-10);
+        const attack=ATTACKS[animal.kind];
+        animal.x=clamp(animal.x+animal.attackFace*attack.speed*step,
+          10,world.width-10);
         animal.dash=Math.max(0,animal.dash-step/60);
       }
-      if(Math.abs(diff)>2)animal.face=Math.sign(diff);
+      if(animal.windup>0||animal.dash>0)animal.face=animal.attackFace;
+      else if(Math.abs(diff)>2)animal.face=Math.sign(diff);
       if(animal.flying){
         const rest=animal.homeY+Math.sin(time*.0014+animal.homeX)*7;
         const wanted=lure?Math.min(rest+40,lure.y-15):rest;
         animal.y+=(wanted-animal.y)*.035*step;
-      }else animal.y=world.groundAt(animal.x)-(animal.bubble>0?22:0);
+      }else{
+        const attack=ATTACKS[animal.kind];
+        const hop=attack?.lift&&animal.dash>0?
+          attack.lift*Math.sin(Math.PI*(1-animal.dash/attack.duration)):0;
+        animal.y=world.groundAt(animal.x)-(animal.bubble>0?22:0)-hop;
+      }
       return {friendly,diff};
 
 }
@@ -49,20 +64,21 @@ export function stepCreatureMotion(animal,lure,step,time,world){
 export function creatureAction(animal,lure,diff){
   return animal.stun||animal.bubble>0?'stunned':
     animal.windup>0?'alert':animal.dash>0?'dash':
-    lure?'run':animal.flying?'flap':Math.abs(diff)>6?'run':
-    animal.distraction>0?'happy':'idle';
+    animal.distraction>0?'happy':lure?'run':
+    animal.flying?'flap':Math.abs(diff)>6?'run':'idle';
 }
 
 export function stepCreatureThreat(animal,close,hasLure,step){
-  const hostile=animal.kind==='emberkit'||animal.kind==='prismtail';
-  const friendly=animal.distraction>0;
-  if(hostile&&!friendly&&animal.stun===0){
-    if(animal.windup>0){
-      animal.windup=Math.max(0,animal.windup-step/60);
-      if(animal.windup===0){animal.dash=.22;animal.attack=1.25;}
-    }else if(animal.attack===0&&animal.dash===0&&close&&!hasLure){
-      animal.windup=.55;
-      animal.attackFace=close.x>=animal.x?1:-1;
+  const attack=ATTACKS[animal.kind];
+  if(!attack||animal.distraction>0||animal.stun>0)return;
+  if(animal.windup>0){
+    animal.windup=Math.max(0,animal.windup-step/60);
+    if(animal.windup===0){
+      animal.dash=attack.duration;animal.attack=1.25;
     }
+  }else if(animal.attack===0&&animal.dash===0&&close&&!hasLure){
+    animal.windup=attack.windup;
+    animal.attackFace=close.x>=animal.x?1:-1;
+    animal.face=animal.attackFace;
   }
 }

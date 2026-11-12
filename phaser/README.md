@@ -217,3 +217,28 @@ mechanics with real input from the standalone HTML.
 This provides reproducible **simulation stepping**, not a guarantee that
 wall-clock tween animations, render FPS and physics are visually identical.
 Actual hardware-controller and campaign-wide QA remain necessary.
+
+## Interaction and illustrated-ground pass
+
+- Berry/nectar/stardrop throwing uses the **fixed 60 Hz simulation**:
+  a 34-tick ballistic presentation with authored landing location. Wildlife
+  sees the treat only after landing. Pausing the game now freezes airborne
+  treats instead of allowing Phaser's independent tween clock to complete
+  a throw in the background. Unit and Chromium tests cover this.
+- **Enemy tells are now species-specific:** Emberkit retains a short amber
+  floor rush, while Prismtail warns for longer with a visible lavender
+  arc, then hops over the ground before landing. Both lock their direction
+  during the announced attack so the visual warning matches the motion.
+  Stuns and treats still interrupt aggression. These attacks remain
+  nonviolent and avoidable rather than causing damage on ordinary contact.
+- Fully friendly wildlife plays its **happy/waiting** animation even if
+  the patrol target is elsewhere; this makes the capture window legible.
+- **Soil painting** uses a broader biome-specific earth gradient, low-opacity
+  original rock material, organic large-scale strata and a muted grass
+  edge instead of repeating a high-contrast 64-pixel rock tile. Platform
+  lips are shallower and pickups gently animate. Collision is unchanged:
+  no painted surface is ever treated as collision geometry.
+
+These refinements are aimed at control readability and moment-to-moment
+world cohesion, not a redesign of campaign logic. The existing full Meadow
+playthrough and multi-biome browser suites remain regression gates.

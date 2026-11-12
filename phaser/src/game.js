@@ -10,7 +10,8 @@ import {stepPlayerMotion} from './player-motion.js';
 import {TICK_MS,simulationTicks,queueInputEdges,withoutInputEdges} from './fixed-clock.js';
 import {poseFor,gesture} from './animation.js';
 import {feedTrust,RESPAWN_SECONDS,DISTRACTION_SECONDS} from './creatures.js';
-import {tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat} from './creature-motion.js';
+import {advanceTreatFlight} from './treat-motion.js';
+import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat} from './creature-motion.js';
 import {meadowDesign} from './meadow-design.js';
 import {validateEncounters} from './encounters.js';
 import {paintTerrain,paintScenery,addMeadowAtmosphere} from './world-renderer.js';
@@ -85,7 +86,7 @@ class Wonderwood extends Phaser.Scene {
           frame:a.visual?.frame?.name,trust:a.trust,
           distracted:a.distraction,respawn:a.respawn,
           captured:a.captured,windup:a.windup,dash:a.dash}))||[],
-        lures:this.lures?.map(f=>({x:f.x,food:f.food,landed:f.landed}))||[],
+        lures:this.lures?.map(f=>({x:f.x,food:f.food,landed:f.landed,age:f.age}))||[],
         orbs:this.orbs?.length||0,
         orbStates:this.orbs?.map(o=>({x:o.x,y:o.y,bounces:o.bounces}))||[],
         paused:this.paused,
@@ -323,6 +324,15 @@ class Wonderwood extends Phaser.Scene {
           ease:'Sine.easeInOut',yoyo:true,repeat:-1});
         const icon=this.add.image(x,y,'props',frame).setOrigin(.5,1)
           .setScale(object.kind===relicKind?.19:.16).setDepth(10);
+        // A little authored motion makes collectibles readable in the
+        // painterly scenery without adding a row of HUD markers.
+        if(object.kind==='starShard'||object.kind===relicKind)
+          this.tweens.add({targets:icon,y:y-5,rotation:{from:-.045,to:.045},
+            duration:940+(object.x%7)*85,yoyo:true,repeat:-1,
+            ease:'Sine.easeInOut'});
+        if(object.kind==='snack')this.tweens.add({targets:icon,
+          scale:{from:.155,to:.168},duration:1350+(object.x%4)*180,
+          yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
         this.items.push({kind:object.kind,x,y,visual:icon,halo,used:false});
       }
     }
@@ -542,20 +552,10 @@ class Wonderwood extends Phaser.Scene {
       this.add.image(p.x,p.y-18,texture).setDisplaySize(19,20):
       this.add.image(p.x,p.y-18,texture,p.food).setScale(.071);
     sprite.setOrigin(.5,1).setDepth(18);
-    const lure={x,y,food,visual:sprite,landed:false,life:24*60};
+    const lure={x,y,food,visual:sprite,landed:false,life:24*60,
+      startX:p.x+p.face*9,startY:p.y-21,face:p.face,age:0};
     this.lures.push(lure);
-    const startX=p.x+p.face*9,startY=p.y-21;
-    const progress={t:0};
-    this.tweens.add({targets:progress,t:1,duration:570,
-      ease:'Linear',onUpdate:()=>{
-        const t=progress.t;
-        sprite.setPosition(startX+(x-startX)*t,
-          startY+(y-startY)*t-50*Math.sin(Math.PI*t));
-        sprite.setRotation(p.face*5*t);
-      },onComplete:()=>{
-        sprite.setPosition(x,y).setRotation(0);
-        lure.landed=true;
-      }});
+    sprite.setPosition(lure.startX,lure.startY);
     this.flash('A '+food+' treat is on its way',800);
   }
 
@@ -622,6 +622,23 @@ class Wonderwood extends Phaser.Scene {
   }
 
   updateAnimals(step,time){
+    // Gameplay and rendered bait now advance together. Pausing freezes food
+    // mid-flight instead of letting a wall-clock tween land behind the scenes.
+    for(const lure of [...this.lures]){
+      if(!lure.landed){
+        const wasFlying=!lure.landed;
+        const pose=advanceTreatFlight(lure,step);
+        lure.visual.setPosition(pose.x,pose.y).setRotation(pose.rotation);
+        if(wasFlying&&pose.landed)
+          this.sparkle(lure.x,lure.y,0xf3dfb8);
+      }else{
+        lure.life-=step;
+        if(lure.life<=0){
+          lure.visual.destroy();
+          this.lures.splice(this.lures.indexOf(lure),1);
+        }
+      }
+    }
     for(const animal of this.animals){
       const respawn=tickCreatureRespawn(animal,step);
       if(respawn==='waiting')continue;
@@ -656,16 +673,38 @@ class Wonderwood extends Phaser.Scene {
       if(animal.halo)animal.halo.setPosition(animal.x,animal.y-17);
       animal.warning.clear();
       if(animal.windup>0){
-        const end=animal.x+animal.attackFace*51;
-        const left=Math.min(animal.x,end);
-        animal.warning.fillStyle(0xffb77b,.10+.08*Math.sin(time*.02)**2);
-        animal.warning.fillRoundedRect(left,animal.y-15,51,18,5);
-        animal.warning.lineStyle(2,0xffc785,.58);
-        animal.warning.lineBetween(animal.x,animal.y-7,end,animal.y-7);
-        animal.warning.fillStyle(0xffe3b6,.8);
-        animal.warning.fillTriangle(end+animal.attackFace*7,animal.y-7,
-          end-animal.attackFace*3,animal.y-12,
-          end-animal.attackFace*3,animal.y-2);
+        const attack=ATTACKS[animal.kind];
+        const progress=1-animal.windup/attack.windup;
+        const distance=animal.kind==='prismtail'?46:51;
+        const end=animal.x+animal.attackFace*distance;
+        const shimmer=.48+.32*Math.sin(progress*Math.PI*4)**2;
+        if(animal.kind==='prismtail'){
+          // A dotted arcing threat conveys "hop over the approach" instead
+          // of looking like Emberkit's straight, low ground rush.
+          animal.warning.lineStyle(2,0xe8c2ff,shimmer);
+          for(let i=0;i<9;i++){
+            const t=i/9,n=(i+1)/9;
+            const x=animal.x+animal.attackFace*distance*t;
+            const y=animal.y-7-27*Math.sin(Math.PI*t);
+            animal.warning.lineBetween(x,y,
+              animal.x+animal.attackFace*distance*n,
+              animal.y-7-27*Math.sin(Math.PI*n));
+          }
+          animal.warning.fillStyle(0xdcb2f8,.14+.14*progress);
+          animal.warning.fillEllipse(end,animal.y-6,24,9);
+          animal.warning.lineStyle(1.5,0xf0d5ff,.62);
+          animal.warning.strokeEllipse(end,animal.y-6,24,9);
+        }else{
+          const left=Math.min(animal.x,end);
+          animal.warning.fillStyle(0xffb77b,.10+.08*Math.sin(time*.02)**2);
+          animal.warning.fillRoundedRect(left,animal.y-15,distance,18,5);
+          animal.warning.lineStyle(2,0xffc785,shimmer);
+          animal.warning.lineBetween(animal.x,animal.y-7,end,animal.y-7);
+          animal.warning.fillStyle(0xffe3b6,.8);
+          animal.warning.fillTriangle(end+animal.attackFace*7,animal.y-7,
+            end-animal.attackFace*3,animal.y-12,
+            end-animal.attackFace*3,animal.y-2);
+        }
       }
       for(const p of this.players){
         if(p.sleep||p.bubble||Math.abs(p.x-animal.x)>19||
@@ -684,14 +723,6 @@ class Wonderwood extends Phaser.Scene {
             this.flash('Resting! Press R / LB to revive at camp',2400);
           }
         }
-      }
-    }
-    for(const lure of [...this.lures]){
-      // Food lifetime and creature approach both use simulation frames.
-      // Wall-clock expiry was shorter than traversal on low-FPS browsers.
-      lure.life-=step;
-      if(lure.life<=0){
-        lure.visual.destroy();this.lures.splice(this.lures.indexOf(lure),1);
       }
     }
     for(const orb of [...this.orbs]){
