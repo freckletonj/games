@@ -3,8 +3,9 @@
 A playable, parallel Phaser 4 remake, created **from main**. The established
 Canvas game remains intact while this implementation earns gameplay parity.
 Five canonical JSON worlds are compiled through the existing deterministic
-`world-compiler.js`. Painted source assets are reused alongside the ArtByte illustrated
-forest kit (CC BY 4.0, attributed in the HTML), with subtle CC0 Kenney sky art. No CDN, external images or fetches are needed to play.
+`world-compiler.js`. Original Wonderwood painted assets are reused with subtle CC0 Kenney skies.
+The CC BY 4.0 ArtByte source kit remains licensed and archived in-repo,
+but is not currently loaded in the self-contained game. No CDN, external images or fetches are needed to play.
 
 ## Build
 
@@ -56,11 +57,12 @@ for the current game's full campaign.
 
 ## Art system and gameplay verification
 
-The [asset manifest](ASSETS.md) inventories exactly where the illustrated
-ArtByte platform, tree and vegetation frames come from and their CC BY 4.0
-attribution. Forest, Coast, and Summit reuse the same **uniformly scaled**
-illustrated silhouettes with cool/warm tint differences; artwork is always
-visual-only and uses the original heightfield for foot placement and collision.
+The [asset manifest](ASSETS.md) records provenance for original Wonderwood
+art, retained CC BY source packs, and CC0 sky assets. Forest, Coast, and
+Summit use distinct **painted ledge materials** whose flat landing tops
+match the compiler's platform collision coordinates. Soft, two-speed
+atmospheric washes parallax behind the terrain and interactive actors.
+Art remains purely visual; the original heightfield determines collision.
 
 The standalone Chromium suite in `tests/gameplay.py` now exercises a full
 keyboard-driven **feed twice → capture orb → transform → double jump → pause →
@@ -69,8 +71,8 @@ physics tests cover slope snapping, one-way platform collision and swept
 projectile contact, and a browser smoke visits the built offline HTML.
 
 `tests/chapters.py` loads all five chapters in the real browser and saves
-per-chapter screenshots. License notices are embedded into the standalone
-HTML and ArtByte attribution is visible in the footer.
+per-chapter screenshots and asserts that each chapter builds both
+atmospheric layers. License notices remain embedded in the standalone HTML.
 
 ## Mosslight Meadow vertical slice
 
@@ -245,9 +247,12 @@ playthrough and multi-biome browser suites remain regression gates.
 
 ### Biome-specific visual materials
 
-Meadow keeps ArtByte's illustrated forest trees and leafy platform edges.
-Crystal Coast instead uses the original painted reefs, crystal and pond
-vignettes with sea-polished shelves, while Starfall Summit uses the
-crystalline/floating-island illustrations with thinner frosted-stone
-platform edges. These changes reuse already licensed/owned art; there is
-**no new third-party asset license** and no geometry or collision change.
+The meadow, coast and summit now draw **erosion-tapered floating ledges**
+from the same semantic collision spans, with separate painted soil,
+sea-stone and frosted-stone palettes. The bright jungle ledge bitmap and
+unrelated decorative cutouts no longer appear in the playable bundle.
+The sky retains its original chapter backdrop with two independently
+scrolling, subdued atmospheric layers. Actor gait responds to speed,
+takeoff stretch eases into flight, and Pegasus wingbeats have a less
+abrupt illustrated cadence plus a brief painted wind cue. No new
+third-party license or gameplay collision change is involved.
