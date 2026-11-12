@@ -394,8 +394,9 @@ class Wonderwood extends Phaser.Scene {
     const pose=poseFor(manifest,action,m.animationTime,m.vx,m.homeX);
     // Painted extended-wing frame and a folded-wing transition create
     // distinguishable flapping without stretching the entire horse flat.
+    const wingPhase=Math.floor(m.animationTime*10)%4;
     const frame=m.kind==='pegasus'&&action==='flap'?
-      (Math.floor(m.animationTime*8)%2===0?6:5):pose.frame;
+      [5,6,6,5][wingPhase]:pose.frame;
     m.visual.setFrame(frame);
     m.visual.setPosition(m.x,m.y+pose.dy);
     m.visual.setFlipX(m.face<0);
@@ -408,6 +409,15 @@ class Wonderwood extends Phaser.Scene {
     m.aura.setPosition(m.x,m.y-24);
     m.aura.setStrokeStyle(1.2,m.trust>=100?0xc1ffce:0xf2dfb6,
       m.trust>=100?.78:.34);
+  }
+
+  wingbeatTrail(x,y){
+    // The original painted effects atlas provides a softer wind cue than
+    // adding more bright procedural dots around the flying character.
+    const wind=this.add.image(x,y+5,'effects',4).setOrigin(.5)
+      .setScale(.085).setAlpha(.42).setDepth(16);
+    this.tweens.add({targets:wind,y:y+21,scale:.16,alpha:0,
+      duration:390,ease:'Sine.easeOut',onComplete:()=>wind.destroy()});
   }
 
   board(p,m){
@@ -442,7 +452,10 @@ class Wonderwood extends Phaser.Scene {
       platformSegments:this.level.platformSegments
     });
     if(launch==='takeoff')this.sparkle(m.x,m.y-35,0xffecce);
-    else if(launch==='wingbeat')this.sparkle(m.x,m.y-39,0xd9efff);
+    else if(launch==='wingbeat'){
+      this.sparkle(m.x,m.y-39,0xd9efff);
+      this.wingbeatTrail(m.x,m.y);
+    }
     this.animateMount(m,action,step/60);
     const seat=seatFor(m.kind,m.grounded?(Math.abs(m.vx)>.4?'run':'idle'):'jump');
     p.x=m.x+seat.x*(m.face<0?-1:1);
