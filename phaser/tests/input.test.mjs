@@ -24,3 +24,15 @@ test('gamepad axes, dpad and standard face button mapping',()=>{
   assert.equal(input.capturePressed,true);
   assert.equal(readActions(keyboard(bindings[0],[]),pad,input).capturePressed,false);
 });
+
+test('revive keys and left shoulder map independently from gamepad pause',()=>{
+  const first=readActions(keyboard(bindings[0],['R']),null);
+  const second=readActions(keyboard(bindings[1],['Y']),null);
+  assert.equal(first.revivePressed,true);
+  assert.equal(second.revivePressed,true);
+  const pad={buttons:Array.from({length:16},(_,i)=>({pressed:i===4}))};
+  const pressed=readActions(keyboard(bindings[0],[]),pad);
+  assert.equal(pressed.revivePressed,true);
+  assert.equal(pressed.pausePressed,false);
+  assert.equal(readActions(keyboard(bindings[0],[]),pad,pressed).revivePressed,false);
+});

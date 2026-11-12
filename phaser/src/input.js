@@ -3,9 +3,9 @@
 // a flap or a menu action every animation frame.
 export const bindings = [
   {left:['A','LEFT'],right:['D','RIGHT'],down:['S','DOWN'],jump:['W','SPACE'],
-   food:['F'],capture:['G'],transform:['T'],next:['E'],recall:['C'],pause:['ESC']},
+   food:['F'],capture:['G'],transform:['T'],next:['E'],recall:['C'],revive:['R'],pause:['ESC']},
   {left:['J'],right:['L'],down:['K'],jump:['I'],
-   food:['O'],capture:['P'],transform:['U'],next:['M'],recall:['N'],pause:['ESC']}
+   food:['O'],capture:['P'],transform:['U'],next:['M'],recall:['N'],revive:['Y'],pause:['ESC']}
 ];
 
 export function readActions(keys, pad, previous = {}) {
@@ -23,9 +23,10 @@ export function readActions(keys, pad, previous = {}) {
     transform:pressed('transform') || button(3),
     next:pressed('next') || button(6) || button(7),
     recall:pressed('recall') || button(8),
+    revive:pressed('revive') || button(4),
     pause:pressed('pause') || button(9)
   };
-  for (const name of ['jump','food','capture','transform','next','recall','pause','left','right']) {
+  for (const name of ['jump','food','capture','transform','next','recall','revive','pause','left','right']) {
     actions[name+'Pressed'] = actions[name] && !previous[name];
   }
   return actions;
