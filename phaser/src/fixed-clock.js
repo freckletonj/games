@@ -9,7 +9,8 @@ export function simulationTicks(pendingMs,deltaMs){
     Math.max(0,pendingMs)+Math.max(0,deltaMs));
   const ticks=Math.min(MAX_TICKS_PER_FRAME,
     Math.floor((elapsed+1e-8)/TICK_MS));
-  const remaining=ticks===MAX_TICKS_PER_FRAME?0:elapsed-ticks*TICK_MS;
+  const remaining=ticks===MAX_TICKS_PER_FRAME?0:
+    Math.max(0,elapsed-ticks*TICK_MS);
   return {ticks,remaining};
 }
 
