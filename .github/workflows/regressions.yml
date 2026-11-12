@@ -52,6 +52,7 @@ jobs:
           python tests/creature_feel.py
           python tests/rideable_mounts.py
           python tests/mount_courses.py
+          python tests/mounted_routes.py
           python tests/projectile_sweep.py
           python tests/game_feel.py
           python tests/creature_mechanics.py
@@ -81,6 +82,7 @@ jobs:
             dist/preview-levels.svg
             dist/level-diagnostics.json
             dist/route-probes.json
+          dist/mount-course-routes.json
             dist/preview-route-probes.svg
             dist/art-jobs.json
             dist/art-guides/*.svg
