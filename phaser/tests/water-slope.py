@@ -22,6 +22,53 @@ def main():
         page.wait_for_function("window.__wonderwoodPhaser.snapshot().stage === 1")
         page.keyboard.up("Space")
 
+        # Earn Tidefox naturally before testing underwater mechanics. The
+        # original bug occurs especially with Tidefox's swim-up controls.
+        page.keyboard.down("d")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().players[0].x > 339",
+            timeout=45000,
+        )
+        page.keyboard.up("d")
+        page.wait_for_timeout(220)
+        page.keyboard.down("e")
+        page.wait_for_timeout(210)
+        page.keyboard.up("e")
+        page.wait_for_timeout(130)
+        assert page.evaluate(
+            "window.__wonderwoodPhaser.snapshot().players[0].food"
+        ) == "nectar"
+        for trust in (60, 100):
+            page.keyboard.down("f")
+            page.wait_for_timeout(210)
+            page.keyboard.up("f")
+            page.wait_for_timeout(150)
+            page.wait_for_function(
+                "window.__wonderwoodPhaser.snapshot().animals.some(a => "
+                "a.kind === 'tideling' && a.trust >= " + str(trust) + ")",
+                timeout=45000,
+            )
+        page.keyboard.down("d")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().players[0].x > 365",
+            timeout=25000,
+        )
+        page.keyboard.up("d")
+        page.wait_for_timeout(180)
+        page.keyboard.down("g")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().players[0].caught === 'tideling'",
+            timeout=35000,
+        )
+        page.keyboard.up("g")
+        page.wait_for_timeout(100)
+        page.keyboard.down("t")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().players[0].form === 'tideling'",
+            timeout=12000,
+        )
+        page.keyboard.up("t")
+
         # Read-only frame observer; no game state is changed or abilities granted.
         page.evaluate("""()=>{
             window.__waterProbe={maxPenetration:0,recalls:0,submerged:0};
@@ -46,18 +93,22 @@ def main():
             page.wait_for_timeout(270)
             page.keyboard.up("Space")
             page.wait_for_timeout(80)
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().players[0].x > 1660",
+            timeout=45000,
+        )
         page.keyboard.up("d")
         state=page.evaluate("window.__wonderwoodPhaser.snapshot()")
         observed=page.evaluate("window.__waterProbe")
         player=state["players"][0]
-        assert player["x"]>1660,(player,observed)
+        assert player["x"]>1660 and player["form"]=="tideling",(player,observed)
         assert player["recalls"]==0,(player,observed)
         assert observed["recalls"]==0 and observed["submerged"]>0,observed
         assert observed["maxPenetration"]<5,observed
         page.screenshot(path=str(GAME.parent/"phaser-water-slope.png"))
         assert not errors,errors
         browser.close()
-    print("Coastal submerged bank, ten jumps, no under-terrain falls or recalls: PASS")
+    print("Captured Tidefox crosses submerged uphill shore with ten jumps, no recalls: PASS")
 
 if __name__=="__main__":
     main()
