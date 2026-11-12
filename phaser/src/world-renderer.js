@@ -5,8 +5,10 @@ import Phaser from 'phaser';
 const TILE=16;
 const SOIL={meadow:0x456b65,coast:0x426b7f,summit:0x545879};
 const EDGE={meadow:0xa5cbaa,coast:0xa1d2c9,summit:0xc8bcdd};
-const FLORA={berryBush:0,nectarFruit:1,stardropFruit:2,mushrooms:3,flowers:4,
-  reeds:5,stones:6,moonStone:7,shells:6};
+// Only quiet plants, reeds and ground stones belong in the non-interactive
+// dressing layer. Fruit, crystals and other prominent props are reserved for
+// actual pickups, creatures and authored landmarks.
+const DRESSING={flowers:4,reeds:5,stones:6,shells:6};
 const LANDMARKS={tree:0,crystal:1,reef:2,observatory:3,island:4,pond:5,lantern:6,shells:7};
 
 export function paintSoil(scene,contour){
@@ -58,32 +60,34 @@ export function paintSoil(scene,contour){
     // especially on long slopes. A broad color wash establishes the soil
     // first; a faint sample retains the original painted material language.
     const tones={
-      meadow:['#68877a','#43615f','#293e48','#a2c4a1'],
-      coast:['#6b9998','#476f77','#294b5e','#a7d9cb'],
-      summit:['#82859d','#5b607e','#343b57','#c5bbdb']
+      meadow:['#56776c','#304f51','#1c303a','#9dc6a0'],
+      coast:['#588b90','#345e6e','#203c51','#a7d9cb'],
+      summit:['#727995','#464d70','#282f4b','#c5bbdb']
     }[scene.level.biome];
     const wash=ctx.createLinearGradient(0,top,0,top+520);
     wash.addColorStop(0,tones[0]);
-    wash.addColorStop(.4,tones[1]);
+    wash.addColorStop(.26,tones[1]);
     wash.addColorStop(1,tones[2]);
     ctx.fillStyle=wash;ctx.fillRect(0,top,scene.worldW,scene.worldH-top);
-    ctx.globalAlpha=.17;
+    // Keep the original painted grain as subtle material, not a tiled motif
+    // competing with actors and background art.
+    ctx.globalAlpha=.065;
     ctx.fillStyle=ctx.createPattern(swatch,'repeat');
     ctx.fillRect(0,top,scene.worldW,scene.worldH-top);
     ctx.globalAlpha=1;
 
     // Long, irregular strata and soft earth pockets are world-scale marks
     // rather than dozens of identical tile-sized rock faces.
-    for(let i=0,x=23;x<scene.worldW+60;i++,x+=108+(i%3)*21){
+    for(let i=0,x=23;x<scene.worldW+60;i++,x+=154+(i%4)*31){
       const y=scene.groundAt(x)+34+(i%4)*28;
       const scale=1+.19*Math.sin(i*2.7);
       ctx.fillStyle=tones[i%5===0?3:1];
-      ctx.globalAlpha=i%5===0?.065:.14;
+      ctx.globalAlpha=i%5===0?.048:.075;
       ctx.beginPath();
       ctx.ellipse(x,y,58*scale,12+(i%4)*4,-.13+
         Math.sin(i*2.12)*.21,0,Math.PI*2);
       ctx.fill();
-      ctx.globalAlpha=.16;
+      ctx.globalAlpha=.09;
       ctx.strokeStyle=tones[3];
       ctx.lineWidth=1.3+(i%3)*.45;
       ctx.beginPath();
@@ -107,13 +111,13 @@ export function paintSoil(scene,contour){
     const key='painted-soil-'+scene.chapter.id;
     if(scene.textures.exists(key))scene.textures.remove(key);
     scene.textures.addCanvas(key,paint);
-    scene.add.image(0,top,key).setOrigin(0).setDepth(-29).setAlpha(.85);
+    scene.add.image(0,top,key).setOrigin(0).setDepth(-29).setAlpha(.96);
     const rim=scene.add.graphics().setDepth(-28);
-    rim.lineStyle(4,0x1e4650,.33);
+    rim.lineStyle(2,0x1e4650,.26);
     rim.strokePoints(contour.map(point=>({x:point.x,y:point.y+2})));
-    rim.lineStyle(2,EDGE[scene.level.biome],.81);
+    rim.lineStyle(1.5,EDGE[scene.level.biome],.61);
     rim.strokePoints(contour);
-    rim.lineStyle(1,0xfaf6dc,.19);
+    rim.lineStyle(1,0xfaf6dc,.10);
     rim.strokePoints(contour.map(point=>({x:point.x,y:point.y-1})));
   }
 
@@ -123,16 +127,16 @@ export function paintTerrain(scene){
     const contour=level.surface.map((height,x)=>({x:x*TILE,y:height*TILE}));
     graphics.fillStyle(SOIL[biome]);
     graphics.fillPoints([{x:0,y:scene.worldH},...contour,{x:scene.worldW,y:scene.worldH}],true);
-    graphics.lineStyle(7,0x233d45,.32);
+    graphics.lineStyle(3,0x233d45,.21);
     graphics.strokePoints(contour);
-    graphics.lineStyle(3,EDGE[biome],.96);
+    graphics.lineStyle(2,EDGE[biome],.56);
     graphics.strokePoints(contour);
-    graphics.lineStyle(1,0xfaf2c4,.52);
+    graphics.lineStyle(1,0xfaf2c4,.13);
     graphics.strokePoints(contour.map(p=>({x:p.x,y:p.y-3})));
     paintSoil(scene,contour);
     // Broken strata and clusters add scale without showing repeated square tiles.
-    graphics.lineStyle(1,0xe5e1c7,.12);
-    for(let x=12;x<scene.worldW;x+=79){
+    graphics.lineStyle(1,0xe5e1c7,.065);
+    for(let x=12;x<scene.worldW;x+=131){
       const y=scene.groundAt(x)+18+(x%7)*2;
       graphics.lineBetween(x,y,x+28,y+3);
       graphics.lineBetween(x+8,y+12,x+38,y+16);
@@ -149,7 +153,7 @@ export function paintTerrain(scene){
       // independent of the platform's rectangular collision surface.
       if(biome==='meadow'){
         scene.add.tileSprite(x,y-4,w,19,'forest-platform').setOrigin(0,0)
-          .setTileScale(.42,.36).setDepth(-18);
+          .setTileScale(.39,.39).setAlpha(.83).setDepth(-18);
       }else{
         // The jungle leaf bitmap belongs only in the forest. The coast has
         // sea-polished stone shelves, while the summit has frosted rock.
@@ -208,52 +212,50 @@ export function paintTerrain(scene){
 export function paintScenery(scene){
     const l=scene.level;
     const tint={meadow:0xffffff,coast:0xb0ecdf,summit:0xc0b8e7}[l.biome];
-    // Reuse one compatible, illustrated forest set for distant and midground
-    // silhouettes. Change spacing, scale, and hue, never aspect ratio.
-    for(let i=0,cell=16;cell<l.width;cell+=34+(i%4)*9,i++){
-      const x=cell*TILE+((i*13)%23)*TILE/3;
+    // Natural shapes must read as atmosphere, not as collectible objects.
+    // Keep silhouettes behind terrain and creatures, and color-grade them
+    // toward the biome; prominent interactive objects are rendered separately.
+    const distantTint={meadow:0xa7cab8,coast:0xa0d4cf,summit:0xb3b4d8}[l.biome];
+    for(let i=0,cell=20;cell<l.width;cell+=48+(i%3)*17,i++){
+      const x=(cell+((i*13)%17)/3)*TILE;
       if(l.waterBodies.some(pool=>cell>=pool.start&&cell<=pool.end))continue;
       if(l.biome==='meadow'){
-        scene.add.image(x,scene.groundAt(x)+15,'forest-trees',i%4)
-          .setOrigin(.5,1).setScale(.16+(i%3)*.0175)
-          .setAlpha(.37).setTint(tint).setDepth(-42);
+        scene.add.image(x,scene.groundAt(x)+18,'forest-trees',i%4)
+          .setOrigin(.5,1).setScale(.105+(i%3)*.014)
+          .setAlpha(.23).setTint(distantTint).setDepth(-43);
       }else{
         const coast=l.biome==='coast';
-        scene.add.image(x,scene.groundAt(x)+9,'landmarks',
+        scene.add.image(x,scene.groundAt(x)+12,'landmarks',
           coast?(i%2?2:5):(i%3?1:4))
-          .setOrigin(.5,1).setScale(.22+(i%3)*.025)
-          .setAlpha(.34).setTint(tint).setDepth(-42);
+          .setOrigin(.5,1).setScale(.17+(i%3)*.025)
+          .setAlpha(.22).setTint(distantTint).setDepth(-43);
       }
     }
     for(const [i,vista] of (l.vistas||[]).entries()){
       const x=vista.x*TILE,y=scene.groundAt(x);
       if(l.biome==='meadow'){
         const tree=scene.add.image(x,y+18,'forest-trees',(i+2)%4)
-          .setOrigin(.5,1).setScale(vista.span>25?.265:.215)
-          .setAlpha(.82).setTint(tint).setDepth(-38);
-        scene.tweens.add({targets:tree,rotation:{from:-.012,to:.013},
-          duration:3800+i*431,ease:'Sine.easeInOut',yoyo:true,repeat:-1});
+          .setOrigin(.5,1).setScale(vista.span>25?.20:.16)
+          .setAlpha(.38).setTint(distantTint).setDepth(-39);
+        scene.tweens.add({targets:tree,rotation:{from:-.008,to:.010},
+          duration:4300+i*431,ease:'Sine.easeInOut',yoyo:true,repeat:-1});
       }else{
-        // Use the original painted biome atlas rather than a ghostly
-        // jungle tree in the coastal and mountain landscapes.
         const coast=l.biome==='coast';
-        scene.add.image(x,y+8,'landmarks',
+        scene.add.image(x,y+12,'landmarks',
           coast?[2,1,5][i%3]:[1,4,3][i%3])
-          .setOrigin(.5,1).setScale(vista.span>25?.53:.40)
-          .setAlpha(.66).setTint(tint).setDepth(-38);
+          .setOrigin(.5,1).setScale(vista.span>25?.36:.29)
+          .setAlpha(.37).setTint(distantTint).setDepth(-39);
       }
-      if(vista.role==='reveal'||vista.role==='reward')
-        scene.add.image(x,y,'landmarks',
-          l.biome==='meadow'?0:l.biome==='coast'?2:3)
-          .setOrigin(.5,1).setScale(.36).setAlpha(.88).setDepth(-18);
     }
     for(const [i,mark] of (l.landmarks||[]).entries()){
+      // Large bright prop illustrations next to enemies used to masquerade
+      // as hidden loot. Treat these landmarks as quiet midground silhouettes.
+      if(l.objects.some(object=>Math.abs(object.x-mark.x)<4))continue;
       const x=mark.x*TILE;
-      scene.add.image(x,scene.groundAt(x)+3,'landmarks',LANDMARKS[mark.type]??0)
-        .setOrigin(.5,1).setScale(.27+(i%3)*.04).setDepth(-17).setAlpha(.94);
+      scene.add.image(x,scene.groundAt(x)+10,'landmarks',LANDMARKS[mark.type]??0)
+        .setOrigin(.5,1).setScale(.23+(i%3)*.035).setDepth(-35)
+        .setAlpha(.45).setTint(distantTint);
     }
-    const sprite=scene.textures.get('forest-misc');
-    if(!sprite.has('mushrooms'))sprite.add('mushrooms',0,784,0,240,378);
     if(scene.chapter.id==='first-forest'){
       // The trail is in *semantic goalRoute coordinates*, so guidance always
       // leads toward a real platform and doesn't imply invisible colliders.
@@ -268,18 +270,22 @@ export function paintScenery(scene){
       }
     }
     for(const [i,decoration] of (l.dressing||[]).entries()){
+      // A berry bush, glowing fruit, mushroom or moon stone looks like a
+      // collectible/creature at gameplay scale. Replace it with ordinary
+      // small flora; only real interactables use saturated prop illustrations.
+      if(l.objects.some(object=>Math.abs(object.x-decoration.x)<4))continue;
       const x=decoration.x*TILE,y=scene.groundAt(x);
-      const frame=FLORA[decoration.asset]??4;
-      const plant=scene.add.image(x,y+2,'flora',frame).setOrigin(.5,1)
-        .setScale(.12*(decoration.scale||1)).setAlpha(.94).setDepth(-16);
+      if(l.waterBodies.some(pool=>x>pool.start*TILE&&x<pool.end*TILE))continue;
+      const defaultFrame=l.biome==='meadow'?(i%2?4:5):
+        l.biome==='coast'?5:6;
+      const frame=DRESSING[decoration.asset]??defaultFrame;
+      const plant=scene.add.image(x,y+5,'flora',frame).setOrigin(.5,1)
+        .setScale(.067*Math.min(decoration.scale||1,1.25))
+        .setAlpha(.55).setTint(distantTint).setDepth(-34);
       if(l.biome==='meadow'&&i%2===0)scene.tweens.add({
-        targets:plant,rotation:{from:-.03,to:.035},duration:1700+i*105,
+        targets:plant,rotation:{from:-.018,to:.021},duration:2200+i*105,
         ease:'Sine.easeInOut',yoyo:true,repeat:-1
       });
-      if(i%6===2 && !l.waterBodies.some(pool=>x>=pool.start*TILE&&x<=pool.end*TILE)){
-        scene.add.image(x+27,y+3,'forest-misc','mushrooms').setOrigin(.5,1)
-          .setScale(.085).setTint(tint).setAlpha(.62).setDepth(-17);
-      }
     }
   }
 
