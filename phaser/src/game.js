@@ -23,13 +23,13 @@ import {meadowDesign} from './meadow-design.js';
 import {grottoChapter} from './cave-chapter.js';
 import {compileCave,caveContainsWater} from './cave-layout.js';
 import {paintCave,paintCaveForeground} from './cave-renderer.js';
-const CHAPTERS=[...WW.chapters,grottoChapter];
 import {readProgress,playChapter,completeChapter,writeProgress} from './progress.js';
 import {addMeadowIllustration} from './meadow-art.js';
 import {validateEncounters} from './encounters.js';
 import {paintTerrain,paintScenery,addMeadowAtmosphere,
   addParallaxAtmosphere,moveParallaxAtmosphere} from './world-renderer.js';
 
+const CHAPTERS=[...WW.chapters,grottoChapter];
 const TILE=16;
 const VIEW_W=480;
 const VIEW_H=270;
