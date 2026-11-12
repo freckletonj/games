@@ -32,7 +32,7 @@ with sync_playwright() as pw:
       const s=WW.main.game.state,b=s.setpieces.find(v=>v.kind==='bounceBloom');
       return {vy:s.players[0].vy,cooldown:b.ready[0]};
     }""")
-    assert bloom['vy'] < -6 and bloom['cooldown'] > 0, bloom
+    assert -6.2 < bloom['vy'] < -4.5 and bloom['cooldown'] > 0, bloom
 
     play(2)
     page.evaluate("""() => {
