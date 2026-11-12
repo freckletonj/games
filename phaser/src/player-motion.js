@@ -13,6 +13,7 @@ export function stepPlayerMotion(p,actions,step,world){
     p.hover=Math.max(0,p.hover-step/60);
     p.breach=Math.max(0,p.breach-step/60);
     p.bloomWindow=Math.max(0,p.bloomWindow-step);
+    p.creatureBounceWindow=Math.max(0,(p.creatureBounceWindow||0)-step);
     p.coyote=p.grounded?5:Math.max(0,p.coyote-step);
     p.jumpBuffer=actions.jumpPressed?6:Math.max(0,p.jumpBuffer-step);
     const inWater=world.inWater(p.x,p.y-8);
@@ -33,7 +34,14 @@ export function stepPlayerMotion(p,actions,step,world){
         events.push('breach');
       }
     }else{
-      if(tryBloomBoost(p,actions.jumpPressed)){
+      if(actions.jumpPressed&&p.creatureBounceWindow>0){
+        // A deliberate second press after a head-stomp, not an unlimited
+        // midair jump. Consume the window and normal double-jump budget.
+        p.vy=-8.0;p.grounded=false;p.coyote=0;p.jumpBuffer=0;
+        p.creatureBounceWindow=0;p.jumps=2;
+        p.creatureBounceBoosts=(p.creatureBounceBoosts||0)+1;
+        events.push('creatureBounceBoost');
+      }else if(tryBloomBoost(p,actions.jumpPressed)){
         events.push('bloomBoost');
       }else if(p.jumpBuffer>0&&p.coyote>0){
         p.vy=-5.4;p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumps=1;
