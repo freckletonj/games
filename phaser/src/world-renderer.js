@@ -211,7 +211,6 @@ export function paintTerrain(scene){
 
 export function paintScenery(scene){
     const l=scene.level;
-    const tint={meadow:0xffffff,coast:0xb0ecdf,summit:0xc0b8e7}[l.biome];
     // Natural shapes must read as atmosphere, not as collectible objects.
     // Keep silhouettes behind terrain and creatures, and color-grade them
     // toward the biome; prominent interactive objects are rendered separately.
@@ -221,8 +220,8 @@ export function paintScenery(scene){
       if(l.waterBodies.some(pool=>cell>=pool.start&&cell<=pool.end))continue;
       if(l.biome==='meadow'){
         scene.add.image(x,scene.groundAt(x)+18,'forest-trees',i%4)
-          .setOrigin(.5,1).setScale(.105+(i%3)*.014)
-          .setAlpha(.23).setTint(distantTint).setDepth(-43);
+          .setOrigin(.5,1).setScale(.078+(i%3)*.010)
+          .setAlpha(.13).setTint(distantTint).setDepth(-43);
       }else{
         const coast=l.biome==='coast';
         scene.add.image(x,scene.groundAt(x)+12,'landmarks',
@@ -235,8 +234,8 @@ export function paintScenery(scene){
       const x=vista.x*TILE,y=scene.groundAt(x);
       if(l.biome==='meadow'){
         const tree=scene.add.image(x,y+18,'forest-trees',(i+2)%4)
-          .setOrigin(.5,1).setScale(vista.span>25?.20:.16)
-          .setAlpha(.38).setTint(distantTint).setDepth(-39);
+          .setOrigin(.5,1).setScale(vista.span>25?.14:.12)
+          .setAlpha(.22).setTint(distantTint).setDepth(-39);
         scene.tweens.add({targets:tree,rotation:{from:-.008,to:.010},
           duration:4300+i*431,ease:'Sine.easeInOut',yoyo:true,repeat:-1});
       }else{
