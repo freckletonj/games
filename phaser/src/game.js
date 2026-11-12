@@ -64,6 +64,7 @@ class Wonderwood extends Phaser.Scene {
     this.cameras.main.setZoom(2);
     this.cameras.main.setScroll(0,0);
     this.cameras.main.setBounds(0,0,VIEW_W,VIEW_H);
+    document.getElementById('ww-ui').hidden=true;
     this.players=[];
     this.animals=[];
     this.items=[];
@@ -98,18 +99,19 @@ class Wonderwood extends Phaser.Scene {
     this.stage=-1;
     this.chapter=null;
     this.addBackground('meadow');
-    this.add.rectangle(480,270,780,454,0x16243c,.78).setDepth(0);
-    this.add.rectangle(480,95,620,2,0xe9d9a6,.72);
-    this.add.text(480,135,'WONDERWOOD',{fontFamily:'Georgia, serif',fontSize:'66px',
+    // Menu geometry uses world-space coordinates and the 2x camera zoom.
+    this.add.rectangle(240,135,400,218,0x16243c,.78).setDepth(0);
+    this.add.rectangle(240,43,310,1,0xe9d9a6,.72);
+    this.add.text(240,67,'WONDERWOOD',{fontFamily:'Georgia, serif',fontSize:'34px',
       color:'#fff5d6',fontStyle:'bold'}).setOrigin(.5).setDepth(2);
-    this.add.text(480,196,'a little world worth exploring',{fontFamily:'Georgia, serif',
-      fontSize:'22px',color:'#bfe4d7'}).setOrigin(.5);
-    this.menuWorld=this.add.text(480,275,'',{fontFamily:'Georgia, serif',fontSize:'36px',
+    this.add.text(240,98,'a little world worth exploring',{fontFamily:'Georgia, serif',
+      fontSize:'12px',color:'#bfe4d7'}).setOrigin(.5);
+    this.menuWorld=this.add.text(240,137,'',{fontFamily:'Georgia, serif',fontSize:'20px',
       color:'#fff0bc'}).setOrigin(.5);
-    this.menuHint=this.add.text(480,332,'',{fontFamily:'Arial',fontSize:'17px',
+    this.menuHint=this.add.text(240,167,'',{fontFamily:'Arial',fontSize:'10px',
       color:'#d7e6e1',align:'center'}).setOrigin(.5);
-    this.add.text(480,420,'A / D or stick   ·   SPACE / A to begin\n2 toggles co-op   ·   controllers supported',
-      {fontFamily:'Arial',fontSize:'17px',color:'#c9d6d9',align:'center'})
+    this.add.text(240,210,'A / D or stick   ·   SPACE / A to begin\\n2 toggles co-op   ·   controllers supported',
+      {fontFamily:'Arial',fontSize:'10px',color:'#c9d6d9',align:'center'})
       .setOrigin(.5);
     this.updateMenuText();
   }
@@ -317,21 +319,19 @@ class Wonderwood extends Phaser.Scene {
   }
 
   makeHud(){
-    this.add.rectangle(480,24,960,48,0x12233e,.7)
-      .setDepth(98).setScrollFactor(0);
-    this.hud=this.add.text(18,14,'',{fontFamily:'Arial',fontSize:'17px',
-      color:'#fff9d9'}).setDepth(100).setScrollFactor(0);
-    this.notice=this.add.text(480,70,'',{fontFamily:'Georgia, serif',
-      fontSize:'21px',color:'#fff5d7',align:'center'})
-      .setOrigin(.5,0).setDepth(100).setScrollFactor(0);
-    this.help=this.add.text(480,505,'',{fontFamily:'Arial',fontSize:'16px',
-      color:'#fff5dc',align:'center'}).setOrigin(.5)
-      .setDepth(100).setScrollFactor(0);
-    this.pausedOverlay=this.add.rectangle(480,270,960,540,0x091b2c,.74)
-      .setDepth(110).setScrollFactor(0).setVisible(false);
-    this.pauseMessage=this.add.text(480,265,'PAUSED\nSTART / ESC to resume',{fontFamily:'Georgia, serif',
-      fontSize:'38px',color:'#fff5cf',align:'center'}).setOrigin(.5)
-      .setDepth(111).setScrollFactor(0).setVisible(false);
+    // DOM UI is independent of Phaser's zoomed scrolling world camera.
+    const ui=document.getElementById('ww-ui');
+    ui.hidden=false;
+    const status=document.getElementById('ww-status');
+    const notice=document.getElementById('ww-notice');
+    const help=document.getElementById('ww-help');
+    const pause=document.getElementById('ww-pause');
+    pause.hidden=true;
+    this.hud={setText:value=>{status.textContent=value;}};
+    this.notice={setText:value=>{notice.textContent=value;}};
+    this.help={setText:value=>{help.textContent=value;}};
+    this.pausedOverlay={setVisible:visible=>{pause.hidden=!visible;}};
+    this.pauseMessage={setVisible:visible=>{pause.hidden=!visible;}};
     this.noticeUntil=0;
   }
 
