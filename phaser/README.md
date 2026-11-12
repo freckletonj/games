@@ -130,3 +130,13 @@ Chromium integration test exercises real feeding, capture, transformation,
 double jumping, game pause, checkpoint recall and picnic-basket restocking;
 unit tests cover creature timing, input and skill gating. Hardware controllers
 and the complete campaign are not yet verified.
+
+## Playable end-to-end chapter test
+
+`tests/complete_meadow.py` plays the entirety of Mosslight Meadow
+from menu to the next chapter using only ordinary keyboard inputs.
+It earns Springaroo, takes the genuine upper ledges, touches the key,
+then walks through the end gate. The test deliberately reads positions
+and objective state but never modifies them, and exports two milestone
+screenshots. This closes the initial route-completion testing gap
+without pretending the remaining four chapters have equivalent coverage.

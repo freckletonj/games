@@ -26,10 +26,25 @@ This is an engineering ledger, not a claim that automated tests prove fun.
 | Wonder Trails, ring timing and co-op relays | Not yet ported | Original campaign feature |
 | Creature pursuit/fleeing, species-specific attack lanes | Partial | Emberkit/Prismtail dash first; more behaviors pending |
 | Co-op instant revive & controller hardware rumble | Revive supported; rumble not yet ported | Hardware test required |
-| Whole chapter traversal to relic and gate without cheating | **Not yet proven** | Need continuous-input route solver and human playtesting |
+| Whole first chapter traversal to relic and gate without cheating | **Verified on one scripted route** | `tests/complete_meadow.py` crosses three acts with real key presses, jumps, relic contact and gate transition |
 | Single standalone HTML, no runtime network | Verified | Offline Chromium smoke and CI artifact |
 
 Mosslight Meadow is the intentional first **gold-standard vertical slice**:
 three acts, coherent illustrated scenery, a guided Springaroo, a telegraphed
 enemy, reachable high light, checkpoints and gentle lantern-grove exit.
 Keep the original source world untouched to compare feel and route coverage.
+
+## Scripted first-chapter completion proof
+
+`phaser/tests/complete_meadow.py` is a non-cheating real-input browser
+regression: starts at the menu, feeds the first Springaroo twice, captures
+and transforms, crosses the terrain and enemy encounter, double-jumps
+onto two existing one-way ledges, physically touches the elevated light,
+then walks to the gate and verifies that Crystal Coast starts. No
+setters, state mutation, transport or granted forms are used. It also
+exports screenshots at light pickup and next-chapter entry.
+
+This proves a reproducible input sequence succeeds on one real Chromium
+run; it does **not** establish that every alternative route is possible,
+that every species transformation is equally balanced, or that humans
+will find the level intuitively. Other chapters still need this test.
