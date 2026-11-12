@@ -94,6 +94,13 @@ export function stepPlayerMotion(p,actions,step,world){
     // Safety against upward-facing underwater banks: a wall cannot
     // convert a horizontal swim into a fall through the heightfield.
     const ground=world.groundAt(p.x);
+    if(world.ceilingAt){
+      const roof=world.ceilingAt(p.x);
+      if(p.y-27<roof){
+        p.y=roof+27;
+        if(p.vy<0)p.vy=0;
+      }
+    }
     if(p.y>ground+3){
       p.y=ground;p.vy=Math.min(p.vy,0);p.grounded=true;
     }
