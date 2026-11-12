@@ -470,7 +470,11 @@ WW.games.animals = (() => {
           m.vy=-spec.jump;m.grounded=false;WW.audio.play('double');
           particles(m.x,m.y-5,'#f6d7ff',17);
         }
-        m.vy=Math.min(PHYSICS.maxFall,m.vy+PHYSICS.gravity*step);
+        // A brisk Unicorn arc: releasing Jump clips the leap and descent
+        // accelerates more strongly than ascent.
+        if(controls.released.jump&&m.vy<-.8)m.vy*=.58;
+        m.vy=Math.min(8,m.vy+
+          (m.vy>=0||!controls.jump?.68:.43)*step);
       }else{
         // Pegasus can climb for as long as Jump is held; Down intentionally dives.
         // Unlike Moonwing, it has no finite wingbeat or flight-energy budget.
