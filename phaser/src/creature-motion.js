@@ -18,6 +18,7 @@ export function tickCreatureRespawn(animal,step){
   if(animal.respawn>0)return 'waiting';
   animal.captured=false;animal.trust=0;animal.distraction=0;
   animal.respawn=0;animal.stun=0;animal.bubble=0;animal.bubbleRise=0;
+  animal.knockVX=0;
   animal.windup=0;animal.dash=0;
   animal.x=animal.homeX;animal.y=animal.homeY;
   return 'returned';
@@ -41,6 +42,13 @@ export function stepCreatureMotion(animal,lure,step,time,world){
       const speed=animal.stun || bubbleLift>0 || friendly || animal.windup>0 ? 0 :
         lure ? .55 : animal.kind==='prismtail' ? .76 : .36;
       animal.x+=clamp(diff,-speed*step,speed*step);
+      if(animal.knockVX){
+        // A gust pushes over multiple simulation frames. No instantaneous
+        // teleport into collision geometry or misleading one-frame impulse.
+        animal.x=clamp(animal.x+animal.knockVX*step,10,world.width-10);
+        animal.knockVX*=Math.pow(.82,step);
+        if(Math.abs(animal.knockVX)<.08)animal.knockVX=0;
+      }
       if(animal.dash>0){
         const attack=ATTACKS[animal.kind];
         animal.x=clamp(animal.x+animal.attackFace*attack.speed*step,

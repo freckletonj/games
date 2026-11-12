@@ -32,6 +32,7 @@ import flora from '../../src/assets/illustrations/flora.webp';
 import props from '../../src/assets/illustrations/props.webp';
 import landmarks from '../../src/assets/illustrations/landmarks.webp';
 import effects from '../../src/assets/illustrations/effects.webp';
+import states from '../../src/assets/illustrations/states.webp';
 import kenneyCloud from '../assets/kenney/cloud1.png';
 import kenneyCloudAlt from '../assets/kenney/cloud3.png';
 import kenneyMoon from '../assets/kenney/moonFull.png';
@@ -54,6 +55,7 @@ export const mounts = {
 export const backgrounds = {meadow,coast,summit};
 export {terrainAtlas};
 export const sheets = {flora,props,landmarks,effects};
+export const paintedStates=states;
 export const silhouettes = {
   cloud:kenneyCloud,cloudAlt:kenneyCloudAlt,moon:kenneyMoon
 };

@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import './bootstrap.js';
 import designs from '../../src/games/animal-adventure/designs.json';
-import {characters,mounts,backgrounds,sheets,silhouettes,terrainAtlas} from './assets.js';
+import {characters,mounts,backgrounds,sheets,silhouettes,terrainAtlas,paintedStates} from './assets.js';
+import {EFFECT_FRAMES,paintedAction,powerFrame} from './action-art.js';
 import {MOUNTS,LOCATIONS,seatFor,stepMountedMotion} from './mounts.js';
 import {bindings,readActions} from './input.js';
 import {landingY,safeHorizontalX,orbStep,orbHitsAnimal} from './physics.js';
@@ -53,6 +54,7 @@ class Wonderwood extends Phaser.Scene {
     for(const [name,url] of Object.entries(sheets))
       this.load.spritesheet(name,url,{frameWidth:180,frameHeight:270});
     for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
+    this.load.image('painted-states',paintedStates);
   }
 
   create(){
@@ -77,6 +79,15 @@ class Wonderwood extends Phaser.Scene {
     this.stage=-1;
     this.input.keyboard.on('keydown-TWO',()=>this.toggleSecondPlayer());
     this.makeBerryTexture();
+    // Source illustration is a 3x3 sheet. Register real cropped frames
+    // rather than enlarging a complete atlas into the character position.
+    const statesTexture=this.textures.get('painted-states');
+    this.stateFrameWidth=statesTexture.source[0].width/3;
+    this.stateFrameHeight=statesTexture.source[0].height/3;
+    for(let frame=0;frame<9;frame++)
+      statesTexture.add(frame,0,(frame%3)*this.stateFrameWidth,
+        Math.floor(frame/3)*this.stateFrameHeight,
+        this.stateFrameWidth,this.stateFrameHeight);
     // Revive has the same binding as the legacy game. H returns to the menu.
     this.input.keyboard.on('keydown-H',()=>{if(this.stage>=0)this.showMenu();});
     this.showMenu();
@@ -90,6 +101,7 @@ class Wonderwood extends Phaser.Scene {
         animalCount:this.animals?.length||0,
         platformCount:this.level?.platformSegments?.length||0,
         worldWidth:this.worldW||0,
+        paintedStateFrames:this.textures.get('painted-states').frameTotal-1,
         generatedTextureCount:this.generatedTextures?.length||0,
         // Read-only alignment probes for actual painted platform geometry.
         soilTiles:this.soilTiles?.map(({x,width,height,visual})=>({
@@ -101,7 +113,8 @@ class Wonderwood extends Phaser.Scene {
           artScale:visual.scaleX
         }))||[],
         players:this.players?.map(p=>({x:p.x,y:p.y,face:p.face,vx:p.vx,vy:p.vy,
-          action:p.action,frame:p.visual?.frame?.name,grounded:p.grounded,
+          action:p.action,frame:p.visual?.frame?.name,
+          texture:p.visual?.texture?.key,grounded:p.grounded,
           jumps:p.jumps,flaps:p.flaps,food:FRUITS[p.food],form:p.form,
           caught:p.caught,health:p.health,sleep:p.sleep,
           checkpoint:p.checkpoint,bubble:p.bubble,mount:p.mount?.kind||null,
@@ -111,7 +124,8 @@ class Wonderwood extends Phaser.Scene {
           creatureBounceBoosts:p.creatureBounceBoosts||0,
           recalls:p.recalls||0}))||[],
         animals:this.animals?.map(a=>({kind:a.kind,x:a.x,y:a.y,action:a.action,
-          frame:a.visual?.frame?.name,trust:a.trust,
+          frame:a.visual?.frame?.name,texture:a.visual?.texture?.key,
+          trust:a.trust,
           distracted:a.distraction,respawn:a.respawn,
           captured:a.captured,windup:a.windup,dash:a.dash,
           bubble:a.bubble,bubbleRise:a.bubbleRise||0,
@@ -313,14 +327,16 @@ class Wonderwood extends Phaser.Scene {
 
   animate(entity,name,action,delta){
     const manifest=characters[name].manifest;
-    if(entity.textureName!==name){
-      entity.textureName=name;
-      entity.visual.setTexture('actor-'+name);
-      entity.visual.setOrigin(manifest.origin.x/manifest.frameWidth,
-        manifest.origin.y/manifest.frameHeight);
+    const visibleAction=entity.gestureTime>0?entity.gesture:action;
+    const art=paintedAction(name,visibleAction);
+    const textureName=art?'painted-states':'actor-'+name;
+    if(entity.textureName!==textureName){
+      entity.textureName=textureName;
+      entity.visual.setTexture(textureName);
+      entity.visual.setOrigin(art?.5:manifest.origin.x/manifest.frameWidth,
+        art?1:manifest.origin.y/manifest.frameHeight);
       entity.action='';
     }
-    const visibleAction=entity.gestureTime>0?entity.gesture:action;
     if(entity.action!==visibleAction){
       entity.action=visibleAction;
       entity.animationTime=0;
@@ -328,11 +344,12 @@ class Wonderwood extends Phaser.Scene {
     const pose=poseFor(manifest,visibleAction,entity.animationTime,
       entity.vx??(entity.face||1),entity.homeX??entity.id??0);
     const face=entity.face||1;
-    entity.visual.setFrame(pose.frame);
+    entity.visual.setFrame(art?art.frame:pose.frame);
     entity.visual.setPosition(entity.x+pose.dx*face,entity.y+pose.dy);
     entity.visual.setFlipX(face<0);
-    entity.visual.setScale(manifest.worldScale*pose.sx,
-      manifest.worldScale*pose.sy);
+    entity.visual.setScale(
+      (art?art.width/this.stateFrameWidth:manifest.worldScale)*pose.sx,
+      (art?art.height/this.stateFrameHeight:manifest.worldScale)*pose.sy);
     entity.visual.setRotation(face*pose.rotation);
     if(entity.visual.shadow){
       const ground=this.groundAt(entity.x);
@@ -362,8 +379,8 @@ class Wonderwood extends Phaser.Scene {
       this.animals.push({kind:object.kind,x,y,homeX:x,homeY:y,
           face:1,trust:0,distraction:0,respawn:0,bubble:0,
           stun:0,attack:0,windup:0,dash:0,attackFace:1,
-          captured:false,flying,bubbleRise:0,lureTarget:null,
-          bubbleVisual:null,action:'',animationTime:0,halo,
+          captured:false,flying,bubbleRise:0,lureTarget:null,knockVX:0,
+          bubbleVisual:null,honeyVisual:null,action:'',animationTime:0,halo,
           visual:this.actor(object.kind,x,y).setDepth(12),
           warning:this.add.graphics().setDepth(24)});
       } else if(['starShard','snack','checkpoint','exit',relicKind].includes(object.kind)){
@@ -594,12 +611,18 @@ class Wonderwood extends Phaser.Scene {
   }
 
   sparkle(x,y,color=0xffedb3){
-    for(let i=0;i<7;i++){
-      const dot=this.add.circle(x,y-12,1.5+Math.random()*1.6,color,.9).setDepth(40);
-      const angle=i*Math.PI*2/7;
-      this.tweens.add({targets:dot,x:x+Math.cos(angle)*(12+Math.random()*16),
-        y:y-12+Math.sin(angle)*(10+Math.random()*14),alpha:0,scale:0,
-        duration:400+Math.random()*250,onComplete:()=>dot.destroy()});
+    // Three restrained, painted glints instead of generic circular confetti.
+    const frame=color===0xc5f5ff?EFFECT_FRAMES.splash:
+      color===0xffc7e1?EFFECT_FRAMES.petal:EFFECT_FRAMES.spark;
+    for(let i=0;i<3;i++){
+      const direction=i-1;
+      const art=this.add.image(x+direction*5,y-12,'effects',frame)
+        .setScale(.047+Math.abs(direction)*.006).setAlpha(.7)
+        .setDepth(40).setTint(color);
+      this.tweens.add({targets:art,x:x+direction*19,
+        y:y-23-Math.abs(direction)*3,alpha:0,scale:.024,
+        duration:390+i*75,ease:'Sine.easeOut',
+        onComplete:()=>art.destroy()});
     }
   }
 
@@ -638,40 +661,25 @@ class Wonderwood extends Phaser.Scene {
   }
 
   powerEffect(kind,x,y,face=1){
-    const colors={springaroo:0xf8b5cf,tideling:0x8cdeee,skyling:0xe6c9ff,
-      mossback:0xf5c56a,prismtail:0x9aeef5,glimmermoth:0xe8bbff,
-      cloudwhisp:0xb2e8ed,emberkit:0xffca9d};
-    const color=colors[kind]||0xffffff;
-    if(kind==='prismtail'){
-      // Use the existing illustrated effects atlas rather than a wire ring.
-      const swirl=this.add.image(x,y-18,'effects',2)
-        .setScale(.11).setAlpha(.7).setDepth(37);
-      this.tweens.add({targets:swirl,y:y-32,scale:.15,alpha:0,
-        duration:800,onComplete:()=>swirl.destroy()});
-      return;
-    }
-    for(let i=0;i<7;i++){
-      const dot=this.add.circle(x,y-12,(i%3+1)*.8,color,.8).setDepth(39);
-      const angle=(i/7)*Math.PI*2;
-      const dx=kind==='cloudwhisp'||kind==='skyling'?
-        (14+i*4)*face:Math.cos(angle)*(9+i*2);
-      const dy=kind==='mossback'?Math.abs(Math.sin(angle))*(10+i):
-        Math.sin(angle)*(9+i*1.3);
-      this.tweens.add({targets:dot,x:x+dx,y:y-12+dy,
-        alpha:0,scale:0,duration:430+i*42,onComplete:()=>dot.destroy()});
-    }
+    const gust=kind==='cloudwhisp'||kind==='skyling';
+    const frame=powerFrame(kind);
+    const art=this.add.image(x,y-17,'effects',frame)
+      .setScale(gust?.12:.095).setAlpha(.86).setDepth(39);
+    art.setFlipX(face<0);
+    this.tweens.add({targets:art,x:x+(gust?face*28:face*5),
+      y:y-(gust?22:28),scale:gust?.16:.12,alpha:0,
+      duration:gust?450:530,ease:'Sine.easeOut',
+      onComplete:()=>art.destroy()});
   }
 
   castPower(p){
     if(!p.form||p.powers>0)return;
+    // These forms are controlled by jump/swim, not a fake F-key spell.
+    if(p.form==='springaroo'||p.form==='tideling')return;
     p.powers=.8;
     gesture(p,'alert',.28);
     if(p.form==='glimmermoth'){
       p.hover=HOVER_SECONDS;this.powerEffect(p.form,p.x,p.y,p.face);
-      return;
-    }
-    if(p.form==='springaroo'||p.form==='tideling'){
-      this.powerEffect(p.form,p.x+p.face*19,p.y,p.face);
       return;
     }
     const target=this.animals.filter(a=>!a.captured&&a.stun<=0&&
@@ -686,11 +694,18 @@ class Wonderwood extends Phaser.Scene {
       target.bubble=BUBBLE_DURATION;
       target.bubbleRise=0;
       target.bubbleVisual?.destroy();
-      target.bubbleVisual=this.add.image(target.x,target.y-18,'effects',2)
-        .setScale(.19).setAlpha(.78).setDepth(25);
+      target.bubbleVisual=this.add.image(target.x,target.y-18,
+        'effects',EFFECT_FRAMES.bubbleTrap)
+        .setScale(.19).setAlpha(.83).setDepth(25);
+    }
+    if(p.form==='mossback'){
+      target.honeyVisual?.destroy();
+      target.honeyVisual=this.add.image(target.x,target.y,
+        'effects',EFFECT_FRAMES.honeyPuddle)
+        .setOrigin(.5,1).setScale(.125).setAlpha(.9).setDepth(13);
     }
     if(p.form==='cloudwhisp'||p.form==='skyling')
-      target.x=clamp(target.x+p.face*26,10,this.worldW-10);
+      target.knockVX=p.face*4.3;
     if(p.form==='emberkit')target.stun=1.4;
     this.powerEffect(p.form,target.x,target.y,p.face);
     gesture(target,'stunned',.4);
@@ -699,8 +714,8 @@ class Wonderwood extends Phaser.Scene {
   throwOrb(p){
     gesture(p,'capture',.38);
     const x=p.x+p.face*7,y=p.y-17;
-    const visual=this.add.circle(x,y,5,0xd5faff,.38)
-      .setStrokeStyle(1.5,0xffffff,.86).setDepth(32);
+    const visual=this.add.image(x,y,'effects',EFFECT_FRAMES.bubble)
+      .setScale(.06).setAlpha(.93).setDepth(32);
     // A *fixed*, slow, predictably bouncing trajectory. No target-aware
     // adjustments, homing, or hidden capture assistance.
     this.orbs.push({x,y,vx:p.face*2.15,vy:-1,
@@ -729,6 +744,7 @@ class Wonderwood extends Phaser.Scene {
       const respawn=tickCreatureRespawn(animal,step);
       if(respawn==='waiting')continue;
       if(respawn==='returned'){
+        animal.honeyVisual?.destroy();animal.honeyVisual=null;
         animal.visual.setVisible(true);
         animal.visual.shadow?.setVisible(true);
         if(animal.halo)animal.halo.setVisible(true);
@@ -755,6 +771,14 @@ class Wonderwood extends Phaser.Scene {
         else {
           animal.bubbleVisual.destroy();
           animal.bubbleVisual=null;
+        }
+      }
+      if(animal.honeyVisual){
+        if(animal.stun>0)
+          animal.honeyVisual.setPosition(animal.x,this.groundAt(animal.x)+1);
+        else {
+          animal.honeyVisual.destroy();
+          animal.honeyVisual=null;
         }
       }
       const action=creatureAction(animal,lure,diff);
@@ -827,7 +851,7 @@ class Wonderwood extends Phaser.Scene {
       const next=orbStep(orb,this.groundAt(orb.x+orb.vx*step),step);
       Object.assign(orb,next);
       orb.visual.setPosition(orb.x,orb.y)
-        .setScale(.93+.08*Math.cos(this.time.now*.006));
+        .setScale(.06*(.96+.04*Math.cos(this.simulationTime*.006)));
       if(orb.bounces>oldBounces)
         this.sparkle(orb.x,orb.y+5,0xc5f5ff);
       const animal=this.animals.find(a=>!a.captured&&a.distraction>0&&
@@ -835,6 +859,7 @@ class Wonderwood extends Phaser.Scene {
       if(animal){
         animal.captured=true;animal.respawn=RESPAWN_SECONDS;
         animal.bubbleVisual?.destroy();animal.bubbleVisual=null;
+        animal.honeyVisual?.destroy();animal.honeyVisual=null;
         animal.visual.setVisible(false);
         animal.visual.shadow?.setVisible(false);
         animal.warning.clear();
