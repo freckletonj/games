@@ -124,5 +124,12 @@ WW.spriteAtlas = (() => {
     return portraits[name];
   }
 
-  return {draw,portrait};
+  // A saddle location is an artwork anchor, not part of rider physics.
+  // Source poses can shift while the player stays visibly seated on the back.
+  function seat(name, action='idle') {
+    const anchors=atlases[name]?.manifest.seats;
+    return anchors?.[action] || anchors?.idle || {x:0,y:-32};
+  }
+
+  return {draw,portrait,seat};
 })();
