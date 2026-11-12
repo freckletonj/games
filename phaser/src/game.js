@@ -139,6 +139,7 @@ class Wonderwood extends Phaser.Scene {
       .setScrollFactor(0).setDepth(-100);
     const fit=Math.max(960/back.width,540/back.height);
     back.setScale(fit);
+    this.backdrop=back;
     const cloudKinds=['kenney-cloud','kenney-cloudAlt'];
     for(let n=0;n<7;n++){
       const x=55+n*145+(n%2)*15;
@@ -187,6 +188,13 @@ class Wonderwood extends Phaser.Scene {
     const chapter=WW.chapters[this.choice];
     this.menuWorld.textContent=chapter.name;
     this.menuHint.textContent=chapter.tagline;
+    // Chapter selection previews the actual painted biome, without a
+    // separate low-resolution menu screenshot or new network assets.
+    const biome=designs[chapter.id].biome;
+    this.menuEl.dataset.biome=biome;
+    this.backdrop.setTexture('back-'+biome);
+    this.backdrop.setScale(Math.max(960/this.backdrop.width,540/this.backdrop.height));
+    this.cameras.main.setBackgroundColor(SKY[biome]);
     this.menuCounter.textContent='CHAPTER '+String(this.choice+1).padStart(2,'0')+
       ' / '+String(WW.chapters.length).padStart(2,'0');
     this.menuMode.textContent=this.twoPlayers?'Two explorers · Local co-op':'One explorer · Solo play';
