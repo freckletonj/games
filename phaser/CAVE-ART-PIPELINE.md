@@ -65,7 +65,8 @@ crops and water physics. The existing Phaser workflow now also runs
 it checks both art textures load without external requests, four terrain
 chunks span the world, and a real keyboard input moves the real player in
 Chromium. The script saves `dist/phaser-grotto-painted.png` for visual
-comparison.
+comparison. During play, press **G** to show or hide the actual solid-boundary,
+waterline and shelf wireframe over the generated art.
 
 The physical cave geometry is authoritative regardless of artwork. The
 ceilings block the player, and the water chamber controls swimming. The
