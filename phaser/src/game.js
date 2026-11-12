@@ -20,6 +20,10 @@ import {launchPower,stepPower,powerHitsCreature,applyPowerHit,
 import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat,
   stompCreature} from './creature-motion.js';
 import {meadowDesign} from './meadow-design.js';
+import {grottoChapter} from './cave-chapter.js';
+import {compileCave,caveContainsWater} from './cave-layout.js';
+import {paintCave,paintCaveForeground} from './cave-renderer.js';
+const CHAPTERS=[...WW.chapters,grottoChapter];
 import {readProgress,playChapter,completeChapter,writeProgress} from './progress.js';
 import {addMeadowIllustration} from './meadow-art.js';
 import {validateEncounters} from './encounters.js';
@@ -74,8 +78,8 @@ class Wonderwood extends Phaser.Scene {
     this.keyboard=bindings.map(layout=>Object.fromEntries(Object.entries(layout)
       .map(([action,codes])=>[action,codes.map(code=>this.input.keyboard.addKey(code))])));
     this.lastInput=[{},{}];
-    this.progress=readProgress(localStorage,WW.chapters.map(chapter=>chapter.id));
-    this.choice=Math.max(0,WW.chapters.findIndex(chapter=>
+    this.progress=readProgress(localStorage,CHAPTERS.map(chapter=>chapter.id));
+    this.choice=Math.max(0,CHAPTERS.findIndex(chapter=>
       chapter.id===this.progress.lastPlayed));
     this.twoPlayers=false;
     this.paused=false;
@@ -250,23 +254,23 @@ class Wonderwood extends Phaser.Scene {
   }
 
   changeChapter(direction){
-    this.choice=(this.choice+direction+WW.chapters.length)%WW.chapters.length;
+    this.choice=(this.choice+direction+CHAPTERS.length)%CHAPTERS.length;
     this.updateMenuText();
   }
 
   updateMenuText(){
-    const chapter=WW.chapters[this.choice];
+    const chapter=CHAPTERS[this.choice];
     this.menuWorld.textContent=chapter.name;
     this.menuHint.textContent=chapter.tagline;
     // Chapter selection previews the actual painted biome, without a
     // separate low-resolution menu screenshot or new network assets.
-    const biome=designs[chapter.id].biome;
+    const biome=chapter.id==='luminous-grotto'?'coast':designs[chapter.id].biome;
     this.menuEl.dataset.biome=biome;
     this.backdrop.setTexture('back-'+biome);
     this.backdrop.setScale(Math.max(960/this.backdrop.width,540/this.backdrop.height));
     this.cameras.main.setBackgroundColor(SKY[biome]);
     this.menuCounter.textContent='CHAPTER '+String(this.choice+1).padStart(2,'0')+
-      ' / '+String(WW.chapters.length).padStart(2,'0')+
+      ' / '+String(CHAPTERS.length).padStart(2,'0')+
       (this.progress.completed.includes(chapter.id)?' · COMPLETED':'');
     this.menuMode.textContent=this.twoPlayers?'Two explorers · Local co-op':'One explorer · Solo play';
     document.getElementById('ww-menu-coop').textContent=
@@ -289,13 +293,16 @@ class Wonderwood extends Phaser.Scene {
     this.clearScene();
     this.choice=index;
     this.stage=index;
-    this.chapter=WW.chapters[index];
+    this.chapter=CHAPTERS[index];
     this.progress=playChapter(this.progress,this.chapter.id);
     writeProgress(localStorage,this.progress);
-    const original=designs[this.chapter.id];
-    const spec=this.chapter.id==='first-forest'?meadowDesign(original):original;
-    if(this.chapter.id==='first-forest')validateEncounters(spec);
-    this.level=WW.worldCompiler.compile(spec,this.chapter);
+    if(this.chapter.id==='luminous-grotto')this.level=compileCave();
+    else {
+      const original=designs[this.chapter.id];
+      const spec=this.chapter.id==='first-forest'?meadowDesign(original):original;
+      if(this.chapter.id==='first-forest')validateEncounters(spec);
+      this.level=WW.worldCompiler.compile(spec,this.chapter);
+    }
     this.worldW=this.level.width*TILE;
     this.worldH=this.level.height*TILE;
     this.shared={relic:false,shards:0,collected:new Set(),checkpoint:null,
@@ -305,11 +312,16 @@ class Wonderwood extends Phaser.Scene {
     // pans more slowly than the camera through the chapter.
     this.backdrop.setScale(Math.max(1050/this.backdrop.width,
       590/this.backdrop.height));
-    addParallaxAtmosphere(this);
-    addMeadowIllustration(this);
-    paintTerrain(this);
-    paintScenery(this);
-    addMeadowAtmosphere(this);
+    if(this.level.cave){
+      paintCave(this);
+      paintCaveForeground(this);
+    }else{
+      addParallaxAtmosphere(this);
+      addMeadowIllustration(this);
+      paintTerrain(this);
+      paintScenery(this);
+      addMeadowAtmosphere(this);
+    }
     this.spawnObjects();
     this.spawnMounts();
     this.makePlayer(0);
@@ -317,7 +329,7 @@ class Wonderwood extends Phaser.Scene {
     this.cameras.main.setBounds(0,0,this.worldW,this.worldH);
     this.cameras.main.startFollow(this.players[0].visual,true,.085,.12);
     // Let players see upcoming climbs and sky rather than half a screen of soil.
-    this.cameras.main.setFollowOffset(0,38);
+    this.cameras.main.setFollowOffset(0,this.level.cave?0:38);
     this.makeHud();
     // The menu already explains the chapter objective. Avoid covering the
     // first moments of play with a long sentence across the entire sky.
@@ -326,6 +338,7 @@ class Wonderwood extends Phaser.Scene {
   }
 
   groundAt(x){
+    if(this.level.cave)return this.level.cave.groundAt(x);
     const position=clamp(x/TILE,0,this.level.width);
     const cell=Math.min(Math.floor(position),this.level.width-1);
     const t=position-cell;
@@ -333,6 +346,7 @@ class Wonderwood extends Phaser.Scene {
   }
 
   inWater(x,y){
+    if(this.level.cave)return caveContainsWater(this.level,x,y);
     return this.level.waterBodies.some(b=>x>=b.start*TILE&&x<=b.end*TILE&&
       y>=b.surface*TILE&&y<=this.groundAt(x)+3);
   }
@@ -544,7 +558,8 @@ class Wonderwood extends Phaser.Scene {
     const {action,launch}=stepMountedMotion(m,actions,step,{
       width:this.worldW,height:this.worldH,tile:TILE,
       groundAt:x=>this.groundAt(x),
-      platformSegments:this.level.platformSegments
+      platformSegments:this.level.platformSegments,
+      ceilingAt:this.level.cave?x=>this.level.cave.ceilingAt(x):null
     });
     if(launch==='takeoff')this.sparkle(m.x,m.y-35,0xffecce);
     else if(launch==='wingbeat'){
@@ -1073,7 +1088,7 @@ class Wonderwood extends Phaser.Scene {
         writeProgress(localStorage,this.progress);
         this.flash('Chapter complete! The next light awakens.',1600);
         const next=this.stage+1;
-        if(next<WW.chapters.length)this.startStage(next);
+        if(next<CHAPTERS.length)this.startStage(next);
         else this.showMenu();
         return true;
       }
@@ -1120,7 +1135,7 @@ class Wonderwood extends Phaser.Scene {
       }
       return;
     }
-    moveParallaxAtmosphere(this);
+    if(!this.level.cave)moveParallaxAtmosphere(this);
     if(actions.some(a=>a.pausePressed)){
       this.paused=!this.paused;
       if(this.paused)this.tweens.pauseAll();
