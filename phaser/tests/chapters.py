@@ -51,6 +51,24 @@ def main():
             )
             assert state["animalCount"] > 0, state
             assert state["platformCount"] > 0, state
+            # Each painted soil texture must fit a modest WebGL texture
+            # dimension; slices must exactly cover the semantic world width.
+            tiles = state["soilTiles"]
+            assert tiles and tiles[0]["x"] == 0, (chapter, tiles)
+            assert all(0 < tile["width"] <= 768 for tile in tiles), (
+                chapter, tiles
+            )
+            assert all(
+                tile["displayWidth"] == tile["width"]
+                and tile["displayX"] == tile["x"]
+                for tile in tiles
+            ), (chapter, tiles)
+            assert all(
+                tiles[k]["x"] + tiles[k]["width"] == tiles[k + 1]["x"]
+                for k in range(len(tiles) - 1)
+            ), (chapter, tiles)
+            assert tiles[-1]["x"] + tiles[-1]["width"] == state["worldWidth"]
+            assert state["generatedTextureCount"] >= len(tiles), state
             assert state["ledgeBounds"], (chapter, state)
             for ledge in state["ledgeBounds"]:
                 # A 2x backing canvas must resolve to 1x world units. In the
