@@ -12,8 +12,10 @@ import {TICK_MS,simulationTicks,queueInputEdges,withoutInputEdges} from './fixed
 import {poseFor,gesture} from './animation.js';
 import {feedTrust,RESPAWN_SECONDS,DISTRACTION_SECONDS} from './creatures.js';
 import {advanceTreatFlight} from './treat-motion.js';
-import {chooseCreatureLure,BUBBLE_DURATION,HOVER_SECONDS,ventContains,
+import {chooseCreatureLure,HOVER_SECONDS,ventContains,
   applyVentLift} from './gameplay-rules.js';
+import {launchPower,stepPower,powerHitsCreature,applyPowerHit,
+  honeyPuddleCatches,HONEY_PUDDLE_TICKS} from './power-projectiles.js';
 import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat,
   stompCreature} from './creature-motion.js';
 import {meadowDesign} from './meadow-design.js';
@@ -134,6 +136,9 @@ class Wonderwood extends Phaser.Scene {
           warningAlpha:a.warningArt?.alpha??null}))||[],
         lures:this.lures?.map(f=>({x:f.x,food:f.food,landed:f.landed,age:f.age}))||[],
         orbs:this.orbs?.length||0,
+        powersInFlight:this.powerShots?.map(s=>({kind:s.kind,
+          x:s.x,y:s.y,life:s.life,frame:s.visual?.frame?.name}))||[],
+        honeyPuddles:this.honeyPuddles?.map(p=>({x:p.x,life:p.life}))||[],
         orbStates:this.orbs?.map(o=>({x:o.x,y:o.y,vx:o.vx,vy:o.vy,
           life:o.life,bounces:o.bounces,
           texture:o.visual?.texture?.key,frame:o.visual?.frame?.name}))||[],
@@ -171,6 +176,8 @@ class Wonderwood extends Phaser.Scene {
     this.mounts=[];
     this.items=[];
     this.orbs=[];
+    this.powerShots=[];
+    this.honeyPuddles=[];
     this.lures=[];
     this.setpieces=[];
     this.parallaxLayers=[];
@@ -685,41 +692,72 @@ class Wonderwood extends Phaser.Scene {
 
   castPower(p){
     if(!p.form||p.powers>0)return;
-    // These forms are controlled by jump/swim, not a fake F-key spell.
     if(p.form==='springaroo'||p.form==='tideling')return;
     p.powers=.8;
     gesture(p,'alert',.28);
     if(p.form==='glimmermoth'){
-      p.hover=HOVER_SECONDS;this.powerEffect(p.form,p.x,p.y,p.face);
+      p.hover=HOVER_SECONDS;
+      this.powerEffect(p.form,p.x,p.y,p.face);
       return;
     }
-    const target=this.animals.filter(a=>!a.captured&&a.stun<=0&&
-      (a.x-p.x)*p.face>-15&&Math.abs(a.x-p.x)<95&&Math.abs(a.y-p.y)<46)
-      .sort((a,b)=>distance(a,p)-distance(b,p))[0];
-    if(!target){
-      this.powerEffect(p.form,p.x+p.face*30,p.y-10,p.face);
-      return;
-    }
-    target.stun=p.form==='mossback'?3.7:p.form==='prismtail'?BUBBLE_DURATION:1.8;
-    if(p.form==='prismtail'){
-      target.bubble=BUBBLE_DURATION;
-      target.bubbleRise=0;
-      target.bubbleVisual?.destroy();
-      target.bubbleVisual=this.add.image(target.x,target.y-18,
+    const shot=launchPower(p.form,p.x,p.y,p.face,p.id);
+    const visual=this.add.image(shot.x,shot.y,'effects',powerFrame(p.form))
+      .setScale(p.form==='prismtail'?.11:.09).setAlpha(.9)
+      .setDepth(33).setFlipX(p.face<0);
+    this.powerShots.push({...shot,visual});
+  }
+
+  addHoneyPuddle(x){
+    const visual=this.add.image(x,this.groundAt(x),'effects',
+      EFFECT_FRAMES.honeyPuddle).setOrigin(.5,1).setScale(.125)
+      .setAlpha(.82).setDepth(13);
+    this.honeyPuddles.push({x,life:HONEY_PUDDLE_TICKS,visual});
+  }
+
+  powerImpact(shot,animal){
+    const effect=applyPowerHit(shot,animal);
+    if(effect==='bubble'){
+      animal.bubbleVisual?.destroy();
+      animal.bubbleVisual=this.add.image(animal.x,animal.y-18,
         'effects',EFFECT_FRAMES.bubbleTrap)
         .setScale(.19).setAlpha(.83).setDepth(25);
     }
-    if(p.form==='mossback'){
-      target.honeyVisual?.destroy();
-      target.honeyVisual=this.add.image(target.x,target.y,
+    if(effect==='honey'){
+      animal.honeyVisual?.destroy();
+      animal.honeyVisual=this.add.image(animal.x,animal.y,
         'effects',EFFECT_FRAMES.honeyPuddle)
         .setOrigin(.5,1).setScale(.125).setAlpha(.9).setDepth(13);
     }
-    if(p.form==='cloudwhisp'||p.form==='skyling')
-      target.knockVX=p.face*4.3;
-    if(p.form==='emberkit')target.stun=1.4;
-    this.powerEffect(p.form,target.x,target.y,p.face);
-    gesture(target,'stunned',.4);
+    this.powerEffect(shot.kind,animal.x,animal.y,
+      Math.sign(shot.vx));
+    gesture(animal,'stunned',.4);
+  }
+
+  updatePowers(step){
+    for(const puddle of [...this.honeyPuddles]){
+      puddle.life-=step;
+      for(const animal of this.animals){
+        if(honeyPuddleCatches(puddle,animal,x=>this.groundAt(x)))
+          animal.stun=Math.max(animal.stun,.55);
+      }
+      if(puddle.life<=0){
+        puddle.visual.destroy();
+        this.honeyPuddles.splice(this.honeyPuddles.indexOf(puddle),1);
+      }
+    }
+    for(const shot of [...this.powerShots]){
+      const result=stepPower(shot,step,x=>this.groundAt(x),this.worldW);
+      shot.visual.setPosition(shot.x,shot.y);
+      const animal=this.animals.find(a=>powerHitsCreature(
+        shot,result.fromX,result.fromY,a));
+      if(animal)this.powerImpact(shot,animal);
+      if(animal||result.expired){
+        if(!animal&&result.ground&&shot.kind==='mossback')
+          this.addHoneyPuddle(shot.x);
+        shot.visual.destroy();
+        this.powerShots.splice(this.powerShots.indexOf(shot),1);
+      }
+    }
   }
 
   throwOrb(p){
@@ -1105,6 +1143,7 @@ class Wonderwood extends Phaser.Scene {
         this.movePlayer(p,tickActions[p.id],step);
       this.updateMounts(step,tickTime);
       this.updateAnimals(step,tickTime);
+      this.updatePowers(step);
       for(const p of [...this.players]){
         if(this.touchWorld(p,step))return;
       }

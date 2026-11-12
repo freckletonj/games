@@ -332,3 +332,16 @@ moving while the game is paused. Real-input Chromium checks the first
 creature's painted eating pose and the capture orb's actual atlas frame.
 These are fidelity improvements, not a claim of newly illustrated
 intermediate wingbeats or a complete animation-art replacement.
+
+## Transformation projectiles and status tests
+
+Mossback honey, Prismtail bubbles, Skyling and Cloudwhisp gusts, and
+Emberkit sparks are now real fixed-tick projectiles rather than immediate,
+range-based status mutations. The illustrated shot is visible for its full
+travel, collides with animals using a swept path, and expires at the
+terrain/world edge or after a finite lifetime. Each form applies a distinct
+mechanical effect on actual contact; missed Mossback honey leaves a short
+grounded sticky field. Glimmermoth hover remains a self-cast power, while
+Springaroo and Tideling remain jump/swim controls instead of fake F-key
+abilities. See `tests/power-projectiles.test.mjs` for power range,
+collision, miss, duration and effect regressions.
