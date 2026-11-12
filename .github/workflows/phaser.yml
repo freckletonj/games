@@ -77,6 +77,7 @@ jobs:
             dist/phaser-motion.png
             dist/phaser-meadow-relic.png
             dist/phaser-meadow-complete.png
+            dist/phaser-meadow-route-metrics.json
             dist/phaser-painted-berry.png
             dist/phaser-bouncing-orb.png
             dist/phaser-bloom-boost.png
