@@ -49,6 +49,7 @@ jobs:
           python tests/wingbeat_budget.py
           python tests/living_setpieces.py
           python tests/interaction_feel.py
+          python tests/jump_water_rider_feel.py
           python tests/creature_feel.py
           python tests/rideable_mounts.py
           python tests/painted_mount_atlases.py
