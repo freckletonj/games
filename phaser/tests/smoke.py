@@ -31,6 +31,7 @@ def main():
         )
         assert page.locator("canvas").count() == 1, "A Phaser canvas must render"
 
+        page.screenshot(path=str(ROOT / "dist" / "phaser-title.png"))
         page.keyboard.down("Space")
         page.wait_for_timeout(120)
         page.keyboard.up("Space")
@@ -41,13 +42,19 @@ def main():
         assert before["chapter"] == "first-forest"
         assert before["players"][0]["health"] == 3
 
+        # Headless WebGL can run only a handful of frames while compiling
+        # shaders; wait for actual displacement rather than wall-clock duration.
         page.keyboard.down("d")
-        page.wait_for_timeout(450)
+        target = before["players"][0]["x"] + 13
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().players[0].x > " + str(target),
+            timeout=15000,
+        )
         page.keyboard.up("d")
         after = page.evaluate("window.__wonderwoodPhaser.snapshot()")
-        assert after["players"][0]["x"] > before["players"][0]["x"] + 10, (
-            "Player must move under genuine animation-frame input", before, after
-        )
+        assert after["players"][0]["x"] > before["players"][0]["x"] + 12
+        assert page.locator("#ww-ui").is_visible()
+        assert "Mosslight Meadow" in page.locator("#ww-status").inner_text()
         page.screenshot(path=str(ROOT / "dist" / "phaser-preview.png"))
 
         page.keyboard.press("2")
