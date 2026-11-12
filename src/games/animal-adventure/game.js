@@ -1629,19 +1629,42 @@ WW.games.animals = (() => {
         }else{
           if(p.form&&p.mount===null){ctx.save();ctx.globalAlpha=.19+.09*Math.sin(now*5);ctx.fillStyle=FORM[p.form].color;ctx.beginPath();ctx.ellipse(p.x,p.y-13,18,23,0,0,Math.PI*2);ctx.fill();ctx.restore();}
           if(p.invincible<=0||Math.floor(now*15)%2===0){
-            ctx.save();
             if(p.mount!==null){
-              // Rider uses the saddle pivot; the mount supplies the running
-              // and flying animation rather than the rider cycling walk poses.
-              ctx.translate(p.x,p.y+8);ctx.scale(.80,.82);
+              const mount=mounts[p.mount];
+              const gait=!mount.grounded?'jump':Math.abs(mount.vx)>.15?'run':'idle';
+              const saddle=WW.spriteAtlas.seat(mount.kind,gait);
+              ctx.save();
+              // Use the mount's painted saddle anchor, not the player's
+              // physics foot position. Pose changes can shift the saddle.
+              ctx.translate(mount.x+mount.dir*saddle.x,mount.y+saddle.y);
+              ctx.scale(.76,.76);
+              if(p.form===null){
+                // Preserve the actual protagonist's upper body and head,
+                // but tuck the straight standing legs into a riding pose.
+                ctx.save();ctx.beginPath();ctx.rect(-60,-90,120,79);ctx.clip();
+                WW.art.draw(ctx,'hero',0,0,0,p.face<0,p.id,{action:'idle',time:now});
+                ctx.restore();
+                ctx.save();ctx.scale(p.face<0?-1:1,1);
+                ctx.lineCap='round';ctx.lineJoin='round';
+                ctx.strokeStyle='#84536a';ctx.lineWidth=6;
+                ctx.beginPath();ctx.moveTo(-3,-14);ctx.lineTo(8,-9);
+                ctx.lineTo(3,-1);ctx.stroke();
+                ctx.strokeStyle='#c38c65';ctx.lineWidth=3.5;
+                ctx.beginPath();ctx.moveTo(3,-2);ctx.lineTo(11,0);ctx.stroke();
+                ctx.restore();
+              }else{
+                WW.art.draw(ctx,p.form,0,0,0,p.face<0,p.id,
+                  {action:'idle',time:now});
+              }
+              ctx.restore();
+            }else{
+              WW.art.draw(ctx,p.form||'hero',p.x,p.y,
+                Math.floor(p.frame)%6,p.face<0,p.id,{
+                  action:p.hurt>0?'hurt':!p.grounded?(p.vy<0?'jump':'fall'):
+                    Math.abs(p.vx)>0.25?'run':'idle',
+                  time:now,grounded:p.grounded
+                });
             }
-            WW.art.draw(ctx,p.form||'hero',p.mount!==null?0:p.x,
-              p.mount!==null?0:p.y,Math.floor(p.frame)%6,p.face<0,p.id,{
-                action:p.mount!==null?'idle':p.hurt>0?'hurt':
-                  !p.grounded?(p.vy<0?'jump':'fall'):Math.abs(p.vx)>0.25?'run':'idle',
-                time:now,grounded:p.grounded&&p.mount===null
-              });
-            ctx.restore();
           }
         }
         // Four tiny feathers over Moonwing communicate remaining lift without
