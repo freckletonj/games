@@ -46,3 +46,19 @@ test('painted water is still governed by water-body collision geometry',()=>{
     assert.equal(caveContainsWater(level,x,level.cave.groundAt(x)+12),false);
   }
 });
+
+test('overlapping painted chunks cover the entire world',()=>{
+  const level=compileCave();
+  const chunks=caveArtManifest(level).chunks;
+  assert.deepEqual(chunks.map(({from,to})=>[from,to]),
+    [[0,48],[44,92],[88,136],[132,160]]);
+  assert.equal(chunks[0].from,0);
+  assert.equal(chunks.at(-1).to,level.width);
+  for(let i=1;i<chunks.length;i++){
+    assert.equal(chunks[i-1].to-chunks[i].from,4);
+    assert.equal(chunks[i].overlapPixels,64);
+    assert.deepEqual(chunks[i].recommendedPainting,{
+      width:(chunks[i].to-chunks[i].from)*32,height:level.height*32
+    });
+  }
+});

@@ -1,96 +1,78 @@
-# Luminous Grotto: geometry-first image-model painting experiment
+# Luminous Grotto: geometry-first painted level prototype
 
-The playable optional sixth chapter is authored in `src/cave-layout.js`.
-It is deliberately **not another heightfield-only painted landscape**: its
-physical cave ceiling, physical floor, submerged pools and one-way shelves
-share the same authored cell coordinates as the exported color-wireframe SVG
-guides. Objects and creatures are separate runtime data.
+The optional sixth chapter is code-authored in `src/cave-layout.js`. Its roof,
+floor, bounded water, and shelves are authoritative for physics and rendering.
+Players, creatures, pickups and the UI are excluded from all art guides.
 
-## Pipeline
+## End-to-end workflow
 
 ```sh
-cd phaser
-npm test
-node scripts/export-cave-guides.mjs
-npm run build
+npm install --prefix phaser
+npm test --prefix phaser
+node phaser/scripts/export-cave-guides.mjs --hires
+npm run build --prefix phaser
+python phaser/tests/cave_painted.py  # requires Playwright and Chromium
 ```
 
-The exporter writes `dist/cave-guides/manifest.json` plus four static mask
-layers per chunk. Chunks are 48 cells wide with 4-cell overlaps, all in
-**absolute world coordinates** and 16 pixels per unit cell.
+The exporter writes `dist/cave-guides/world-physical-rock.png`: a full,
+2560×992, static-only reference bitmap in the level's actual aspect ratio.
+It also writes an SVG equivalent, `manifest.json` and PNG/SVG guides for
+every chunk and static depth plane. Purple = solid rock; cyan = bounded
+swimmable water; amber = one-way shelves; dark blue = air.
 
-Feed the corresponding SVG mask and the manifest's per-plane prompt to an
-image model; request a painting in the exact SVG pixel dimensions.
-The physical-rock mask shows rock in purple, submerged water in cyan, and
-one-way ledge tops in amber. Foreground masks isolate ceiling occlusion.
-Do not send object positions, enemy sprites, collectible anchors or HUD into
-the diffusion image inputs. The world image should remain static art.
+The four canonical painted chunks cover `[0,48]`, `[44,92]`, `[88,136]`,
+and `[132,160]` in absolute world cells. Each has a four-cell overlap.
+The manifest gives each chunk's recommended 2× image-model output size,
+as well as per-plane prompts and parallax values. With `--hires` the
+per-chunk PNG control images are also 2×; the default is 1×.
 
-## First static-only generated art integration
+Give an image model the master control first for artistic continuity.
+Then provide each chunk's own PNG guide, the corresponding manifest prompt
+and paintings of adjacent chunks as references. Request the exact listed
+width and height, preserving the geometry, waterline and overlap edges.
+Never add characters, signs, collectibles, projectiles, UI or movable effects.
 
-Two image-model-painted, **static-only** cavern paintings now ship as local WebP:
-`assets/generated/luminous-grotto-rock.webp` and
-`assets/generated/luminous-grotto-ambient.webp`. Both were generated from
-a structural guide showing **only** the authored ceiling, floor, two bounded
-water chambers and ledges. They intentionally have no characters, HUD,
-creatures, collectibles, projectiles, signs, bubbles, or moving effects.
+Save the painted image output to, for example:
 
-The rock painting is divided into non-overlapping 48-cell-wide runtime chunks.
-Their crop boundaries are computed from the absolute world span, not from a
-repeating texture pattern. The painterly source is drawn **only** inside masks
-formed from the same roof, floor and water coordinates that the simulation
-uses. Waterlines and solid shelves remain geometry-driven. The second
-painting provides a subdued atmospheric backdrop; a second lighter parallax
-plane remains procedural. All assets are embedded by esbuild in the one-file
-offline HTML. No image-generation service is invoked at runtime.
+```text
+phaser/assets/generated/cave-chunks/chunk-00-physical-rock.webp
+phaser/assets/generated/cave-chunks/chunk-01-physical-rock.webp
+phaser/assets/generated/cave-chunks/chunk-02-physical-rock.webp
+phaser/assets/generated/cave-chunks/chunk-03-physical-rock.webp
+```
 
-These are **first-pass, full-level 16:9 paintings**, encoded at 1280x720 for
-this prototype. The physical world is 2560x992; therefore the artistic image
-is stretched to the canonical world-space guide coordinates. Geometry masks
-make collision exact but cannot guarantee that **internal painted features**
-match the physical boundary pixel-for-pixel. The next quality pass should
-generate each 768x992 chunk from its own exact-aspect static guide, blend
-4-cell overlaps and reject visible collision/art mismatch. The artist must
-never decide or move colliders.
+PNG is also accepted. All four chunk files for a plane are required;
+the build rejects incomplete planes. Optional planes are `distant-arches`,
+`mist-and-crystals`, and `foreground-occlusion`, using the same filename
+format. The esbuild step discovers and embeds any complete planes into
+the single-file offline `dist/wonderwood-phaser.html` automatically.
+No image model or network service is invoked at game runtime.
 
-The artwork comes from model-generated scenery, not from baked gameplay
-screenshots. Keeping dynamic objects out of the generation prompt prevents
-duplicate creatures and HUD elements during player movement.
+## Runtime behavior
 
-### Reproducibility checks
+Physical-rock art is drawn only within the exact authored roof, floor and
+water polygons. New chunks crossfade over the preceding opaque chunk across
+their shared four-cell overlap, avoiding see-through seams. The rock scroll
+factor is 1 (fixed to physics). The distant plane uses scroll factor 0.16,
+the mist plane 0.34; neither repeats a wallpaper tile. Optional foreground
+art is clipped to the roof and drawn above the player for depth.
+Press **G** while playing to compare physical contours to rendered painting.
 
-`npm test --prefix phaser` verifies the packaged WebP blobs, no-gap source
-crops and water physics. The existing Phaser workflow now also runs
-`phaser/tests/cave_painted.py` against the exact built standalone HTML:
-it checks both art textures load without external requests, four terrain
-chunks span the world, and a real keyboard input moves the real player in
-Chromium. The script saves `dist/phaser-grotto-painted.png` for visual
-comparison. During play, press **G** to show or hide the actual solid-boundary,
-waterline and shelf wireframe over the generated art.
+The two existing generated WebP illustrations provide a complete fallback
+when no per-chunk paintings are present. They are 1280×720 full-world
+drafts, stretched to the 2560×992 authored world. They establish the
+rendering concept, but are **not** genuine high-resolution per-chunk art;
+that requires image-model outputs saved under `assets/generated/cave-chunks`.
 
-The physical cave geometry is authoritative regardless of artwork. The
-ceilings block the player, and the water chamber controls swimming. The
-existing ground-heightfield locomotion drives the cave floor. The new
-chapter is selectable in the ordinary chapter menu, at the end of the
-existing campaign. The original five chapters are unchanged.
+## Validation and limitations
 
-### What to evaluate
+`npm test --prefix phaser` checks source masks, exported PNG pixel samples,
+chunk geometry and swimming collision. The Playwright regression tests
+actual player movement, loaded painted textures and offline resource usage
+in the built HTML. GitHub Actions is configured to upload the HTML as
+`wonderwood-phaser-playable` and guides as `luminous-grotto-guides`.
 
-Walk down the entrance into the first flooded bowl, befriend a Tidefox,
-transform to swim and dive, then travel through the dry connecting island
-into the deeper sanctuary. Take the Grotto Pearl and return through the
-right-hand exit. Check that the cave's ceiling blocks upward travel and
-that no water extends beyond the rock geometry. Compare the exported SVG
-guides to screenshots of the geometry at identical x coordinates.
-
-**Limitations:** this remains a vertical slice, not final production
-art. The generated rock detail is substantially richer than the procedural
-placeholder but the 16:9 source is resampled to the physical world ratio,
-so detailed edge registration is approximate; the occlusion guide is
-intentionally conservative. Player collision uses a
-continuous floor and roof; complex overhangs, tunnels, variable vertical
-walkable chambers at the same x coordinate, and full wall contact for
-projectiles require a generalized polygon collision engine later. The
-existing player keeps the stage's 2D sideways-scroll perspective, not
-full volumetric 3D caves. Existing gameplay browser tests must still be
-run locally on the actual built HTML before treating the level as finished.
+The cave is a side-scrolling heightfield with two underwater bowls and
+one-way shelves, not a general polygon-tunnel collision system. Image
+generation remains a human-driven external step; the pipeline deliberately
+does not change collision when paintings are replaced.

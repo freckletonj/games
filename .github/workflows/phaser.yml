@@ -40,6 +40,14 @@ jobs:
           ! grep -E '<script[^>]+src=|<link[^>]+href=' dist/wonderwood-phaser.html
       - name: Export art masks from compiled semantic worlds
         run: node phaser/scripts/export-art-guides.mjs
+      - name: Export full-level and per-plane cave geometry bitmaps
+        run: node phaser/scripts/export-cave-guides.mjs
+      - name: Publish cave painting control images
+        uses: actions/upload-artifact@v4
+        with:
+          name: luminous-grotto-guides
+          path: dist/cave-guides/
+          if-no-files-found: error
       - name: Publish editable art masks and anchor metadata
         uses: actions/upload-artifact@v4
         with:
