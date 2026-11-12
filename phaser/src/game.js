@@ -11,7 +11,8 @@ import {TICK_MS,simulationTicks,queueInputEdges,withoutInputEdges} from './fixed
 import {poseFor,gesture} from './animation.js';
 import {feedTrust,RESPAWN_SECONDS,DISTRACTION_SECONDS} from './creatures.js';
 import {advanceTreatFlight} from './treat-motion.js';
-import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat} from './creature-motion.js';
+import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat,
+  stompCreature} from './creature-motion.js';
 import {meadowDesign} from './meadow-design.js';
 import {validateEncounters} from './encounters.js';
 import {paintTerrain,paintScenery,addMeadowAtmosphere,
@@ -95,6 +96,8 @@ class Wonderwood extends Phaser.Scene {
           checkpoint:p.checkpoint,bubble:p.bubble,mount:p.mount?.kind||null,
           ground:this.groundAt(p.x),inWater:this.inWater(p.x,p.y-8),
           bloomWindow:p.bloomWindow||0,bloomBoosts:p.bloomBoosts||0,
+          creatureBounceWindow:p.creatureBounceWindow||0,
+          creatureBounceBoosts:p.creatureBounceBoosts||0,
           recalls:p.recalls||0}))||[],
         animals:this.animals?.map(a=>({kind:a.kind,x:a.x,y:a.y,action:a.action,
           frame:a.visual?.frame?.name,trust:a.trust,
@@ -525,6 +528,7 @@ class Wonderwood extends Phaser.Scene {
     if(id===1)visual.setTint(0xcacaff);
     const player={id,x,y,vx:0,vy:0,face:1,grounded:true,coyote:5,
       jumpBuffer:0,jumps:0,flaps:0,flapWait:0,health:3,sleep:false,invincible:0,
+      creatureBounceWindow:0,creatureBounceBoosts:0,
       form:null,caught:null,food:0,powers:0,hover:0,breach:0,bubble:false,
       mount:null,
       bloomWindow:0,bloomBoosts:0,recalls:0,
@@ -753,7 +757,9 @@ class Wonderwood extends Phaser.Scene {
         if(p.vy>1&&p.y<animal.y-6){
           animal.stun=2.1;animal.windup=0;animal.dash=0;
           gesture(animal,'hurt',.32);
-          p.vy=-4.4;this.sparkle(animal.x,animal.y);
+          stompCreature(p);
+          this.sparkle(animal.x,animal.y);
+          this.flash('Creature bounce! Tap Jump again for a bigger leap',850);
         }else if(animal.dash>0&&p.invincible<=0){
           p.health--;p.invincible=1.5;p.vx=animal.x<p.x?3:-3;
           gesture(p,'hurt',.36);
@@ -865,6 +871,10 @@ class Wonderwood extends Phaser.Scene {
         gesture(p,'jump',.22);
         this.sparkle(p.x,p.y,0xffc6e8);
         this.flash('Perfect spring! Extra-high jump',1050);
+      }else if(event==='creatureBounceBoost'){
+        gesture(p,'jump',.3);
+        this.sparkle(p.x,p.y-6,0xffecb5);
+        this.flash('Super spring!',850);
       }else if(event==='doubleJump'){
         gesture(p,'jump',.18);this.sparkle(p.x,p.y);
       }else if(event==='flap'){
