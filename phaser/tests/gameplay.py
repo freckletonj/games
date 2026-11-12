@@ -58,10 +58,13 @@ def main():
         )
 
         # Catching requires genuine projectile contact with a fed creature.
-        press_until(
-            page, "g",
-            "window.__wonderwoodPhaser.snapshot().players[0].caught === 'springaroo'",
-        )
+        print("Ready to capture:", snapshot(page), flush=True)
+        page.keyboard.down("g")
+        page.wait_for_timeout(2200)
+        page.keyboard.up("g")
+        caught = snapshot(page)
+        print("After capture attempt:", caught, flush=True)
+        assert caught["players"][0]["caught"] == "springaroo", caught
         press_until(
             page, "t",
             "window.__wonderwoodPhaser.snapshot().players[0].form === 'springaroo'",
