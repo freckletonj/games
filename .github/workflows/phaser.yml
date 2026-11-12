@@ -54,5 +54,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wonderwood-phaser-preview
-          path: dist/phaser-preview.png
+          path: |
+            dist/phaser-preview.png
+            dist/phaser-title.png
           if-no-files-found: ignore
