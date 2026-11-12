@@ -108,6 +108,18 @@ export function paintSoil(scene,contour){
     ctx.closePath();
     ctx.globalAlpha=.17;ctx.fillStyle=tones[3];ctx.fill();
     ctx.globalAlpha=1;
+    // Short muted root/strata strokes follow the same continuous heightfield.
+    for(let x=26,i=0;x<scene.worldW;x+=34+(i++%4)*6){
+      const y=scene.groundAt(x)+6;
+      ctx.strokeStyle=tones[3];
+      ctx.lineWidth=1;
+      ctx.globalAlpha=.095;
+      ctx.beginPath();
+      ctx.moveTo(x,y);
+      ctx.quadraticCurveTo(x-4,y+9,x+7,y+15);
+      ctx.stroke();
+    }
+    ctx.globalAlpha=1;
     const key='painted-soil-'+scene.chapter.id;
     if(scene.textures.exists(key))scene.textures.remove(key);
     scene.textures.addCanvas(key,paint);
@@ -120,6 +132,80 @@ export function paintSoil(scene,contour){
     rim.lineStyle(1,0xfaf6dc,.10);
     rim.strokePoints(contour.map(point=>({x:point.x,y:point.y-1})));
   }
+
+
+// Each one-way ledge gets a subtle, painted silhouette. The horizontal top
+// always matches the semantic collider; only the underside is irregular.
+// No unrelated props or giant repeated jungle tiles masquerade as geometry.
+function paintLedge(scene,platform,index,biome){
+  const w=platform.length*TILE,x=platform.x*TILE,y=platform.y*TILE;
+  const palette={
+    meadow:['#90b29b','#648f79','#35565a','#d0d9b6','#456960'],
+    coast:['#abd1c5','#679b99','#355f71','#d3f0e3','#4b8186'],
+    summit:['#c6bdd5','#8386a8','#454e73','#f0e6df','#646d93']
+  }[biome];
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.ceil((w+16)*2);
+  canvas.height=76;
+  const ctx=canvas.getContext('2d');
+  ctx.scale(2,2);
+  const left=6,right=w+10,top=7;
+  const bottom=at=>23+2.9*Math.sin(at*.043+index*2.3)+
+    1.6*Math.sin(at*.127-index*.71);
+  ctx.beginPath();
+  ctx.moveTo(left+2,top);
+  ctx.lineTo(right-2,top);
+  ctx.quadraticCurveTo(right+2,top+1,right,top+5);
+  for(let at=right;at>=left;at-=4)
+    ctx.lineTo(at,bottom(at));
+  ctx.quadraticCurveTo(left-2,top+9,left,top+4);
+  ctx.closePath();
+  ctx.save();
+  ctx.shadowColor='#142b38';
+  ctx.shadowBlur=7;
+  ctx.shadowOffsetY=4;
+  const wash=ctx.createLinearGradient(0,top,0,34);
+  wash.addColorStop(0,palette[0]);
+  wash.addColorStop(.29,palette[1]);
+  wash.addColorStop(1,palette[2]);
+  ctx.fillStyle=wash;
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.clip();
+  // Staggered flecks and shallow geological marks, never regular tile stamps.
+  for(let i=0,at=left+9;at<right-3;i++,at+=15+(i%3)*5){
+    const py=top+8+(i%3)*4;
+    ctx.beginPath();
+    ctx.ellipse(at,py,5+(i%4)*2,1.2+(i%2),-.13,0,Math.PI*2);
+    ctx.fillStyle=palette[i%4===0?3:4];
+    ctx.globalAlpha=i%4===0?.18:.14;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(at-4,py+5);
+    ctx.quadraticCurveTo(at+2,py+3,at+8,py+6);
+    ctx.strokeStyle=palette[3];
+    ctx.lineWidth=.65;
+    ctx.globalAlpha=.18;
+    ctx.stroke();
+  }
+  ctx.restore();
+  ctx.globalAlpha=1;
+  // A single thin landing highlight stays aligned with the real y collider.
+  ctx.beginPath();
+  ctx.moveTo(left+2,top+.45);
+  ctx.lineTo(right-2,top+.45);
+  ctx.lineWidth=1.7;
+  ctx.strokeStyle=palette[3];
+  ctx.globalAlpha=.75;
+  ctx.stroke();
+  ctx.globalAlpha=1;
+  const key='ledge-paint-'+scene.chapter.id+'-'+index;
+  if(scene.textures.exists(key))scene.textures.remove(key);
+  scene.textures.addCanvas(key,canvas);
+  scene.add.image(x-8,y-7,key).setOrigin(0).setDepth(-18);
+}
 
 export function paintTerrain(scene){
     const level=scene.level,biome=level.biome;
@@ -141,38 +227,11 @@ export function paintTerrain(scene){
       graphics.lineBetween(x,y,x+28,y+3);
       graphics.lineBetween(x+8,y+12,x+38,y+16);
     }
-    for(const platform of level.platformSegments.filter(p=>p.kind==='platform')){
-      const x=platform.x*TILE,y=platform.y*TILE,w=platform.length*TILE;
-      graphics.fillStyle(0x354c62,.96);
-      graphics.fillRoundedRect(x,y,w,9,4);
-      graphics.lineStyle(3,EDGE[biome],.92);
-      graphics.lineBetween(x+2,y,x+w-2,y);
-      graphics.lineStyle(1,0xffffff,.25);
-      graphics.lineBetween(x+3,y+4,x+w-3,y+4);
-      // A natural, repeating platform edge from the same illustrated kit,
-      // independent of the platform's rectangular collision surface.
-      if(biome==='meadow'){
-        scene.add.tileSprite(x,y-4,w,19,'forest-platform').setOrigin(0,0)
-          .setTileScale(.39,.39).setAlpha(.83).setDepth(-18);
-      }else{
-        // The jungle leaf bitmap belongs only in the forest. The coast has
-        // sea-polished stone shelves, while the summit has frosted rock.
-        const shelf=scene.add.graphics().setDepth(-18);
-        const coast=biome==='coast';
-        shelf.fillStyle(coast?0x4e7880:0x62637e,.93);
-        shelf.fillRoundedRect(x,y-3,w,13,4);
-        shelf.fillStyle(coast?0x93c7bf:0xbab4d9,.52);
-        shelf.fillRoundedRect(x+2,y-3,Math.max(1,w-4),3,2);
-        shelf.lineStyle(1,coast?0xd6f3dc:0xf1dff5,.43);
-        shelf.lineBetween(x+4,y+3,x+w-4,y+3);
-        for(let offset=12;offset<w-6;offset+=23){
-          const px=x+offset+(Math.floor(offset/23)%2)*4;
-          shelf.fillStyle(coast?0xa3d7cf:0xc1b9de,.24);
-          if(coast)shelf.fillEllipse(px,y+9,9,3);
-          else shelf.fillTriangle(px-3,y+8,px+4,y+8,px+1,y+15);
-        }
-      }
-    }
+    // All ledges share an illustrative material language, including their
+    // end-caps. Their collision comes exclusively from the compiler.
+    for(const [index,platform] of level.platformSegments
+      .filter(p=>p.kind==='platform').entries())
+      paintLedge(scene,platform,index,biome);
     const water=scene.add.graphics().setDepth(-23);
     for(const pool of level.waterBodies){
       const top=pool.surface*TILE;
