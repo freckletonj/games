@@ -26,10 +26,9 @@ export function caveMaskSvg(level,{from=0,to=level.width,layer='physical-rock',g
   const content=layer==='physical-rock'?
     `<rect x="${from*TILE}" y="0" width="${w}" height="${h}" fill="#182d40"/><g fill="#805c77">${rocks}</g><g fill="#2388af" opacity=".9">${water}</g>${guidesMarkup}`:
     layer==='foreground-occlusion'?
-      `<g fill="#56425d" opacity=".8">${roofPolygon?<polygon-placeholder/>:''}</g>`:
+      `<g fill="#56425d" opacity=".85"><polygon points="${roofPolygon}"/></g>`:
       `<rect x="${from*TILE}" y="0" width="${w}" height="${h}" fill="${layer==='distant-arches'?'#25445d':'#355974'}"/>`;
-  const foreground=layer==='foreground-occlusion'?
-    `<g fill="#56425d" opacity=".85"><polygon points="${roofPolygon}"/></g>`:content;
+  const foreground=content;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"
     viewBox="${from*TILE} 0 ${w} ${h}">
 <title>Luminous Grotto ${layer} chunk ${from}-${to}</title>
