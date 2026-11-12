@@ -126,7 +126,7 @@ class Wonderwood extends Phaser.Scene {
           artScale:visual.scaleX
         }))||[],
         players:this.players?.map(p=>({x:p.x,y:p.y,face:p.face,vx:p.vx,vy:p.vy,
-          action:p.action,frame:p.visual?.frame?.name,
+          action:p.action,frame:Number(p.visual?.frame?.name),
           texture:p.visual?.texture?.key,grounded:p.grounded,
           jumps:p.jumps,flaps:p.flaps,food:FRUITS[p.food],form:p.form,
           caught:p.caught,health:p.health,sleep:p.sleep,
@@ -137,7 +137,8 @@ class Wonderwood extends Phaser.Scene {
           creatureBounceBoosts:p.creatureBounceBoosts||0,
           recalls:p.recalls||0}))||[],
         animals:this.animals?.map(a=>({kind:a.kind,x:a.x,y:a.y,action:a.action,
-          frame:a.visual?.frame?.name,texture:a.visual?.texture?.key,
+          frame:Number(a.visual?.frame?.name),
+          texture:a.visual?.texture?.key,
           trust:a.trust,
           distracted:a.distraction,respawn:a.respawn,
           captured:a.captured,windup:a.windup,dash:a.dash,
@@ -152,7 +153,8 @@ class Wonderwood extends Phaser.Scene {
         honeyPuddles:this.honeyPuddles?.map(p=>({x:p.x,life:p.life}))||[],
         orbStates:this.orbs?.map(o=>({x:o.x,y:o.y,vx:o.vx,vy:o.vy,
           life:o.life,bounces:o.bounces,
-          texture:o.visual?.texture?.key,frame:o.visual?.frame?.name}))||[],
+          texture:o.visual?.texture?.key,
+          frame:Number(o.visual?.frame?.name)}))||[],
         vents:this.setpieces?.filter(p=>p.kind==='bubbleVent')
           .map(p=>({x:p.x,y:p.y}))||[],
         paused:this.paused,

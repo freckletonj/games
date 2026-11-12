@@ -19,9 +19,10 @@ fi
 npm run quality --prefix phaser
 npm run build --prefix phaser
 test -s dist/wonderwood-phaser.html
+python phaser/tests/smoke.py
 
 if [[ "${1:-focused}" == full ]]; then
-  for script in smoke gameplay dynamics creature_bounce water-slope mounts complete_meadow chapters; do
+  for script in gameplay dynamics creature_bounce water-slope mounts complete_meadow chapters; do
     python "phaser/tests/$script.py"
   done
 fi

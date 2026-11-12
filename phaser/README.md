@@ -403,3 +403,9 @@ knockback, plus Unicorn/Pegasus actual on-slope speed. Threshold tests use
 these numbers as regression gates. The real-input feeding test now waits
 for the first *rendered* painted eating pose rather than assuming the same
 simulation tick that awards trust has already advanced the animation.
+
+The focused local verification also boots the freshly built standalone HTML
+in real Chromium (`tests/smoke.py`) after checking Node mechanics and build
+output. Animation frame names are normalized to numeric indices in the
+read-only browser snapshot, so tests do not depend on whether Phaser stores
+texture frame keys as strings or numbers.
