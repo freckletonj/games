@@ -499,7 +499,7 @@ class Wonderwood extends Phaser.Scene {
       if(friendly||animal.stun>0){
         animal.windup=0;animal.dash=0;
       }
-      const lure=this.lures.find(f=>Math.abs(f.x-animal.x)<125);
+      const lure=this.lures.find(f=>Math.abs(f.x-animal.x)<155);
       let target=lure?.x ?? (animal.homeX+Math.sin(time*.00055+animal.homeX)*32);
       const diff=target-animal.x;
       // At full trust, pause in place for the player's capture attempt.
@@ -715,7 +715,12 @@ class Wonderwood extends Phaser.Scene {
       }else if(actions[0].rightPressed||actions[1].rightPressed){
         this.choice=(this.choice+1)%WW.chapters.length;this.updateMenuText();
       }
-      if(actions.some(a=>a.jumpPressed||a.foodPressed))this.startStage(this.choice);
+      if(actions.some(a=>a.jumpPressed||a.foodPressed)){
+        this.startStage(this.choice);
+        // Preserve the start button's held state across the scene transition.
+        // A held A/Space must not become a *new* jump on the first game frame.
+        this.lastInput=actions;
+      }
       return;
     }
     if(actions.some(a=>a.pausePressed)){
