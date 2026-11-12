@@ -52,3 +52,18 @@ test('gait responds to speed and takeoff stretch relaxes in flight',()=>{
   const landing=poseFor(manifest,'land',.3,0);
   assert.ok(landing.sy>poseFor(manifest,'land',0,0).sy);
 });
+
+test('gliding and swimming use restrained painted-pose movement, not stretched sprites',()=>{
+  const manifest=JSON.parse(readFileSync(new URL('glimmermoth/manifest.json',base)));
+  const a=poseFor(manifest,'glide',.10,1);
+  const b=poseFor(manifest,'glide',.24,1);
+  assert.notEqual(a.dy,b.dy);
+  for(const pose of [a,b,
+    poseFor(manifest,'swim',.17,2),
+    poseFor(manifest,'dash',.15,2),
+    poseFor(manifest,'stunned',.15)]){
+    assert.ok(pose.sx>.90&&pose.sx<1.11,pose);
+    assert.ok(pose.sy>.90&&pose.sy<1.11,pose);
+    assert.ok(Math.abs(pose.rotation)<.10,pose);
+  }
+});

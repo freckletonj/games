@@ -41,7 +41,7 @@ export function poseFor(manifest, action, elapsed, motion=0, phase=0) {
       // Stretch most strongly at takeoff, then settle back toward the
       // painted silhouette instead of staying permanently elongated.
       const launch=Math.exp(-elapsed*4.5);
-      sx=1-.12*launch;sy=1+.15*launch;dy=-2.3*launch;
+      sx=1-.08*launch;sy=1+.09*launch;dy=-1.6*launch;
       break;
     }
     case 'fall':{
@@ -52,16 +52,22 @@ export function poseFor(manifest, action, elapsed, motion=0, phase=0) {
     }
     case 'land': {
       const impact=Math.exp(-elapsed*12);
-      sx=1+.15*impact;sy=1-.17*impact;dy=1.2*impact;break;
+      sx=1+.09*impact;sy=1-.10*impact;dy=.7*impact;break;
     }
     case 'flap': {
       const wings=Math.sin(cycle*4);
-      sy=1+.052*wings;sx=1-.027*wings;dy=-2.3*wings;break;
+      sy=1+.035*wings;sx=1-.016*wings;dy=-1.4*wings;break;
     }
-    case 'glide':sy=.91;sx=1.08;dy=.4*Math.sin(cycle);break;
-    case 'swim':
-      rotation=.09*Math.sin(cycle*1.6);sy=.98+.025*Math.sin(cycle*2);
-      dy=1.4*Math.sin(cycle*2);break;
+    case 'glide': {
+      const drift=Math.sin(cycle*2);
+      sx=1+.018*drift;sy=1-.015*drift;
+      dy=.8*drift;rotation=.015*drift;break;
+    }
+    case 'swim': {
+      const stroke=Math.sin(cycle*1.6);
+      rotation=.045*stroke;sx=1+.012*stroke;sy=1-.018*stroke;
+      dy=.8*Math.sin(cycle*2);break;
+    }
     case 'feed':rotation=-.09;sy=.96;dx=2;break;
     case 'capture':rotation=-.15; sx=.97;sy=1.04;dx=3;break;
     case 'transform': {
@@ -71,8 +77,8 @@ export function poseFor(manifest, action, elapsed, motion=0, phase=0) {
     case 'eat':sy=.94+.035*breath;rotation=.045*breath;break;
     case 'happy':sy=1+.055*breath;dy=-2.2*Math.abs(breath);break;
     case 'alert':sx=1.06;sy=.98;rotation=.045*breath;break;
-    case 'dash':sx=1.13;sy=.92;rotation=.06*Math.sign(motion||1);break;
-    case 'stunned':rotation=.11*Math.sin(cycle*2);sy=.89;break;
+    case 'dash':sx=1.07;sy=.96;rotation=.035*Math.sign(motion||1);break;
+    case 'stunned':rotation=.055*Math.sin(cycle*2);sy=.96;break;
     case 'hurt':sx=1.06;sy=.93;rotation=.08;break;
     case 'sleep':sy=.92;dy=1.5;break;
     default:break;
