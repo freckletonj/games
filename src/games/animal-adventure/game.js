@@ -1456,7 +1456,8 @@ WW.games.animals = (() => {
       });
       mounts.forEach(m=>{
         WW.art.drawMount(ctx,m.kind,m.x,m.y,m.dir<0,{
-          action:m.rider!==null?(Math.abs(m.vx)>.15?'run':'idle'):
+          action:!m.grounded?'jump':m.rider!==null?
+            (Math.abs(m.vx)>.15?'run':'idle'):
             m.eating>0?'eat':m.trust>=TRUST_TARGET?'happy':
             Math.abs(m.vx)>.15?'run':'idle',
           time:m.phase, flying:m.kind==='pegasus'&&!m.grounded
