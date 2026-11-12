@@ -19,6 +19,7 @@ import mothManifest from '../../src/assets/characters/glimmermoth/manifest.json'
 import emberkit from '../../src/assets/characters/emberkit/sheet.webp';
 import emberManifest from '../../src/assets/characters/emberkit/manifest.json';
 
+import terrainAtlas from '../../src/assets/tiles/meadow/tiles.png';
 import meadow from '../../src/assets/scenes/meadow/backdrop.webp';
 import coast from '../../src/assets/scenes/coast/backdrop.webp';
 import summit from '../../src/assets/scenes/summit/backdrop.webp';
@@ -45,6 +46,7 @@ export const characters = {
   emberkit:{url:emberkit,manifest:emberManifest}
 };
 export const backgrounds = {meadow,coast,summit};
+export {terrainAtlas};
 export const sheets = {flora,props,landmarks,effects};
 export const silhouettes = {
   tree:kenneyTree,pine:kenneyPine,bush:kenneyBush,
