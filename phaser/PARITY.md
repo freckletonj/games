@@ -22,7 +22,7 @@ This is an engineering ledger, not a claim that automated tests prove fun.
 | Checkpoint restores hearts | Implemented; needs dedicated integration assertion | `src/game.js` |
 | Knockout, personal revive / nearby co-op revive | Implemented, needs damage/revive browser test | `src/game.js`, `tests/input.test.mjs` |
 | Second local player + follow bubble | Implemented, partial parity | `tests/smoke.py` |
-| Saved campaign completion / best shards | Not yet ported | Original `WW.storage` |
+| Saved campaign completion / best shards | Implemented | `src/progress.js`, `tests/progress.test.mjs`, real Meadow completion + reload |
 | Wonder Trails, ring timing and co-op relays | Not yet ported | Original campaign feature |
 | Creature pursuit/fleeing, species-specific attack lanes | Partial | Emberkit/Prismtail dash first; more behaviors pending |
 | Co-op instant revive & controller hardware rumble | Revive supported; rumble not yet ported | Hardware test required |
@@ -75,3 +75,21 @@ Pegasus poses would further improve the wingbeat cycle.
   and consumes pressed events only once across low-FPS catch-up steps.
 - The visual tween clock still uses Phaser's time; only gameplay physics,
   collectible lifetimes and AI motion have fixed simulation steps.
+
+## Merge-readiness additions
+
+- Completion saves a versioned record of each chapter's clear and best
+  shard count to local storage; reloading selects the last played chapter.
+  This persists **campaign achievements**, not partial live checkpoints or
+  arbitrary player coordinates. Tests prove the Meadow exit triggers a saved
+  completion and reload without mutating the runtime state.
+- Soil is painted in contiguous 768-world-pixel chunks with a single shared
+  world-coordinate gradient and brush pattern, avoiding oversized whole-map
+  WebGL textures. The chapter tests verify width, non-stretching and exact
+  coverage; scene-generated textures are released on chapter changes.
+- `scripts/export-art-guides.mjs` writes geometry-registered masks and
+  metadata for all five semantic levels. See `ART-DIRECTION.md`.
+- **Not proven:** the four non-Meadow campaigns can each be completed
+  end to end without test-only state intervention; input on physical
+  controllers; subjective level fun, final chapter-exclusive backdrops
+  and all hand-drawn animation in-between frames.
