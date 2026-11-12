@@ -172,7 +172,10 @@ class Wonderwood extends Phaser.Scene {
     this.cameras.main.startFollow(this.players[0].visual,true,.085,.12);
     this.cameras.main.setFollowOffset(0,12);
     this.makeHud();
-    this.flash(this.chapter.name+'  ·  '+this.chapter.intro,4200);
+    this.flash(this.chapter.id==='first-forest'?
+      'The lost light shines beyond the canopy':
+      this.chapter.name+'  ·  '+this.chapter.intro,
+      this.chapter.id==='first-forest'?2100:4200);
   }
 
   groundAt(x){
@@ -340,6 +343,19 @@ class Wonderwood extends Phaser.Scene {
     }
     const sprite=this.textures.get('forest-misc');
     if(!sprite.has('mushrooms'))sprite.add('mushrooms',0,784,0,240,378);
+    if(this.chapter.id==='first-forest'){
+      // The trail is in *semantic goalRoute coordinates*, so guidance always
+      // leads toward a real platform and doesn't imply invisible colliders.
+      for(const [i,[cell,height]] of (l.goalRoute||[]).entries()){
+        const x=cell*TILE+8,y=height*TILE-11;
+        const light=this.add.circle(x,y,i===2?3.2:2.2,
+          0xffedbd,.68).setDepth(3);
+        this.tweens.add({targets:light,alpha:{from:.18,to:.84},
+          y:y-4,scale:{from:.75,to:1.2},
+          ease:'Sine.easeInOut',duration:1000+i*230,
+          yoyo:true,repeat:-1});
+      }
+    }
     for(const [i,decoration] of (l.dressing||[]).entries()){
       const x=decoration.x*TILE,y=this.groundAt(x);
       const frame=FLORA[decoration.asset]??4;
