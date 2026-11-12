@@ -25,6 +25,14 @@ for (const [id, design] of Object.entries(designs)) {
   assert.equal(world.waterBodies.length, design.water.length);
   assert.equal(world.thermalVolumes.length,(design.thermals||[]).length);
   assert.equal(world.diagnostics.metrics.mounts,(design.mounts||[]).length);
+  assert.equal(world.diagnostics.metrics.mountCourses,(design.mountCourses||[]).length);
+  assert.equal(world.mountCourses.length,(design.mountCourses||[]).length);
+  for(const course of world.mountCourses){
+    assert.equal(course.type,'mountCourse');
+    assert.ok(world.objects.some(o=>o.kind===course.mount&&o.x<=course.nodes[0][0]));
+    assert.ok(world.diagnostics.sectionReports.find(r=>r.id===course.section)
+      .mountCourses.includes(course.id));
+  }
   assert.deepEqual(Array.from(world.objects.filter(o=>['unicorn','pegasus'].includes(o.kind))
     .map(o=>[o.kind,o.x])),(design.mounts||[]).map(m=>[m[0],m[1]]));
 
@@ -162,6 +170,15 @@ assert.ok(compiler.analyze(unknownMount).errors.some(e=>e.includes('mounts must 
 const invalidMountX=structuredClone(original);
 invalidMountX.mounts=[['unicorn',-1]];
 assert.ok(compiler.analyze(invalidMountX).errors.some(e=>e.includes('mounts must be')));
+const missingMountForCourse=structuredClone(original);
+missingMountForCourse.mounts=[];
+assert.ok(compiler.analyze(missingMountForCourse).errors.some(e=>e.includes('Invalid mount course')));
+const backwardsMountCourse=structuredClone(original);
+backwardsMountCourse.mountCourses[0].nodes[1][0]=backwardsMountCourse.mountCourses[0].nodes[0][0]-1;
+assert.ok(compiler.analyze(backwardsMountCourse).errors.some(e=>e.includes('Invalid mount course')));
+const floatingMountCourse=structuredClone(original);
+floatingMountCourse.mountCourses[0].nodes[0][1]=2;
+assert.ok(compiler.analyze(floatingMountCourse).errors.some(e=>e.includes('Invalid mount course')));
 const unsupportedMount=structuredClone(original);
 unsupportedMount.mounts=[['pegasus',179,14]];
 assert.ok(compiler.analyze(unsupportedMount).errors.some(e=>e.includes('authored bridge or ledge')));
