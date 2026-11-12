@@ -8,14 +8,23 @@ export const VENT_PUSH=.85;
 
 export function chooseCreatureLure(animal,lures,groundAt){
   const radius=animal.flying?140:CREATURE_PATROL_RADIUS;
-  return lures.filter(lure=>lure.landed&&
-    Math.abs(lure.x-animal.homeX)<=radius&&
-    Math.abs(lure.x-animal.x)<155&&
-    (animal.flying?
-      Math.abs(lure.y-animal.homeY)<80:
-      Math.abs(lure.y-groundAt(lure.x))<24))
-    .reduce((best,lure)=>!best||
-      Math.abs(lure.x-animal.x)<Math.abs(best.x-animal.x)?lure:best,null);
+  return lures.filter(lure=>{
+    if(!lure.landed||Math.abs(lure.x-animal.homeX)>radius||
+      Math.abs(lure.x-animal.x)>=155)return false;
+    if(animal.flying)return Math.abs(lure.y-animal.homeY)<80;
+    if(Math.abs(lure.y-groundAt(lure.x))>=24)return false;
+    // A fruit beyond a wall or discontinuity must not monopolize the AI.
+    // Sample the route, not only the destination height.
+    const samples=Math.ceil(Math.abs(lure.x-animal.x)/12);
+    let floor=groundAt(animal.x);
+    for(let i=1;i<=samples;i++){
+      const next=groundAt(animal.x+(lure.x-animal.x)*i/samples);
+      if(Math.abs(next-floor)>23)return false;
+      floor=next;
+    }
+    return true;
+  }).reduce((best,lure)=>!best||
+    Math.abs(lure.x-animal.x)<Math.abs(best.x-animal.x)?lure:best,null);
 }
 
 export function advanceBubbleLift(animal,step){

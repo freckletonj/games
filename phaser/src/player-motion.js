@@ -99,7 +99,8 @@ export function stepPlayerMotion(p,actions,step,world){
     }
     if(p.y>world.height-10)events.push('recall');
     const action=swimmer?'swim':p.grounded?(Math.abs(p.vx)>.3?'run':'idle'):
-      p.form==='skyling'?'glide':p.vy<0?'jump':'fall';
+      p.form==='skyling'||(p.form==='glimmermoth'&&p.hover>0&&p.vy>=0)?
+        'glide':p.vy<0?'jump':'fall';
     return {action,events};
 
 }

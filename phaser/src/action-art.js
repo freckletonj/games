@@ -17,6 +17,12 @@ export function paintedAction(kind,action){
   return null;
 }
 
+export function setpieceFrame(kind){
+  return {bounceBloom:EFFECT_FRAMES.petal,
+    windRing:EFFECT_FRAMES.gust,
+    bubbleVent:EFFECT_FRAMES.bubble}[kind];
+}
+
 export function powerFrame(kind){
   return {
     springaroo:EFFECT_FRAMES.petal,
