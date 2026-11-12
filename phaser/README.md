@@ -373,3 +373,12 @@ gameplay tuning. Check the file's timestamp before playtesting; an older
 downloadable artifact is **not** evidence that the current source builds.
 
 Local verification is required before marking a change merge-ready.
+
+## Surface-speed parity and contextual help
+
+Mounts and grounded creatures now follow slopes using the same surface-distance
+normalization as the explorer, rather than traversing steep hills faster as
+the Y coordinate snaps vertically. Deterministic tests bound actual 2D
+travel for Unicorn, Pegasus and berry-following wildlife. The in-game
+help now shows the **active** form's real control and action instead of
+incorrectly telling an already-transformed player to transform again.

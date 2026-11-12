@@ -45,6 +45,27 @@ test('Pegasus takes off, wingbeats on cooldown and descends on Down',()=>{
   assert.equal(descending.launch,null);
 });
 
+test('Unicorn and Pegasus do not accelerate along steep surface banks',()=>{
+  const ramp={...world,groundAt:x=>500-1.35*(x-100)};
+  for(const kind of ['unicorn','pegasus']){
+    const m=horse(kind);
+    m.x=100;m.y=500;
+    let maxSurfaceSpeed=0;
+    for(let tick=0;tick<100;tick++){
+      const before={x:m.x,y:m.y};
+      stepMountedMotion(m,{...idle,right:true},1,ramp);
+      maxSurfaceSpeed=Math.max(maxSurfaceSpeed,Math.hypot(
+        m.x-before.x,m.y-before.y));
+    }
+    const allowed=kind==='unicorn'?4.21:3.46;
+    assert.ok(maxSurfaceSpeed<=allowed,
+      kind+' downhill/uphill step spiked to '+maxSurfaceSpeed);
+    assert.ok(m.x>200,kind+' must climb rather than stick');
+    assert.ok(Math.abs(m.y-ramp.groundAt(m.x))<2,
+      kind+' must remain aligned with the actual surface');
+  }
+});
+
 test('mounted movement respects slope collision without scene objects',()=>{
   const m=horse('unicorn');
   m.x=124;m.y=485;

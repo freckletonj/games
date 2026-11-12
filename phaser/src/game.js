@@ -34,6 +34,16 @@ const FORMS={springaroo:'Double jump',tideling:'Swim and dive',skyling:'Four win
 const FRUITS=['berry','nectar','star'];
 const FAVORITES={springaroo:'berry',tideling:'nectar',skyling:'star',mossback:'berry',
   prismtail:'berry',glimmermoth:'star',cloudwhisp:'nectar',emberkit:'berry'};
+const FORM_HINTS={
+  springaroo:'Tap Jump twice to leap higher',
+  tideling:'Hold Jump to swim · Down to dive',
+  skyling:'Tap Jump to flap · F / B to cast a gust',
+  mossback:'F / B to throw sticky honey',
+  prismtail:'F / B to float creatures in bubbles',
+  glimmermoth:'F / B for a long feather-hover',
+  cloudwhisp:'F / B to blow creatures back',
+  emberkit:'Run faster · F / B for a gentle spark'
+};
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 
@@ -1166,8 +1176,7 @@ class Wonderwood extends Phaser.Scene {
       this.mounts.some(m=>m.trust>=100&&m.rider===null&&
         Math.abs(m.x-lead.x)<100)?
         'Friendly mount nearby · T / Y to ride':
-      lead.form==='springaroo'?
-      'Tap jump twice to leap higher':
+      lead.form?FORM_HINTS[lead.form]:
       lead.caught?'T / Y · transform into '+FORMsName(lead.caught):
       teaching&&first.distraction>0?'G / X · catch your new friend':
       teaching?'F / B · offer two berries to the glowing Springaroo':

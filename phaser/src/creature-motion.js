@@ -41,7 +41,11 @@ export function stepCreatureMotion(animal,lure,step,time,world){
       // Without this a friendly animal immediately wandered out of orb range.
       const speed=animal.stun || bubbleLift>0 || friendly || animal.windup>0 ? 0 :
         lure ? .55 : animal.kind==='prismtail' ? .76 : .36;
-      animal.x+=clamp(diff,-speed*step,speed*step);
+      const slope=animal.flying?0:
+        (world.groundAt(animal.x+2)-world.groundAt(animal.x-2))/4;
+      const groundSpeed=animal.flying?speed:
+        speed/Math.hypot(1,slope);
+      animal.x+=clamp(diff,-groundSpeed*step,groundSpeed*step);
       if(animal.knockVX){
         // A gust pushes over multiple simulation frames. No instantaneous
         // teleport into collision geometry or misleading one-frame impulse.

@@ -53,6 +53,24 @@ test('food redirects wildlife but stun prevents movement and hostile warning',()
   assert.equal(p.windup,0);
 });
 
+test('wildlife patrol and berry-following respect surface speed on slopes',()=>{
+  const hillside={...world,groundAt:x=>500-(x-100)*1.4};
+  for(const kind of ['mossback','prismtail']){
+    const p=animal(kind);
+    let maxSpeed=0;
+    for(let tick=0;tick<110;tick++){
+      const before={x:p.x,y:p.y};
+      stepCreatureMotion(p,{x:175,y:hillside.groundAt(175)},1,
+        tick*1000/60,hillside);
+      maxSpeed=Math.max(maxSpeed,Math.hypot(
+        p.x-before.x,p.y-before.y));
+    }
+    assert.ok(p.x>120,'Wildlife should still approach the treat');
+    assert.ok(maxSpeed<1.0,
+      kind+' exceeded its gentle patrol speed: '+maxSpeed);
+  }
+});
+
 test('a gust moves a stunned creature over time, with easing rather than teleporting',()=>{
   const p=animal('mossback');
   p.stun=1.8;p.knockVX=4.3;

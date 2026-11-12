@@ -46,7 +46,12 @@ export function stepMountedMotion(m,actions,step,world){
   if(settings.kind==='flight'&&actions.down&&!m.grounded)
     m.vy+=.35*step;
   m.vy=clamp(m.vy,-9,7.5);
-  const nextX=clamp(m.x+m.vx*step,12,world.width-12);
+  // On a hill, preserve the mount's speed along the surface, not just X.
+  // Otherwise a Unicorn's 4.2px horizontal step can cross 7px vertically.
+  const slope=m.grounded?
+    (world.groundAt(m.x+2)-world.groundAt(m.x-2))/4:0;
+  const groundVx=m.grounded?m.vx/Math.hypot(1,slope):m.vx;
+  const nextX=clamp(m.x+groundVx*step,12,world.width-12);
   const safeX=safeHorizontalX(m.x,nextX,m.y,world.groundAt);
   if(Math.abs(safeX-nextX)>.2)m.vx=0;
   m.x=safeX;
