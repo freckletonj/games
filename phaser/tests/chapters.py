@@ -82,6 +82,21 @@ def main():
             )
             assert not errors, (chapter, errors)
             page.screenshot(path=str(ROOT / "dist" / f"phaser-chapter-{chapter}.png"))
+            if i == 0:
+                for width, height, label in (
+                    (390, 844, "portrait"), (640, 360, "compact-landscape")
+                ):
+                    page.set_viewport_size({"width": width, "height": height})
+                    page.wait_for_timeout(110)
+                    for selector in ("#ww-status", "#ww-help"):
+                        element = page.locator(selector)
+                        if element.is_visible():
+                            rect = element.bounding_box()
+                            assert rect["x"] >= 0 and rect["y"] >= 0, rect
+                            assert rect["x"] + rect["width"] <= width + 1, rect
+                            assert rect["y"] + rect["height"] <= height + 1, rect
+                    page.screenshot(path=str(ROOT / "dist" / f"phaser-meadow-{label}.png"))
+                page.set_viewport_size({"width": 960, "height": 540})
         browser.close()
     print("All five worlds render and spawn in the standalone Phaser build: PASS")
 
