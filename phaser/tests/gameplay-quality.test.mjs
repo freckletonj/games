@@ -29,6 +29,7 @@ test('wildlife ignores inaccessible fruit and changes to a reachable newer berry
   assert.equal(result.ignoredUnreachable,true,result);
   assert.equal(result.selectedNear,true,result);
   assert.equal(result.walkedTowardNear,true,result);
+  assert.equal(result.avoidsCliff,true,result);
   const a={x:100,homeX:100,homeY:500,flying:false};
   assert.equal(chooseCreatureLure(a,[{x:120,y:500,landed:false}],()=>500),null,
     'An airborne treat must not redirect AI before landing');

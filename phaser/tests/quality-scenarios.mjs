@@ -73,8 +73,11 @@ export function berryReacquisition(){
   for(let tick=0;tick<30;tick++)
     stepCreatureMotion(animal,chosen,1,tick*1000/60,
       {width:2200,groundAt:()=>500});
+  const cliff=x=>x<120?500:460;
+  const avoidsCliff=chooseCreatureLure(animal,
+    [{x:140,y:460,food:'berry',landed:true}],cliff)===null;
   return {ignoredUnreachable:ignored,selectedNear:chosen===near,
-    walkedTowardNear:animal.x>105,animalX:animal.x};
+    walkedTowardNear:animal.x>105,avoidsCliff,animalX:animal.x};
 }
 
 export function bubbleFloat(){

@@ -47,6 +47,9 @@ def main():
                .some(a => a.kind === 'springaroo' && a.trust >= 60)""",
             timeout=30000,
         )
+        eating=next(a for a in snapshot(page)["animals"]
+            if a["kind"]=="springaroo")
+        assert eating["texture"]=="painted-states" and eating["frame"]==0, eating
         press_until(
             page, "f",
             """window.__wonderwoodPhaser.snapshot().lures.length > 0 ||

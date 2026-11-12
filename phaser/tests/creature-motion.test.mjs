@@ -53,6 +53,18 @@ test('food redirects wildlife but stun prevents movement and hostile warning',()
   assert.equal(p.windup,0);
 });
 
+test('a gust moves a stunned creature over time, with easing rather than teleporting',()=>{
+  const p=animal('mossback');
+  p.stun=1.8;p.knockVX=4.3;
+  const initial=p.x;
+  stepCreatureMotion(p,null,1,0,world);
+  assert.ok(p.x-initial>3&&p.x-initial<5);
+  for(let i=1;i<25;i++)
+    stepCreatureMotion(p,null,1,i*1000/60,world);
+  assert.ok(p.x>initial+20&&p.x<initial+29,p);
+  assert.equal(p.knockVX,0,'Gust does not cause endless sliding');
+});
+
 test('captured creatures return exactly once when their simulation timer expires',()=>{
   const p=animal('glimmermoth');
   p.captured=true;p.respawn=17;p.trust=100;p.distraction=9;
