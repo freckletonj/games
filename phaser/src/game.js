@@ -14,6 +14,7 @@ import {advanceTreatFlight} from './treat-motion.js';
 import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat,
   stompCreature} from './creature-motion.js';
 import {meadowDesign} from './meadow-design.js';
+import {readProgress,playChapter,completeChapter,writeProgress} from './progress.js';
 import {addMeadowIllustration} from './meadow-art.js';
 import {validateEncounters} from './encounters.js';
 import {paintTerrain,paintScenery,addMeadowAtmosphere,
@@ -56,7 +57,9 @@ class Wonderwood extends Phaser.Scene {
     this.keyboard=bindings.map(layout=>Object.fromEntries(Object.entries(layout)
       .map(([action,codes])=>[action,codes.map(code=>this.input.keyboard.addKey(code))])));
     this.lastInput=[{},{}];
-    this.choice=0;
+    this.progress=readProgress(localStorage,WW.chapters.map(chapter=>chapter.id));
+    this.choice=Math.max(0,WW.chapters.findIndex(chapter=>
+      chapter.id===this.progress.lastPlayed));
     this.twoPlayers=false;
     this.paused=false;
     // The title is native-resolution HTML, independent of the 2x world camera.
@@ -111,7 +114,9 @@ class Wonderwood extends Phaser.Scene {
         parallaxLayers:this.parallaxLayers?.length||0,
         foods:this.shared?.foods?{...this.shared.foods}:null,
         picnics:this.shared?.picnics||0,
-        relic:this.shared?.relic||false,shards:this.shared?.shards||0})
+        relic:this.shared?.relic||false,shards:this.shared?.shards||0,
+        progress:{...this.progress,completed:[...this.progress.completed],
+          bestShards:{...this.progress.bestShards}}})
     };
   }
 
@@ -206,7 +211,8 @@ class Wonderwood extends Phaser.Scene {
     this.backdrop.setScale(Math.max(960/this.backdrop.width,540/this.backdrop.height));
     this.cameras.main.setBackgroundColor(SKY[biome]);
     this.menuCounter.textContent='CHAPTER '+String(this.choice+1).padStart(2,'0')+
-      ' / '+String(WW.chapters.length).padStart(2,'0');
+      ' / '+String(WW.chapters.length).padStart(2,'0')+
+      (this.progress.completed.includes(chapter.id)?' · COMPLETED':'');
     this.menuMode.textContent=this.twoPlayers?'Two explorers · Local co-op':'One explorer · Solo play';
     document.getElementById('ww-menu-coop').textContent=
       this.twoPlayers?'Switch to solo':'Enable local co-op';
@@ -229,6 +235,8 @@ class Wonderwood extends Phaser.Scene {
     this.choice=index;
     this.stage=index;
     this.chapter=WW.chapters[index];
+    this.progress=playChapter(this.progress,this.chapter.id);
+    writeProgress(localStorage,this.progress);
     const original=designs[this.chapter.id];
     const spec=this.chapter.id==='first-forest'?meadowDesign(original):original;
     if(this.chapter.id==='first-forest')validateEncounters(spec);
@@ -928,6 +936,8 @@ class Wonderwood extends Phaser.Scene {
         }else if(this.time.now>this.noticeUntil)
           this.flash('The light needs '+FORMsName(required),1200);
       }else if(item.kind==='exit'&&this.shared.relic){
+        this.progress=completeChapter(this.progress,this.chapter.id,this.shared.shards);
+        writeProgress(localStorage,this.progress);
         this.flash('Chapter complete! The next light awakens.',1600);
         const next=this.stage+1;
         if(next<WW.chapters.length)this.startStage(next);
