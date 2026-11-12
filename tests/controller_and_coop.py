@@ -177,6 +177,19 @@ with sync_playwright() as pw:
     assert abs(offset["p1"] - offset["oldX"]) < 10, offset
     assert offset["p2"] - offset["p1"] > 200, offset
 
+    # Both Moonwing and unlimited Pegasus flight benefit from vertical
+    # anticipation, while ground travel retains a predictable fixed horizon.
+    anticipation=page.evaluate("""() => {
+      const base={x:2100,y:650,vx:5,vy:0,grounded:true};
+      const camera=props=>WW.coop.cameraTarget({...base,...props},5000,1400,480,270);
+      return {ground:camera({}).y,up:camera({grounded:false,vy:-4.6}).y,
+        down:camera({grounded:false,vy:4.5}).y,
+        groundedFast:camera({vy:-4.6}).y};
+    }""")
+    assert anticipation["up"] < anticipation["ground"]-45,anticipation
+    assert anticipation["down"] > anticipation["ground"]+40,anticipation
+    assert anticipation["groundedFast"] == anticipation["ground"],anticipation
+
     assert not errors, errors
     browser.close()
     print("PASS: controller menus/settings/pause, co-op leader camera, bubble pop and inactive passenger")
