@@ -56,7 +56,8 @@ def main():
             timeout=12000)
         boosted=state(page)["players"][0]
         page.keyboard.up("Space")
-        assert boosted["bloomWindow"]==0 and boosted["vy"]<-8,boosted
+        assert boosted["bloomWindow"]==0 and boosted["vy"]<0,boosted
+        assert boosted["y"] < bounced["y"]-25, (bounced,boosted)
         page.screenshot(path=str(GAME.parent/"phaser-bloom-boost.png"))
         assert not errors,errors
         browser.close()
