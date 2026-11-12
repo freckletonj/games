@@ -52,3 +52,13 @@ test('fixed step partitions a sequence with no lingering frame debt',()=>{
   assert.equal(ticks,6);
   assert.ok(pending<TICK_MS);
 });
+
+test('floating-point tick boundaries never produce a negative remainder',()=>{
+  let pending=0;
+  for(let i=0;i<1000;i++){
+    const {ticks,remaining}=simulationTicks(pending,i%3===0?TICK_MS:8.33333333333333);
+    assert.ok(Number.isInteger(ticks)&&ticks>=0&&ticks<=MAX_TICKS_PER_FRAME);
+    assert.ok(remaining>=0&&remaining<TICK_MS,{pending,remaining});
+    pending=remaining;
+  }
+});
