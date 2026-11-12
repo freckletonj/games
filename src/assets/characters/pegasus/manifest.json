@@ -1,0 +1,90 @@
+{
+  "name": "pegasus",
+  "image": "sheet.avif",
+  "frameWidth": 160,
+  "frameHeight": 160,
+  "columns": 4,
+  "origin": {
+    "x": 80,
+    "y": 134
+  },
+  "worldScale": 0.575,
+  "animations": {
+    "idle": {
+      "frames": [
+        0,
+        1
+      ],
+      "fps": 2
+    },
+    "run": {
+      "frames": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "fps": 9
+    },
+    "jump": {
+      "frames": [
+        6
+      ],
+      "fps": 1
+    },
+    "fall": {
+      "frames": [
+        6
+      ],
+      "fps": 1
+    },
+    "eat": {
+      "frames": [
+        1
+      ],
+      "fps": 1
+    },
+    "happy": {
+      "frames": [
+        1
+      ],
+      "fps": 2
+    },
+    "hurt": {
+      "frames": [
+        7
+      ],
+      "fps": 1
+    },
+    "sleep": {
+      "frames": [
+        0
+      ],
+      "fps": 1
+    },
+    "alert": {
+      "frames": [
+        2
+      ],
+      "fps": 1
+    }
+  },
+  "seats": {
+    "idle": {
+      "x": -5,
+      "y": -32
+    },
+    "run": {
+      "x": -6,
+      "y": -31
+    },
+    "jump": {
+      "x": -4,
+      "y": -31
+    },
+    "hurt": {
+      "x": -5,
+      "y": -32
+    }
+  }
+}

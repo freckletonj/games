@@ -19,6 +19,10 @@ import glimmermoth from '../../src/assets/characters/glimmermoth/sheet.webp';
 import mothManifest from '../../src/assets/characters/glimmermoth/manifest.json';
 import emberkit from '../../src/assets/characters/emberkit/sheet.webp';
 import emberManifest from '../../src/assets/characters/emberkit/manifest.json';
+import unicorn from '../../src/assets/characters/unicorn/sheet.avif';
+import unicornManifest from '../../src/assets/characters/unicorn/manifest.json';
+import pegasus from '../../src/assets/characters/pegasus/sheet.avif';
+import pegasusManifest from '../../src/assets/characters/pegasus/manifest.json';
 
 import terrainAtlas from '../../src/assets/tiles/meadow/tiles.png';
 import meadow from '../../src/assets/scenes/meadow/backdrop.webp';
@@ -45,6 +49,10 @@ export const characters = {
   cloudwhisp:{url:cloudwhisp,manifest:cloudManifest},
   glimmermoth:{url:glimmermoth,manifest:mothManifest},
   emberkit:{url:emberkit,manifest:emberManifest}
+};
+export const mounts = {
+  unicorn:{url:unicorn,manifest:unicornManifest},
+  pegasus:{url:pegasus,manifest:pegasusManifest}
 };
 export const backgrounds = {meadow,coast,summit};
 export const forestKit = {forestTrees,forestMisc,forestPlatform};

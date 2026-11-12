@@ -140,3 +140,36 @@ then walks through the end gate. The test deliberately reads positions
 and objective state but never modifies them, and exports two milestone
 screenshots. This closes the initial route-completion testing gap
 without pretending the remaining four chapters have equivalent coverage.
+
+## Movement dynamics and the returning painted mounts
+
+- **Bounce Blooms:** touching a bloom automatically launches the explorer.
+  Tap Jump again within a generous 22-simulation-frame (~0.37 second)
+  window for a noticeably higher leap. A buffered press at contact works,
+  too. The animation and message show the timing. The same behavior applies
+  to keyboard and standard gamepad A.
+- **Waterline walls:** swept horizontal collision against the continuous
+  heightfield prevents swimming into an uphill bank or falling below terrain.
+  A descending character that starts marginally within a slope also snaps
+  to the supporting surface instead of tunnelling through it.
+- **Painted fruit:** berry treats now display an isolated *actual blackberry
+  bunch* from the existing painted flora atlas, instead of a miniature
+  complete bush. Treats throw roughly 96 world units, with a visible
+  arcing flight before wildlife can collect them.
+- **Capture orb:** fixed, slow 3-unit/frame horizontal motion and a genuine
+  gravity-and-ground bouncing arc. It never secretly auto-aims at a fed
+  creature. A swept hit test retains reliability on low-FPS devices.
+- **Unicorn and Pegasus:** the original painted 4×2 AVIF atlases and saddle
+  anchors from [PR #6](https://github.com/freckletonj/games/pull/6)
+  are included directly in the standalone build. These are **rideable
+  mounts, not capture forms**. Two favorite treats earn trust; approach
+  and press **T / Y** to ride or dismount. Unicorn gallops faster and
+  leaps higher. Pegasus takes off with Jump, then gains height through
+  repeated **wingbeat taps**; Down descends. The actual player sprite
+  is positioned independently at the saddle. Mounted exploration is
+  optional and never changes the key-form requirement for the light.
+
+Unit tests cover bloom timing, uphill-water collision and orb
+trajectories. Browser tests cover standard gameplay, chapter rendering,
+and the full first Meadow route; physical gamepad confirmation remains
+necessary.

@@ -90,3 +90,25 @@ character style indiscriminately:
 The critical distinction: **external pack candidates are researched, not
 claimed as imported**. The visible gameplay art reuses the original
 Wonderwood character sprites and licensed ArtByte/Kenney environments.
+
+## Original painted mounts returned from PR #6
+
+`src/assets/characters/unicorn/` and
+`src/assets/characters/pegasus/` are the **original original-Wonderwood
+painted, transparent AVIF sheets and manifests** authored in
+[PR #6](https://github.com/freckletonj/games/pull/6), not outside assets
+or drawn procedural horse silhouettes. Both have four gallop frames,
+idle, jump/flight, a recovery frame, 160×160 frame cells and calibrated
+saddle positions. They are embedded in the offline Phaser HTML directly.
+The protagonist is rendered separately while riding.
+
+The original Pegasus sheet contains a full painted extended-wing
+flight pose and a folded-wing gallop frame but **not** a full
+frame-by-frame wingbeat animation. The Phaser rendering alternates those
+existing silhouettes with subtle bobbing to communicate tapping wingbeats,
+pending any further authored flight poses. This is not presented as
+an entirely new illustrated wing animation.
+
+The berry lure sprite also reuses the original `flora.webp` artwork:
+a tight crop and alpha mask of its purple berry cluster. No separate
+unlicensed berry image is imported.

@@ -48,3 +48,18 @@ This proves a reproducible input sequence succeeds on one real Chromium
 run; it does **not** establish that every alternative route is possible,
 that every species transformation is equally balanced, or that humans
 will find the level intuitively. Other chapters still need this test.
+
+## Specific movement fixes and mount parity
+
+| Mechanic | Phaser behavior | Verification |
+| --- | --- | --- |
+| Bounce bloom timing | Automatic bounce + forgiving second Jump press in ~0.37 seconds | `src/springboard.js`, `tests/movement-dynamics.test.mjs` |
+| Underwater uphill wall | Swept x collision blocks ground tunnelling; descending ground snap | `src/physics.js`, shoreline unit test |
+| Berry feed | Crop of existing painted berry bunch; longer physically animated throw | `src/game.js`; full Meadow feeding test |
+| Capture orb | Nonhoming, slow, gravity-driven and bounces on terrain | `src/physics.js`, orb trajectory unit test |
+| Unicorn | Original PR #6 painted AVIF; 2 favorite treats then T/Y to board; fast leap | `src/mounts.js`, asset manifest tests |
+| Pegasus | Original PR #6 painted AVIF; 2 star treats, T/Y board, repeated Jump flaps, Down descends | `src/mounts.js`, asset manifest tests |
+
+The original PR #6 mount **skill courses and timed mount challenges** are
+not included yet; the goal is to validate riding and collision first. New
+Pegasus poses would further improve the wingbeat cycle.
