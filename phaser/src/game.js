@@ -33,7 +33,7 @@ class Wonderwood extends Phaser.Scene {
     }
     for(const [name,url] of Object.entries(backgrounds))this.load.image('back-'+name,url);
     this.load.image('painted-terrain',terrainAtlas);
-    this.load.spritesheet('forest-trees',forestKit.forestTrees,{frameWidth:256,frameHeight:256});
+    this.load.spritesheet('forest-trees',forestKit.forestTrees,{frameWidth:512,frameHeight:512});
     this.load.image('forest-misc',forestKit.forestMisc);
     this.load.image('forest-platform',forestKit.forestPlatform);
     for(const [name,url] of Object.entries(sheets))
@@ -308,13 +308,13 @@ class Wonderwood extends Phaser.Scene {
       const x=cell*TILE+((i*13)%23)*TILE/3;
       if(l.waterBodies.some(pool=>cell>=pool.start&&cell<=pool.end))continue;
       this.add.image(x,this.groundAt(x)+15,'forest-trees',i%4)
-        .setOrigin(.5,1).setScale(.32+(i%3)*.035)
+        .setOrigin(.5,1).setScale(.16+(i%3)*.0175)
         .setAlpha(.37).setTint(tint).setDepth(-42);
     }
     for(const [i,vista] of (l.vistas||[]).entries()){
       const x=vista.x*TILE,y=this.groundAt(x);
       this.add.image(x,y+18,'forest-trees',(i+2)%4)
-        .setOrigin(.5,1).setScale(vista.span>25?.53:.43)
+        .setOrigin(.5,1).setScale(vista.span>25?.265:.215)
         .setAlpha(.82).setTint(tint).setDepth(-38);
       if(vista.role==='reveal'||vista.role==='reward')
         this.add.image(x,y,'landmarks',l.biome==='summit'?3:0)
@@ -326,8 +326,8 @@ class Wonderwood extends Phaser.Scene {
         .setOrigin(.5,1).setScale(.27+(i%3)*.04).setDepth(-17).setAlpha(.94);
     }
     const sprite=this.textures.get('forest-misc');
-    if(!sprite.has('stump'))sprite.add('stump',0,105,69,110,155);
-    if(!sprite.has('mushrooms'))sprite.add('mushrooms',0,392,0,120,189);
+    if(!sprite.has('stump'))sprite.add('stump',0,210,138,220,310);
+    if(!sprite.has('mushrooms'))sprite.add('mushrooms',0,784,0,240,378);
     for(const [i,decoration] of (l.dressing||[]).entries()){
       const x=decoration.x*TILE,y=this.groundAt(x);
       const frame=FLORA[decoration.asset]??4;
@@ -336,7 +336,7 @@ class Wonderwood extends Phaser.Scene {
       if(i%4===0 && !l.waterBodies.some(pool=>x>=pool.start*TILE&&x<=pool.end*TILE)){
         const kind=i%8===0?'stump':'mushrooms';
         this.add.image(x+27,y+3,'forest-misc',kind).setOrigin(.5,1)
-          .setScale(kind==='stump'?.28:.17).setTint(tint).setAlpha(.72).setDepth(-17);
+          .setScale(kind==='stump'?.14:.085).setTint(tint).setAlpha(.72).setDepth(-17);
       }
     }
   }
