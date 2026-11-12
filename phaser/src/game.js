@@ -76,18 +76,20 @@ class Wonderwood extends Phaser.Scene {
 
   addBackground(biome){
     this.cameras.main.setBackgroundColor(SKY[biome]);
-    const back=this.add.image(VIEW_W/2,VIEW_H/2,'back-'+biome)
+    // Scroll-factor-zero objects are screen-space in Phaser 4. The game camera
+    // is zoomed to 2x, but backgrounds must fill the full 960x540 viewport.
+    const back=this.add.image(480,270,'back-'+biome)
       .setScrollFactor(0).setDepth(-100);
-    const fit=Math.max(VIEW_W/back.width,VIEW_H/back.height);
+    const fit=Math.max(960/back.width,540/back.height);
     back.setScale(fit);
     const cloudKinds=['kenney-cloud','kenney-cloudAlt'];
     for(let n=0;n<7;n++){
-      const x=22+n*72+(n%2)*17;
-      this.add.image(x,25+(n%3)*24,cloudKinds[n%2])
-        .setScale(.42+(n%3)*.11).setAlpha(.18).setScrollFactor(0).setDepth(-90);
+      const x=55+n*145+(n%2)*15;
+      this.add.image(x,50+(n%3)*42,cloudKinds[n%2])
+        .setScale(.72+(n%3)*.14).setAlpha(.2).setScrollFactor(0).setDepth(-90);
     }
     if(biome==='summit')
-      this.add.image(410,38,'kenney-moon').setScale(.52).setAlpha(.48)
+      this.add.image(820,75,'kenney-moon').setScale(.8).setAlpha(.45)
         .setScrollFactor(0).setDepth(-89);
   }
 
@@ -96,18 +98,18 @@ class Wonderwood extends Phaser.Scene {
     this.stage=-1;
     this.chapter=null;
     this.addBackground('meadow');
-    this.add.rectangle(240,137,400,218,0x16243c,.76).setDepth(0);
-    this.add.rectangle(240,38,310,2,0xe9d9a6,.72);
-    this.add.text(240,48,'WONDERWOOD',{fontFamily:'Georgia, serif',fontSize:'34px',
+    this.add.rectangle(480,270,780,454,0x16243c,.78).setDepth(0);
+    this.add.rectangle(480,95,620,2,0xe9d9a6,.72);
+    this.add.text(480,135,'WONDERWOOD',{fontFamily:'Georgia, serif',fontSize:'66px',
       color:'#fff5d6',fontStyle:'bold'}).setOrigin(.5).setDepth(2);
-    this.add.text(240,84,'a little world worth exploring',{fontFamily:'Georgia, serif',
-      fontSize:'12px',color:'#bfe4d7'}).setOrigin(.5);
-    this.menuWorld=this.add.text(240,126,'',{fontFamily:'Georgia, serif',fontSize:'20px',
+    this.add.text(480,196,'a little world worth exploring',{fontFamily:'Georgia, serif',
+      fontSize:'22px',color:'#bfe4d7'}).setOrigin(.5);
+    this.menuWorld=this.add.text(480,275,'',{fontFamily:'Georgia, serif',fontSize:'36px',
       color:'#fff0bc'}).setOrigin(.5);
-    this.menuHint=this.add.text(240,151,'',{fontFamily:'Arial',fontSize:'10px',
+    this.menuHint=this.add.text(480,332,'',{fontFamily:'Arial',fontSize:'17px',
       color:'#d7e6e1',align:'center'}).setOrigin(.5);
-    this.add.text(240,204,'A / D or stick   ·   SPACE / A to begin\n2 toggles co-op   ·   controllers supported',
-      {fontFamily:'Arial',fontSize:'10px',color:'#c9d6d9',align:'center'})
+    this.add.text(480,420,'A / D or stick   ·   SPACE / A to begin\n2 toggles co-op   ·   controllers supported',
+      {fontFamily:'Arial',fontSize:'17px',color:'#c9d6d9',align:'center'})
       .setOrigin(.5);
     this.updateMenuText();
   }
@@ -315,20 +317,20 @@ class Wonderwood extends Phaser.Scene {
   }
 
   makeHud(){
-    this.add.rectangle(240,13,480,27,0x12233e,.66)
+    this.add.rectangle(480,24,960,48,0x12233e,.7)
       .setDepth(98).setScrollFactor(0);
-    this.hud=this.add.text(10,7,'',{fontFamily:'Arial',fontSize:'10px',
+    this.hud=this.add.text(18,14,'',{fontFamily:'Arial',fontSize:'17px',
       color:'#fff9d9'}).setDepth(100).setScrollFactor(0);
-    this.notice=this.add.text(240,39,'',{fontFamily:'Georgia, serif',
-      fontSize:'12px',color:'#fff5d7',align:'center'})
+    this.notice=this.add.text(480,70,'',{fontFamily:'Georgia, serif',
+      fontSize:'21px',color:'#fff5d7',align:'center'})
       .setOrigin(.5,0).setDepth(100).setScrollFactor(0);
-    this.help=this.add.text(240,245,'',{fontFamily:'Arial',fontSize:'9px',
+    this.help=this.add.text(480,505,'',{fontFamily:'Arial',fontSize:'16px',
       color:'#fff5dc',align:'center'}).setOrigin(.5)
       .setDepth(100).setScrollFactor(0);
-    this.pausedOverlay=this.add.rectangle(240,135,480,270,0x091b2c,.74)
+    this.pausedOverlay=this.add.rectangle(480,270,960,540,0x091b2c,.74)
       .setDepth(110).setScrollFactor(0).setVisible(false);
-    this.pauseMessage=this.add.text(240,132,'PAUSED\nSTART / ESC to resume',{fontFamily:'Georgia, serif',
-      fontSize:'22px',color:'#fff5cf',align:'center'}).setOrigin(.5)
+    this.pauseMessage=this.add.text(480,265,'PAUSED\nSTART / ESC to resume',{fontFamily:'Georgia, serif',
+      fontSize:'38px',color:'#fff5cf',align:'center'}).setOrigin(.5)
       .setDepth(111).setScrollFactor(0).setVisible(false);
     this.noticeUntil=0;
   }
