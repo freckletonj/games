@@ -709,7 +709,7 @@ class Wonderwood extends Phaser.Scene {
       // Threats explicitly warn before a short, directional dash.
       // Merely touching a calm animal never causes damage.
       const hostile=animal.kind==='emberkit'||animal.kind==='prismtail';
-      const close=this.players.find(p=>!p.bubble&&
+      const close=this.players.find(p=>!p.sleep&&!p.bubble&&
         Math.abs(p.x-animal.x)<52&&Math.abs(p.y-animal.y)<28);
       if(hostile&&!friendly&&animal.stun===0){
         if(animal.windup>0){
@@ -735,7 +735,8 @@ class Wonderwood extends Phaser.Scene {
           end-animal.attackFace*3,animal.y-2);
       }
       for(const p of this.players){
-        if(p.bubble||Math.abs(p.x-animal.x)>19||Math.abs(p.y-animal.y)>24)continue;
+        if(p.sleep||p.bubble||Math.abs(p.x-animal.x)>19||
+          Math.abs(p.y-animal.y)>24)continue;
         if(p.vy>1&&p.y<animal.y-6){
           animal.stun=2.1;animal.windup=0;animal.dash=0;
           gesture(animal,'hurt',.32);
