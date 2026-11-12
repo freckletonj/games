@@ -43,7 +43,7 @@ test('a delayed springboard press still produces the high-arc boost',()=>{
 
 test('Tidefox controls preserve swimming, breaching and upward shore collision',()=>{
   const p=explorer('tideling');
-  p.x=125;p.y=466;p.grounded=false;p.coyote=0;
+  p.x=125;p.y=458;p.grounded=false;p.coyote=0;
   const basin={start:5,end:14,surface:27};
   const shore={
     ...world,
