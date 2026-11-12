@@ -335,6 +335,56 @@ export function paintScenery(scene){
     }
   }
 
+
+/**
+ * Two translucent, screen-space mist paintings move at different fractions
+ * of camera travel. They sit *behind* all game geometry, so they add depth
+ * without becoming fake platforms or confusing interactive silhouettes.
+ */
+export function addParallaxAtmosphere(scene){
+  const biome=scene.level.biome;
+  const pigment={
+    meadow:[191,229,203],coast:[174,221,218],summit:[198,198,230]
+  }[biome];
+  const canvas=document.createElement('canvas');
+  canvas.width=1024;
+  canvas.height=224;
+  const ctx=canvas.getContext('2d');
+  // Offset overlapping transparent washes; avoid hard-edged rectangles.
+  for(let i=0;i<7;i++){
+    const x=90+i*150,y=111+20*Math.sin(i*1.83);
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.scale(1.65+(i%3)*.23,.40+(i%2)*.08);
+    const glow=ctx.createRadialGradient(0,0,8,0,0,102);
+    const rgb=pigment.join(',');
+    glow.addColorStop(0,'rgba('+rgb+',.38)');
+    glow.addColorStop(.55,'rgba('+rgb+',.17)');
+    glow.addColorStop(1,'rgba('+rgb+',0)');
+    ctx.fillStyle=glow;
+    ctx.fillRect(-108,-108,216,216);
+    ctx.restore();
+  }
+  const key='painted-atmosphere-'+biome;
+  if(scene.textures.exists(key))scene.textures.remove(key);
+  scene.textures.addCanvas(key,canvas);
+  const layers=[
+    {y:174,alpha:.20,speed:.065},
+    {y:258,alpha:.13,speed:.17}
+  ];
+  scene.parallaxLayers=layers.map(({y,alpha,speed})=>({
+    speed,
+    visual:scene.add.tileSprite(480,y,960,224,key)
+      .setScrollFactor(0).setAlpha(alpha).setDepth(-95+speed*10)
+  }));
+}
+
+export function moveParallaxAtmosphere(scene){
+  const scrollX=scene.cameras.main.scrollX;
+  for(const {visual,speed} of scene.parallaxLayers||[])
+    visual.tilePositionX=scrollX*speed;
+}
+
 export function addMeadowAtmosphere(scene){
     if(scene.chapter.id!=='first-forest')return;
     // Little animated fireflies add depth to both the opening tutorial and
