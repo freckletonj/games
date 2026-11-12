@@ -27,6 +27,12 @@ for (const [id, design] of Object.entries(designs)) {
   assert.equal(world.diagnostics.metrics.mounts,(design.mounts||[]).length);
   assert.equal(world.diagnostics.metrics.mountCourses,(design.mountCourses||[]).length);
   assert.equal(world.mountCourses.length,(design.mountCourses||[]).length);
+  for(const [kind,x] of design.mounts||[]){
+    // Built-in story progression puts optional rideable companions *beyond*
+    // the chapter relic; neither exceptional jump nor unlimited flight
+    // should replace the first required creature puzzle.
+    assert.ok(x>design.relic[1],id+' '+kind+' must not bypass the chapter relic');
+  }
   for(const course of world.mountCourses){
     assert.equal(course.type,'mountCourse');
     assert.ok(world.objects.some(o=>o.kind===course.mount&&o.x<=course.nodes[0][0]));
