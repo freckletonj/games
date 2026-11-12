@@ -88,6 +88,12 @@ def main():
                 ):
                     page.set_viewport_size({"width": width, "height": height})
                     page.wait_for_timeout(110)
+                    hud = page.locator("#ww-ui").bounding_box()
+                    canvas = page.locator("canvas").bounding_box()
+                    for axis in ("x", "y", "width", "height"):
+                        assert abs(hud[axis] - canvas[axis]) < 3, (
+                            label, axis, hud, canvas
+                        )
                     for selector in ("#ww-status", "#ww-help"):
                         element = page.locator(selector)
                         if element.is_visible():
