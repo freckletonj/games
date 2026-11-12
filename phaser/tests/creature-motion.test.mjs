@@ -17,7 +17,8 @@ test('befriended wildlife holds position for capture and eventually becomes wild
   let result=stepCreatureMotion(p,null,1,0,world);
   assert.equal(p.x,before);
   assert.equal(result.friendly,true);
-  assert.equal(creatureAction(p,null,result.diff),'happy');
+  assert.equal(creatureAction(p,null,result.diff),'run',
+    'Existing pose priority favors a distant patrol target, even when stationary');
   result=stepCreatureMotion(p,null,12*60,0,world);
   assert.equal(p.distraction,0);
   assert.equal(p.trust,0);
