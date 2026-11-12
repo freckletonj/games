@@ -4,7 +4,7 @@ WW.games.animals = (() => {
   const TYPES=Object.keys(FORM),FOODS=Object.keys(FOOD);
   const titles=Object.fromEntries(Object.entries(CREATURE).map(([kind,info])=>[kind,info.name]));
   // One world unit is one source-pixel; frames run at 60 Hz. All map jumps obey these rules.
-  const PHYSICS={run:2.25,jump:5.25,doubleJump:5.05,gravity:.36,fallGravity:.59,maxFall:7.5,
+  const PHYSICS={run:2.25,jump:5.25,doubleJump:6.8,gravity:.36,fallGravity:.59,maxFall:7.5,
     bodyHalf:9,bodyHeight:25,waterExposure:.8};
   const jumpHeight=PHYSICS.jump**2/(2*PHYSICS.gravity);
   // Two favorite treats (or three other treats) distract an animal long enough for an orb.
