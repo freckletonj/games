@@ -211,7 +211,9 @@ function paintLedge(scene,platform,index,biome){
   const key='ledge-paint-'+scene.chapter.id+'-'+index;
   if(scene.textures.exists(key))scene.textures.remove(key);
   scene.textures.addCanvas(key,canvas);
-  scene.add.image(x-8,y-7,key).setOrigin(0).setDepth(-18);
+  // The canvas was painted at 2x for antialiasing, so it MUST be displayed
+  // at half-size. Otherwise the visible shelf is twice its collision width.
+  return scene.add.image(x-8,y-7,key).setOrigin(0).setScale(.5).setDepth(-18);
 }
 
 export function paintTerrain(scene){
@@ -236,9 +238,9 @@ export function paintTerrain(scene){
     }
     // All ledges share an illustrative material language, including their
     // end-caps. Their collision comes exclusively from the compiler.
-    for(const [index,platform] of level.platformSegments
-      .filter(p=>p.kind==='platform').entries())
-      paintLedge(scene,platform,index,biome);
+    scene.ledgeVisuals=level.platformSegments
+      .filter(p=>p.kind==='platform')
+      .map((platform,index)=>({platform,visual:paintLedge(scene,platform,index,biome)}));
     const water=scene.add.graphics().setDepth(-23);
     for(const pool of level.waterBodies){
       const top=pool.surface*TILE;
