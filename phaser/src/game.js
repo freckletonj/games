@@ -56,7 +56,7 @@ class Wonderwood extends Phaser.Scene {
     window.__wonderwoodPhaser={
       engine:'Phaser 4',
       snapshot:()=>({stage:this.stage,chapter:this.chapter?.id||null,
-        players:this.players?.map(p=>({x:p.x,y:p.y,vx:p.vx,vy:p.vy,grounded:p.grounded,
+        players:this.players?.map(p=>({x:p.x,y:p.y,face:p.face,vx:p.vx,vy:p.vy,grounded:p.grounded,
           jumps:p.jumps,flaps:p.flaps,food:FRUITS[p.food],form:p.form,
           caught:p.caught,health:p.health,checkpoint:p.checkpoint,bubble:p.bubble}))||[],
         animals:this.animals?.map(a=>({kind:a.kind,x:a.x,y:a.y,trust:a.trust,
