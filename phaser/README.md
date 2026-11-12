@@ -25,14 +25,15 @@ this exact standalone HTML as a downloadable artifact.
 
 Player 1: A/D or arrows move; W/Space jump/flap/swim; S/Down dive;
 F offer fruit / creature ability; G capture distracted animals; T change form;
-E change fruit; C recall to checkpoint.
+E change fruit; C recall to checkpoint; R revive after a knockout;
+H return to chapter selection.
 
 Player 2 (when enabled): J/L move, I jump, K dive, O food/power, P capture,
-U transform, M fruit, N recall.
+U transform, M fruit, N recall, Y revive.
 
 Connected gamepads: left stick or D-pad to move; A jump/swim/flap;
 B food/power; X capture; Y transform; triggers cycle fruit;
-Back recalls; Start opens/closes pause. Second pad controls player 2.
+Back recalls; left shoulder revives; Start opens/closes pause. Second pad controls player 2.
 Keyboard 2 toggles local co-op. On title: left/right selects world,
 A or Space begins. Escape/Start pauses; R returns to chapter selection.
 
@@ -106,3 +107,26 @@ existing high-resolution creature illustrations share one stronger aesthetic
 than a mixture of generic pixel art, and form-changing play relies on
 recognizing those species. Future character packs must clear the
 licensing-and-animation criteria in [ASSETS.md](ASSETS.md).
+
+## Feature-parity verification
+
+The Phaser implementation now carries over the original **12-second**
+befriending window, **17-second** captured-creature respawn, finite fruit,
+picnic-basket refills, checkpoint healing and player knockouts/revival. Action
+keys remain aligned with the legacy game; R (or controller left shoulder)
+revives at the checkpoint, and H opens the chapter menu. The eight distinct
+forms still use only the most recently captured species, like the original.
+The Tidefox breaches near water surfaces, Moonwing recharges wingbeats in
+thermals, and Glimmermoth slows its fall rather than gaining altitude.
+
+The new **visual language** also distinguishes elemental creature powers,
+warns about incoming dashes with a readable directional lane, gives
+objectives and campfires restrained animated glows, and adds translucent
+water ripples. Ground textures darken at depth rather than repeating the
+same high-contrast motif down the entire screen.
+
+See [PARITY.md](PARITY.md) for verified behavior and remaining scope. The
+Chromium integration test exercises real feeding, capture, transformation,
+double jumping, game pause, checkpoint recall and picnic-basket restocking;
+unit tests cover creature timing, input and skill gating. Hardware controllers
+and the complete campaign are not yet verified.

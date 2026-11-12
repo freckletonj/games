@@ -246,6 +246,14 @@ class Wonderwood extends Phaser.Scene {
     const tint={meadow:'#385e4d',coast:'#567a84',summit:'#5c547c'}[this.level.biome];
     ctx.globalAlpha=.24;ctx.fillStyle=tint;
     ctx.fillRect(0,top,this.worldW,this.worldH-top);
+    // Push repeated paint into the deep ground. Keep the painted top edge
+    // luminous, while darkening the far underground to avoid wallpaper seams.
+    ctx.globalAlpha=1;
+    const depth=ctx.createLinearGradient(0,top,0,top+340);
+    depth.addColorStop(0,'rgba(15,31,40,0)');
+    depth.addColorStop(.38,'rgba(18,32,41,0.08)');
+    depth.addColorStop(1,'rgba(13,28,38,0.50)');
+    ctx.fillStyle=depth;ctx.fillRect(0,top,this.worldW,this.worldH-top);
     const key='painted-soil-'+this.chapter.id;
     if(this.textures.exists(key))this.textures.remove(key);
     this.textures.addCanvas(key,paint);
@@ -305,6 +313,17 @@ class Wonderwood extends Phaser.Scene {
       water.lineStyle(1,0xd8fff5,.22);
       for(let x=pool.start*TILE+18;x<pool.end*TILE-10;x+=39)
         water.lineBetween(x,top+16,x+16,top+15);
+      // Small moving, translucent highlights communicate that these are
+      // real water surfaces rather than painted strips or floating walls.
+      for(let i=0;i<Math.min(5,Math.floor((pool.end-pool.start)/5));i++){
+        const left=pool.start*TILE+12+i*45;
+        if(left>=pool.end*TILE-12)break;
+        const glint=this.add.ellipse(left,top+1,19+(i%3)*7,2,
+          0xcafff6,.43).setDepth(-21);
+        this.tweens.add({targets:glint,x:left+9,alpha:{from:.19,to:.62},
+          scaleX:{from:.7,to:1.18},duration:1700+i*290,
+          ease:'Sine.easeInOut',yoyo:true,repeat:-1});
+      }
     }
     const winds=this.add.graphics().setDepth(-21);
     for(const column of level.thermalVolumes){
@@ -462,16 +481,25 @@ class Wonderwood extends Phaser.Scene {
           stun:0,attack:0,windup:0,dash:0,attackFace:1,
           captured:false,flying,action:'',animationTime:0,halo,
           visual:this.actor(object.kind,x,y).setDepth(12),
-          warning:this.add.image(x,y-39,'effects',7).setScale(.08)
-            .setDepth(24).setVisible(false)});
+          warning:this.add.graphics().setDepth(24)});
       } else if(['starShard','snack','checkpoint','exit',relicKind].includes(object.kind)){
         const rooted=['snack','checkpoint','exit'].includes(object.kind);
         const y=rooted?this.groundAt(x):(object.y+.5)*TILE;
         const frame=object.kind==='starShard'?6:object.kind==='snack'?5:
           object.kind==='checkpoint'?2:object.kind==='exit'?0:7;
+        const important=object.kind===relicKind||object.kind==='exit'||
+          object.kind==='checkpoint';
+        const halo=important?this.add.ellipse(x,y-19,
+          object.kind===relicKind?36:28,object.kind===relicKind?42:33,
+          object.kind===relicKind?0xfff6cb:0xbaf4de,.11)
+          .setStrokeStyle(1.1,object.kind===relicKind?0xffefbc:0xc9f8e4,.45)
+          .setDepth(8):null;
+        if(halo)this.tweens.add({targets:halo,alpha:{from:.17,to:.48},
+          scale:{from:.91,to:1.11},duration:1200+(object.x%5)*120,
+          ease:'Sine.easeInOut',yoyo:true,repeat:-1});
         const icon=this.add.image(x,y,'props',frame).setOrigin(.5,1)
           .setScale(object.kind===relicKind?.19:.16).setDepth(10);
-        this.items.push({kind:object.kind,x,y,visual:icon,used:false});
+        this.items.push({kind:object.kind,x,y,visual:icon,halo,used:false});
       }
     }
     for(const part of this.level.setpieces||[]){
@@ -693,9 +721,19 @@ class Wonderwood extends Phaser.Scene {
         }
       }
       if(animal.halo)animal.halo.setPosition(animal.x,animal.y-17);
-      animal.warning.setPosition(animal.x,animal.y-37)
-        .setVisible(animal.windup>0)
-        .setAlpha(.55+.45*Math.sin(time*.02));
+      animal.warning.clear();
+      if(animal.windup>0){
+        const end=animal.x+animal.attackFace*51;
+        const left=Math.min(animal.x,end);
+        animal.warning.fillStyle(0xffb77b,.10+.08*Math.sin(time*.02)**2);
+        animal.warning.fillRoundedRect(left,animal.y-15,51,18,5);
+        animal.warning.lineStyle(2,0xffc785,.58);
+        animal.warning.lineBetween(animal.x,animal.y-7,end,animal.y-7);
+        animal.warning.fillStyle(0xffe3b6,.8);
+        animal.warning.fillTriangle(end+animal.attackFace*7,animal.y-7,
+          end-animal.attackFace*3,animal.y-12,
+          end-animal.attackFace*3,animal.y-2);
+      }
       for(const p of this.players){
         if(p.bubble||Math.abs(p.x-animal.x)>19||Math.abs(p.y-animal.y)>24)continue;
         if(p.vy>1&&p.y<animal.y-6){
@@ -732,7 +770,7 @@ class Wonderwood extends Phaser.Scene {
         animal.captured=true;animal.respawn=RESPAWN_SECONDS;
         animal.visual.setVisible(false);
         animal.visual.shadow?.setVisible(false);
-        animal.warning.setVisible(false);
+        animal.warning.clear();
         if(animal.halo)animal.halo.setVisible(false);
         orb.owner.caught=animal.kind;
         orb.owner.form=null;
@@ -883,10 +921,12 @@ class Wonderwood extends Phaser.Scene {
         this.sparkle(item.x,item.y,0xb7f4c8);
         this.flash('Campfire reached! Hearts restored',1350);
         item.visual.setFrame(3);
+        if(item.halo)item.halo.setStrokeStyle(1.4,0x9de9bb,.68);
       }else if(item.kind===this.chapter.key){
         const required=this.chapter.goals[0].form;
         if(p.form===required){
-          item.used=true;item.visual.destroy();this.shared.relic=true;
+          item.used=true;item.visual.destroy();item.halo?.destroy();
+          this.shared.relic=true;
           this.sparkle(item.x,item.y,0xfffac1);
           this.flash('You recovered the '+this.chapter.goals[0].name+'! Find the gate.',3400);
         }else if(this.time.now>this.noticeUntil)

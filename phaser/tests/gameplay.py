@@ -106,6 +106,19 @@ def main():
         )
         player = snapshot(page)["players"][0]
         assert abs(player["x"] - initial["players"][0]["x"]) < 3
+        assert player["health"] == 3 and not player["sleep"]
+
+        # Treats are finite, and the first picnic basket refills them.
+        food_before = snapshot(page)["foods"]["berry"]
+        assert food_before == 12, food_before
+        page.keyboard.down("d")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().foods.berry >= 16",
+            timeout=30000,
+        )
+        page.keyboard.up("d")
+        restocked = snapshot(page)
+        assert restocked["foods"]["berry"] >= 16, restocked
         assert not errors, "Page errors: " + "; ".join(errors)
         browser.close()
     print("Befriending, capture, transformation, double jump, pause and recall: PASS")
