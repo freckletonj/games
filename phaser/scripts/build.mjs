@@ -35,7 +35,7 @@ const html = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">' +
   '</head><body><div id="game"></div>' + menuMarkup +
   '<div id="ww-ui" hidden><div id="ww-status"></div><div id="ww-notice"></div><div id="ww-help"></div>' +
   '<div id="ww-pause" hidden>PAUSED / START / ESC to resume</div></div>' +
-  '<div id="credits">ArtByte CC BY 4.0 · Kenney CC0 · Phaser MIT</div>' +
+  '<div id="credits">Kenney CC0 · Phaser MIT · Art provenance in source</div>' +
   '<script>'+javascript+'</script></body></html>';
 await mkdir(resolve(root,'dist'),{recursive:true});
 await writeFile(resolve(root,'dist/wonderwood-phaser.html'),html);
