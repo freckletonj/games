@@ -855,7 +855,7 @@ class Wonderwood extends Phaser.Scene {
       .setStrokeStyle(1.5,0xffffff,.86).setDepth(32);
     // A *fixed*, slow, predictably bouncing trajectory. No target-aware
     // adjustments, homing, or hidden capture assistance.
-    this.orbs.push({x,y,vx:p.face*3,vy:-2.1,
+    this.orbs.push({x,y,vx:p.face*3,vy:-.7,
       visual,life:150,bounces:0,owner:p});
   }
 
