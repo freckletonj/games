@@ -23,7 +23,10 @@ WW.coop = (() => {
     return {
       x: clamp(leader.x - viewportWidth / 2 + leader.vx * 14,
         0, Math.max(0, width - viewportWidth)),
-      y: clamp(leader.y - viewportHeight * .73,
+      // At wingbeat/pegasus speeds reveal the next landing or gust above,
+      // and the approach below during a dive, without snapping on the ground.
+      y: clamp(leader.y - viewportHeight * .73 +
+        (leader.grounded?0:clamp(leader.vy * 11, -55, 45)),
         0, Math.max(0, height - viewportHeight))
     };
   }
