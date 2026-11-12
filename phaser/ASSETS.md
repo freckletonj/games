@@ -10,24 +10,28 @@ bush PNGs as main scenery**. They clashed with the hand-painted sprites.
 - **Pack:** [2D Platformer Forest Kit](https://opengameart.org/content/2d-platformer-forest-kit)
 - **Creator:** ArtByte
 - **License:** [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/)
-- **Files incorporated:** `jungle-trees.png` (four illustrated tree variants),
-  `jungle-misc.png` (mushrooms and vegetation cutouts),
-  `platform-jungle.png` (repeatable natural platform edge).
+- **Active rendered asset:** `platform-jungle.png` (repeatable natural
+  Meadow platform edge).
+- **Retained sources, not currently rendered:** `jungle-trees.png` (four
+  illustrated tree variants) and `jungle-misc.png` (mushroom/vegetation
+  cutouts). They remain in the repository for future use after in-context
+  scale/style review, but no longer clutter the actual levels or offline HTML.
 - **Redistributable upstream copy:** `tilnewman/halloween` on GitHub at
   `media/image/map/jungle-*.png` and `media/image/platform-jungle.png`.
   The upstream project credits ArtByte and identifies the jungle artwork as
   CC BY 4.0 in `media/image/map/license.txt`.
-- **Modifications:** Runtime cropping for named atlas frames; non-uniform
-  **stretching is prohibited**. Phaser scales uniformly, repeats platform
-  edges, and tints distant elements to match coast/summit atmospheres.
+- **Modifications:** The illustrated platform texture is repeated at uniform
+  scale. Non-uniform stretching of illustrated scenery is prohibited. Coast
+  and Summit use original Wonderwood biome assets for their scenery.
 - **Credit:** "Forest environment artwork by ArtByte, CC BY 4.0" is included
   in the bundled HTML. Original art is available at the linked pack.
 
 The source kit also provides a seamless layered background and tile atlas.
 We intentionally continue to use Wonderwood's original chapter backgrounds
 and slope surfaces for now; those were painted specifically for the current
-world layouts. The borrowed **trees, vegetation and platform skins** make
-a cohesive set of interactive-facing scenery without replacing collision data.
+world layouts. The borrowed **platform edge** provides a cohesive forest
+surface; the game's current atmospheric scenery uses chapter backdrops and
+subdued original Wonderwood illustrations without replacing collision data.
 
 ## Supplemental CC0 assets
 
