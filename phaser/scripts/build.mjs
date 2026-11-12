@@ -25,7 +25,7 @@ const html = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">' +
   '<style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#101b31;color:#f9eacf;font-family:Georgia,serif}' +
   'body{display:grid;place-items:center;overflow:hidden}#game{width:100vw;height:100vh}' +
   'canvas{display:block}#credits{position:fixed;bottom:6px;right:10px;font:10px system-ui;color:#b1b8b7;pointer-events:none}' +
-  '#ww-ui{position:fixed;inset:0;pointer-events:none;font-family:Arial,sans-serif;text-shadow:0 1px 3px #152233}' +
+  '#ww-ui{position:fixed;left:50%;top:50%;width:min(100vw,177.7778vh);height:min(100vh,56.25vw);transform:translate(-50%,-50%);pointer-events:none;font-family:Arial,sans-serif;text-shadow:0 1px 3px #152233}' +
   '#ww-status{position:absolute;left:12px;top:11px;max-width:calc(100% - 24px);padding:7px 12px;border-radius:11px;font-size:14px;color:#fff7d4;background:#142a3dcc;box-shadow:0 2px 10px #09182755}' +
   '#ww-notice{position:absolute;top:63px;left:50%;transform:translateX(-50%);width:max-content;max-width:80%;padding:9px 17px;border-radius:13px;border:1px solid #fff0c739;text-align:center;font:italic 17px/1.4 Georgia,serif;color:#fff8d9;background:#13273cc9;box-shadow:0 4px 21px #09182749}' +
   '#ww-help{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);max-width:85%;width:max-content;padding:8px 15px;border-radius:999px;text-align:center;font-size:13px;line-height:1.35;color:#fff9e7;background:#152e3ecc;box-shadow:0 2px 12px #07142544}' +
