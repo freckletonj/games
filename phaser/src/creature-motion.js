@@ -82,3 +82,13 @@ export function stepCreatureThreat(animal,close,hasLure,step){
     animal.face=animal.attackFace;
   }
 }
+
+// A creature's back acts as a forgiving springboard for any player form.
+// Stomp impact always supplies the normal hop; a fresh jump input during the
+// following 14 simulation frames turns it into a stronger, earned bounce.
+export function stompCreature(player){
+  player.vy=-4.4;
+  player.grounded=false;
+  player.coyote=0;
+  player.creatureBounceWindow=14;
+}
