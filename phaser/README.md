@@ -194,3 +194,26 @@ interaction orchestration. Those are explicitly next in the PR TODO
 roadmap; this extraction intentionally preserves the already-tested
 controller, bloom, water and full-Meadow input sequences. Fixed-timestep
 conversion requires separate testing and has not been made in this pass.
+
+## Deterministic gameplay step (60 Hz)
+
+Phaser's render/update callback now feeds a bounded **60 Hz simulation clock**
+(`src/fixed-clock.js`) and advances explorers, mounts, wildlife, food
+lifetimes and setpiece timers in one-tick increments. At most four ticks
+are processed per render callback after a stall; discarded time is
+intentional to avoid a runaway catch-up loop. Button *pressed* events
+are latched across no-tick render frames and consumed only once when a
+slow frame requires multiple simulation ticks. Pause clears pending
+simulation debt.
+
+The shared movement and creature rules live in `src/player-motion.js` and
+`src/creature-motion.js` and return semantic animation/effect events;
+Phaser's scene is responsible for visuals and UI. Dedicated unit tests
+cover double jumping, surface breaching, wingbeats and updraft recharge,
+springboard boosts, attack warnings, stun, creature respawns and
+render-refresh-rate invariance. The browser suites still exercise those
+mechanics with real input from the standalone HTML.
+
+This provides reproducible **simulation stepping**, not a guarantee that
+wall-clock tween animations, render FPS and physics are visually identical.
+Actual hardware-controller and campaign-wide QA remain necessary.

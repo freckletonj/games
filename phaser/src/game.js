@@ -5,7 +5,9 @@ import {characters,mounts,backgrounds,sheets,silhouettes,forestKit,terrainAtlas}
 import {MOUNTS,LOCATIONS,seatFor,stepMountedMotion} from './mounts.js';
 import {bindings,readActions} from './input.js';
 import {landingY,safeHorizontalX,orbStep,orbHitsAnimal} from './physics.js';
-import {triggerBloom,tryBloomBoost} from './springboard.js';
+import {triggerBloom} from './springboard.js';
+import {stepPlayerMotion} from './player-motion.js';
+import {TICK_MS,simulationTicks,queueInputEdges,withoutInputEdges} from './fixed-clock.js';
 import {poseFor,gesture} from './animation.js';
 import {feedTrust,RESPAWN_SECONDS,DISTRACTION_SECONDS} from './creatures.js';
 import {tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat} from './creature-motion.js';
@@ -111,6 +113,9 @@ class Wonderwood extends Phaser.Scene {
     this.lures=[];
     this.setpieces=[];
     this.lastInput=[{},{}];
+    this.pendingActions=[{},{}];
+    this.pendingMs=0;
+    this.simulationTime=0;
     this.paused=false;
   }
 
@@ -775,83 +780,28 @@ class Wonderwood extends Phaser.Scene {
       this.moveMountedPlayer(p,actions,step);
       return;
     }
-    p.powers=Math.max(0,p.powers-step/60);
-    p.flapWait=Math.max(0,p.flapWait-step);
-    p.hover=Math.max(0,p.hover-step/60);
-    p.breach=Math.max(0,p.breach-step/60);
-    p.bloomWindow=Math.max(0,p.bloomWindow-step);
-    p.coyote=p.grounded?5:Math.max(0,p.coyote-step);
-    p.jumpBuffer=actions.jumpPressed?6:Math.max(0,p.jumpBuffer-step);
-    const inWater=this.inWater(p.x,p.y-8);
-    const swimmer=p.form==='tideling'&&inWater;
-    const direction=Number(actions.right)-Number(actions.left);
-    if(direction)p.face=direction;
-    const desired=direction*(swimmer?2.15:p.form==='springaroo'?2.65:2.3);
-    const traction=p.grounded ? .22 : .14;
-    p.vx+=(desired-p.vx)*Math.min(1,traction*step);
-    if(swimmer){
-      p.vy+=((actions.jump?-.23:actions.down?.24:.046)-p.vy*.035)*step;
-      p.vy=clamp(p.vy,-2.3,2.6);
-      const basin=this.level.waterBodies.find(b=>
-        p.x>=b.start*TILE&&p.x<=b.end*TILE);
-      if(actions.jumpPressed&&basin&&p.breach===0&&
-        p.y-basin.surface*TILE<30){
-        p.vy=-5.1;p.breach=.48;
-        this.powerEffect('tideling',p.x,p.y,p.face);
-      }
-    }else{
-      if(tryBloomBoost(p,actions.jumpPressed)){
+    const {action,events}=stepPlayerMotion(p,actions,step,{
+      width:this.worldW,height:this.worldH,tile:TILE,
+      groundAt:x=>this.groundAt(x),inWater:(x,y)=>this.inWater(x,y),
+      waterBodies:this.level.waterBodies,
+      thermalVolumes:this.level.thermalVolumes,
+      platformSegments:this.level.platformSegments
+    });
+    for(const event of events){
+      if(event==='breach')this.powerEffect('tideling',p.x,p.y,p.face);
+      else if(event==='bloomBoost'){
         gesture(p,'jump',.22);
         this.sparkle(p.x,p.y,0xffc6e8);
         this.flash('Perfect spring! Extra-high jump',1050);
-      }else if(p.jumpBuffer>0&&p.coyote>0){
-        p.vy=-5.4;p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumps=1;
-      }else if(actions.jumpPressed&&p.form==='springaroo'&&p.jumps===1){
-        p.vy=-6.6;p.jumps=2;p.jumpBuffer=0;
+      }else if(event==='doubleJump'){
         gesture(p,'jump',.18);this.sparkle(p.x,p.y);
-      }else if(actions.jumpPressed&&p.form==='skyling'&&p.flaps<4&&p.flapWait<=0){
-        p.vy=-5.65;p.flaps++;p.flapWait=8;p.jumpBuffer=0;
-        gesture(p,'flap',.22);
-        this.sparkle(p.x,p.y,0xd3f6ff);
-      }
-      if(!actions.jump&&p.vy<-2.3&&p.form!=='skyling')p.vy+=.28*step;
-      const hover=p.form==='glimmermoth'&&p.hover>0&&p.vy>0;
-      p.vy+=(p.vy>=0 ? (hover ? .12 : .52) : .34)*step;
-      if(this.inWater(p.x,p.y-6))p.vy=Math.min(p.vy,1.4);
-    }
-    const updraft=this.level.thermalVolumes.some(c=>
-      p.x>=c.x*TILE&&p.x<=(c.x+c.width)*TILE&&
-      p.y>c.y*TILE&&p.y<(c.y+c.height)*TILE);
-    if(updraft){
-      p.vy-=.48*step;
-      if(p.form==='skyling')p.flaps=0;
-    }
-    p.vy=clamp(p.vy,-11,7.5);
-    const nextX=clamp(p.x+p.vx*step,10,this.worldW-10);
-    const safeX=safeHorizontalX(p.x,nextX,p.y,
-      x=>this.groundAt(x),swimmer);
-    if(Math.abs(safeX-nextX)>.2)p.vx=0;
-    p.x=safeX;
-    const priorY=p.y,wasGrounded=p.grounded,impactSpeed=p.vy;
-    p.y+=p.vy*step;
-    const landing=landingY(priorY,p.y,p.vy,p.grounded,
-      p.x,this.groundAt(p.x),this.level.platformSegments,TILE);
-    if(landing!==null){
-      p.y=landing;p.vy=0;p.grounded=true;p.jumps=0;p.flaps=0;p.coyote=5;
-      if(!wasGrounded&&impactSpeed>1.3){
+      }else if(event==='flap'){
+        gesture(p,'flap',.22);this.sparkle(p.x,p.y,0xd3f6ff);
+      }else if(event==='land'){
         gesture(p,'land',.15);
-        if(impactSpeed>3.8)this.sparkle(p.x,p.y,0xe4f4c9);
-      }
-    }else p.grounded=false;
-    // Safety against upward-facing underwater banks: a wall cannot
-    // convert a horizontal swim into a fall through the heightfield.
-    const ground=this.groundAt(p.x);
-    if(p.y>ground+3){
-      p.y=ground;p.vy=Math.min(p.vy,0);p.grounded=true;
+      }else if(event==='hardLand')this.sparkle(p.x,p.y,0xe4f4c9);
+      else if(event==='recall')this.recall(p);
     }
-    if(p.y>this.worldH-10)this.recall(p);
-    const action=swimmer?'swim':p.grounded?(Math.abs(p.vx)>.3?'run':'idle'):
-      p.form==='skyling'?'glide':p.vy<0?'jump':'fall';
     this.animate(p,p.form||'hero',action,step/60);
     if(p.id===1&&this.players[0]&&
       (Math.abs(p.x-this.players[0].x)>210||Math.abs(p.y-this.players[0].y)>145))
@@ -921,7 +871,7 @@ class Wonderwood extends Phaser.Scene {
   }
 
   update(_time,delta){
-    const time=this.time.now,step=clamp(delta/16.6667,.25,2);
+    const time=this.time.now;
     const actions=[0,1].map(i=>readActions(this.keyboard[i],this.pad(i),this.lastInput[i]));
     this.lastInput=actions;
     if(this.stage<0){
@@ -944,23 +894,44 @@ class Wonderwood extends Phaser.Scene {
       this.pausedOverlay.setVisible(this.paused);
       this.pauseMessage.setVisible(this.paused);
     }
-    if(this.paused)return;
+    if(this.paused){
+      this.pendingMs=0;this.pendingActions=[{},{}];
+      return;
+    }
     if(this.pad(1)&&this.players.length===1){
       this.twoPlayers=true;this.makePlayer(1);
     }
-    for(const item of this.items){
-      if(item.kind==='snack'&&item.used){
-        item.respawn-=step/60;
-        if(item.respawn<=0){
-          item.used=false;item.visual.setVisible(true);
+    // Renderer frames may be shorter than a physics tick. Buffer input edges
+    // until their first simulation step, then consume them exactly once.
+    const queued=actions.map((a,i)=>queueInputEdges(this.pendingActions[i],a));
+    const {ticks,remaining}=simulationTicks(this.pendingMs,delta);
+    this.pendingMs=remaining;
+    if(ticks===0){
+      this.pendingActions=queued;
+      return;
+    }
+    this.pendingActions=[{},{}];
+    for(let tick=0;tick<ticks;tick++){
+      const tickActions=tick===0?queued:queued.map(withoutInputEdges);
+      const step=1;
+      const tickTime=this.simulationTime+=TICK_MS;
+      const previousStage=this.stage;
+      for(const item of this.items){
+        if(item.kind==='snack'&&item.used){
+          item.respawn-=step/60;
+          if(item.respawn<=0){
+            item.used=false;item.visual.setVisible(true);
+          }
         }
       }
-    }
-    for(const p of [...this.players])this.movePlayer(p,actions[p.id],step);
-    this.updateMounts(step,time);
-    this.updateAnimals(step,time);
-    for(const p of [...this.players]){
-      if(this.touchWorld(p,step))return;
+      for(const p of [...this.players])
+        this.movePlayer(p,tickActions[p.id],step);
+      this.updateMounts(step,tickTime);
+      this.updateAnimals(step,tickTime);
+      for(const p of [...this.players]){
+        if(this.touchWorld(p,step))return;
+      }
+      if(this.stage!==previousStage)return;
     }
     if(this.stage<0)return;
     const lead=this.players[0];

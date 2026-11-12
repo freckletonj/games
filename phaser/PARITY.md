@@ -63,3 +63,15 @@ will find the level intuitively. Other chapters still need this test.
 The original PR #6 mount **skill courses and timed mount challenges** are
 not included yet; the goal is to validate riding and collision first. New
 Pegasus poses would further improve the wingbeat cycle.
+
+## Timing and simulation integrity
+
+- Player motion is extracted to `src/player-motion.js` with no Phaser
+  dependencies. Creature locomotion, respawn and attack windups are in
+  `src/creature-motion.js`. Each has direct tests that operate on simple
+  game-state records.
+- A bounded 60 Hz clock drives all gameplay logic, not a variable
+  frame-size multiplier. It queues input edges across fast render frames
+  and consumes pressed events only once across low-FPS catch-up steps.
+- The visual tween clock still uses Phaser's time; only gameplay physics,
+  collectible lifetimes and AI motion have fixed simulation steps.
