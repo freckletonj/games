@@ -87,4 +87,6 @@ jobs:
             dist/phaser-pegasus-mounted.png
             dist/phaser-pegasus-flight.png
             dist/phaser-chapter-*.png
+            dist/phaser-meadow-portrait.png
+            dist/phaser-meadow-compact-landscape.png
           if-no-files-found: ignore
