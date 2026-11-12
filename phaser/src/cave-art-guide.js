@@ -1,67 +1,50 @@
-import {contourY} from './cave-layout.js';
-
+// One static guide for one painted image. No chunks, planes or object sprites.
 const TILE=16;
-const point=(x,y)=>`${(x*TILE).toFixed(1)},${(y*TILE).toFixed(1)}`;
-export function caveMaskSvg(level,{from=0,to=level.width,layer='physical-rock',guides=false}={}){
-  const {ceiling,floor,pools,strata}=level.cave.layout;
-  if(!strata.some(s=>s.id===layer)||from<0||to>level.width||from>=to)
-    throw Error('Invalid cave art-guide chunk');
-  const w=(to-from)*TILE,h=level.height*TILE;
-  const xs=Array.from({length:to-from+1},(_,i)=>from+i);
-  const roof=xs.map(x=>point(x,contourY(ceiling,x)));
-  const bed=xs.map(x=>point(x,contourY(floor,x)));
-  const water=pools.filter(p=>p.to>from&&p.from<to).map(p=>{
-    const a=Math.max(from,p.from),b=Math.min(to,p.to);
-    const coords=[point(a,p.surface),point(b,p.surface),
-      ...Array.from({length:b-a+1},(_,i)=>point(b-i,contourY(floor,b-i)))];
-    return `<polygon points="${coords.join(' ')}"/>`;
-  }).join('');
-  const roofPolygon=[point(from,0),point(to,0),...roof.slice().reverse()].join(' ');
-  const floorPolygon=[...bed,point(to,level.height),point(from,level.height)].join(' ');
-  const rocks=`<polygon points="${roofPolygon}"/><polygon points="${floorPolygon}"/>`;
-  const guidesMarkup=guides?`<g stroke="#ffe7a6" stroke-width="2" fill="none">${level.platformSegments.filter(s=>
-    s.x+s.length>from&&s.x<to).map(s=>
-      `<path d="M ${s.x*TILE} ${s.y*TILE} h ${s.length*TILE}"/>`).join('')}</g>`:'';
-  // Each image model receives only static anatomy. No actor, collectible, gate or HUD.
-  const content=layer==='physical-rock'?
-    `<rect x="${from*TILE}" y="0" width="${w}" height="${h}" fill="#182d40"/><g fill="#805c77">${rocks}</g><g fill="#2388af" opacity=".9">${water}</g>${guidesMarkup}`:
-    layer==='foreground-occlusion'?
-      `<g fill="#56425d" opacity=".85"><polygon points="${roofPolygon}"/></g>`:
-      `<rect x="${from*TILE}" y="0" width="${w}" height="${h}" fill="${layer==='distant-arches'?'#25445d':'#355974'}"/>`;
-  const foreground=content;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"
-    viewBox="${from*TILE} 0 ${w} ${h}">
-<title>Luminous Grotto ${layer} chunk ${from}-${to}</title>
-<desc>Static colored structural art guide. All coordinates are canonical 16px world cells;
-physical rock is purple, swimmable water cyan, and ledges amber.</desc>${foreground}</svg>`;
+function pathAlong(level,sample,reverse=false){
+  const xs=Array.from({length:Math.ceil(level.width*TILE/8)+1},
+    (_,i)=>Math.min(level.width*TILE,i*8));
+  if(reverse)xs.reverse();
+  return xs.map(x=>x+','+sample(x).toFixed(2)).join(' ');
 }
 
-export function caveArtManifest(level,{chunkCells=48,overlapCells=4}={}){
-  if(!Number.isInteger(chunkCells)||!Number.isInteger(overlapCells)||
-    chunkCells<=overlapCells||overlapCells<0)throw Error('Invalid chunk dimensions');
-  const chunks=[];
-  for(let from=0,index=0;from<level.width;from+=chunkCells-overlapCells,index++){
-    const to=Math.min(level.width,from+chunkCells);
-    chunks.push({id:`chunk-${String(index).padStart(2,'0')}`,from,to,
-      pixelBounds:{x:from*16,y:0,width:(to-from)*16,height:level.height*16},
-      overlapPixels:overlapCells*16,
-      recommendedPainting:{width:(to-from)*32,height:level.height*32}});
-    if(to===level.width)break;
-  }
-  return {schema:'wonderwood-painted-cave-v2',tileSize:16,
-    masterGuide:'world-physical-rock.png',
-    paintingDirectory:'phaser/assets/generated/cave-chunks',
-    paintingScale:2,
-    world:{width:level.width*16,height:level.height*16},chunks,
-    planes:level.cave.layout.strata,
-    staticMasks:['physical-rock','foreground-occlusion','distant-arches','mist-and-crystals'],
+export function caveMaskSvg(level){
+  const w=level.width*TILE,h=level.height*TILE;
+  const roof=pathAlong(level,level.cave.ceilingAt);
+  const bed=pathAlong(level,level.cave.groundAt);
+  const water=level.waterBodies.map(p=>{
+    const left=p.start*TILE,right=p.end*TILE,y=p.surface*TILE;
+    const xs=Array.from({length:Math.ceil((right-left)/8)+1},
+      (_,i)=>Math.min(right,left+i*8)).reverse();
+    const bottom=xs.map(x=>x+','+level.cave.groundAt(x).toFixed(2)).join(' ');
+    return '<polygon points="'+left+','+y+' '+right+','+y+' '+bottom+'"/>';
+  }).join('');
+  const shelves=level.platformSegments.map(p=>
+    '<rect x="'+p.x*TILE+'" y="'+p.y*TILE+
+    '" width="'+p.length*TILE+'" height="5"/>').join('');
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+
+    '" height="'+h+'" viewBox="0 0 '+w+' '+h+'">'+
+    '<title>Luminous Grotto static world guide</title>'+
+    '<desc>Smooth cave silhouette and water; no characters, enemies, items or HUD</desc>'+
+    '<rect width="'+w+'" height="'+h+'" fill="#183147"/>'+
+    '<g fill="#645468"><polygon points="0,0 '+w+',0 '+
+    pathAlong(level,level.cave.ceilingAt,true)+'"/>'+
+    '<polygon points="'+bed+' '+w+','+h+' 0,'+h+'"/></g>'+
+    '<g fill="#2388af">'+water+'</g>'+
+    '<g fill="#f3cc76">'+shelves+'</g></svg>';
+}
+
+export function caveArtManifest(level){
+  return {
+    schema:'wonderwood-single-image-cave-v1',
+    world:{width:level.width*TILE,height:level.height*TILE},
+    guide:'world-physical-rock.png',
+    painting:'phaser/assets/generated/luminous-grotto-rock.webp',
+    referenceAspectRatio:level.width/level.height,
+    recommendedPainting:{
+      width:level.width*TILE,height:level.height*TILE
+    },
     dynamicExcluded:true,
-    collision:'phaser/src/cave-layout.js',
-    prompts:{
-      'physical-rock':'Hand-painted bioluminescent sea cave, expressive wet limestone, luminous mineral veins, organic sculpted rock. Strictly preserve the supplied purple rock and cyan water boundaries; no characters, props, text, or floating islands.',
-      'distant-arches':'Distant subterranean limestone arches, shimmering aquamarine caverns, deep atmospheric perspective, no characters, foreground terrain or objects.',
-      'mist-and-crystals':'Subtle distant crystal glow and watery light shafts; ethereal soft parallax, no solid-looking foreground walls.',
-      'foreground-occlusion':'Thin dark foreground hanging rock silhouette, sparse carved stalactites; keep navigation readable and do not cover pickups.'
-    }
+    geometrySource:'phaser/src/cave-layout.js',
+    prompt:'Hand-painted 2D side-view magical water cavern. Follow the supplied smooth rock silhouettes, pool boundaries and ledges. Detailed mossy limestone, luminous crystals, sunlit openings and waterfalls. Static scenery only; no characters, animals, collectible objects, text or UI.'
   };
 }

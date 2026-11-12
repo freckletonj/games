@@ -1,51 +1,9 @@
 import {build} from 'esbuild';
-import {mkdir, writeFile, readFile, readdir} from 'node:fs/promises';
-import {compileCave} from '../src/cave-layout.js';
-import {caveArtManifest} from '../src/cave-art-guide.js';
+import {mkdir, writeFile, readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 
 const root = resolve(import.meta.dirname, '../..');
-
-// Optional image-model paintings. Place one 2x bitmap per exported chunk
-// under assets/generated/cave-chunks/. The bundler embeds them into the HTML.
-const paintingDir=resolve(root,'phaser/assets/generated/cave-chunks');
-await mkdir(paintingDir,{recursive:true});
-const manifest=caveArtManifest(compileCave());
-const names=(await readdir(paintingDir)).filter(name=>
-  /^(chunk-\d\d)-(physical-rock|distant-arches|mist-and-crystals|foreground-occlusion)\.(webp|png)$/.test(name)).sort();
-const imports=[],bindings=[],byPlane=new Map();
-for(const name of names){
-  const [,chunk,plane]=name.match(/^(chunk-\d\d)-(physical-rock|distant-arches|mist-and-crystals|foreground-occlusion)\.(?:webp|png)$/);
-  const id=chunk+'-'+plane;
-  if(!manifest.chunks.some(c=>c.id===chunk))throw Error('Unknown cave chunk '+id);
-  if(bindings.some(entry=>entry.id===id))throw Error('Duplicate cave painting '+id);
-  const variable='painting'+imports.length;
-  imports.push('import '+variable+' from '+JSON.stringify('./'+name)+';');
-  bindings.push({id,variable});
-  byPlane.set(plane,(byPlane.get(plane)||0)+1);
-}
-for(const [plane,count] of byPlane){
-  if(count!==manifest.chunks.length)
-    throw Error('Cave painting plane '+plane+' has '+count+' of '+
-      manifest.chunks.length+' chunks. Supply the whole plane to avoid gaps.');
-}
-const virtualPaintings=imports.join('\n')+
-  '\nexport const cavePaintedChunkUrls={'+
-  bindings.map(({id,variable})=>JSON.stringify(id)+':'+variable).join(',')+'};';
-const paintingPlugin={
-  name:'cave-painted-chunks',
-  setup(bundle){
-    bundle.onResolve({filter:/^virtual:cave-paintings$/},()=>({
-      path:'paintings',namespace:'cave-paintings'
-    }));
-    bundle.onLoad({filter:/^paintings$/,namespace:'cave-paintings'},()=>({
-      contents:virtualPaintings,loader:'js',resolveDir:paintingDir
-    }));
-  }
-};
-
 const result = await build({
-  plugins:[paintingPlugin],
   entryPoints:[resolve(root,'phaser/src/game.js')],
   bundle:true,
   write:false,

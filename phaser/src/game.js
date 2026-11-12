@@ -22,10 +22,8 @@ import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatu
 import {meadowDesign} from './meadow-design.js';
 import {grottoChapter} from './cave-chapter.js';
 import {compileCave,caveContainsWater} from './cave-layout.js';
-import {paintCave,paintCaveForeground,paintCaveGeometryOverlay} from './cave-renderer.js';
+import {paintCave,paintCaveGeometryOverlay} from './cave-renderer.js';
 import caveRockUrl from '../assets/generated/luminous-grotto-rock.webp';
-import caveAmbientUrl from '../assets/generated/luminous-grotto-ambient.webp';
-import {cavePaintedChunkUrls} from 'virtual:cave-paintings';
 import {readProgress,playChapter,completeChapter,writeProgress} from './progress.js';
 import {addMeadowIllustration} from './meadow-art.js';
 import {validateEncounters} from './encounters.js';
@@ -76,9 +74,6 @@ class Wonderwood extends Phaser.Scene {
     for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
     this.load.image('painted-states',paintedStates);
     this.load.image('cave-painted-rock',caveRockUrl);
-    this.load.image('cave-painted-ambient',caveAmbientUrl);
-    for(const [id,url] of Object.entries(cavePaintedChunkUrls))
-      this.load.image('cave-tile-'+id,url);
   }
 
   create(){
@@ -134,10 +129,12 @@ class Wonderwood extends Phaser.Scene {
         caveArt:this.level?.cave?{
           geometryOverlay:this.caveGeometryOverlay?.visible||false,
           rockLoaded:this.textures.exists('cave-painted-rock'),
-          ambientLoaded:this.textures.exists('cave-painted-ambient'),
-          chunks:this.cavePaintedChunks.map(({x,width,overlapPixels,source,visual})=>({
-            x,width,overlapPixels,source,
-            displayX:visual.x,displayWidth:visual.displayWidth
+          imageCount:1,
+          painting:{x:this.cavePainting.x,y:this.cavePainting.y,
+            displayWidth:this.cavePainting.displayWidth,
+            displayHeight:this.cavePainting.displayHeight},
+          chunks:this.cavePaintedChunks.map(({x,width,visual})=>({
+            x,width,displayX:visual.x,displayWidth:visual.displayWidth
           }))
         }:null,
         // Read-only alignment probes for actual painted platform geometry.
@@ -337,7 +334,6 @@ class Wonderwood extends Phaser.Scene {
       590/this.backdrop.height));
     if(this.level.cave){
       paintCave(this);
-      paintCaveForeground(this);
       paintCaveGeometryOverlay(this);
     }else{
       addParallaxAtmosphere(this);
@@ -350,7 +346,7 @@ class Wonderwood extends Phaser.Scene {
     this.spawnMounts();
     this.makePlayer(0);
     if(this.twoPlayers)this.makePlayer(1);
-    if(this.level.cave)this.cameras.main.setZoom(1.25);
+    if(this.level.cave)this.cameras.main.setZoom(.6);
     this.cameras.main.setBounds(0,0,this.worldW,this.worldH);
     this.cameras.main.startFollow(this.players[0].visual,true,.085,.12);
     // Let players see upcoming climbs and sky rather than half a screen of soil.

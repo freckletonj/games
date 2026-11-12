@@ -37,7 +37,7 @@ const color={
 export function caveGuidePng(level,{
   from=0,to=level.width,layer='physical-rock',scale=1
 }={}){
-  if(!level.cave.layout.strata.some(p=>p.id===layer)||
+  if(layer!=='physical-rock'||
      from<0||to>level.width||from>=to||
      !Number.isInteger(scale)||scale<1||scale>3)
     throw Error('Invalid cave guide raster dimensions or layer');
