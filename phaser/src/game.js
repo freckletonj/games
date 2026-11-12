@@ -116,6 +116,7 @@ class Wonderwood extends Phaser.Scene {
         orbs:this.orbs?.length||0,
         orbStates:this.orbs?.map(o=>({x:o.x,y:o.y,bounces:o.bounces}))||[],
         paused:this.paused,
+        simulationSeconds:Number((this.simulationTime/1000).toFixed(3)),
         parallaxLayers:this.parallaxLayers?.length||0,
         foods:this.shared?.foods?{...this.shared.foods}:null,
         picnics:this.shared?.picnics||0,
