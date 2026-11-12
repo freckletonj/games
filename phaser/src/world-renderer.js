@@ -388,6 +388,10 @@ export function addParallaxAtmosphere(scene){
 
 export function moveParallaxAtmosphere(scene){
   const scrollX=scene.cameras.main.scrollX;
+  // Keep the original painted background within an overscanned viewport
+  // while it moves a fraction of the foreground's total travel distance.
+  const progress=Math.max(0,Math.min(1,scrollX/Math.max(1,scene.worldW-480)));
+  scene.backdrop.x=480+32-64*progress;
   for(const {visual,speed} of scene.parallaxLayers||[])
     visual.tilePositionX=scrollX*speed;
 }
