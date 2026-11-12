@@ -14,6 +14,8 @@ test('Mosslight Meadow is a compact, semantically valid three-act adventure',()=
   assert.equal(spec.width,148);
   assert.equal(spec.sections.length,3);
   assert.equal(spec.creatures[0][1],10);
+  assert.deepEqual(spec.relic,['springKey',112,19]);
+  assert.deepEqual(spec.goalRoute.at(-1),[112,19]);
   const report=context.WW.worldCompiler.analyze(spec);
   assert.deepEqual(Array.from(report.errors),[]);
   const world=context.WW.worldCompiler.compile(spec);
