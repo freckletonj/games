@@ -46,6 +46,9 @@ def main():
             state = page.evaluate("window.__wonderwoodPhaser.snapshot()")
             assert state["chapter"] == chapter, state
             assert state["players"][0]["health"] == 3, state
+            assert state["players"][0]["grounded"], (
+                "Menu confirm must not trigger a jump when gameplay begins", state
+            )
             assert state["animalCount"] > 0, state
             assert state["platformCount"] > 0, state
             assert not errors, (chapter, errors)
