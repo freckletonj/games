@@ -71,6 +71,9 @@ export function addMeadowIllustration(scene){
   const light=document.createElement('canvas');
   light.width=2048;light.height=512;
   const rays=light.getContext('2d');
+  // Diffuse the diagonal beam edges; hard quadrilateral borders looked like
+  // disconnected geometry over the painted background.
+  rays.filter='blur(22px)';
   for(let i=0;i<10;i++){
     const x=88+i*212+(random()-.5)*85;
     const sway=(random()-.5)*150;
