@@ -1623,7 +1623,7 @@ WW.games.animals = (() => {
             if(p.mount!==null){
               // Rider uses the saddle pivot; the mount supplies the running
               // and flying animation rather than the rider cycling walk poses.
-              ctx.translate(p.x,p.y+2);ctx.scale(.80,.82);
+              ctx.translate(p.x,p.y+8);ctx.scale(.80,.82);
             }
             WW.art.draw(ctx,p.form||'hero',p.mount!==null?0:p.x,
               p.mount!==null?0:p.y,Math.floor(p.frame)%6,p.face<0,p.id,{
