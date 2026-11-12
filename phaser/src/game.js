@@ -475,7 +475,17 @@ class Wonderwood extends Phaser.Scene {
     const x=p.x+p.face*7,y=p.y-17;
     const visual=this.add.circle(x,y,5,0xd5faff,.72)
       .setStrokeStyle(1.4,0xffffff,.9).setDepth(32);
-    this.orbs.push({x,y,vx:p.face*5.3,vy:-1.3,visual,life:100,owner:p});
+    // Aim toward a clearly befriended creature in front of the player.
+    // On sloping ground, a fixed upward arc repeatedly sailed over its head.
+    // The animal must still be fed, faced, and actually struck by the orb.
+    const ready=this.animals.filter(a=>a.trust>=100&&!a.captured&&
+      (a.x-x)*p.face>0&&Math.abs(a.x-x)<130&&Math.abs(a.y-p.y)<85)
+      .sort((a,b)=>Math.abs(a.x-x)-Math.abs(b.x-x))[0];
+    const frames=ready?Math.max(3,Math.abs(ready.x-x)/5.3):0;
+    const vy=ready?clamp(
+      (ready.y-13-y-.075*frames*(frames-1)/2)/frames,-3.8,3.8
+    ):-1.3;
+    this.orbs.push({x,y,vx:p.face*5.3,vy,visual,life:100,owner:p});
   }
 
   updateAnimals(step,time){
