@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat}
+import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat,
+  stompCreature}
   from '../src/creature-motion.js';
 
 const animal=(kind='emberkit')=>({
@@ -103,4 +104,12 @@ test('an enemy locks its telegraphed attack direction even if its patrol target 
   stepCreatureMotion(prism,null,1,0,world);
   assert.equal(prism.windup,0);
   assert.equal(prism.dash,0);
+});
+
+test('head-stomping a creature opens one timed second-jump window',()=>{
+  const explorer={vy:3.4,grounded:false,coyote:0,creatureBounceWindow:0};
+  stompCreature(explorer);
+  assert.equal(explorer.vy,-4.4);
+  assert.equal(explorer.grounded,false);
+  assert.equal(explorer.creatureBounceWindow,14);
 });
