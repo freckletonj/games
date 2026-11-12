@@ -4,7 +4,7 @@ WW.games.animals = (() => {
   const TYPES=Object.keys(FORM),FOODS=Object.keys(FOOD);
   const titles=Object.fromEntries(Object.entries(CREATURE).map(([kind,info])=>[kind,info.name]));
   // One world unit is one source-pixel; frames run at 60 Hz. All map jumps obey these rules.
-  const PHYSICS={run:2.25,jump:5.7,doubleJump:5.5,gravity:.27,maxFall:5.7,
+  const PHYSICS={run:2.25,jump:5.25,doubleJump:5.05,gravity:.36,fallGravity:.59,maxFall:7.5,
     bodyHalf:9,bodyHeight:25,waterExposure:.8};
   const jumpHeight=PHYSICS.jump**2/(2*PHYSICS.gravity);
   // Two favorite treats (or three other treats) distract an animal long enough for an orb.
@@ -62,7 +62,12 @@ WW.games.animals = (() => {
     };
     const solid=(x,y)=>y>=height||x<0||x>=width||at(x,y)==='ground'||
       (level.surface && y>=surfaceY(x) && at(x,y)!=='water');
-    const liquid=(x,y)=>at(x,y)==='water';
+    // Match the actual continuous water polygon, not a coarse cell (platform
+    // shelves can overwrite the grid while still being submerged).
+    const liquid=(x,y)=>level.waterBodies?.length?
+      level.waterBodies.some(b=>x>=b.start*TILE&&x<b.end*TILE&&
+        y>=b.surface*TILE&&y<surfaceY(x)):
+      at(x,y)==='water';
     const thermal=(x,y)=>at(x,y)==='thermal';
     const first=(kind)=>level.objects.find(o=>o.kind===kind);
     const location=(o)=>{
@@ -237,7 +242,7 @@ WW.games.animals = (() => {
            Math.abs(p.x-s.x)<16 && Math.abs(p.y-s.y)<11 &&
            clock>=(s.ready[p.id]||0)){
           const perfect=clock-p.lastJumpPress<=.12;
-          p.vy=perfect?-9.2:-7.35;
+          p.vy=perfect?-7.25:-6.1;
           p.bloomBoostWindow=perfect?0:.14;
           p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumpsUsed=1;
           s.ready[p.id]=clock+.65;
@@ -253,9 +258,8 @@ WW.games.animals = (() => {
                  Math.abs(p.x-s.x)<20 && Math.abs(p.y-11-s.y)<38){
           // Passive lift stays visible, but a committed dive can push against
           // the current. Otherwise vents near deep relics become hard walls.
-          const lift=swimming&&controls.down?.1:swimming?.68:.38;
-          p.vy=swimming&&controls.jump?Math.min(p.vy,-3.75):
-            Math.max(-3.75,p.vy-lift);
+          const lift=swimming?(controls.jump?.48:controls.down?.045:.22):.18;
+          p.vy=Math.max(-2.7,p.vy-lift*step);
         }
       }
     }
@@ -303,7 +307,7 @@ WW.games.animals = (() => {
         p.lastJumpPress=clock;
         if(p.bloomBoostWindow>0){
           bloomBoosted=true;
-          p.vy=Math.min(p.vy,-9.2);
+          p.vy=Math.min(p.vy,-7.25);
           p.bloomBoostWindow=0;p.jumpBuffer=0;
           WW.audio.play('double');WW.input.rumble(p.id,.48,105);
           particles(p.x,p.y-5,'#fff5b0',21);
@@ -332,11 +336,10 @@ WW.games.animals = (() => {
         // the bank. Carry its upward momentum through the final underwater frames.
         const pool=(level.waterBodies||[]).find(b=>
           p.x>=b.start*TILE&&p.x<b.end*TILE);
-        if(controls.jump && p.breachCooldown>0){
-          p.vy=Math.min(p.vy,-5.1);
-        }else if(controls.jump && pool &&
-                 p.y-pool.surface*TILE<30 && p.breachCooldown===0){
-          p.vy=-5.1;p.breachCooldown=.48;
+        if(controls.jump && pool && p.vy<0 &&
+                 p.y-pool.surface*TILE<25 && p.breachCooldown===0){
+          // One breach impulse per surfacing, never a launch every frame.
+          p.vy=-4.4;p.breachCooldown=.55;
           particles(p.x,p.y-13,'#b9f8f2',10);
           WW.audio.play('jump');
         }
@@ -361,9 +364,12 @@ WW.games.animals = (() => {
           WW.audio.play('double');
           particles(p.x-p.face*8,p.y-14,'#e9f0ff',5);
         }
-        // Releasing early makes a short hop for grounded forms.
-        if(controls.released.jump&&p.vy< -1&&!flying)p.vy*=.56;
-        p.vy=Math.min(PHYSICS.maxFall,p.vy+PHYSICS.gravity*step);
+        // Tap for a short hop; holding Jump reaches the deliberate full arc.
+        if(controls.released.jump&&p.vy<-.8&&!flying)p.vy*=.5;
+        const releasedEarly=!controls.jump&&!flying&&p.vy<0;
+        const gravity=p.vy>=0?PHYSICS.fallGravity:
+          releasedEarly?PHYSICS.fallGravity:PHYSICS.gravity;
+        p.vy=Math.min(PHYSICS.maxFall,p.vy+gravity*step);
         if(p.form==='glimmermoth'&&p.hover>0&&p.vy>1.45)p.vy=1.45;
       }
       if(updraft){
