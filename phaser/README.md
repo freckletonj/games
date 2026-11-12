@@ -7,6 +7,27 @@ Five canonical JSON worlds are compiled through the existing deterministic
 The CC BY 4.0 ArtByte source kit remains licensed and archived in-repo,
 but is not currently loaded in the self-contained game. No CDN, external images or fetches are needed to play.
 
+## Reusable offline build (Linux x86_64)
+
+Three version-pinned vendored archives (approximately 5.9 MB total)
+provide Phaser 4.2.1 and esbuild 0.25.12 without npm/CDN access.
+Once the archives under `phaser/vendor/` have been checked in, every
+Linux x64 checkout can regenerate the playable HTML entirely offline:
+
+```sh
+bash phaser/scripts/verify-offline.sh
+# Include the seven extended real-input Chromium gameplay suites:
+bash phaser/scripts/verify-offline.sh full
+```
+
+This checks SHA-256 hashes, installs the build tools in ignored
+`node_modules`, runs unit tests and quality metrics, creates a fresh
+self-contained HTML, and verifies real gameplay in Chromium. The output
+has a uniquely named `dist/wonderwood-preview-*.html`. The inline
+browser test adapter is necessary only in environments where browser
+URL navigation is blocked. Normal `npm install` remains available for
+other platforms. GitHub Actions stays disabled.
+
 ## Build
 
 From `phaser/`:
@@ -19,8 +40,8 @@ npm run build
 
 Open `../dist/wonderwood-phaser.html` directly in Chromium or Firefox.
 The build inlines **Phaser 4 itself**, compiled code, all nine painted character
-atlases, backgrounds, sprite sheets, levels, and the CC0 additions. CI publishes
-this exact standalone HTML as a downloadable artifact.
+atlases, backgrounds, sprite sheets, levels, and the CC0 additions. Use the local preview script to package this self-contained HTML; GitHub Actions
+is intentionally disabled.
 
 ## Controls
 
@@ -47,8 +68,8 @@ and two-player follow bubbles are implemented in Phaser.
 
 It is a substantial **playable foundation**, not exact feature parity with the
 large Canvas implementation: complex creature tactics, the custom Wonder
-Trails, visual direction per encounter, and the unicorn/Pegasus from draft
-PR #6 still need subsequent porting. Source is deliberately small and
+Trails, visual direction per encounter, and more ambitious per-encounter illustrations remain future work; the
+original painted Unicorn and Pegasus mounts have already been ported. Source is deliberately small and
 separated into input, assets and scene implementation; the old game and its
 regression suite remain untouched for comparisons.
 
@@ -349,7 +370,7 @@ treat its status as a merge-readiness signal.**
 From a checkout with Node.js, npm, Python and Chromium available:
 
 ```sh
-npm ci --prefix phaser
+npm install --prefix phaser
 python -m pip install playwright
 python -m playwright install chromium
 bash phaser/scripts/verify-local.sh

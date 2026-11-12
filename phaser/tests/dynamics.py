@@ -80,8 +80,10 @@ def main():
             timeout=12000)
         boosted=state(page)["players"][0]
         page.keyboard.up("Space")
-        assert boosted["bloomWindow"]==0 and boosted["vy"]<0,boosted
-        assert boosted["y"] < bounced["y"]-25, (bounced,boosted)
+        # Check the actual boost impulse, not frame-dependent displacement.
+        # Headless WebGL may advance one or several ticks before observation.
+        assert boosted["bloomWindow"]==0 and boosted["bloomBoosts"]==1,boosted
+        assert boosted["vy"] < -9, (bounced,boosted)
         page.screenshot(path=str(GAME.parent/"phaser-bloom-boost.png"))
         assert not errors,errors
         browser.close()
