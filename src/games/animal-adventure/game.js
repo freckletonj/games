@@ -375,7 +375,7 @@ WW.games.animals = (() => {
       }
       if(updraft){
         // Upward acceleration must exceed gravity to match the visible air stream.
-        p.vy=Math.max(-3.6,p.vy-(flying?.49:.46)*step);
+        p.vy=Math.max(-3.6,p.vy-(flying?.76:.72)*step);
         if(flying){
           p.flapRecharge+=dt;
           if(p.flapRecharge>=.42){
