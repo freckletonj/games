@@ -14,7 +14,8 @@ import {advanceTreatFlight} from './treat-motion.js';
 import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat} from './creature-motion.js';
 import {meadowDesign} from './meadow-design.js';
 import {validateEncounters} from './encounters.js';
-import {paintTerrain,paintScenery,addMeadowAtmosphere} from './world-renderer.js';
+import {paintTerrain,paintScenery,addMeadowAtmosphere,
+  addParallaxAtmosphere,moveParallaxAtmosphere} from './world-renderer.js';
 
 const TILE=16;
 const VIEW_W=480;
@@ -98,6 +99,7 @@ class Wonderwood extends Phaser.Scene {
         orbs:this.orbs?.length||0,
         orbStates:this.orbs?.map(o=>({x:o.x,y:o.y,bounces:o.bounces}))||[],
         paused:this.paused,
+        parallaxLayers:this.parallaxLayers?.length||0,
         foods:this.shared?.foods?{...this.shared.foods}:null,
         picnics:this.shared?.picnics||0,
         relic:this.shared?.relic||false,shards:this.shared?.shards||0})
@@ -122,6 +124,7 @@ class Wonderwood extends Phaser.Scene {
     this.orbs=[];
     this.lures=[];
     this.setpieces=[];
+    this.parallaxLayers=[];
     this.lastInput=[{},{}];
     this.pendingActions=[{},{}];
     this.pendingMs=0;
@@ -226,6 +229,7 @@ class Wonderwood extends Phaser.Scene {
     this.shared={relic:false,shards:0,collected:new Set(),checkpoint:null,
       picnics:0,foods:{berry:14,nectar:6,star:6}};
     this.addBackground(this.level.biome);
+    addParallaxAtmosphere(this);
     paintTerrain(this);
     paintScenery(this);
     addMeadowAtmosphere(this);
@@ -934,6 +938,7 @@ class Wonderwood extends Phaser.Scene {
       }
       return;
     }
+    moveParallaxAtmosphere(this);
     if(actions.some(a=>a.pausePressed)){
       this.paused=!this.paused;
       this.pausedOverlay.setVisible(this.paused);
