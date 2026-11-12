@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {compileCave,caveLayout,caveContainsWater,caveCeilingHit} from '../src/cave-layout.js';
 import {caveMaskSvg,caveArtManifest} from '../src/cave-art-guide.js';
+import {stepPlayerMotion} from '../src/player-motion.js';
 
 test('cave contours share the collision geometry used to paint the guide',()=>{
   const level=compileCave();
@@ -51,4 +52,24 @@ test('invalid polygons, intersecting shelves and pools fail validation',()=>{
     /water chamber|Overlapping/);
   assert.throws(()=>compileCave({...caveLayout,
     shelves:[{x:40,y:50,length:4}]}),/Shelf intersects/);
+});
+
+test('real player simulation stops upward jump at the collision roof',()=>{
+  const level=compileCave();
+  const x=16*6,roof=level.cave.ceilingAt(x),floor=level.cave.groundAt(x);
+  const player={id:0,x,y:roof+29,vx:0,vy:-7,face:1,
+    grounded:false,coyote:0,jumpBuffer:0,jumps:1,flaps:0,flapWait:0,
+    powers:0,hover:0,breach:0,bloomWindow:0,creatureBounceWindow:0,
+    form:null};
+  const actions={left:false,right:false,down:false,
+    jump:true,jumpPressed:false};
+  const world={width:level.width*16,height:level.height*16,tile:16,
+    groundAt:level.cave.groundAt,ceilingAt:level.cave.ceilingAt,
+    inWater:()=>false,waterBodies:level.waterBodies,
+    thermalVolumes:[],platformSegments:level.platformSegments};
+  assert.ok(floor-roof>180);
+  stepPlayerMotion(player,actions,1,world);
+  assert.equal(player.y,roof+27);
+  assert.equal(player.vy,0);
+  assert.equal(player.grounded,false);
 });
