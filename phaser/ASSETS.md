@@ -54,3 +54,39 @@ All new asset provenance is recorded here. Do not import art from image
 search or a commercial asset marketplace without verifying redistribution
 rights for that specific file. This game remains original Wonderwood
 gameplay and characters rather than a reskin of an existing game's code.
+
+## Animation and creature asset audit (Mosslight Meadow)
+
+The existing **hero, Springaroo, Glimmermoth, Emberkit and Mossback**
+use hand-painted, internally consistent 8-pose character sheets from
+`src/assets/characters/` (the core scenes reuse all nine form atlases).
+Those assets retain character identity when the hero transforms.
+
+They now share an action contract that includes explicit animation timing,
+consistent foot origins and velocity-dependent secondary motion. A future
+external character must provide at least stable idle/move/hurt poses,
+a documented foot pivot, consistent facings and a redistributable license.
+Preferred size is a compact, atlas-friendly frame set for the offline HTML.
+
+We evaluated existing candidates rather than downloading an unrelated
+character style indiscriminately:
+
+- **LudicArts Forest Fiends** — hand-painted walking tree and mushroom
+  creatures with 10-frame walk/idle/dizzy/hurt animations; CC BY 4.0,
+  https://opengameart.org/content/forest-fiends-free-character-pack.
+  Excellent match for *additional forest NPCs* but the offered ZIP is 79 MB
+  on OpenGameArt; cannot inline it as-is. Not bundled.
+- **SpriteCanvas Mushroom** — compact CC0 animated monster, 5 actions,
+  80 aligned frames with a Phaser-ready JSON atlas,
+  https://spritecanvas.com/free-sprite-sheets/mushroom/.
+  A strong candidate for a first distinct gentle forest enemy; it has a
+  more rendered appearance and must be tested in context before adoption.
+  Not bundled.
+- **ArtByte Forest Kit** — existing hand-painted trees, mushrooms and
+  platform edges used in this game, CC BY 4.0. Animate foliage as world
+  scenery; do not present those decorative cutouts as catchable creatures
+  without distinct recognizable gameplay states.
+
+The critical distinction: **external pack candidates are researched, not
+claimed as imported**. The visible gameplay art reuses the original
+Wonderwood character sprites and licensed ArtByte/Kenney environments.

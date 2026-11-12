@@ -61,5 +61,6 @@ jobs:
             dist/phaser-preview.png
             dist/phaser-title.png
             dist/phaser-befriending.png
+            dist/phaser-motion.png
             dist/phaser-chapter-*.png
           if-no-files-found: ignore

@@ -78,13 +78,20 @@ def main():
             page, "Space",
             "window.__wonderwoodPhaser.snapshot().players[0].jumps === 2",
         )
-        assert snapshot(page)["players"][0]["form"] == "springaroo"
+        transformed = snapshot(page)["players"][0]
+        assert transformed["form"] == "springaroo"
+        assert transformed["action"] in ("jump", "land", "transform", "fall", "idle", "run")
         page.screenshot(path=str(GAME.parent / "phaser-befriending.png"))
         # Move away before recall, to verify a real checkpoint reset.
-        press_until(
-            page, "d",
+        page.keyboard.down("d")
+        page.wait_for_function(
             f"window.__wonderwoodPhaser.snapshot().players[0].x > {initial['players'][0]['x'] + 45}",
+            timeout=20000,
         )
+        assert snapshot(page)["players"][0]["action"] in ("run", "land")
+        page.screenshot(path=str(GAME.parent / "phaser-motion.png"))
+        page.keyboard.up("d")
+        page.wait_for_timeout(120)
 
         press_until(page, "Escape", "window.__wonderwoodPhaser.snapshot().paused")
         frozen = snapshot(page)["players"][0]["x"]

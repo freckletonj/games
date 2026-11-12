@@ -70,3 +70,39 @@ projectile contact, and a browser smoke visits the built offline HTML.
 `tests/chapters.py` loads all five chapters in the real browser and saves
 per-chapter screenshots. License notices are embedded into the standalone
 HTML and ArtByte attribution is visible in the footer.
+
+## Mosslight Meadow vertical slice
+
+The Phaser remake now uses a curated three-act, 148-cell version of
+Mosslight Meadow. It is derived from the same validated semantic JSON, but
+shortens the original 260-cell first chapter without changing legacy levels:
+
+1. **Picnic Trail:** a visible, glowing Springaroo encounter, treats and a
+   safe opening, with an optional Glimmermoth.
+2. **Canopy Ascent:** a checkpoint, a telegraphed Emberkit dash, Springaroo's
+   double-jump, high paths and a meaningful light relic.
+3. **Lantern Grove:** a soft landing, optional Mossback, another checkpoint,
+   bloom bounce and the illuminated exit.
+
+All authored platforms and slope surfaces still come from the compiler,
+not from the painted scenery. The meadow compiler is unit-tested.
+
+## One animation contract for every character
+
+`src/animation.js` maps standardized semantic actions to the nine existing
+painted 4×2 sprite atlases: idle, run, jump, fall, land, feed, capture,
+transform, eat, happy, alert, hurt, stunned, dash, flap, glide, swim and sleep.
+The per-character frame pivots and proportional scaling are preserved.
+Small additive run bounce, landing squash, jump stretch, flight, swim and
+reaction motion is **secondary** to authored frames; it never replaces an
+entire animation with an arbitrary duplicated static pose.
+
+`tests/animation.test.mjs` checks all character manifests and every action,
+including frame safety and anchored squash/stretch. The Chromium gameplay
+test checks real movement, feeding, capture, transformation and double jumps.
+
+This is deliberately not a new asset-for-every-creature exercise. The
+existing high-resolution creature illustrations share one stronger aesthetic
+than a mixture of generic pixel art, and form-changing play relies on
+recognizing those species. Future character packs must clear the
+licensing-and-animation criteria in [ASSETS.md](ASSETS.md).
