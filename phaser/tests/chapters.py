@@ -23,11 +23,11 @@ def main():
 
         for i, chapter in enumerate(CHAPTERS):
             if i:
-                page.keyboard.down("r")
+                page.keyboard.down("h")
                 page.wait_for_function(
                     "window.__wonderwoodPhaser.snapshot().stage === -1"
                 )
-                page.keyboard.up("r")
+                page.keyboard.up("h")
                 page.wait_for_timeout(90)
                 page.keyboard.down("d")
                 page.wait_for_function(
