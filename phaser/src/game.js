@@ -111,7 +111,7 @@ class Wonderwood extends Phaser.Scene {
       color:'#fff0bc'}).setOrigin(.5);
     this.menuHint=this.add.text(240,167,'',{fontFamily:'Arial',fontSize:'10px',
       color:'#d7e6e1',align:'center'}).setOrigin(.5);
-    this.add.text(240,210,'A / D or stick   ·   SPACE / A to begin\\n2 toggles co-op   ·   controllers supported',
+    this.add.text(240,210,'A / D or stick   ·   SPACE / A to begin\n2 toggles co-op   ·   controllers supported',
       {fontFamily:'Arial',fontSize:'10px',color:'#c9d6d9',align:'center'})
       .setOrigin(.5);
     this.updateMenuText();
