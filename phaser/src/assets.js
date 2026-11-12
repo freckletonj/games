@@ -32,7 +32,6 @@ import flora from '../../src/assets/illustrations/flora.webp';
 import props from '../../src/assets/illustrations/props.webp';
 import landmarks from '../../src/assets/illustrations/landmarks.webp';
 import effects from '../../src/assets/illustrations/effects.webp';
-import forestPlatform from '../assets/artbyte/platform-jungle.png';
 import kenneyCloud from '../assets/kenney/cloud1.png';
 import kenneyCloudAlt from '../assets/kenney/cloud3.png';
 import kenneyMoon from '../assets/kenney/moonFull.png';
@@ -53,7 +52,6 @@ export const mounts = {
   pegasus:{url:pegasus,manifest:pegasusManifest}
 };
 export const backgrounds = {meadow,coast,summit};
-export const forestKit = {forestPlatform};
 export {terrainAtlas};
 export const sheets = {flora,props,landmarks,effects};
 export const silhouettes = {
