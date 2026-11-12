@@ -327,11 +327,14 @@ class Wonderwood extends Phaser.Scene {
     this.worldH=this.level.height*TILE;
     this.shared={relic:false,shards:0,collected:new Set(),checkpoint:null,
       picnics:0,foods:{berry:14,nectar:6,star:6}};
-    this.addBackground(this.level.biome,!!this.level.cave);
-    // A small overscan prevents bright seams as the distant illustration
-    // pans more slowly than the camera through the chapter.
-    this.backdrop.setScale(Math.max(1050/this.backdrop.width,
-      590/this.backdrop.height));
+    if(this.level.cave){
+      // One authored bitmap provides all the static cave scenery.
+      this.cameras.main.setBackgroundColor(0x0b1c2c);
+    }else{
+      this.addBackground(this.level.biome);
+      this.backdrop.setScale(Math.max(1050/this.backdrop.width,
+        590/this.backdrop.height));
+    }
     if(this.level.cave){
       paintCave(this);
       paintCaveGeometryOverlay(this);
@@ -1156,7 +1159,6 @@ class Wonderwood extends Phaser.Scene {
       }
       return;
     }
-    // Cave planes use camera scroll factors, not repeating tile offsets.
     if(!this.level.cave)moveParallaxAtmosphere(this);
     if(actions.some(a=>a.pausePressed)){
       this.paused=!this.paused;
