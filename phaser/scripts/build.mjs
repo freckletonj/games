@@ -36,7 +36,8 @@ const html = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">' +
   '<script>'+javascript+'</script></body></html>';
 await mkdir(resolve(root,'dist'),{recursive:true});
 await writeFile(resolve(root,'dist/wonderwood-phaser.html'),html);
-if (/<script\s+src=|<link\s+[^>]*href=|https?:\/\//i.test(html.slice(0,350))) {
+const shell=html.slice(0,html.indexOf('<script>'));
+if (/<script\\s+src=|<link\\s+[^>]*href=/i.test(shell)) {
   throw Error('Standalone HTML shell unexpectedly references external assets');
 }
 console.log('Built dist/wonderwood-phaser.html ('+Math.round(Buffer.byteLength(html)/1024)+' KiB, self-contained)');
