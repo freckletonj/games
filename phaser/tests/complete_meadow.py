@@ -154,7 +154,21 @@ def main():
         finished = state(page)
         assert finished["chapter"] == "crystal-coast", finished
         assert finished["players"][0]["health"] == 3, finished
+        assert "first-forest" in finished["progress"]["completed"], finished
+        assert finished["progress"]["lastPlayed"] == "crystal-coast", finished
         page.screenshot(path=str(GAME.parent / "phaser-meadow-complete.png"))
+        # No game state is directly manipulated. Verify a genuine reload
+        # restores progress from the same standalone file's local storage.
+        page.reload()
+        page.wait_for_function(
+            "window.__wonderwoodPhaser?.snapshot().stage === -1", timeout=30000
+        )
+        resumed = state(page)
+        assert resumed["choice"] == 1, resumed
+        assert resumed["progress"]["completed"] == ["first-forest"], resumed
+        assert page.locator("#ww-menu-chapter").inner_text() == "Crystal Coast"
+        page.locator("#ww-menu-prev").click()
+        assert "COMPLETED" in page.locator("#ww-menu-counter").inner_text()
         assert not errors, errors
         assert not external, external
         browser.close()
