@@ -19,14 +19,14 @@ export function addMeadowIllustration(scene){
     const centerY=29+random()*38;
     const radius=65+random()*62;
     const colors=[
-      'rgba(35,89,84,.24)','rgba(53,106,87,.21)',
-      'rgba(85,133,100,.19)','rgba(130,165,112,.16)',
-      'rgba(175,188,121,.13)','rgba(57,106,115,.15)'
+      'rgba(35,89,84,.41)','rgba(53,106,87,.35)',
+      'rgba(85,133,100,.31)','rgba(130,165,112,.27)',
+      'rgba(175,188,121,.22)','rgba(57,106,115,.26)'
     ];
     // Layer a blurred underpainting beneath crisp leaf-shaped brushstrokes.
     const haze=ctx.createRadialGradient(centerX,centerY,5,
       centerX,centerY,radius*1.9);
-    haze.addColorStop(0,'rgba(76,130,99,.19)');
+    haze.addColorStop(0,'rgba(76,130,99,.27)');
     haze.addColorStop(1,'rgba(76,130,99,0)');
     ctx.fillStyle=haze;
     ctx.fillRect(centerX-radius*2,0,radius*4,240);
@@ -56,7 +56,7 @@ export function addMeadowIllustration(scene){
   for(let n=0;n<16;n++){
     const x=65+n*137+(random()-.5)*45;
     const tip=47+random()*115;
-    ctx.strokeStyle='rgba(35,82,83,.21)';
+    ctx.strokeStyle='rgba(35,82,83,.31)';
     ctx.lineWidth=2+random()*3;
     ctx.beginPath();
     ctx.moveTo(x,-4);
@@ -75,8 +75,8 @@ export function addMeadowIllustration(scene){
     const x=88+i*212+(random()-.5)*85;
     const sway=(random()-.5)*150;
     const beam=rays.createLinearGradient(x,20,x+sway,470);
-    beam.addColorStop(0,'rgba(255,247,190,.26)');
-    beam.addColorStop(.5,'rgba(255,235,178,.11)');
+    beam.addColorStop(0,'rgba(255,247,190,.38)');
+    beam.addColorStop(.5,'rgba(255,235,178,.16)');
     beam.addColorStop(1,'rgba(255,242,208,0)');
     rays.fillStyle=beam;
     rays.beginPath();
@@ -92,9 +92,9 @@ export function addMeadowIllustration(scene){
   scene.textures.addCanvas(lightKey,light);
 
   const sunbeams=scene.add.tileSprite(480,187,960,270,lightKey)
-    .setScrollFactor(0).setTileScale(.5,.5).setAlpha(.25).setDepth(-91);
+    .setScrollFactor(0).setTileScale(.5,.5).setAlpha(.33).setDepth(-91);
   const foliage=scene.add.tileSprite(480,125,960,250,key)
-    .setScrollFactor(0).setTileScale(.5,.5).setAlpha(.58).setDepth(-86);
+    .setScrollFactor(0).setTileScale(.5,.5).setAlpha(.76).setDepth(-86);
   scene.parallaxLayers.push(
     {visual:sunbeams,speed:.12,sway:2,phase:0},
     {visual:foliage,speed:.30,sway:7,phase:1.9}
