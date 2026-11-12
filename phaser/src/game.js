@@ -7,7 +7,8 @@ import {bindings,readActions} from './input.js';
 import {landingY,safeHorizontalX,orbStep,orbHitsAnimal} from './physics.js';
 import {triggerBloom,tryBloomBoost} from './springboard.js';
 import {poseFor,gesture} from './animation.js';
-import {feedTrust,tickDistraction,RESPAWN_SECONDS,DISTRACTION_SECONDS} from './creatures.js';
+import {feedTrust,RESPAWN_SECONDS,DISTRACTION_SECONDS} from './creatures.js';
+import {tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat} from './creature-motion.js';
 import {meadowDesign} from './meadow-design.js';
 import {validateEncounters} from './encounters.js';
 import {paintTerrain,paintScenery,addMeadowAtmosphere} from './world-renderer.js';
@@ -617,45 +618,17 @@ class Wonderwood extends Phaser.Scene {
 
   updateAnimals(step,time){
     for(const animal of this.animals){
-      if(animal.captured){
-        animal.respawn-=step/60;
-        if(animal.respawn<=0){
-          animal.captured=false;animal.trust=0;animal.distraction=0;
-          animal.respawn=0;animal.stun=0;animal.bubble=0;
-          animal.windup=0;animal.dash=0;
-          animal.x=animal.homeX;animal.y=animal.homeY;
-          animal.visual.setVisible(true);
-          animal.visual.shadow?.setVisible(true);
-          if(animal.halo)animal.halo.setVisible(true);
-        }else continue;
-      }
-      animal.stun=Math.max(0,animal.stun-step/60);
-      animal.bubble=Math.max(0,animal.bubble-step/60);
-      const trust=tickDistraction(animal.trust,animal.distraction,step/60);
-      animal.trust=trust.trust;animal.distraction=trust.seconds;
-      animal.attack=Math.max(0,animal.attack-step/60);
-      const friendly=animal.distraction>0;
-      if(friendly||animal.stun>0){
-        animal.windup=0;animal.dash=0;
+      const respawn=tickCreatureRespawn(animal,step);
+      if(respawn==='waiting')continue;
+      if(respawn==='returned'){
+        animal.visual.setVisible(true);
+        animal.visual.shadow?.setVisible(true);
+        if(animal.halo)animal.halo.setVisible(true);
       }
       const lure=this.lures.find(f=>f.landed&&Math.abs(f.x-animal.x)<155);
-      let target=lure?.x ?? (animal.homeX+Math.sin(time*.00055+animal.homeX)*32);
-      const diff=target-animal.x;
-      // At full trust, pause in place for the player's capture attempt.
-      // Without this a friendly animal immediately wandered out of orb range.
-      const speed=animal.stun || animal.bubble>0 || friendly || animal.windup>0 ? 0 :
-        lure ? .55 : animal.kind==='prismtail' ? .76 : .36;
-      animal.x+=clamp(diff,-speed*step,speed*step);
-      if(animal.dash>0){
-        animal.x=clamp(animal.x+animal.attackFace*2.6*step,10,this.worldW-10);
-        animal.dash=Math.max(0,animal.dash-step/60);
-      }
-      if(Math.abs(diff)>2)animal.face=Math.sign(diff);
-      if(animal.flying){
-        const rest=animal.homeY+Math.sin(time*.0014+animal.homeX)*7;
-        const wanted=lure?Math.min(rest+40,lure.y-15):rest;
-        animal.y+=(wanted-animal.y)*.035*step;
-      }else animal.y=this.groundAt(animal.x)-(animal.bubble>0?22:0);
+      const {friendly,diff}=stepCreatureMotion(animal,lure,step,time,{
+        width:this.worldW,groundAt:x=>this.groundAt(x)
+      });
       if(lure&&Math.abs(animal.x-lure.x)<12&&Math.abs(animal.y-lure.y)<25){
         animal.trust=feedTrust(animal.trust,FAVORITES[animal.kind],lure.food);
         if(animal.trust===100)animal.distraction=DISTRACTION_SECONDS;
@@ -667,25 +640,14 @@ class Wonderwood extends Phaser.Scene {
           animal.kind+' is friendly — throw a capture orb!':
           animal.kind+' enjoyed the treat',1300);
       }
-      const action=animal.stun||animal.bubble>0?'stunned':animal.windup>0?'alert':animal.dash>0?'dash':
-        lure?'run':animal.flying?'flap':Math.abs(diff)>6?'run':
-        animal.distraction>0?'happy':'idle';
+      const action=creatureAction(animal,lure,diff);
       this.animate(animal,animal.kind,action,step/60);
       animal.visual.setTint(friendly?0xc7ffda:0xffffff);
       // Threats explicitly warn before a short, directional dash.
       // Merely touching a calm animal never causes damage.
-      const hostile=animal.kind==='emberkit'||animal.kind==='prismtail';
       const close=this.players.find(p=>!p.sleep&&!p.bubble&&
         Math.abs(p.x-animal.x)<52&&Math.abs(p.y-animal.y)<28);
-      if(hostile&&!friendly&&animal.stun===0){
-        if(animal.windup>0){
-          animal.windup=Math.max(0,animal.windup-step/60);
-          if(animal.windup===0){animal.dash=.22;animal.attack=1.25;}
-        }else if(animal.attack===0&&animal.dash===0&&close&&!lure){
-          animal.windup=.55;
-          animal.attackFace=close.x>=animal.x?1:-1;
-        }
-      }
+      stepCreatureThreat(animal,close,Boolean(lure),step);
       if(animal.halo)animal.halo.setPosition(animal.x,animal.y-17);
       animal.warning.clear();
       if(animal.windup>0){
