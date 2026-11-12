@@ -27,6 +27,9 @@ test('unknown prefab and absent prerequisite are rejected',()=>{
   assert.throws(()=>encounter('unknown','x',[0,12],{}),/Unknown encounter/);
   const broken=structuredClone(meadow);
   broken.creatures=broken.creatures.filter(([kind])=>kind!=='springaroo');
+  // Keep the introductory encounter's reward valid so this checks the
+  // next encounter's prerequisite independently of reward validation.
+  broken.sections[0].reward='glimmermoth';
   assert.throws(()=>validateEncounters(broken),/needs springaroo/);
 });
 
