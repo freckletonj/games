@@ -1,5 +1,5 @@
 import {build} from 'esbuild';
-import {mkdir, writeFile} from 'node:fs/promises';
+import {mkdir, writeFile, readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 
 const root = resolve(import.meta.dirname, '../..');
@@ -15,9 +15,11 @@ const result = await build({
   logLevel:'warning'
 });
 const javascript = result.outputFiles[0].text.replaceAll('</script', '<\\/script');
+const thirdPartyLicense = await readFile(resolve(root,'phaser/LICENSE-THIRD-PARTY.txt'),'utf8');
 const html = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">' +
   '<meta name="viewport" content="width=device-width,initial-scale=1">' +
   '<title>Wonderwood · Phaser</title>' +
+  '<!-- '+thirdPartyLicense.replaceAll('--','—')+' -->' +
   '<style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#101b31;color:#f9eacf;font-family:Georgia,serif}' +
   'body{display:grid;place-items:center;overflow:hidden}#game{width:100vw;height:100vh}' +
   'canvas{display:block}#credits{position:fixed;bottom:6px;right:10px;font:10px system-ui;color:#b1b8b7;pointer-events:none}' +
