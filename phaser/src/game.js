@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import './bootstrap.js';
 import designs from '../../src/games/animal-adventure/designs.json';
-import {characters,backgrounds,sheets,silhouettes} from './assets.js';
+import {characters,backgrounds,sheets,silhouettes,terrainAtlas} from './assets.js';
 import {bindings,readActions} from './input.js';
 
 const TILE=16;
@@ -31,6 +31,7 @@ class Wonderwood extends Phaser.Scene {
       });
     }
     for(const [name,url] of Object.entries(backgrounds))this.load.image('back-'+name,url);
+    this.load.image('painted-terrain',terrainAtlas);
     for(const [name,url] of Object.entries(sheets))
       this.load.spritesheet(name,url,{frameWidth:180,frameHeight:270});
     for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
@@ -167,6 +168,67 @@ class Wonderwood extends Phaser.Scene {
       y>=b.surface*TILE&&y<=this.groundAt(x)+3);
   }
 
+  paintSoil(contour){
+    // Bake the original hand-painted swatch into a continuous slope-clipped
+    // world texture. One Phaser image is cheaper and more coherent than
+    // thousands of repeated rectangles or independently stretched tiles.
+    const source=this.textures.get('painted-terrain').getSourceImage();
+    const cw=source.width/4,ch=source.height/2;
+    const swatch=document.createElement('canvas');
+    swatch.width=64;swatch.height=64;
+    const brush=swatch.getContext('2d',{willReadFrequently:true});
+    brush.drawImage(source,cw*(1+.17),ch*.40,cw*.76,ch*.54,0,0,64,64);
+    const data=brush.getImageData(0,0,64,64);
+    const pixels=data.data;
+    const snapshot=new Uint8ClampedArray(pixels);
+    // Feather opposite borders to make the paint wrap seamlessly.
+    for(let y=0;y<64;y++)for(let i=0;i<12;i++){
+      const a=(y*64+i)*4,b=(y*64+63-i)*4;
+      const weight=.5-.5*Math.cos(Math.PI*i/12);
+      for(let channel=0;channel<4;channel++){
+        const average=(snapshot[a+channel]+snapshot[b+channel])/2;
+        pixels[a+channel]=average*(1-weight)+snapshot[a+channel]*weight;
+        pixels[b+channel]=average*(1-weight)+snapshot[b+channel]*weight;
+      }
+    }
+    snapshot.set(pixels);
+    for(let x=0;x<64;x++)for(let i=0;i<12;i++){
+      const a=(i*64+x)*4,b=((63-i)*64+x)*4;
+      const weight=.5-.5*Math.cos(Math.PI*i/12);
+      for(let channel=0;channel<4;channel++){
+        const average=(snapshot[a+channel]+snapshot[b+channel])/2;
+        pixels[a+channel]=average*(1-weight)+snapshot[a+channel]*weight;
+        pixels[b+channel]=average*(1-weight)+snapshot[b+channel]*weight;
+      }
+    }
+    brush.putImageData(data,0,0);
+    const top=Math.max(0,Math.floor(Math.min(...this.level.surface)*TILE)-5);
+    const paint=document.createElement('canvas');
+    paint.width=this.worldW;paint.height=this.worldH-top;
+    const ctx=paint.getContext('2d');
+    ctx.translate(0,-top);
+    ctx.beginPath();
+    ctx.moveTo(0,this.worldH);
+    for(const point of contour)ctx.lineTo(point.x,point.y);
+    ctx.lineTo(this.worldW,this.worldH);
+    ctx.closePath();
+    ctx.clip();
+    ctx.fillStyle=ctx.createPattern(swatch,'repeat');
+    ctx.fillRect(0,top,this.worldW,this.worldH-top);
+    const tint={meadow:'#385e4d',coast:'#567a84',summit:'#5c547c'}[this.level.biome];
+    ctx.globalAlpha=.24;ctx.fillStyle=tint;
+    ctx.fillRect(0,top,this.worldW,this.worldH-top);
+    const key='painted-soil-'+this.chapter.id;
+    if(this.textures.exists(key))this.textures.remove(key);
+    this.textures.addCanvas(key,paint);
+    this.add.image(0,top,key).setOrigin(0).setDepth(-29).setAlpha(.85);
+    const rim=this.add.graphics().setDepth(-28);
+    rim.lineStyle(3,EDGE[this.level.biome],.92);
+    rim.strokePoints(contour);
+    rim.lineStyle(1,0xfaf6c8,.45);
+    rim.strokePoints(contour.map(point=>({x:point.x,y:point.y-2})));
+  }
+
   paintTerrain(){
     const level=this.level,biome=level.biome;
     const graphics=this.add.graphics().setDepth(-30);
@@ -179,6 +241,7 @@ class Wonderwood extends Phaser.Scene {
     graphics.strokePoints(contour);
     graphics.lineStyle(1,0xfaf2c4,.52);
     graphics.strokePoints(contour.map(p=>({x:p.x,y:p.y-3})));
+    this.paintSoil(contour);
     // Broken strata and clusters add scale without showing repeated square tiles.
     graphics.lineStyle(1,0xe5e1c7,.12);
     for(let x=12;x<this.worldW;x+=79){
