@@ -42,6 +42,11 @@ def main():
             for i in range(len(chunks)-1)),chunks
         assert chunks[-1]["x"]+chunks[-1]["width"]==before["worldWidth"]
         page.screenshot(path=str(ROOT/"dist"/"phaser-grotto-painted.png"))
+        page.keyboard.press("g")
+        assert page.evaluate(
+            "window.__wonderwoodPhaser.snapshot().caveArt.geometryOverlay"
+        ),"Geometry overlay should reveal the authored collision contours"
+        page.keyboard.press("g")
 
         # The earlier stand-alone mock could show a static painting but had no
         # verified gameplay. Exercise actual Phaser keyboard input and 60 Hz sim.
