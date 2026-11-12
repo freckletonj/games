@@ -44,6 +44,7 @@ jobs:
         run: |
           python phaser/tests/smoke.py
           python phaser/tests/gameplay.py
+          python phaser/tests/chapters.py
       - name: Publish playable single-file HTML
         if: always()
         uses: actions/upload-artifact@v4
@@ -60,4 +61,5 @@ jobs:
             dist/phaser-preview.png
             dist/phaser-title.png
             dist/phaser-befriending.png
+            dist/phaser-chapter-*.png
           if-no-files-found: ignore

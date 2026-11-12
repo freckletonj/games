@@ -55,7 +55,9 @@ class Wonderwood extends Phaser.Scene {
     // The smoke test reads state but never mutates gameplay state directly.
     window.__wonderwoodPhaser={
       engine:'Phaser 4',
-      snapshot:()=>({stage:this.stage,chapter:this.chapter?.id||null,
+      snapshot:()=>({stage:this.stage,choice:this.choice,chapter:this.chapter?.id||null,
+        animalCount:this.animals?.length||0,
+        platformCount:this.level?.platformSegments?.length||0,
         players:this.players?.map(p=>({x:p.x,y:p.y,face:p.face,vx:p.vx,vy:p.vy,grounded:p.grounded,
           jumps:p.jumps,flaps:p.flaps,food:FRUITS[p.food],form:p.form,
           caught:p.caught,health:p.health,checkpoint:p.checkpoint,bubble:p.bubble}))||[],
