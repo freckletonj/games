@@ -6,6 +6,42 @@ export function paintCave(scene){
   const level=scene.level,layout=level.cave.layout;
   const manifest=caveArtManifest(level,{chunkCells:48,overlapCells:0});
   scene.cavePaintedChunks=[];
+  // Two true camera-independent parallax planes; use the same authored
+  // optical depths advertised in the art manifest. All physical rock/water
+  // remains at scroll factor 1 and never moves relative to collision.
+  for(const [id,speed] of [['distant-arches',.16],['mist-and-crystals',.34]]){
+    const canvas=document.createElement('canvas');
+    canvas.width=1024;canvas.height=level.height*16;
+    const ctx=canvas.getContext('2d');
+    if(id==='distant-arches'){
+      const ink=ctx.createLinearGradient(0,0,0,canvas.height);
+      ink.addColorStop(0,'#0e1c30');
+      ink.addColorStop(.53,'#1b4157');
+      ink.addColorStop(1,'#112d3e');
+      ctx.fillStyle=ink;ctx.fillRect(0,0,1024,canvas.height);
+      for(let x=70;x<1100;x+=235){
+        ctx.strokeStyle='#60a8ae3d';ctx.lineWidth=28;
+        ctx.beginPath();ctx.ellipse(x,520,95,224,-.14,Math.PI,Math.PI*2);ctx.stroke();
+        ctx.strokeStyle='#0b263b9c';ctx.lineWidth=15;
+        ctx.beginPath();ctx.ellipse(x+55,600,53,175,.16,Math.PI,Math.PI*2);ctx.stroke();
+      }
+    }else{
+      for(let x=65;x<1100;x+=155){
+        const y=380+74*Math.sin(x*.012);
+        const light=ctx.createRadialGradient(x,y,9,x,y,235);
+        light.addColorStop(0,'#90f9e04d');
+        light.addColorStop(.42,'#64d9d522');
+        light.addColorStop(1,'#64d9d500');
+        ctx.fillStyle=light;ctx.fillRect(x-240,y-240,480,480);
+      }
+    }
+    const key='cave-plane-'+id;
+    scene.textures.addCanvas(key,canvas);
+    scene.generatedTextures.push(key);
+    const visual=scene.add.tileSprite(480,level.height*8,960,level.height*16,key)
+      .setScrollFactor(0).setDepth(id==='distant-arches'?-92:-72);
+    scene.parallaxLayers.push({speed,visual});
+  }
   for(const chunk of manifest.chunks){
     const canvas=document.createElement('canvas');
     canvas.width=chunk.pixelBounds.width;canvas.height=level.height*16;
@@ -22,23 +58,8 @@ export function paintCave(scene){
       ctx.lineTo(right,top?0:height);
       ctx.closePath();
     };
-    // Distant arch strata are generated in continuous world coordinates:
-    // no seam at any chunk boundary and no tiles or stretched bitmaps.
-    const deep=ctx.createLinearGradient(0,0,0,height);
-    deep.addColorStop(0,'#102034');
-    deep.addColorStop(.52,'#183e57');
-    deep.addColorStop(1,'#102c3d');
-    ctx.fillStyle=deep;ctx.fillRect(left,0,right-left,height);
-    for(let x=Math.floor(left/250)*250;x<right+250;x+=250){
-      const y=255+45*Math.sin(x*.009);
-      const glow=ctx.createRadialGradient(x,y,12,x,y,220);
-      glow.addColorStop(0,'#387f89a0');
-      glow.addColorStop(1,'#12314800');
-      ctx.fillStyle=glow;ctx.fillRect(x-220,y-220,440,440);
-      ctx.strokeStyle='#7ac8c436';ctx.lineWidth=13;
-      ctx.beginPath();ctx.ellipse(x+85,y+120,72,160,-.12,Math.PI,Math.PI*2);
-      ctx.stroke();
-    }
+    // Transparent navigable space reveals the independent parallax planes.
+    // Only the exact physical roof, floor and water are painted here.
     // Rock fills follow the exact roof and floor contour used by collision.
     for(const top of [true,false]){
       contour(top?level.ceiling:level.surface,top);
