@@ -99,6 +99,10 @@ for(const [id,design] of Object.entries(designs)){
           o.x*TILE>=cameraX&&o.x*TILE<cameraX+W&&
           o.y*TILE>=cameraY&&o.y*TILE<cameraY+H)
           .map(o=>({kind:o.kind,id:o.id,x:o.x*TILE+8,y:o.y*TILE}));
+        const mountCourseRings=(level.mountCourses||[]).flatMap(course=>
+          course.nodes.map(([x,y],i)=>({id:course.id,mount:course.mount,index:i+1,
+            x:x*TILE,y:y*TILE})).filter(p=>
+            p.x>=cameraX&&p.x<=cameraX+W&&p.y>=cameraY&&p.y<cameraY+H));
         const compositions=(level.vistas||[]).filter(v=>
           (v.x+v.span/2)*TILE>=cameraX &&
           (v.x-v.span/2)*TILE<cameraX+W &&
@@ -114,6 +118,13 @@ for(const [id,design] of Object.entries(designs)){
           '<text x="'+(o.x+9)+'" y="'+(o.y+3)+'" fill="#11293b" font-size="9" '+
           'paint-order="stroke" stroke="#fff4d5" stroke-width="3">'+
           escape(o.kind)+'</text>').join('\n');
+        const courseLabels=mountCourseRings.map(p=>
+          '<circle cx="'+p.x+'" cy="'+p.y+'" r="8" fill="none" '+
+          'stroke="#ffe3a4" stroke-width="2"/>'+
+          '<text x="'+(p.x+10)+'" y="'+(p.y-3)+
+          '" fill="#33445b" font-size="9" stroke="#fff9eb" '+
+          'stroke-width="2.5" paint-order="stroke">'+
+          escape(p.mount.toUpperCase()+' '+p.index)+'</text>').join('\n');
         const sceneLabels=compositions.map(v=>
           '<ellipse cx="'+v.x+'" cy="'+(v.y-55)+'" rx="'+(v.span*.5)+
           '" ry="55" fill="none" stroke="#fff6d9" stroke-dasharray="5 4"/>'+
@@ -126,7 +137,7 @@ for(const [id,design] of Object.entries(designs)){
           '<text x="'+(v.x+7)+'" y="'+(v.y-7)+
           '" fill="#113648" font-size="8" paint-order="stroke" '+
           'stroke="#f8f4dd" stroke-width="3">RELIC ROUTE '+(i+1)+'</text>').join('\n');
-        writeFileSync(path+'/'+annotatedFile,svg(overlay+sceneLabels+routeLabels));
+        writeFileSync(path+'/'+annotatedFile,svg(overlay+sceneLabels+routeLabels+courseLabels));
         const asset=idPart.replaceAll('-','_');
         jobs.push({
           id:idPart,world:id,section:section.id,challenge:section.challenge,
@@ -134,11 +145,12 @@ for(const [id,design] of Object.entries(designs)){
           biome:design.biome,viewport:{x:cameraX,y:cameraY,width:W,height:H},
           output:{width:960,height:540,aspectRatio:'16:9',overlapWorldUnits:80},
           mask:'art-guides/'+maskFile,annotated:'art-guides/'+annotatedFile,
-          anchors,interactions,compositions,goalWaypoints,backgroundAsset:asset+'_background',foregroundAsset:asset+'_foreground',
+          anchors,interactions,compositions,goalWaypoints,mountCourseRings,
+          backgroundAsset:asset+'_background',foregroundAsset:asset+'_foreground',
           notes:[
             'The semantic mask is a geometry constraint, NOT a texture to copy literally',
             'Ground boundaries, bridges and waterlines must align with the supplied mask',
-            'Characters, UI text, gems, enemies, setpieces and checkpoints are independent game sprites',
+            'Characters, UI text, gems, enemies, setpieces, mounts, riding rings and checkpoints are independent game sprites',
             'The composition is a scenic silhouette only, never a new walkable obstacle',
             'Produce transparent foreground decorations; never paint a hard obstacle into open collision space'
           ],
