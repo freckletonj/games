@@ -51,6 +51,14 @@ def main():
             )
             assert state["animalCount"] > 0, state
             assert state["platformCount"] > 0, state
+            assert state["ledgeBounds"], (chapter, state)
+            for ledge in state["ledgeBounds"]:
+                # A 2x backing canvas must resolve to 1x world units. In the
+                # broken version it looked twice as wide as its collider.
+                assert abs(ledge["artScale"] - .5) < 1e-6, ledge
+                assert abs(ledge["artWidth"] - (ledge["width"] + 16)) < 1, ledge
+                assert abs(ledge["artX"] - (ledge["x"] - 8)) < 1, ledge
+                assert abs(ledge["artY"] - (ledge["y"] - 7)) < 1, ledge
             assert state["parallaxLayers"] == 2, (chapter, state)
             assert not errors, (chapter, errors)
             page.screenshot(path=str(ROOT / "dist" / f"phaser-chapter-{chapter}.png"))
