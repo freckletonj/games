@@ -14,6 +14,7 @@ import {advanceTreatFlight} from './treat-motion.js';
 import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat,
   stompCreature} from './creature-motion.js';
 import {meadowDesign} from './meadow-design.js';
+import {addMeadowIllustration} from './meadow-art.js';
 import {validateEncounters} from './encounters.js';
 import {paintTerrain,paintScenery,addMeadowAtmosphere,
   addParallaxAtmosphere,moveParallaxAtmosphere} from './world-renderer.js';
@@ -242,6 +243,7 @@ class Wonderwood extends Phaser.Scene {
     this.backdrop.setScale(Math.max(1050/this.backdrop.width,
       590/this.backdrop.height));
     addParallaxAtmosphere(this);
+    addMeadowIllustration(this);
     paintTerrain(this);
     paintScenery(this);
     addMeadowAtmosphere(this);
