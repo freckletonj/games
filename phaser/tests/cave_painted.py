@@ -39,11 +39,11 @@ def main():
         assert before["worldWidth"]==3200,before
         assert before["players"],before
         page.screenshot(path=str(ROOT/"dist"/"phaser-grotto-painted.png"))
-        page.keyboard.press("g")
+        page.keyboard.press("v")
         assert page.evaluate(
             "window.__wonderwoodPhaser.snapshot().caveArt.geometryOverlay"
-        ),"G must display the real collision spline"
-        page.keyboard.press("g")
+        ),"V must display the real collision spline"
+        page.keyboard.press("v")
         page.evaluate("document.activeElement.blur()")
         page.keyboard.down("d")
         target=before["players"][0]["x"]+16

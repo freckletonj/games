@@ -109,7 +109,7 @@ class Wonderwood extends Phaser.Scene {
         this.stateFrameWidth,this.stateFrameHeight);
     // Revive has the same binding as the legacy game. H returns to the menu.
     this.input.keyboard.on('keydown-H',()=>{if(this.stage>=0)this.showMenu();});
-    this.input.keyboard.on('keydown-G',()=>{
+    this.input.keyboard.on('keydown-V',()=>{
       if(this.level?.cave&&this.caveGeometryOverlay)
         this.caveGeometryOverlay.setVisible(!this.caveGeometryOverlay.visible);
     });

@@ -15,7 +15,8 @@ The world is **3200 x 1792 pixels**. The approved background is the original
 **1672 x 941 model-generated PNG** at
 `phaser/assets/generated/luminous-grotto-single.png`. It is drawn exactly
 once across the entire world with scroll factor 1. No decorative image
-controls physics. Use **G** in game to compare art with the collision splines.
+controls physics. Use **V** in game to compare the image against the collision splines.
+The G key remains available for the existing creature-capture action.
 
 ## Authoring and local verification
 
