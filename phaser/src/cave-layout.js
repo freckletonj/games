@@ -93,7 +93,7 @@ export const skywellLayout={
     {kind:'snack',x:14},{kind:'snack',x:125},
     {kind:'starShard',x:39,y:87},{kind:'starShard',x:106,y:58},
     {kind:'starShard',x:137,y:39},{kind:'starShard',x:161,y:32},
-    {kind:'diveKey',x:182,y:45},{kind:'exit',x:212}
+    {kind:'diveKey',x:182,y:50},{kind:'exit',x:212}
   ]
 };
 
