@@ -12,7 +12,7 @@ test('the new climbing chapter compiles as one reachable, physics-led world',()=
   assert.equal(level.width*16,3520);
   assert.equal(level.height*16,2048);
   assert.equal(level.climbWalls.length,10);
-  assert.equal(level.platformSegments.length,11);
+  assert.equal(level.platformSegments.length,15);
   assert.equal(level.waterBodies.length,3);
   assert.ok(level.objects.some(o=>o.kind==='glimmermoth'));
   assert.ok(level.objects.some(o=>o.kind==='diveKey'));
