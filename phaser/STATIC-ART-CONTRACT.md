@@ -26,7 +26,10 @@ Run from the repository root:
 node phaser/scripts/export-cave-guides.mjs
 ```
 
-For Skywell, this writes under `dist/cave-guides/skywell-ascent/`:
+For the active Skywell, this writes under `dist/cave-guides/skywell-ascent/`.
+The separate **vaulted geometry study** exports under
+`dist/cave-guides/skywell-vault-study/` with additional physically solid
+polygons, six overlapping art-refinement guides and a plan.json:
 
 - `world-physical-rock.png`: **the one complete static geometry reference**
   for global image conditioning, at native 3520 × 2048 world pixels.
@@ -112,9 +115,25 @@ the legacy opaque Skywell WebP. Do not present it as proof of this improved
 art pipeline. A subsequent art pass must replace the legacy painting
 with the actual baked RGBA layers and run the browser acceptance gates.
 
-The current compiler is also limited to one ground and ceiling height
-per X and one-way shelves. To support overlapping cave tunnels or organic
-rock bridges, the next geometry representation should support explicit
-rock **polygons** and collision surfaces, then rasterize those same
-polygons for image conditioning. Do not simulate complicated caves by
-inventing decorative platforms with no physical correspondence.
+The compiler now accepts **additional 2D rock polygons**, with player
+side, top, and underside collision, and rasterizes those exact polygons in
+the semantic guide, water mask and solid alpha mask. They are exercised in
+the `skywell-vault-study` authoring candidate; its polygons are **not**
+activated in the playable old Skywell because that would create invisible
+colliders under its older bitmap. The study's original wall-jump route has
+also been simulated end-to-end against polygon collision.
+
+The existing levels still use a single heightfield ground/roof beneath the
+new polygons. Fully stacked, independently traversable tunnels **below the
+ground heightfield** are not yet modeled. A future polygon-aircutout model
+must include real player and creature collision before any art is approved.
+
+Art refinement now uses `refinement/plan.json` and
+`stitch-cave-painting.py` to assemble one native-sized composition **before**
+applying alpha. The offline HTML build reads only explicitly approved assets
+from `phaser/assets/generated/approved-cave-art.json`. Its initial contents
+are empty, so the old Grotto and Skywell draft paintings remain unchanged
+until a reviewed new painting is provided.
+
+See [CAVE-ART-PIPELINE.md](CAVE-ART-PIPELINE.md) for the exact end-to-end
+instructions, including historic PR checkpoints and the current approval gate.
