@@ -152,7 +152,7 @@ The accepted water-art mismatch is documented and not a surprise blocker.
 ## Skywell Ascent: climbable walls and image-model handoff
 
 Skywell is a 220 × 128-cell / **3520 × 2048 world-pixel** level. It has
-15 elevated physical shelves (including an optional Moonwing upper loop) and 10 narrow, **solid** climbing walls.
+24 elevated physical shelves (including intermediate climbing perches and an optional Moonwing upper loop) and 10 narrow, **solid** climbing walls.
 Running into a wall below its top blocks crossing. Jump beside it and tap
 jump again while airborne to rebound upward from the wall. The wall jump
 has an 11-tick cooldown and works for every form. Glimmermoth is near
