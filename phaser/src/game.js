@@ -347,7 +347,7 @@ class Wonderwood extends Phaser.Scene {
     this.shared={relic:false,shards:0,collected:new Set(),checkpoint:null,
       picnics:0,foods:{berry:14,nectar:6,star:6}};
     if(this.level.cave){
-      // One authored bitmap provides all the static cave scenery.
+      // Paint the code-authored cave from its selected world-locked image layers.
       this.cameras.main.setBackgroundColor(0x0b1c2c);
     }else{
       this.addBackground(this.level.biome);
