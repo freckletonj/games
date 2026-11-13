@@ -132,6 +132,7 @@ class Wonderwood extends Phaser.Scene {
         animalCount:this.animals?.length||0,
         platformCount:this.level?.platformSegments?.length||0,
         worldWidth:this.worldW||0,
+        cameraZoom:this.cameras.main.zoom,
         paintedStateFrames:this.textures.get('painted-states').frameTotal-1,
         generatedTextureCount:this.generatedTextures?.length||0,
         caveArt:this.stage>=0&&this.level?.cave?{
@@ -1051,7 +1052,9 @@ class Wonderwood extends Phaser.Scene {
     }
     const {action,events}=stepPlayerMotion(p,actions,step,{
       width:this.worldW,height:this.worldH,tile:TILE,
-      groundAt:x=>this.groundAt(x),inWater:(x,y)=>this.inWater(x,y),
+      groundAt:x=>this.groundAt(x),
+      ceilingAt:this.level.cave?x=>this.level.cave.ceilingAt(x):null,
+      inWater:(x,y)=>this.inWater(x,y),
       waterBodies:this.level.waterBodies,
       thermalVolumes:this.level.thermalVolumes,
       platformSegments:this.level.platformSegments,
