@@ -21,7 +21,7 @@ for(const [id,layers] of Object.entries(approvedSpec)){
   for(const [name,path] of Object.entries(layers)){
     if(name==='backgroundScrollFactor')continue;
     if(!['solid','water','background'].includes(name)||
-       !/\\.(png|webp)$/.test(path))
+       !/\.(png|webp)$/.test(path))
       throw Error('Invalid painted cave layer '+id+' '+name);
     const media=path.endsWith('.png')?'image/png':'image/webp';
     const bytes=await readFile(resolve(root,path));
