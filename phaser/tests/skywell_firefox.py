@@ -21,15 +21,13 @@ def main():
                 if request.url.startswith(("http://", "https://")) else None)
         # File origin is intentional: this is exactly how a downloaded
         # self-contained preview opens in Firefox, not an HTTP test server.
-        page.goto(GAME.as_uri(), wait_until="load", timeout=120000)
+        page.goto(GAME.as_uri()+"#skywell-ascent", wait_until="load", timeout=120000)
         page.wait_for_function(
             "window.__wonderwoodPhaser?.snapshot().stage === -1",
             timeout=90000
         )
         assert page.locator("canvas").count() == 1
         assert page.locator(".ww-menu-title").inner_text() == "Wonderwood"
-        # The latest authored chapter is one click backward from chapter 1.
-        page.locator("#ww-menu-prev").click()
         assert page.locator("#ww-menu-chapter").inner_text() == "Skywell Ascent"
         page.locator("#ww-menu-play").click()
         page.wait_for_function(
