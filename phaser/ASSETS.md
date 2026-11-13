@@ -130,3 +130,14 @@ an entirely new illustrated wing animation.
 The berry lure sprite also reuses the original `flora.webp` artwork:
 a tight crop and alpha mask of its purple berry cluster. No separate
 unlicensed berry image is imported.
+
+## Skywell Ascent (Chapter 7, prototype)
+
+`phaser/src/skywell-painting.js` is original, deterministically
+procedural SVG scenery rendered at a native 3520 × 2048 world resolution.
+It derives rock silhouettes, pool fills, one-way shelves and climbable
+wall visuals from `compileCave(skywellLayout)`. No third-party image,
+model-generated painting or dynamic actor is embedded in the SVG.
+The eventual model-generated replacement path is reserved as
+`phaser/assets/generated/skywell-ascent.png` in the export manifest, but
+**that file has not been produced or approved**.
