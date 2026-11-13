@@ -28,6 +28,7 @@ const color={
   rock:[128,92,119,255],
   water:[35,136,175,255],
   shelf:[246,196,118,255],
+  wall:[255,157,99,255],
   distant:[37,68,93,255],
   mist:[53,89,116,255],
   foreground:[86,66,93,220],
@@ -47,6 +48,7 @@ export function caveGuidePng(level,{
   const roof=new Float64Array(width),floor=new Float64Array(width);
   const water=new Float64Array(width).fill(Infinity);
   const ledges=level.platformSegments;
+  const walls=level.climbWalls||[];
   for(let x=0;x<width;x++){
     const absoluteX=worldX+(x+.5)/scale;
     roof[x]=level.cave.ceilingAt(absoluteX);
@@ -69,6 +71,9 @@ export function caveGuidePng(level,{
         if(!solid&&ledges.some(p=>
           absoluteX>=p.x*16&&absoluteX<(p.x+p.length)*16&&
           Math.abs(absoluteY-p.y*16)<2))paint=color.shelf;
+        if(walls.some(w=>Math.abs(absoluteX-w.x*16)<12&&
+          absoluteY>=w.top*16&&absoluteY<w.bottom*16))
+          paint=color.wall;
       }else if(layer==='foreground-occlusion'){
         paint=absoluteY<roof[x]?color.foreground:color.clear;
       }else if(layer==='distant-arches'){
