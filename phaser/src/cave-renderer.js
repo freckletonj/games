@@ -2,9 +2,28 @@
 // Physics and dynamic actors remain completely separate from this image.
 export function paintCave(scene){
   const width=scene.level.width*16,height=scene.level.height*16;
+  const id=scene.level.cave.layout.id;
+  const approved=scene.approvedCaveArt?.[id];
+  if(approved){
+    const layers=[];
+    for(const [material,depth] of [['background',-32],['water',-29],
+      ['solid',-28]]){
+      if(!approved[material])continue;
+      const painting=scene.add.image(0,0,'cave-'+id+'-'+material)
+        .setOrigin(0).setDisplaySize(width,height).setDepth(depth);
+      // The collision-bearing solid and water layers are WORLD LOCKED.
+      // Only a separately authored, noninteractive background can parallax.
+      if(material==='background')painting.setScrollFactor(.3);
+      layers.push(painting);
+    }
+    scene.cavePaintedLayers=layers;
+    scene.cavePainting=layers.at(-1);
+    return;
+  }
+  // The original single-image Grotto and the unapproved Skywell draft remain
+  // viewable, but never substitute for explicitly approved layered art.
   const painting=scene.add.image(0,0,
-    scene.level.cave.layout.id==='skywell-ascent'?
-      'skywell-painted-rock':'cave-painted-rock')
+    id==='skywell-ascent'?'skywell-painted-rock':'cave-painted-rock')
     .setOrigin(0).setDisplaySize(width,height).setDepth(-29);
   scene.cavePainting=painting;
 }
