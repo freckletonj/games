@@ -109,11 +109,13 @@ reachability, and its solid plane must not parallax.
 ### Scope of the implementation so far
 
 The exporter and alpha extraction script are implemented and the mask
-interfaces are covered by unit tests. **No newly approved high-resolution
-coherent painted scene exists yet.** The current game runtime still loads
-the legacy opaque Skywell WebP. Do not present it as proof of this improved
-art pipeline. A subsequent art pass must replace the legacy painting
-with the actual baked RGBA layers and run the browser acceptance gates.
+interfaces are covered by unit tests. **The user-selected second AI
+painting is now integrated as a visual prototype** for playable Skywell,
+split into three full-world geometry-derived alpha planes. Its generator
+source was 1644 × 957, not native 3520 × 2048. Do not claim this resampling
+adds high-frequency detail or represents a final high-resolution art pass.
+The separate vaulted study still awaits painting aligned to its extra
+polygon solids. Full browser acceptance is outstanding.
 
 The compiler now accepts **additional 2D rock polygons**, with player
 side, top, and underside collision, and rasterizes those exact polygons in
@@ -130,10 +132,13 @@ must include real player and creature collision before any art is approved.
 
 Art refinement now uses `refinement/plan.json` and
 `stitch-cave-painting.py` to assemble one native-sized composition **before**
-applying alpha. The offline HTML build reads only explicitly approved assets
-from `phaser/assets/generated/approved-cave-art.json`. Its initial contents
-are empty, so the old Grotto and Skywell draft paintings remain unchanged
-until a reviewed new painting is provided.
+applying alpha. The offline HTML build reads explicitly selected assets
+from `phaser/assets/generated/approved-cave-art.json`. The playable
+Skywell entry now points to the user's chosen Ancient Sanctuary alpha
+composition, with all three planes locked to scroll factor 1. The old
+opaque WebP remains a historical fallback, not the selected runtime scene.
+The vaulted study remains unregistered because its polygon collision
+does not match this original painting.
 
 See [CAVE-ART-PIPELINE.md](CAVE-ART-PIPELINE.md) for the exact end-to-end
 instructions, including historic PR checkpoints and the current approval gate.
