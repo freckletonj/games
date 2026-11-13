@@ -58,12 +58,13 @@ export function caveArtManifest(level){
         collisionFromCode:true},
       backdrop:{mask:null,parallaxAllowed:true,collisionFromCode:false}
     },
-    painting:study?null:skywell?'phaser/assets/generated/skywell-ascent.webp':
+    painting:study?null:skywell?'phaser/assets/generated/skywell-ancient/painted-solid.webp':
       'phaser/assets/generated/luminous-grotto-single.png',
     paintingStatus:study?'awaiting-coherent-high-resolution-art':
-      skywell?'legacy-physics-masked-draft':'approved-prototype',
+      skywell?'user-selected-layered-preview':'approved-prototype',
     illustratedPreview:null,
-    modelSource:study?null:skywell?'1644x957 legacy draft, not native world resolution':null,
+    modelSource:study?null:skywell?
+      '1644x957 Ancient Sanctuary painting, enlarged to 3520x2048 for alignment; not native full-resolution detail':null,
     wallMaterial:'#ff9d63',
     imageGeneration:{
       resolution:'maximum available native pixels at the matching aspect ratio',
