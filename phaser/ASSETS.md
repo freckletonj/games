@@ -1,5 +1,19 @@
 # Third-party assets and visual cohesion
 
+## Luminous Grotto single-image painting (PR #8)
+
+`phaser/assets/generated/luminous-grotto-single.png` is the approved
+**1672 × 941** single-frame cave painting generated using OpenAI image
+generation during the November 12, 2026 Luminous Grotto prototype.
+It was not imported from ArtByte, Kenney, or a third-party image search.
+The 3200 × 1792 static guide can be regenerated from
+`phaser/src/cave-layout.js` as described in
+[CAVE-ART-PIPELINE.md](CAVE-ART-PIPELINE.md). The existing painting predates
+that final guide, so the appearance of some water/rock boundaries is not
+perfectly collision-aligned; this known issue is accepted for the
+initial proof of concept. Actors, items, effects and UI are separate
+existing gameplay assets; they are not part of the cave painting.
+
 The baseline Wonderwood game uses original generated painterly character sheets,
 slope materials, props and chapter backgrounds from the repo's `src/assets/`.
 The Phaser renderer **does not use the original low-resolution Kenney tree/pine/
