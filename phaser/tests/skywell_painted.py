@@ -16,11 +16,10 @@ def main():
         page.on("pageerror",lambda error:errors.append(str(error)))
         page.on("request",lambda request:external.append(request.url)
             if request.url.startswith(("http://","https://")) else None)
-        page.goto(GAME.as_uri(),wait_until="load")
+        page.goto(GAME.as_uri()+"#skywell-ascent",wait_until="load")
         page.wait_for_function(
             "window.__wonderwoodPhaser?.snapshot().stage === -1",timeout=30000)
-        for _ in range(6):
-            page.locator("#ww-menu-next").click()
+        assert page.locator("#ww-menu-chapter").inner_text()=="Skywell Ascent"
         page.locator("#ww-menu-play").click()
         page.wait_for_function(
             "window.__wonderwoodPhaser.snapshot().chapter === 'skywell-ascent'",
