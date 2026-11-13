@@ -1,6 +1,5 @@
 import {mkdir,writeFile} from 'node:fs/promises';
 import {compileCave,skywellLayout,vaultLayout} from '../src/cave-layout.js';
-import {skywellPaintingSvg} from '../src/skywell-painting.js';
 import {caveArtManifest,caveMaskSvg} from '../src/cave-art-guide.js';
 import {caveGuidePng} from './cave-png.mjs';
 
@@ -27,8 +26,6 @@ await writeFile(new URL('world-physical-rock.svg',skywellOutput),
 for(const material of ['solid','water'])
   await writeFile(new URL('world-static-'+material+'.png',skywellOutput),
     caveGuidePng(skywell,{layer:'static-'+material}));
-await writeFile(new URL('world-painted-reference.svg',skywellOutput),
-  skywellPaintingSvg(skywell));
 await writeFile(new URL('manifest.json',skywellOutput),
   JSON.stringify(caveArtManifest(skywell),null,2)+'\n');
 console.log('Exported Skywell Ascent '+skywell.width*16+' x '+
