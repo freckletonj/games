@@ -138,15 +138,16 @@ procedural SVG scenery rendered at a native 3520 × 2048 world resolution.
 It derives rock silhouettes, pool fills, one-way shelves and climbable
 wall visuals from `compileCave(skywellLayout)`. No third-party image,
 model-generated painting or dynamic actor is embedded in the SVG.
-The eventual model-generated replacement path is reserved as
-`phaser/assets/generated/skywell-ascent.png` in the export manifest, but
-**that file has not been produced or approved**.
+The SVG is a reproducible *authoring reference* only, not the shipped
+painting. The separate model-generated painting is described below.
 
 ## Skywell full-resolution physics-grounded painting (Chapter 7)
 
 The runtime now embeds `phaser/assets/generated/skywell-ascent.webp` as
 one **3520 × 2048** static image. An image model generated the original
-**1644 × 957** scenery at its available native resolution. The painting was
+**1644 × 957** scenery at its available native resolution. The source is
+committed as `phaser/assets/generated/skywell-model-source.webp` (lossy
+WebP conversion of the generator's original PNG, quality 90). The painting was
 then resampled to authored world size and composed through the exact
 `skywellLayout` floor, ceiling, water, shelf and climb-wall masks, to
 prevent attractive but invented AI-painted terrain from becoming fake
