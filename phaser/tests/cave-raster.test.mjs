@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {inflateSync} from 'node:zlib';
-import {compileCave} from '../src/cave-layout.js';
+import {compileCave,skywellLayout} from '../src/cave-layout.js';
 import {caveGuidePng} from '../scripts/cave-png.mjs';
 
 function bitmap(bytes){
@@ -31,4 +31,38 @@ test('a single PNG guide encodes the same smooth static physics at full size',()
   assert.deepEqual(image.at(2100,1100),[35,136,175,255]);
   assert.deepEqual(image.at(1490,1100),[128,92,119,255]);
   assert.deepEqual(image.at(500,200),[128,92,119,255]);
+});
+
+test('one authored static layer has alpha only where geometry is physical',()=>{
+  const level=compileCave(skywellLayout),range={from:24,to:31};
+  const full=bitmap(caveGuidePng(level,range));
+  const solids=bitmap(caveGuidePng(level,{...range,layer:'static-solid'}));
+  const water=bitmap(caveGuidePng(level,{...range,layer:'static-water'}));
+  assert.deepEqual([solids.w,solids.h],[112,2048]);
+  assert.deepEqual([water.w,water.h],[112,2048]);
+  assert.deepEqual(solids.at(0,100),[128,92,119,255]);
+  assert.deepEqual(solids.at(0,1200),[0,0,0,0],
+    'air stays genuinely transparent, not a dimmed version of the model');
+  assert.deepEqual(water.at(0,1200),[0,0,0,0]);
+  assert.deepEqual(water.at(0,1650),[35,136,175,255]);
+  assert.deepEqual(solids.at(0,1650),[0,0,0,0]);
+  assert.deepEqual(solids.at((28-24)*16,1600),[255,157,99,255],
+    'climbing wall is part of the *same* static scene, not a sprite overlay');
+  assert.deepEqual(water.at((28-24)*16,1600),[0,0,0,0]);
+  assert.deepEqual(solids.at(16,99*16+8),[246,196,118,255],
+    'one-way shelves have a visible stone body beneath their collision top');
+
+  for(let y=0;y<full.h;y+=7)for(let x=0;x<full.w;x+=3){
+    const solid=solids.at(x,y),wet=water.at(x,y),guide=full.at(x,y);
+    assert.ok(!(solid[3]&&wet[3]),'no pixel can be rock and water');
+    assert.equal(solid[3]||wet[3]||255,255);
+    if(solid[3])assert.deepEqual(solid,guide);
+    if(wet[3])assert.deepEqual(wet,guide);
+  }
+});
+
+test('transparent layer raster is permitted only for explicit materials',()=>{
+  const level=compileCave(skywellLayout);
+  assert.throws(()=>caveGuidePng(level,{layer:'distant-arches'}),
+    /Invalid cave guide/);
 });
