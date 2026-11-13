@@ -15,7 +15,7 @@ test('one approved static painting ships as a valid full-level PNG',()=>{
   assert.equal(image.readUInt32BE(20),941);
   assert.ok(image.length>20000);
   const manifest=caveArtManifest(compileCave());
-  assert.equal(manifest.schema,'wonderwood-single-image-cave-v1');
+  assert.equal(manifest.schema,'wonderwood-physics-painted-cave-v2');
   assert.equal(manifest.dynamicExcluded,true);
   assert.equal(Object.hasOwn(manifest,'chunks'),false);
   assert.equal(Object.hasOwn(manifest,'planes'),false);
