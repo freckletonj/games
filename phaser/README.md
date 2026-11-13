@@ -28,6 +28,16 @@ browser test adapter is necessary only in environments where browser
 URL navigation is blocked. Normal `npm install` remains available for
 other platforms. GitHub Actions stays disabled.
 
+## Luminous Grotto: one-image authored level (Chapter 6)
+
+The optional sixth chapter demonstrates **one code-authored cave → one
+static geometry guide → one model-painted full-level image**, with no tiles
+or chunk stitching. It retains the existing Phaser movement, creatures and
+transformations. See the [step-by-step level authoring guide](CAVE-ART-PIPELINE.md)
+for the exact export/build commands, image-generation prompt, V-key collision
+overlay, and the accepted painted-water / rising-floor mismatch. The original
+five chapters keep their existing level/rendering pipelines.
+
 ## Build
 
 From `phaser/`:
