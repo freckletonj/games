@@ -46,7 +46,7 @@ if abs(source.width/source.height-ratio)>ratio*.02:
     raise ValueError('Painting aspect ratio differs from code-authored world')
 painting=source.resize((w,h),Image.Resampling.LANCZOS)
 background=np.asarray(ImageEnhance.Brightness(
-    painting.filter(ImageFilter.GaussianBlur(17))).enhance(.64),dtype=np.uint8)
+    painting.filter(ImageFilter.GaussianBlur(7))).enhance(.72),dtype=np.uint8)
 texture=np.asarray(ImageEnhance.Sharpness(painting).enhance(1.32),dtype=np.uint8)
 ys=np.arange(h,dtype=np.float32)[:,None]+.5
 floor=np.asarray(geometry['floor'],dtype=np.float32)
@@ -57,9 +57,19 @@ for p in geometry['pools']:
     water[:,p['start']*16:p['end']*16]|=ys>=p['surface']*16
 water &= ~solid
 canvas=background.copy()
-stone=(texture.astype(np.float32)*.64+
-    np.array([44,55,67],dtype=np.float32)*.36).astype(np.uint8)
-canvas[solid]=stone[solid]
+stone=(texture.astype(np.float32)*.70+
+    np.array([44,55,67],dtype=np.float32)*.30).astype(np.uint8)
+roof_mask=ys<roof
+floor_mask=ys>=floor
+# The model may draw bright sky into the physical ceiling. Convert only
+# that solid region to dark textured limestone, never apparent open air.
+gray=(texture[:,:,0].astype(np.float32)*.21+
+    texture[:,:,1].astype(np.float32)*.71+
+    texture[:,:,2].astype(np.float32)*.08)
+roof_stone=np.stack((gray*.25+18,gray*.25+23,gray*.28+32),axis=2)
+roof_stone=roof_stone.clip(0,255).astype(np.uint8)
+canvas[roof_mask]=roof_stone[roof_mask]
+canvas[floor_mask]=stone[floor_mask]
 aqua=(texture.astype(np.float32)*.37+
     np.array([20,125,165],dtype=np.float32)*.63).astype(np.uint8)
 canvas[water]=aqua[water]
