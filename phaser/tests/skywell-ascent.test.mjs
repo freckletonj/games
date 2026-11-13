@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {inflateSync} from 'node:zlib';
-import {compileCave,skywellLayout,caveContainsWater} from '../src/cave-layout.js';
+import {compileCave,skywellLayout,vaultLayout,caveContainsWater} from '../src/cave-layout.js';
 import {caveArtManifest,caveMaskSvg} from '../src/cave-art-guide.js';
 import {skywellPaintingSvg} from '../src/skywell-painting.js';
 import {caveGuidePng} from '../scripts/cave-png.mjs';
@@ -181,13 +181,15 @@ test('the high lantern can be picked up from a real platform',()=>{
   assert.ok(support,'lantern must be reachable while standing on a high ledge');
 });
 
-test('one uninterrupted real-input traversal reaches lantern and exit',()=>{
-  const level=compileCave(skywellLayout);
+test('original and vaulted caves both permit the entire real-input goal route',()=>{
+  for(const layout of [skywellLayout,vaultLayout]){
+  const level=compileCave(layout);
   const world={width:level.width*16,height:level.height*16,tile:16,
     groundAt:level.cave.groundAt,ceilingAt:level.cave.ceilingAt,
     inWater:(x,y)=>caveContainsWater(level,x,y),
     waterBodies:level.waterBodies,thermalVolumes:[],
-    platformSegments:level.platformSegments,climbWalls:level.climbWalls};
+    platformSegments:level.platformSegments,climbWalls:level.climbWalls,
+    rockPolygons:level.rockPolygons};
   const player={id:0,x:7.5*16,y:world.groundAt(7.5*16),vx:0,vy:0,
     face:1,grounded:true,coyote:5,jumpBuffer:0,jumps:0,
     flaps:0,flapWait:0,powers:0,hover:0,breach:0,
@@ -235,4 +237,5 @@ test('one uninterrupted real-input traversal reaches lantern and exit',()=>{
   assert.equal(wallJumps,10,'each wall needs its own deliberate second jump');
   assert.equal(lanternFound,true,'actual collision proximity must reach lantern');
   assert.equal(exitReached,true,'player must reach the actual exit after lantern');
+  }
 });
