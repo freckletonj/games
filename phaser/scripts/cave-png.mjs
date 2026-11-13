@@ -67,7 +67,7 @@ export function caveGuidePng(level,{
       const absoluteX=worldX+(x+.5)/scale;
       const shelf=!solid&&ledges.some(p=>
         absoluteX>=p.x*16&&absoluteX<(p.x+p.length)*16&&
-        Math.abs(absoluteY-p.y*16)<2);
+        absoluteY>=p.y*16&&absoluteY<p.y*16+20);
       const wall=!solid&&walls.some(w=>
         Math.abs(absoluteX-w.x*16)<12&&
         absoluteY>=w.top*16&&absoluteY<w.bottom*16);
