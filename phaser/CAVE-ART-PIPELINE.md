@@ -166,7 +166,7 @@ model-generated, geometry-masked WebP. The exported SVG illustration from
 runtime art. It shares roof, floor, filled water,
 shelf and wall boundaries with the gameplay code.
 
-To replace it with a **real AI-generated painting**:
+To regenerate or improve the **integrated AI-generated painting**:
 
 1. Export the Skywell PNG/SVG materials and inspect the colored fills.
 2. Give the image model the Skywell PNG, optional SVG illustration and
@@ -193,7 +193,10 @@ have not been implemented or implied by the illustration.
 The production runtime now embeds **one 3520 × 2048 WebP**, at
 `phaser/assets/generated/skywell-ascent.webp`, rather than loading the
 procedural SVG reference. This was produced from an image-model source
-(**1644 × 957 native pixels**, the maximum returned by the generator)
+(**1644 × 957 native pixels**, the maximum returned by the generator).
+The native source is retained as
+`phaser/assets/generated/skywell-model-source.webp` (quality-90 conversion
+of the original generator PNG)
 with the independent geometry-alignment compositor in
 `phaser/scripts/compose-painted-cave.py`. The native source is not falsely
 claimed to have been generated at 3520 × 2048; the compositor outputs a
@@ -204,7 +207,7 @@ Use `python -m pip install pillow numpy` if these optional authoring
 dependencies are absent, then from the repository root run:
 
 ```sh
-python phaser/scripts/compose-painted-cave.py path/to/max-resolution-static-source.png
+python phaser/scripts/compose-painted-cave.py phaser/assets/generated/skywell-model-source.webp
 node phaser/scripts/export-cave-guides.mjs
 npm run build --prefix phaser
 bash phaser/scripts/verify-cave-local.sh full
