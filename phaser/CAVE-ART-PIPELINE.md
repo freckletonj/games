@@ -184,8 +184,8 @@ at `phaser/assets/generated/skywell-ancient/`:
 
 The **approved-cave-art.json** registry explicitly selects these images.
 The actual game renderer loads and draws all three; there are no vector
-scenery sprites in normal play. The earlier `skywell-ascent.webp` remains
-only as a historical legacy draft; the new art is displayed instead.
+scenery sprites in normal play. The earlier opaque Skywell image and wedge compositor were removed from
+the working tree; their provenance is preserved in Git history.
 
 The selected original is smaller than the world. Its resampling enables
 pixel-aligned inspection at 3520 × 2048, but is not an acceptable replacement
