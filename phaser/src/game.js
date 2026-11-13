@@ -120,6 +120,7 @@ class Wonderwood extends Phaser.Scene {
         this.caveGeometryOverlay.setVisible(!this.caveGeometryOverlay.visible);
     });
     this.showMenu();
+    document.getElementById('ww-startup').hidden=true;
     // The smoke test reads state but never mutates gameplay state directly.
     window.__wonderwoodPhaser={
       engine:'Phaser 4',
