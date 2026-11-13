@@ -53,7 +53,7 @@ The study directory includes:
 | `world-static-water.png` | Same-size RGBA water; transparent physical rock and air |
 | `world-physical-rock.svg` | Editable, exact-coordinate semantic reference |
 | `manifest.json` | Art provenance, dimensions and layer semantics |
-| `refinement/plan.json` | Six overlap-aware, world-coordinate image-model crop requests |
+| `refinement/plan.json` | Nine overlap-aware, world-coordinate image-model crop requests |
 | `refinement/x*-y*-guide.png` | Region-specific guides **sampled from the exact global geometry** |
 
 The PNG generator uses the same `level.materialColumn(x)(y)` as the physics
