@@ -403,3 +403,15 @@ corresponding esbuild platform executable. Extract those into
 A pre-existing playable HTML from an older commit is **not** proof the
 current source builds. Keep PR #7 in draft until its new bundle has
 passed local Chromium checks and visual review.
+
+## Skywell Ascent: code-defined climbing cavern (Chapter 7)
+
+The second one-image authored chapter is a vertical, wall-jumpable cave.
+`phaser/src/cave-layout.js` defines its rock, pools, ledges and **real
+climbing-wall collision faces**; `skywell-painting.js` builds a single
+high-resolution geometry-aligned procedural illustration. The separate
+color-filled reference and image-model prompt export to
+`dist/cave-guides/skywell-ascent/`. Use **V** to overlay the physical
+materials, including solid walls. A final diffusion-model painting has
+**not yet been generated or integrated**. See
+[CAVE-ART-PIPELINE.md](CAVE-ART-PIPELINE.md) for the new workflow.
