@@ -33,6 +33,7 @@ import {paintTerrain,paintScenery,addMeadowAtmosphere,
   addParallaxAtmosphere,moveParallaxAtmosphere} from './world-renderer.js';
 
 const CHAPTERS=[...WW.chapters,grottoChapter,skywellChapter];
+const APPROVED_CAVE_ART=__CAVE_ASSETS__;
 const TILE=16;
 const VIEW_W=480;
 const VIEW_H=270;
@@ -79,13 +80,13 @@ class Wonderwood extends Phaser.Scene {
     // One full-resolution, geometry-constrained AI-painted bitmap.
     // Collision remains the independently compiled authored cave layout.
     this.load.image('skywell-painted-rock',skywellRockUrl);
-    for(const [chapter,layers] of Object.entries(__CAVE_ASSETS__))
+    for(const [chapter,layers] of Object.entries(APPROVED_CAVE_ART))
       for(const [material,url] of Object.entries(layers))
         this.load.image('cave-'+chapter+'-'+material,url);
   }
 
   create(){
-    this.approvedCaveArt=__CAVE_ASSETS__;
+    this.approvedCaveArt=APPROVED_CAVE_ART;
     this.keyboard=bindings.map(layout=>Object.fromEntries(Object.entries(layout)
       .map(([action,codes])=>[action,codes.map(code=>this.input.keyboard.addKey(code))])));
     this.lastInput=[{},{}];
