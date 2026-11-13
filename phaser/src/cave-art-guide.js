@@ -22,17 +22,20 @@ export function caveMaskSvg(level){
   const walls=(level.climbWalls||[]).map(p=>
     '<rect x="'+(p.x*TILE-12)+'" y="'+p.top*TILE+
     '" width="24" height="'+(p.bottom-p.top)*TILE+'"/>').join('');
+  const traversable=roof+' '+pathAlong(level,level.cave.groundAt,true);
   return '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+
     '" height="'+h+'" viewBox="0 0 '+w+' '+h+'">'+
     '<title>'+level.cave.layout.id+' static world guide</title>'+
-    '<desc>Smooth cave silhouette and water; no characters, enemies, items or HUD</desc>'+
+    '<desc>One coherent complete scene: physical rock, climb walls, filled water, and landing platforms; never characters, items or UI</desc>'+
+    '<defs><clipPath id="traversable"><polygon points="'+traversable+
+    '"/></clipPath></defs>'+
     '<rect width="'+w+'" height="'+h+'" fill="#183147"/>'+
     '<g fill="#2388af">'+water+'</g>'+
-    '<g fill="#ff9d63">'+walls+'</g>'+ 
     '<g fill="#645468"><polygon points="0,0 '+w+',0 '+
     pathAlong(level,level.cave.ceilingAt,true)+'"/>'+
     '<polygon points="'+bed+' '+w+','+h+' 0,'+h+'"/></g>'+
-    '<g fill="#f3cc76">'+shelves+'</g></svg>';
+    '<g fill="#f3cc76">'+shelves+'</g>'+
+    '<g fill="#ff9d63" clip-path="url(#traversable)">'+walls+'</g></svg>';
 }
 
 export function caveArtManifest(level){
@@ -41,6 +44,16 @@ export function caveArtManifest(level){
     schema:'wonderwood-single-image-cave-v1',
     world:{width:level.width*TILE,height:level.height*TILE},
     guide:'world-physical-rock.png',
+    // One full-scene conditioning guide and two matching pixel-accurate
+    // alpha masks. The model must paint the whole interactive environment
+    // together, not independently invent platform-shaped texture patches.
+    rasterLayers:{
+      staticSolid:{mask:'world-static-solid.png',worldLocked:true,
+        collisionFromCode:true,paintTogether:true},
+      water:{mask:'world-static-water.png',worldLocked:true,
+        collisionFromCode:true},
+      backdrop:{mask:null,parallaxAllowed:true,collisionFromCode:false}
+    },
     painting:skywell?'phaser/assets/generated/skywell-ascent.webp':
       'phaser/assets/generated/luminous-grotto-single.png',
     paintingStatus:skywell?'physics-masked-model-painting':'approved-prototype',
