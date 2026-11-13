@@ -53,7 +53,7 @@ export const skywellLayout={
     [162,66],[178,72],[195,68],[220,68]
   ],
   pools:[
-    {id:'moonwater-entry',from:4,to:31,surface:101},
+    {id:'moonwater-entry',from:18,to:31,surface:101},
     {id:'buried-lagoon',from:106,to:139,surface:69},
     {id:'last-reflection',from:175,to:211,surface:65}
   ],
