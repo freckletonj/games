@@ -108,9 +108,11 @@ which would render a second misaligned copy of the physical cave.
 ## Put the approved RGBA images into the actual HTML build
 
 Only assets named in
-`phaser/assets/generated/approved-cave-art.json` are activated. The
-initial registry is `{}` because no new high-resolution painting has yet
-passed review. After art approval, add a record for the **registered, actual
+`phaser/assets/generated/approved-cave-art.json` are activated. For playable Skywell, the registry now selects the user's **Ancient Sanctuary**
+painting as a **preview-quality composited scene**, with world-locked air,
+water, and solid RGBA images and backgroundScrollFactor=1. The image was
+generated at 1644 × 957 and resampled to 3520 × 2048; this is NOT genuine
+native full-world detail. The vaulted rock study still lacks matching art. After art approval, add a record for the **registered, actual
 playable chapter ID** with `solid` and `water` paths; `background` is
 optional:
 
@@ -163,3 +165,34 @@ and upload the exact-commit checksummed ZIP to that environment. Do not
 commit a second giant source ZIP after every source edit; keep the Git branch
 authoritative. The pinned dependency archives are already vendored under
 `phaser/vendor/` for offline Linux x86_64 builds.
+
+## User-selected Ancient Sanctuary painting for playable Skywell
+
+The second image-model variation, featuring the warm stone sanctuary and
+golden shafts of light, is integrated into **skywell-ascent** (Chapter 7)
+at `phaser/assets/generated/skywell-ancient/`:
+
+- `skywell-ancient-source.webp`: faithful WebP copy of the selected
+  1644 × 957 generated image.
+- `painted-solid.webp`: the whole-world solid rock, one-way ledge, and
+  climb-wall image, with alpha derived only from `compileCave(skywellLayout)`.
+- `painted-water.webp`: the same composition, clipped to code-defined
+  water material.
+- `painted-background.webp`: the same composition, clipped to traversable
+  air and **world-locked**. This is not an independent parallax painting.
+- `art-provenance.json`: generation/source dimensions and alpha provenance.
+
+The **approved-cave-art.json** registry explicitly selects these images.
+The actual game renderer loads and draws all three; there are no vector
+scenery sprites in normal play. The earlier `skywell-ascent.webp` remains
+only as a historical legacy draft; the new art is displayed instead.
+
+The selected original is smaller than the world. Its resampling enables
+pixel-aligned inspection at 3520 × 2048, but is not an acceptable replacement
+for the later nine native-detail refinement crops. Run
+`python phaser/scripts/bake-selected-skywell.py --verify` after exporting
+guides to confirm that all three alpha channels still match compiled physics.
+Use `--write` if the authored Skywell geometry changes.
+
+**Never install this image under the vaulted study:** its three extra
+polygon solids are not represented in the chosen painting.
