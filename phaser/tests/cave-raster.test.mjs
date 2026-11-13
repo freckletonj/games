@@ -73,7 +73,7 @@ test('organic rock polygon is the same material in full/cropped guides and alpha
   const solid=bitmap(caveGuidePng(vault,{...opts,layer:'static-solid'}));
   const water=bitmap(caveGuidePng(vault,{...opts,layer:'static-water'}));
   assert.deepEqual([full.w,full.h],[128,288]);
-  const x=(112-108)*16,y=(35-30)*16;
+  const x=(112-108)*16,y=(32-30)*16;
   assert.deepEqual(full.at(x,y),[128,92,119,255]);
   assert.deepEqual(solid.at(x,y),[128,92,119,255],
     'polygon collision must be visible in the ONE physical painting mask');
