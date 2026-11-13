@@ -9,6 +9,9 @@ const output=new URL('../../dist/cave-guides/',import.meta.url);
 await mkdir(output,{recursive:true});
 await writeFile(new URL('world-physical-rock.png',output),caveGuidePng(level));
 await writeFile(new URL('world-physical-rock.svg',output),caveMaskSvg(level));
+for(const material of ['solid','water'])
+  await writeFile(new URL('world-static-'+material+'.png',output),
+    caveGuidePng(level,{layer:'static-'+material}));
 await writeFile(new URL('manifest.json',output),
   JSON.stringify(caveArtManifest(level),null,2)+'\n');
 console.log('Exported one '+level.width*16+' x '+level.height*16+
@@ -21,6 +24,9 @@ await writeFile(new URL('world-physical-rock.png',skywellOutput),
   caveGuidePng(skywell));
 await writeFile(new URL('world-physical-rock.svg',skywellOutput),
   caveMaskSvg(skywell));
+for(const material of ['solid','water'])
+  await writeFile(new URL('world-static-'+material+'.png',skywellOutput),
+    caveGuidePng(skywell,{layer:'static-'+material}));
 await writeFile(new URL('world-painted-reference.svg',skywellOutput),
   skywellPaintingSvg(skywell));
 await writeFile(new URL('manifest.json',skywellOutput),
