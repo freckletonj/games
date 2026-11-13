@@ -187,18 +187,25 @@ export function compileCave(layout=caveLayout){
   const platformSegments=shelves.map(p=>({...p,kind:'platform',style:'ledge'}));
   // One classifier powers the material PNG, water queries and physics grid.
   // Moving a polygon changes both visible rock and physical collision.
-  const materialAt=(x,y)=>{
-    if(y<ceilingAt(x)||y>=groundAt(x)||rockContains(polygons,x,y))
-      return 'rock';
-    if(climbWalls.some(w=>Math.abs(x-w.x*tile)<12&&
-       y>=w.top*tile&&y<w.bottom*tile))
-      return 'wall';
-    if(platformSegments.some(p=>x>=p.x*tile&&
-       x<(p.x+p.length)*tile&&y>=p.y*tile&&y<p.y*tile+20))
-      return 'shelf';
-    return waterBodies.some(p=>x>=p.start*tile&&x<p.end*tile&&
-       y>=p.surface*tile)?'water':'air';
+  // Compile vertical material queries once per pixel column when exporting
+  // a 7M+ pixel painting guide. It is the SAME predicate used by physics.
+  const materialColumn=x=>{
+    const roof=ceilingAt(x),floor=groundAt(x);
+    const rocks=polygons.filter(p=>x>=p.left&&x<=p.right);
+    const wallsHere=climbWalls.filter(w=>Math.abs(x-w.x*tile)<12);
+    const shelvesHere=platformSegments.filter(p=>x>=p.x*tile&&
+      x<(p.x+p.length)*tile);
+    const pool=waterBodies.find(p=>x>=p.start*tile&&x<p.end*tile);
+    return y=>{
+      if(y<roof||y>=floor||rockContains(rocks,x,y))return 'rock';
+      if(wallsHere.some(w=>y>=w.top*tile&&y<w.bottom*tile))
+        return 'wall';
+      if(shelvesHere.some(p=>y>=p.y*tile&&y<p.y*tile+20))
+        return 'shelf';
+      return pool&&y>=pool.surface*tile?'water':'air';
+    };
   };
+  const materialAt=(x,y)=>materialColumn(x)(y);
   const grid=Array.from({length:height},(_,y)=>Array.from(
     {length:width},(_,x)=>{
       const material=materialAt((x+.5)*tile,(y+.5)*tile);
@@ -207,7 +214,7 @@ export function compileCave(layout=caveLayout){
     }));
   return {
     width,height,biome:'coast',surface,ceiling:roof,waterBodies,grid,
-    platformSegments,climbWalls,rockPolygons:polygons,materialAt,
+    platformSegments,climbWalls,rockPolygons:polygons,materialAt,materialColumn,
     thermalVolumes:[],setpieces:[],vistas:[],dressing:[],landmarks:[],
     sections:[],goalRoute:(layout.id==='skywell-ascent'?[
       {x:7,kind:'start'},...walls.map(w=>({x:w.x,kind:'wallJump'})),
