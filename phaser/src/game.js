@@ -1064,7 +1064,8 @@ class Wonderwood extends Phaser.Scene {
       waterBodies:this.level.waterBodies,
       thermalVolumes:this.level.thermalVolumes,
       platformSegments:this.level.platformSegments,
-      climbWalls:this.level.climbWalls
+      climbWalls:this.level.climbWalls,
+      rockPolygons:this.level.rockPolygons
     });
     for(const event of events){
       if(event==='breach')this.powerEffect('tideling',p.x,p.y,p.face);
