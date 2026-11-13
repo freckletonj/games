@@ -131,15 +131,15 @@ The berry lure sprite also reuses the original `flora.webp` artwork:
 a tight crop and alpha mask of its purple berry cluster. No separate
 unlicensed berry image is imported.
 
-## Skywell Ascent (Chapter 7, prototype)
+## Skywell Ascent (Chapter 7, legacy visual prototype)
 
-`phaser/src/skywell-painting.js` is original, deterministically
-procedural SVG scenery rendered at a native 3520 × 2048 world resolution.
-It derives rock silhouettes, pool fills, one-way shelves and climbable
-wall visuals from `compileCave(skywellLayout)`. No third-party image,
-model-generated painting or dynamic actor is embedded in the SVG.
-The SVG is a reproducible *authoring reference* only, not the shipped
-painting. The separate model-generated painting is described below.
+The original procedural SVG scenic reference has been retired. Image models
+should receive the full **colored physics guide**, not a second, hand-drawn
+fake landscape. The guide and full-size solid/water RGBA masks are regenerated
+from `phaser/src/cave-layout.js` by
+`node phaser/scripts/export-cave-guides.mjs`. The optional
+`skywell-vault-study` uses genuine, collision-backed rock polygons and is
+awaiting an approved image-model painting.
 
 ## Skywell full-resolution physics-grounded painting (Chapter 7)
 
@@ -151,9 +151,9 @@ WebP conversion of the generator's original PNG, quality 90). The painting was
 then resampled to authored world size and composed through the exact
 `skywellLayout` floor, ceiling, water, shelf and climb-wall masks, to
 prevent attractive but invented AI-painted terrain from becoming fake
-collision geometry. The resulting WebP is approximately 500 KB. The
-procedural `skywell-painting.js` survives as a separate static authoring
-reference, **not** the production background.
+collision geometry. The resulting WebP is approximately 500 KB. The procedural SVG
+was removed because it could introduce false visual geometry. This WebP
+remains a legacy draft, not an approved new-art pipeline output.
 
 The source image was generated as static-only scenery; no character,
 collectible or HUD was intentionally included. The authored physics remains
