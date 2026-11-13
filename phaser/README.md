@@ -412,8 +412,11 @@ climbing-wall collision faces**. The game now embeds a **3520 × 2048
 physics-constrained WebP painting** based on maximum-native-size image-model
 art. The original generated source is retained in
 `assets/generated/skywell-model-source.webp`; the compositing script is
-`scripts/compose-painted-cave.py`. The separate filled material guide and
-procedural SVG reference export to `dist/cave-guides/skywell-ascent/`.
+`scripts/compose-painted-cave.py` (legacy draft only). The complete filled
+material guide and alpha masks export to `dist/cave-guides/skywell-ascent/`.
+The separate vaulted authoring study now supports real polygon rock collision
+and overlapping native-resolution image-model crop guides; it is not yet a
+playable chapter or approved painting.
 Use **V** to overlay the actual physical materials, including solid walls. See
 [CAVE-ART-PIPELINE.md](CAVE-ART-PIPELINE.md) for the new workflow.
 
