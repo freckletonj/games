@@ -131,6 +131,7 @@ class Wonderwood extends Phaser.Scene {
           action:m.action,frame:m.visual?.frame?.name}))||[],
         animalCount:this.animals?.length||0,
         platformCount:this.level?.platformSegments?.length||0,
+        climbWallCount:this.level?.climbWalls?.length||0,
         worldWidth:this.worldW||0,
         cameraZoom:this.cameras.main.zoom,
         paintedStateFrames:this.textures.get('painted-states').frameTotal-1,
