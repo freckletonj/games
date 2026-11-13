@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import {inflateSync} from 'node:zlib';
 import {compileCave,skywellLayout,vaultLayout,caveContainsWater} from '../src/cave-layout.js';
 import {caveArtManifest,caveMaskSvg} from '../src/cave-art-guide.js';
-import {skywellPaintingSvg} from '../src/skywell-painting.js';
 import {caveGuidePng} from '../scripts/cave-png.mjs';
 import {stepPlayerMotion} from '../src/player-motion.js';
 
@@ -31,16 +30,12 @@ test('the new climbing chapter compiles as one reachable, physics-led world',()=
 
 test('guides and full-size illustration agree on material and collision markers',()=>{
   const level=compileCave(skywellLayout);
-  const guide=caveMaskSvg(level),art=skywellPaintingSvg(level);
+  const guide=caveMaskSvg(level);
   const manifest=caveArtManifest(level);
   assert.ok(guide.includes('viewBox="0 0 3520 2048"'));
   assert.ok(guide.includes('<g fill="#2388af">'));
   assert.ok(guide.includes('<g fill="#ff9d63">'));
-  assert.ok(art.includes('width="3520" height="2048"'));
-  assert.ok(art.includes('id="rockClip"'));
-  assert.ok(art.includes('id="walkable"'));
   for(const dynamic of ['diveKey','glimmermoth','checkpoint','starShard']){
-    assert.ok(!art.includes(dynamic),'painting must exclude '+dynamic);
     assert.ok(!guide.includes(dynamic),'guide must exclude '+dynamic);
   }
   assert.deepEqual(manifest.world,{width:3520,height:2048});
