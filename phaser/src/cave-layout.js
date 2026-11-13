@@ -35,6 +35,57 @@ export const caveLayout={
   ]
 };
 
+
+/**
+ * Skywell Ascent: a high-relief cavern with a physically climbable route.
+ * Each amber wall is a real blocker; jump beside it, then jump again to
+ * spring upward. Platforms form a vertical alternative to the lower valley.
+ */
+export const skywellLayout={
+  id:'skywell-ascent',width:220,height:128,tile:16,
+  ceiling:[
+    [0,22],[26,18],[52,25],[74,17],[95,23],
+    [117,13],[140,19],[163,11],[188,17],[220,15]
+  ],
+  floor:[
+    [0,108],[18,108],[32,103],[45,97],[60,87],
+    [77,83],[93,75],[110,70],[129,75],[145,64],
+    [162,66],[178,72],[195,68],[220,68]
+  ],
+  pools:[
+    {id:'moonwater-entry',from:4,to:31,surface:101},
+    {id:'buried-lagoon',from:106,to:139,surface:69},
+    {id:'last-reflection',from:175,to:211,surface:65}
+  ],
+  shelves:[
+    {x:18,y:99,length:12},{x:34,y:90,length:12},
+    {x:50,y:82,length:12},{x:66,y:76,length:12},
+    {x:82,y:66,length:12},{x:100,y:61,length:13},
+    {x:120,y:56,length:13},{x:141,y:52,length:12},
+    {x:160,y:49,length:12},{x:178,y:48,length:12},
+    {x:198,y:47,length:12}
+  ],
+  // Vertical rock faces rise from the lower route to the upper ledges.
+  // They are collision segments, not decorations inferred from the image.
+  walls:[
+    {x:28,top:99,bottom:108},{x:44,top:90,bottom:101},
+    {x:60,top:82,bottom:90},{x:77,top:76,bottom:86},
+    {x:93,top:66,bottom:79},{x:112,top:61,bottom:74},
+    {x:132,top:56,bottom:76},{x:152,top:52,bottom:69},
+    {x:171,top:49,bottom:74},{x:190,top:48,bottom:72}
+  ],
+  objects:[
+    {kind:'p1',x:7},{kind:'p2',x:9},
+    {kind:'glimmermoth',x:15,y:103},
+    {kind:'tideling',x:23},{kind:'prismtail',x:76},
+    {kind:'springaroo',x:127},{kind:'skyling',x:156,y:54},
+    {kind:'checkpoint',x:8},{kind:'checkpoint',x:114},
+    {kind:'snack',x:14},{kind:'snack',x:125},
+    {kind:'starShard',x:39,y:87},{kind:'starShard',x:106,y:58},
+    {kind:'diveKey',x:182,y:45},{kind:'exit',x:212}
+  ]
+};
+
 // Cubic Hermite interpolation with Catmull-Rom control tangents. Movement,
 // raster guides and wireframe inspection all call the same evaluator.
 export function contourY(points,x){
@@ -55,7 +106,7 @@ export function contourY(points,x){
 }
 
 export function compileCave(layout=caveLayout){
-  const {width,height,tile,ceiling,floor,pools,shelves,objects}=layout;
+  const {width,height,tile,ceiling,floor,pools,shelves,objects,walls=[]}=layout;
   if(!Number.isInteger(width)||!Number.isInteger(height)||tile!==16||
      width<32||height<20)throw Error('Cave must use valid 16px cells');
   for(const [name,points] of [['ceiling',ceiling],['floor',floor]]){
@@ -84,6 +135,14 @@ export function compileCave(layout=caveLayout){
         Math.floor(ledge.x),Math.ceil(ledge.x+ledge.length)+1)))
       throw Error('Shelf intersects rock floor');
   }
+  for(const wall of walls){
+    if(!Number.isFinite(wall.x)||!Number.isFinite(wall.top)||
+       !Number.isFinite(wall.bottom)||wall.x<=0||wall.x>=width||
+       wall.top<=contourY(ceiling,wall.x)+3||
+       wall.top>=contourY(floor,wall.x)||
+       wall.bottom<=wall.top||wall.bottom>height)
+      throw Error('Invalid climb wall');
+  }
   const groundAt=x=>contourY(floor,Math.max(0,Math.min(width,x/tile)))*tile;
   const ceilingAt=x=>contourY(ceiling,Math.max(0,Math.min(width,x/tile)))*tile;
   const waterBodies=pools.map(p=>({id:p.id,start:p.from,end:p.to,
@@ -98,6 +157,7 @@ export function compileCave(layout=caveLayout){
   return {
     width,height,biome:'coast',surface,ceiling:roof,waterBodies,grid,
     platformSegments:shelves.map(p=>({...p,kind:'platform',style:'ledge'})),
+    climbWalls:walls.map(w=>({...w})),
     thermalVolumes:[],setpieces:[],vistas:[],dressing:[],landmarks:[],
     sections:[],goalRoute:[],objects:objects.map(o=>({
       ...o,y:o.y??Math.ceil(contourY(floor,o.x))-1
