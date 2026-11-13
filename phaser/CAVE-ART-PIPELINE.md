@@ -128,5 +128,8 @@ Keep GitHub Actions off. Before merging, run
 at PR #8's *exact head*, inspect its new HTML in Chromium, and confirm
 the painting's provenance. Previous visual review used a verified PR #7
 runtime plus PR #8 cave logic, **not a fresh esbuild of PR #8's exact head**.
-Merge PR #7 first, then retarget/rebase PR #8 to main as appropriate.
+PR #8 currently targets PR #7's feature branch, **not main**. Either
+merge #8 into #7 and later merge #7 to main, or first merge #7 to main,
+retarget/rebase #8 to main, then merge #8. Verify the resulting branch
+before the final main merge; do not assume merging #8 now lands it on main.
 The accepted water-art mismatch is documented and not a surprise blocker.
