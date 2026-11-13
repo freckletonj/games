@@ -406,7 +406,7 @@ passed local Chromium checks and visual review.
 
 ## Skywell Ascent: code-defined climbing cavern (Chapter 7)
 
-The second one-image authored chapter is a vertical, wall-jumpable cave.
+The second code-authored chapter is a vertical, wall-jumpable cave.
 `phaser/src/cave-layout.js` defines its rock, pools, ledges and **real
 climbing-wall collision faces**. The playable game now embeds the **user-selected Ancient Sanctuary**
 image-model variation as three world-locked WebP planes at 3520 × 2048:
