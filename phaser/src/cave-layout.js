@@ -160,7 +160,9 @@ export function compileCave(layout=caveLayout){
     surface:p.surface,bottom:Math.max(...surface.slice(p.from,p.to+1))}));
   const grid=Array.from({length:height},(_,y)=>Array.from(
     {length:width},(_,x)=>{
-      if(y<roof[x]||y>=surface[x])return 'ground';
+      if(y<roof[x]||y>=surface[x]||
+         walls.some(w=>Math.abs(x+.5-w.x)<.75&&
+           y+.5>=w.top&&y+.5<w.bottom))return 'ground';
       if(waterBodies.some(p=>x>=p.start&&x<p.end&&y>=p.surface))
         return 'water';
       return 'empty';
