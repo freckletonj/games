@@ -1,5 +1,6 @@
-// The approved single-image prototype: one painting for the whole level.
-// Physics and dynamic actors remain completely separate from this image.
+// Gameplay colliders come only from compiled cave geometry. Approved scene
+// layers are painted, transparent world-space images; no rock sprites or
+// platform vectors are created during normal gameplay.
 export function paintCave(scene){
   const width=scene.level.width*16,height=scene.level.height*16;
   const id=scene.level.cave.layout.id;
@@ -21,10 +22,11 @@ export function paintCave(scene){
     scene.cavePainting=layers.at(-1);
     return;
   }
-  // The original single-image Grotto and the unapproved Skywell draft remain
-  // viewable, but never substitute for explicitly approved layered art.
-  const painting=scene.add.image(0,0,
-    id==='skywell-ascent'?'skywell-painted-rock':'cave-painted-rock')
+  // Grotto retains its original single-image visual prototype. All other
+  // cave layouts must supply explicitly registered matching art.
+  if(id!=='luminous-grotto')
+    throw Error('No approved painted layers for cave '+id);
+  const painting=scene.add.image(0,0,'cave-painted-rock')
     .setOrigin(0).setDisplaySize(width,height).setDepth(-29);
   scene.cavePainting=painting;
 }
