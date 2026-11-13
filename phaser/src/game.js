@@ -126,16 +126,13 @@ class Wonderwood extends Phaser.Scene {
         worldWidth:this.worldW||0,
         paintedStateFrames:this.textures.get('painted-states').frameTotal-1,
         generatedTextureCount:this.generatedTextures?.length||0,
-        caveArt:this.level?.cave?{
+        caveArt:this.stage>=0&&this.level?.cave?{
           geometryOverlay:this.caveGeometryOverlay?.visible||false,
           rockLoaded:this.textures.exists('cave-painted-rock'),
           imageCount:1,
           painting:{x:this.cavePainting.x,y:this.cavePainting.y,
             displayWidth:this.cavePainting.displayWidth,
-            displayHeight:this.cavePainting.displayHeight},
-          chunks:this.cavePaintedChunks.map(({x,width,visual})=>({
-            x,width,displayX:visual.x,displayWidth:visual.displayWidth
-          }))
+            displayHeight:this.cavePainting.displayHeight}
         }:null,
         // Read-only alignment probes for actual painted platform geometry.
         soilTiles:this.soilTiles?.map(({x,width,height,visual})=>({
