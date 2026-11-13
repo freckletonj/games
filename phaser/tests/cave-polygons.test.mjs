@@ -81,11 +81,14 @@ test('Skyling reaches the high vaulted shelf while the ordinary player cannot',(
       grounded:true,coyote:5,jumpBuffer:0,jumps:0,flaps:0,
       flapWait:0,powers:0,hover:0,breach:0,bloomWindow:0,
       creatureBounceWindow:0,form};
+    let previousJump=false;
     for(let tick=0;tick<140;tick++){
-      // Exactly the same D + W presses for both characters.
-      const jumpPressed=tick===0||[18,32,46,60].includes(tick);
+      // Actual keyboard-style releases precede every subsequent W press.
+      const jump=tick<=80&&![17,31,45,59].includes(tick);
+      const jumpPressed=jump&&!previousJump;
+      previousJump=jump;
       stepPlayerMotion(p,{left:false,right:true,down:false,
-        jump:true,jumpPressed},1,world);
+        jump,jumpPressed},1,world);
       if(p.x>=127*16&&p.x<=141*16&&p.y<=41*16+6)return true;
     }
     return false;
