@@ -1,3 +1,12 @@
+> **Art pipeline update:** [STATIC-ART-CONTRACT.md](STATIC-ART-CONTRACT.md)
+> supersedes the low-resolution resize/tint/paint-wedges workflow described
+> below. The legacy compositor is retained only to reproduce the existing
+> draft asset. The new exporter produces one full-world semantic image and
+> physics-derived RGBA solid and water masks, and the extraction script
+> operates on an approved **native-resolution whole-scene painting**.
+> No such replacement artwork has yet been approved or integrated into the
+> playable Phaser runtime.
+>
 # Code-authored single-image caves: Luminous Grotto and Skywell Ascent
 
 Luminous Grotto (Chapter 6) and Skywell Ascent (Chapter 7) each have
