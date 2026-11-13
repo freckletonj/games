@@ -63,7 +63,10 @@ export const skywellLayout={
     {x:82,y:66,length:12},{x:100,y:61,length:13},
     {x:120,y:56,length:13},{x:141,y:52,length:12},
     {x:160,y:49,length:12},{x:178,y:48,length:12},
-    {x:198,y:47,length:12}
+    {x:198,y:47,length:12},
+    // Optional upper loop: transform to Moonwing to explore the vaulted sky.
+    {x:108,y:50,length:13},{x:127,y:41,length:14},
+    {x:151,y:34,length:16},{x:179,y:31,length:13}
   ],
   // Vertical rock faces rise from the lower route to the upper ledges.
   // They are collision segments, not decorations inferred from the image.
@@ -78,10 +81,11 @@ export const skywellLayout={
     {kind:'p1',x:7},{kind:'p2',x:9},
     {kind:'glimmermoth',x:15,y:103},
     {kind:'tideling',x:23},{kind:'prismtail',x:76},
-    {kind:'springaroo',x:127},{kind:'skyling',x:156,y:54},
+    {kind:'springaroo',x:127},{kind:'skyling',x:104,y:59},
     {kind:'checkpoint',x:8},{kind:'checkpoint',x:114},
     {kind:'snack',x:14},{kind:'snack',x:125},
     {kind:'starShard',x:39,y:87},{kind:'starShard',x:106,y:58},
+    {kind:'starShard',x:137,y:39},{kind:'starShard',x:161,y:32},
     {kind:'diveKey',x:182,y:45},{kind:'exit',x:212}
   ]
 };
