@@ -66,7 +66,8 @@ test('approved painted solids are one world-locked alpha plane, not vector objec
   scene.approvedCaveArt={
     'skywell-ascent':{solid:'data:image/png;base64,painted',
       water:'data:image/png;base64,water',
-      background:'data:image/png;base64,distant'}
+      background:'data:image/png;base64,distant',
+      backgroundScrollFactor:.3}
   };
   paintCave(scene);
   assert.deepEqual(scene.images.map(i=>i.key),[
@@ -84,4 +85,27 @@ test('approved painted solids are one world-locked alpha plane, not vector objec
   assert.equal(scene.cavePaintedLayers.length,3);
   assert.equal(scene.graphics.length,0,
     'no visible runtime rock/ledge vector objects are created');
+});
+
+test('chosen global composition stays locked to the geometry, no ghost terrain parallax',()=>{
+  const scene=makeScene();
+  scene.level=compileCave(skywellLayout);
+  scene.approvedCaveArt={'skywell-ascent':{
+    background:'data:image/webp;base64,air',
+    water:'data:image/webp;base64,water',
+    solid:'data:image/webp;base64,solid',
+    backgroundScrollFactor:1
+  }};
+  paintCave(scene);
+  assert.equal(scene.images.length,3);
+  assert.deepEqual(scene.images.map(i=>i.key),[
+    'cave-skywell-ascent-background',
+    'cave-skywell-ascent-water',
+    'cave-skywell-ascent-solid'
+  ]);
+  assert.equal(scene.images[0].scrollFactor,1);
+  assert.equal(scene.images[1].scrollFactor,undefined);
+  assert.equal(scene.images[2].scrollFactor,undefined);
+  assert.deepEqual(scene.images.map(i=>[i.displayWidth,i.displayHeight]),
+    [[3520,2048],[3520,2048],[3520,2048]]);
 });
