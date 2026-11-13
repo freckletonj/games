@@ -46,7 +46,8 @@ def main():
     args=parser.parse_args()
     masks=alpha_masks()
     if args.verify:
-        for kind,mask in masks.items():
+        for kind in MATERIALS:
+            mask=masks[kind]
             path=DEST/f'painted-{kind}.webp'
             with Image.open(path) as layer:
                 if layer.size!=mask.size or layer.mode!='RGBA':
@@ -60,7 +61,8 @@ def main():
         if source.size!=(1644,957):
             raise ValueError('Expected the selected 1644x957 generated painting')
         scene=source.convert('RGB').resize((3520,2048),Image.Resampling.LANCZOS)
-    for kind,mask in masks.items():
+    for kind in MATERIALS:
+        mask=masks[kind]
         layer=scene.convert('RGBA')
         layer.putalpha(mask)
         layer.save(DEST/f'painted-{kind}.webp','WEBP',quality=88,method=6)
