@@ -64,6 +64,12 @@ export const skywellLayout={
     {x:120,y:56,length:13},{x:141,y:52,length:12},
     {x:160,y:49,length:12},{x:178,y:48,length:12},
     {x:198,y:47,length:12},
+    // Short intermediate perches make the upper route more than decoration.
+    {x:91,y:64,length:10},{x:96,y:63,length:9},
+    {x:110,y:61,length:14},{x:122,y:65,length:11},
+    {x:134,y:58,length:13},{x:151,y:54,length:13},
+    {x:161,y:55,length:10},{x:170,y:51,length:12},
+    {x:176,y:50,length:12},
     // Optional upper loop: transform to Moonwing to explore the vaulted sky.
     {x:108,y:50,length:13},{x:127,y:41,length:14},
     {x:151,y:34,length:16},{x:179,y:31,length:13}
@@ -164,7 +170,10 @@ export function compileCave(layout=caveLayout){
     climbWalls:walls.map(w=>({...w,
       bottom:Math.min(w.bottom,contourY(floor,w.x))})),
     thermalVolumes:[],setpieces:[],vistas:[],dressing:[],landmarks:[],
-    sections:[],goalRoute:[],objects:objects.map(o=>({
+    sections:[],goalRoute:(layout.id==='skywell-ascent'?[
+      {x:7,kind:'start'},...walls.map(w=>({x:w.x,kind:'wallJump'})),
+      {x:182,kind:'objective'},{x:212,kind:'exit'}]:[]),
+    objects:objects.map(o=>({
       ...o,y:o.y??Math.ceil(contourY(floor,o.x))-1
     })),
     cave:{layout,groundAt,ceilingAt},
@@ -174,6 +183,9 @@ export function compileCave(layout=caveLayout){
 }
 
 export function caveContainsWater(level,x,y){
+  if((level.climbWalls||[]).some(w=>
+    Math.abs(x-w.x*16)<12&&y>=w.top*16&&y<w.bottom*16))
+    return false;
   return level.waterBodies.some(p=>x>=p.start*16&&x<p.end*16&&
     y>=p.surface*16&&y<=level.cave.groundAt(x));
 }
