@@ -349,7 +349,7 @@ class Wonderwood extends Phaser.Scene {
     this.spawnMounts();
     this.makePlayer(0);
     if(this.twoPlayers)this.makePlayer(1);
-    if(this.level.cave)this.cameras.main.setZoom(.6);
+    if(this.level.cave)this.cameras.main.setZoom(.82);
     this.cameras.main.setBounds(0,0,this.worldW,this.worldH);
     this.cameras.main.startFollow(this.players[0].visual,true,.085,.12);
     // Let players see upcoming climbs and sky rather than half a screen of soil.
