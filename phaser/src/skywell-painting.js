@@ -106,6 +106,7 @@ export function skywellPaintingSvg(level){
     <polyline points="${bed}" fill="none"
     stroke="#acd0b2" stroke-width="8" opacity=".32"/>`);
   // Golden vertical blockers and limestone shelves match the collision model.
+  paths.push('<g clip-path="url(#walkable)">');
   for(const wall of level.climbWalls||[]){
     const x=wall.x*16,y=wall.top*16,hh=(wall.bottom-wall.top)*16;
     paths.push(`<rect x="${x-12}" y="${y}" width="24" height="${hh}"
@@ -126,6 +127,7 @@ export function skywellPaintingSvg(level){
        <path d="M${x+6},${y-2} h${len-12}" stroke="#ebd5a1"
        stroke-width="4" stroke-linecap="round" opacity=".5"/>`);
   }
+  paths.push('</g>');
   // The center of the skywell feels luminous without painting any dynamic item.
   for(const [x,y,r] of [[1620,620,255],[2380,425,330],[3030,500,240]]){
     paths.push(`<circle cx="${x}" cy="${y}" r="${r}"
