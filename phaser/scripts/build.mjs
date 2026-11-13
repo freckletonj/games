@@ -12,7 +12,14 @@ for(const [id,layers] of Object.entries(approvedSpec)){
   if(!layers.solid||!layers.water)
     throw Error('Approved cave '+id+' requires solid and water RGBA paintings');
   approvedCaveAssets[id]={};
+  if(layers.backgroundScrollFactor!==undefined){
+    if(typeof layers.backgroundScrollFactor!=='number'||
+       layers.backgroundScrollFactor<0||layers.backgroundScrollFactor>1)
+      throw Error('Invalid background scroll factor for '+id);
+    approvedCaveAssets[id].backgroundScrollFactor=layers.backgroundScrollFactor;
+  }
   for(const [name,path] of Object.entries(layers)){
+    if(name==='backgroundScrollFactor')continue;
     if(!['solid','water','background'].includes(name)||
        !/\\.(png|webp)$/.test(path))
       throw Error('Invalid painted cave layer '+id+' '+name);
