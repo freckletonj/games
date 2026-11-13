@@ -49,6 +49,10 @@ export function paintCaveGeometryOverlay(scene){
   g.lineStyle(2,0xffd28d,1);
   for(const s of level.platformSegments)
     g.lineBetween(s.x*16,s.y*16,(s.x+s.length)*16,s.y*16);
+  for(const rock of level.rockPolygons||[]){
+    g.fillStyle(0x946987,.42);
+    g.fillPoints(rock.points.map(([x,y])=>({x,y})),true);
+  }
   for(const wall of level.climbWalls||[]){
     g.fillStyle(0xff9d63,.48);
     g.fillRect(wall.x*16-12,wall.top*16,24,
