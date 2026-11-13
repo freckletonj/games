@@ -1222,7 +1222,9 @@ class Wonderwood extends Phaser.Scene {
     if(this.stage<0)return;
     const lead=this.players[0];
     this.hud.setText('♥ '+lead.health+'    ✦ '+this.shared.shards+
-      '    '+(this.level.cave?
+      '    '+(this.chapter.id==='skywell-ascent'?
+        (this.shared.relic?'LANTERN FOUND':'FIND THE LANTERN'):
+        this.chapter.id==='luminous-grotto'?
         (this.shared.relic?'PEARL FOUND':'FIND THE PEARL'):
         (this.shared.relic?'LIGHT RESTORED':'FIND THE LIGHT'))+
       (lead.mount?'    '+(lead.mount.kind==='pegasus'?'PEGASUS':'UNICORN'):
