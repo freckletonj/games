@@ -13,6 +13,7 @@ test -s dist/cave-guides/world-physical-rock.png
 # Uses real Chromium with unchanged offline HTML (works when file:// is blocked).
 python -u phaser/scripts/run-playwright-inline.py phaser/tests/smoke.py
 python -u phaser/scripts/run-playwright-inline.py phaser/tests/cave_painted.py
+python -u phaser/scripts/run-playwright-inline.py phaser/tests/skywell_painted.py
 
 if [[ "${1:-focused}" == full ]]; then
   for suite in gameplay dynamics creature_bounce water-slope mounts complete_meadow chapters; do
