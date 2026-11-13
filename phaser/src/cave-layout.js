@@ -1,3 +1,4 @@
+import {compileRockPolygons,rockContains} from './cave-solids.js';
 // Luminous Grotto: a single, smoothly-authored 3200 x 1792 world.
 // These coordinates are 16-pixel cells, taken from the approved HTML trial.
 // One source controls the painting guide, movement and debug overlay.
@@ -97,6 +98,28 @@ export const skywellLayout={
   ]
 };
 
+// This is an authoring candidate, not a new playable chapter: its arched
+// rock formations have real 2D polygon collision, including undersides.
+// The existing Skywell painting predates these solids and must NOT be reused
+// as if it represented them. Export its new reference before painting.
+export const vaultLayout={
+  ...skywellLayout,id:'skywell-vault-study',
+  rockPolygons:[
+    {id:'western-hanging-rib',points:[
+      [40,19],[48,18],[56,19],[65,18],[74,16],
+      [74,32],[67,36],[61,30],[55,42],[49,38],[44,30]
+    ]},
+    {id:'central-overhang',points:[
+      [96,17],[108,13],[119,13],[130,17],[140,18],
+      [139,35],[131,33],[124,45],[118,40],[108,38],[100,28]
+    ]},
+    {id:'eastern-vault',points:[
+      [151,12],[164,10],[176,10],[191,14],[204,13],
+      [203,31],[196,32],[190,35],[182,30],[175,38],[168,31],[160,34]
+    ]}
+  ]
+};
+
 // Cubic Hermite interpolation with Catmull-Rom control tangents. Movement,
 // raster guides and wireframe inspection all call the same evaluator.
 export function contourY(points,x){
@@ -117,7 +140,7 @@ export function contourY(points,x){
 }
 
 export function compileCave(layout=caveLayout){
-  const {width,height,tile,ceiling,floor,pools,shelves,objects,walls=[]}=layout;
+  const {width,height,tile,ceiling,floor,pools,shelves,objects,walls=[],rockPolygons=[]}=layout;
   if(!Number.isInteger(width)||!Number.isInteger(height)||tile!==16||
      width<32||height<20)throw Error('Cave must use valid 16px cells');
   for(const [name,points] of [['ceiling',ceiling],['floor',floor]]){
@@ -154,24 +177,37 @@ export function compileCave(layout=caveLayout){
        wall.bottom<=wall.top||wall.bottom>height)
       throw Error('Invalid climb wall');
   }
+  const polygons=compileRockPolygons(rockPolygons,width,height,tile);
   const groundAt=x=>contourY(floor,Math.max(0,Math.min(width,x/tile)))*tile;
   const ceilingAt=x=>contourY(ceiling,Math.max(0,Math.min(width,x/tile)))*tile;
   const waterBodies=pools.map(p=>({id:p.id,start:p.from,end:p.to,
     surface:p.surface,bottom:Math.max(...surface.slice(p.from,p.to+1))}));
+  const climbWalls=walls.map(w=>({...w,
+    bottom:Math.min(w.bottom,contourY(floor,w.x))}));
+  const platformSegments=shelves.map(p=>({...p,kind:'platform',style:'ledge'}));
+  // One classifier powers the material PNG, water queries and physics grid.
+  // Moving a polygon changes both visible rock and physical collision.
+  const materialAt=(x,y)=>{
+    if(y<ceilingAt(x)||y>=groundAt(x)||rockContains(polygons,x,y))
+      return 'rock';
+    if(climbWalls.some(w=>Math.abs(x-w.x*tile)<12&&
+       y>=w.top*tile&&y<w.bottom*tile))
+      return 'wall';
+    if(platformSegments.some(p=>x>=p.x*tile&&
+       x<(p.x+p.length)*tile&&y>=p.y*tile&&y<p.y*tile+20))
+      return 'shelf';
+    return waterBodies.some(p=>x>=p.start*tile&&x<p.end*tile&&
+       y>=p.surface*tile)?'water':'air';
+  };
   const grid=Array.from({length:height},(_,y)=>Array.from(
     {length:width},(_,x)=>{
-      if(y<roof[x]||y>=surface[x]||
-         walls.some(w=>Math.abs(x+.5-w.x)<.75&&
-           y+.5>=w.top&&y+.5<w.bottom))return 'ground';
-      if(waterBodies.some(p=>x>=p.start&&x<p.end&&y>=p.surface))
-        return 'water';
-      return 'empty';
+      const material=materialAt((x+.5)*tile,(y+.5)*tile);
+      return material==='water'?'water':
+        material==='air'?'empty':'ground';
     }));
   return {
     width,height,biome:'coast',surface,ceiling:roof,waterBodies,grid,
-    platformSegments:shelves.map(p=>({...p,kind:'platform',style:'ledge'})),
-    climbWalls:walls.map(w=>({...w,
-      bottom:Math.min(w.bottom,contourY(floor,w.x))})),
+    platformSegments,climbWalls,rockPolygons:polygons,materialAt,
     thermalVolumes:[],setpieces:[],vistas:[],dressing:[],landmarks:[],
     sections:[],goalRoute:(layout.id==='skywell-ascent'?[
       {x:7,kind:'start'},...walls.map(w=>({x:w.x,kind:'wallJump'})),
@@ -186,11 +222,7 @@ export function compileCave(layout=caveLayout){
 }
 
 export function caveContainsWater(level,x,y){
-  if((level.climbWalls||[]).some(w=>
-    Math.abs(x-w.x*16)<12&&y>=w.top*16&&y<w.bottom*16))
-    return false;
-  return level.waterBodies.some(p=>x>=p.start*16&&x<p.end*16&&
-    y>=p.surface*16&&y<=level.cave.groundAt(x));
+  return level.materialAt(x,y)==='water';
 }
 export function caveCeilingHit(level,x,headY){
   return headY<level.cave.ceilingAt(x);
