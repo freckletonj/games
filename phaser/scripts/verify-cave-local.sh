@@ -6,6 +6,8 @@ cd "$(dirname "$0")/../.."
 npm test --prefix phaser
 npm run quality --prefix phaser
 node phaser/scripts/export-cave-guides.mjs
+# The actual selected painting must agree with the *current* physics masks.
+python -u phaser/scripts/bake-selected-skywell.py --verify
 npm run build --prefix phaser
 test -s dist/wonderwood-phaser.html
 test -s dist/cave-guides/world-physical-rock.png
