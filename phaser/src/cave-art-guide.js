@@ -18,7 +18,7 @@ export function caveMaskSvg(level){
     '" width="'+(p.end-p.start)*TILE+'" height="'+(h-p.surface*TILE)+'"/>').join('');
   const shelves=level.platformSegments.map(p=>
     '<rect x="'+p.x*TILE+'" y="'+p.y*TILE+
-    '" width="'+p.length*TILE+'" height="5"/>').join('');
+    '" width="'+p.length*TILE+'" height="20"/>').join('');
   const walls=(level.climbWalls||[]).map(p=>
     '<rect x="'+(p.x*TILE-12)+'" y="'+p.top*TILE+
     '" width="24" height="'+(p.bottom-p.top)*TILE+'"/>').join('');
