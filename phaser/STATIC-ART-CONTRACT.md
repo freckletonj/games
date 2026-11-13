@@ -135,8 +135,8 @@ Art refinement now uses `refinement/plan.json` and
 applying alpha. The offline HTML build reads explicitly selected assets
 from `phaser/assets/generated/approved-cave-art.json`. The playable
 Skywell entry now points to the user's chosen Ancient Sanctuary alpha
-composition, with all three planes locked to scroll factor 1. The old
-opaque WebP remains a historical fallback, not the selected runtime scene.
+composition, with all three planes locked to scroll factor 1. The old opaque WebP and its compositor were removed from the working tree;
+there is no fallback for Skywell if the selected approved assets are absent.
 The vaulted study remains unregistered because its polygon collision
 does not match this original painting.
 
