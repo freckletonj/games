@@ -15,6 +15,10 @@ python -u phaser/scripts/run-playwright-inline.py phaser/tests/smoke.py
 python -u phaser/scripts/run-playwright-inline.py phaser/tests/cave_painted.py
 python -u phaser/scripts/run-playwright-inline.py phaser/tests/skywell_painted.py
 
+if [[ "${PLAYWRIGHT_FIREFOX:-0}" == 1 ]]; then
+  python -u phaser/tests/skywell_firefox.py
+fi
+
 if [[ "${1:-focused}" == full ]]; then
   for suite in gameplay dynamics creature_bounce water-slope mounts complete_meadow chapters; do
     python -u phaser/scripts/run-playwright-inline.py "phaser/tests/$suite.py"
