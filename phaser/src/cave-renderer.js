@@ -13,7 +13,8 @@ export function paintCave(scene){
         .setOrigin(0).setDisplaySize(width,height).setDepth(depth);
       // The collision-bearing solid and water layers are WORLD LOCKED.
       // Only a separately authored, noninteractive background can parallax.
-      if(material==='background')painting.setScrollFactor(.3);
+      if(material==='background')
+        painting.setScrollFactor(approved.backgroundScrollFactor??1);
       layers.push(painting);
     }
     scene.cavePaintedLayers=layers;
