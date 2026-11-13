@@ -15,8 +15,13 @@ original_goto = Page.goto
 def goto(page, url, **kwargs):
     if not url.startswith("file:"):
         return original_goto(page, url, **kwargs)
-    path = Path(unquote(urlparse(url).path))
+    parsed = urlparse(url)
+    path = Path(unquote(parsed.path))
     page.wonderwood_html = path
+    # Preserve URL chapter selection when replacing file:// navigation with
+    # about:blank + set_content. Otherwise #skywell-ascent is silently lost.
+    page.evaluate("(fragment) => { location.hash = fragment ? '#' + fragment : ''; }",
+                  parsed.fragment)
     page.evaluate("""() => {
       const entries = new Map();
       Object.defineProperty(window, 'localStorage', {configurable: true, value: {
