@@ -71,7 +71,7 @@ export function caveGuidePng(level,{
         if(!solid&&ledges.some(p=>
           absoluteX>=p.x*16&&absoluteX<(p.x+p.length)*16&&
           Math.abs(absoluteY-p.y*16)<2))paint=color.shelf;
-        if(walls.some(w=>Math.abs(absoluteX-w.x*16)<12&&
+        if(!solid&&walls.some(w=>Math.abs(absoluteX-w.x*16)<12&&
           absoluteY>=w.top*16&&absoluteY<w.bottom*16))
           paint=color.wall;
       }else if(layer==='foreground-occlusion'){
