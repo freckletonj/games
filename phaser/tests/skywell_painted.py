@@ -34,6 +34,7 @@ def main():
         assert art and art["rockLoaded"],state
         assert art["textureKey"]=="skywell-painted-rock",art
         assert art["imageCount"]==1,art
+        assert art["sourcePixels"]=={"width":3520,"height":2048},art
         assert art["painting"]=={
             "x":0,"y":0,"displayWidth":3520,"displayHeight":2048
         },art
