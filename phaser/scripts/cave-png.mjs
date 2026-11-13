@@ -45,44 +45,19 @@ export function caveGuidePng(level,{
   const worldX=from*16;
   const width=(to-from)*16*scale,height=level.height*16*scale;
   const rows=Buffer.alloc((width*4+1)*height);
-  const roof=new Float64Array(width),floor=new Float64Array(width);
-  const water=new Float64Array(width).fill(Infinity);
-  const ledges=level.platformSegments;
-  const walls=level.climbWalls||[];
-  for(let x=0;x<width;x++){
-    const absoluteX=worldX+(x+.5)/scale;
-    roof[x]=level.cave.ceilingAt(absoluteX);
-    floor[x]=level.cave.groundAt(absoluteX);
-    const basin=level.waterBodies.find(p=>
-      absoluteX>=p.start*16&&absoluteX<p.end*16);
-    if(basin)water[x]=basin.surface*16;
-  }
+  const columns=Array.from({length:width},(_,x)=>
+    level.materialColumn(worldX+(x+.5)/scale));
   for(let y=0;y<height;y++){
     const offset=y*(width*4+1);
     rows[offset]=0; // PNG filter: None
     const absoluteY=(y+.5)/scale;
     for(let x=0;x<width;x++){
-      let paint;
-      const solid=absoluteY<roof[x]||absoluteY>=floor[x];
-      const absoluteX=worldX+(x+.5)/scale;
-      const shelf=!solid&&ledges.some(p=>
-        absoluteX>=p.x*16&&absoluteX<(p.x+p.length)*16&&
-        absoluteY>=p.y*16&&absoluteY<p.y*16+20);
-      const wall=!solid&&walls.some(w=>
-        Math.abs(absoluteX-w.x*16)<12&&
-        absoluteY>=w.top*16&&absoluteY<w.bottom*16);
-      // All static interaction geometry belongs to ONE full-world layer.
-      // Unlike the former compositor, these masks do not invent stone,
-      // paint vector lines, tint model pixels, or rescale source artwork.
-      const solidMaterial=solid||shelf||wall;
-      if(layer==='static-solid'){
-        paint=solid?color.rock:wall?color.wall:shelf?color.shelf:color.clear;
-      }else if(layer==='static-water'){
-        paint=!solidMaterial&&absoluteY>=water[x]?color.water:color.clear;
-      }else{
-        paint=solid?color.rock:wall?color.wall:shelf?color.shelf:
-          absoluteY>=water[x]?color.water:color.air;
-      }
+      const material=columns[x](absoluteY);
+      const paint=layer==='physical-rock'?color[material]:
+        layer==='static-solid'?
+          (material==='rock'||material==='wall'||material==='shelf'?
+            color[material]:color.clear):
+          (material==='water'?color.water:color.clear);
       const pixel=offset+1+x*4;
       rows[pixel]=paint[0];rows[pixel+1]=paint[1];
       rows[pixel+2]=paint[2];rows[pixel+3]=paint[3];
