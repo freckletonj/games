@@ -1,2 +1,5 @@
 /dist/wonderwood.html
 /dist/preview-*.png
+/phaser/vendor/phaser-4.2.1.tgz
+/phaser/vendor/linux-x64-0.25.12.tgz
+/phaser/node_modules/
