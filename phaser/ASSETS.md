@@ -131,36 +131,14 @@ The berry lure sprite also reuses the original `flora.webp` artwork:
 a tight crop and alpha mask of its purple berry cluster. No separate
 unlicensed berry image is imported.
 
-## Skywell Ascent (Chapter 7, legacy visual prototype)
+## Skywell Ascent — selected Ancient Sanctuary artwork
 
-The original procedural SVG scenic reference has been retired. Image models
-should receive the full **colored physics guide**, not a second, hand-drawn
-fake landscape. The guide and full-size solid/water RGBA masks are regenerated
-from `phaser/src/cave-layout.js` by
-`node phaser/scripts/export-cave-guides.mjs`. The optional
-`skywell-vault-study` uses genuine, collision-backed rock polygons and is
-awaiting an approved image-model painting.
+The authored rock, ledges, climbing walls and water are defined by
+`phaser/src/cave-layout.js`. Export the **complete colored physics guide**
+and matching full-world RGBA masks with
+`node phaser/scripts/export-cave-guides.mjs`. The renderer does not draw
+individual scenic wedges or procedural fake-rock platforms.
 
-## Skywell full-resolution physics-grounded painting (Chapter 7)
-
-The runtime now embeds `phaser/assets/generated/skywell-ascent.webp` as
-one **3520 × 2048** static image. An image model generated the original
-**1644 × 957** scenery at its available native resolution. The source is
-committed as `phaser/assets/generated/skywell-model-source.webp` (lossy
-WebP conversion of the generator's original PNG, quality 90). The painting was
-then resampled to authored world size and composed through the exact
-`skywellLayout` floor, ceiling, water, shelf and climb-wall masks, to
-prevent attractive but invented AI-painted terrain from becoming fake
-collision geometry. The resulting WebP is approximately 500 KB. The procedural SVG
-was removed because it could introduce false visual geometry. This WebP
-remains a legacy draft, not an approved new-art pipeline output.
-
-The source image was generated as static-only scenery; no character,
-collectible or HUD was intentionally included. The authored physics remains
-the sole collision authority. Regeneration instructions are in
-`CAVE-ART-PIPELINE.md` and `scripts/compose-painted-cave.py`.
-
-## Skywell Ancient Sanctuary — selected second generated variation
 
 The user chose the warm, sculptural sanctuary painting from the two image
 generations. The original generator's PNG had **1644 × 957** pixels. A
@@ -177,9 +155,10 @@ coordinates with **no parallax**, preserving accurate geometry alignment.
 
 The accepted *style* is not yet native-resolution final art: its RGB was
 resampled from the 1644 × 957 source, so final detail must later come from
-overlapping world-space image-model refinement. The older
-`skywell-ascent.webp` and `skywell-model-source.webp` remain solely for
-historical provenance, not the selected displayed painting.
+overlapping world-space image-model refinement. The rejected
+opaque Skywell draft, its source copy, and the obsolete wedge compositor
+were removed from the working tree. Their history remains in Git, rather
+than being loaded or kept as redundant assets.
 
 Regenerate or validate the alpha against freshly exported materials with
 `scripts/bake-selected-skywell.py`. The separate
