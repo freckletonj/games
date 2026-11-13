@@ -139,7 +139,6 @@ and matching full-world RGBA masks with
 `node phaser/scripts/export-cave-guides.mjs`. The renderer does not draw
 individual scenic wedges or procedural fake-rock platforms.
 
-
 The user chose the warm, sculptural sanctuary painting from the two image
 generations. The original generator's PNG had **1644 × 957** pixels. A
 faithful high-quality WebP copy lives at
