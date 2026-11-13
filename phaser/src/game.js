@@ -23,9 +23,9 @@ import {meadowDesign} from './meadow-design.js';
 import {grottoChapter} from './cave-chapter.js';
 import {compileCave,caveContainsWater,skywellLayout} from './cave-layout.js';
 import {skywellChapter} from './skywell-chapter.js';
-import {skywellPaintingSvg} from './skywell-painting.js';
 import {paintCave,paintCaveGeometryOverlay} from './cave-renderer.js';
 import caveRockUrl from '../assets/generated/luminous-grotto-single.png';
+import skywellRockUrl from '../assets/generated/skywell-ascent.webp';
 import {readProgress,playChapter,completeChapter,writeProgress} from './progress.js';
 import {addMeadowIllustration} from './meadow-art.js';
 import {validateEncounters} from './encounters.js';
@@ -76,12 +76,9 @@ class Wonderwood extends Phaser.Scene {
     for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
     this.load.image('painted-states',paintedStates);
     this.load.image('cave-painted-rock',caveRockUrl);
-    // A complete, resolution-independent, geometry-derived reference painting.
-    // Replacing this one image with a model-generated PNG does not affect physics.
-    const skywell=compileCave(skywellLayout);
-    this.load.image('skywell-painted-rock',
-      'data:image/svg+xml;charset=utf-8,'+
-      encodeURIComponent(skywellPaintingSvg(skywell)));
+    // One full-resolution, geometry-constrained AI-painted bitmap.
+    // Collision remains the independently compiled authored cave layout.
+    this.load.image('skywell-painted-rock',skywellRockUrl);
   }
 
   create(){
