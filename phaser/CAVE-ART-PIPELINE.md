@@ -113,8 +113,8 @@ scaling and improves geometry alignment.
 
 ## Adding another code-authored chapter
 
-This is presently a working **single chapter example**, not a generic
-automatic image-to-chapter system. Skywell demonstrates the second authored chapter:
+This is a working **two-chapter example**, not a generic automatic
+image-to-chapter system. Skywell demonstrates the second authored chapter:
 `skywellLayout` in `cave-layout.js`, `skywell-chapter.js`,
 `skywell-painting.js`, and explicit chapter registration in `game.js`.
 The guide exporter compiles **both** level specs. For future levels,
