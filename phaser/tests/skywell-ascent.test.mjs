@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {inflateSync} from 'node:zlib';
-import {compileCave,skywellLayout} from '../src/cave-layout.js';
+import {compileCave,skywellLayout,caveContainsWater} from '../src/cave-layout.js';
 import {caveArtManifest,caveMaskSvg} from '../src/cave-art-guide.js';
 import {skywellPaintingSvg} from '../src/skywell-painting.js';
 import {caveGuidePng} from '../scripts/cave-png.mjs';
@@ -148,4 +148,37 @@ test('scripted player inputs actually carry explorers across all ten rock faces'
     assert.ok(wallJumped,'wall '+wall.x+' requires a real wall-jump input');
     assert.ok(crossed,'wall '+wall.x+' must be crossable, not just visually climbable');
   }
+});
+
+test('water and climbable rock never claim the same pixel',()=>{
+  const level=compileCave(skywellLayout);
+  const from=128,bytes=caveGuidePng(level,{from,to:136});
+  const width=bytes.readUInt32BE(16),row=width*4+1;
+  let offset=8,packed;
+  while(offset<bytes.length){
+    const n=bytes.readUInt32BE(offset);
+    if(bytes.toString('ascii',offset+4,offset+8)==='IDAT')
+      packed=bytes.subarray(offset+8,offset+8+n);
+    offset+=n+12;
+  }
+  const pixels=inflateSync(packed);
+  const at=(x,y)=>Array.from(pixels.subarray(
+    y*row+1+x*4,y*row+5+x*4));
+  const wallX=132*16;
+  assert.equal(caveContainsWater(level,wallX,1120),false);
+  assert.deepEqual(at(wallX-from*16,1120),[255,157,99,255]);
+  assert.equal(caveContainsWater(level,wallX+15,1120),true);
+  assert.deepEqual(at(wallX+15-from*16,1120),[35,136,175,255]);
+});
+
+test('the high lantern is within a standard jump of a real platform',()=>{
+  const level=compileCave(skywellLayout);
+  const goal=level.objects.find(o=>o.kind==='diveKey');
+  const support=level.platformSegments.find(p=>
+    p.x<=goal.x&&goal.x<=p.x+p.length&&p.y>goal.y);
+  assert.ok(support,'lantern needs a physical landing shelf');
+  // Item interaction compares player feet with item.y-12 and permits 26px.
+  const climbNeeded=support.y*16-(goal.y+.5)*16+12-26;
+  assert.ok(climbNeeded>0&&climbNeeded<40,
+    'lantern should be a reachable single jump from its platform');
 });
