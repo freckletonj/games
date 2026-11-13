@@ -38,7 +38,7 @@ const color={
 export function caveGuidePng(level,{
   from=0,to=level.width,layer='physical-rock',scale=1
 }={}){
-  if(layer!=='physical-rock'||
+  if(!['physical-rock','static-solid','static-water'].includes(layer)||
      from<0||to>level.width||from>=to||
      !Number.isInteger(scale)||scale<1||scale>3)
     throw Error('Invalid cave guide raster dimensions or layer');
@@ -64,22 +64,24 @@ export function caveGuidePng(level,{
     for(let x=0;x<width;x++){
       let paint;
       const solid=absoluteY<roof[x]||absoluteY>=floor[x];
-      if(layer==='physical-rock'){
-        paint=solid?color.rock:
-          absoluteY>=water[x]?color.water:color.air;
-        const absoluteX=worldX+(x+.5)/scale;
-        if(!solid&&ledges.some(p=>
-          absoluteX>=p.x*16&&absoluteX<(p.x+p.length)*16&&
-          Math.abs(absoluteY-p.y*16)<2))paint=color.shelf;
-        if(!solid&&walls.some(w=>Math.abs(absoluteX-w.x*16)<12&&
-          absoluteY>=w.top*16&&absoluteY<w.bottom*16))
-          paint=color.wall;
-      }else if(layer==='foreground-occlusion'){
-        paint=absoluteY<roof[x]?color.foreground:color.clear;
-      }else if(layer==='distant-arches'){
-        paint=solid?color.rock:color.distant;
+      const absoluteX=worldX+(x+.5)/scale;
+      const shelf=!solid&&ledges.some(p=>
+        absoluteX>=p.x*16&&absoluteX<(p.x+p.length)*16&&
+        Math.abs(absoluteY-p.y*16)<2);
+      const wall=!solid&&walls.some(w=>
+        Math.abs(absoluteX-w.x*16)<12&&
+        absoluteY>=w.top*16&&absoluteY<w.bottom*16);
+      // All static interaction geometry belongs to ONE full-world layer.
+      // Unlike the former compositor, these masks do not invent stone,
+      // paint vector lines, tint model pixels, or rescale source artwork.
+      const solidMaterial=solid||shelf||wall;
+      if(layer==='static-solid'){
+        paint=solid?color.rock:shelf?color.shelf:wall?color.wall:color.clear;
+      }else if(layer==='static-water'){
+        paint=!solidMaterial&&absoluteY>=water[x]?color.water:color.clear;
       }else{
-        paint=solid?color.rock:color.mist;
+        paint=solid?color.rock:shelf?color.shelf:wall?color.wall:
+          absoluteY>=water[x]?color.water:color.air;
       }
       const pixel=offset+1+x*4;
       rows[pixel]=paint[0];rows[pixel+1]=paint[1];
