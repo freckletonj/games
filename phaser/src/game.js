@@ -79,9 +79,13 @@ class Wonderwood extends Phaser.Scene {
     // One full-resolution, geometry-constrained AI-painted bitmap.
     // Collision remains the independently compiled authored cave layout.
     this.load.image('skywell-painted-rock',skywellRockUrl);
+    for(const [chapter,layers] of Object.entries(__CAVE_ASSETS__))
+      for(const [material,url] of Object.entries(layers))
+        this.load.image('cave-'+chapter+'-'+material,url);
   }
 
   create(){
+    this.approvedCaveArt=__CAVE_ASSETS__;
     this.keyboard=bindings.map(layout=>Object.fromEntries(Object.entries(layout)
       .map(([action,codes])=>[action,codes.map(code=>this.input.keyboard.addKey(code))])));
     this.lastInput=[{},{}];
@@ -350,6 +354,7 @@ class Wonderwood extends Phaser.Scene {
       this.backdrop.setScale(Math.max(1050/this.backdrop.width,
         590/this.backdrop.height));
     }
+    this.cavePaintedLayers=null;
     if(this.level.cave){
       paintCave(this);
       paintCaveGeometryOverlay(this);
