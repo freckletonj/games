@@ -21,7 +21,9 @@ import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatu
   stompCreature} from './creature-motion.js';
 import {meadowDesign} from './meadow-design.js';
 import {grottoChapter} from './cave-chapter.js';
-import {compileCave,caveContainsWater} from './cave-layout.js';
+import {compileCave,caveContainsWater,skywellLayout} from './cave-layout.js';
+import {skywellChapter} from './skywell-chapter.js';
+import {skywellPaintingSvg} from './skywell-painting.js';
 import {paintCave,paintCaveGeometryOverlay} from './cave-renderer.js';
 import caveRockUrl from '../assets/generated/luminous-grotto-single.png';
 import {readProgress,playChapter,completeChapter,writeProgress} from './progress.js';
@@ -30,7 +32,7 @@ import {validateEncounters} from './encounters.js';
 import {paintTerrain,paintScenery,addMeadowAtmosphere,
   addParallaxAtmosphere,moveParallaxAtmosphere} from './world-renderer.js';
 
-const CHAPTERS=[...WW.chapters,grottoChapter];
+const CHAPTERS=[...WW.chapters,grottoChapter,skywellChapter];
 const TILE=16;
 const VIEW_W=480;
 const VIEW_H=270;
@@ -74,6 +76,12 @@ class Wonderwood extends Phaser.Scene {
     for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
     this.load.image('painted-states',paintedStates);
     this.load.image('cave-painted-rock',caveRockUrl);
+    // A complete, resolution-independent, geometry-derived reference painting.
+    // Replacing this one image with a model-generated PNG does not affect physics.
+    const skywell=compileCave(skywellLayout);
+    this.load.image('skywell-painted-rock',
+      'data:image/svg+xml;charset=utf-8,'+
+      encodeURIComponent(skywellPaintingSvg(skywell)));
   }
 
   create(){
@@ -128,7 +136,8 @@ class Wonderwood extends Phaser.Scene {
         generatedTextureCount:this.generatedTextures?.length||0,
         caveArt:this.stage>=0&&this.level?.cave?{
           geometryOverlay:this.caveGeometryOverlay?.visible||false,
-          rockLoaded:this.textures.exists('cave-painted-rock'),
+          rockLoaded:this.textures.exists(this.cavePainting.texture.key),
+           textureKey:this.cavePainting.texture.key,
           imageCount:1,
           painting:{x:this.cavePainting.x,y:this.cavePainting.y,
             displayWidth:this.cavePainting.displayWidth,
@@ -281,7 +290,8 @@ class Wonderwood extends Phaser.Scene {
     this.menuHint.textContent=chapter.tagline;
     // Chapter selection previews the actual painted biome, without a
     // separate low-resolution menu screenshot or new network assets.
-    const biome=chapter.id==='luminous-grotto'?'coast':designs[chapter.id].biome;
+    const biome=['luminous-grotto','skywell-ascent'].includes(chapter.id)?
+      'coast':designs[chapter.id].biome;
     this.menuEl.dataset.biome=biome;
     this.backdrop.setTexture('back-'+biome);
     this.backdrop.setScale(Math.max(960/this.backdrop.width,540/this.backdrop.height));
@@ -314,6 +324,7 @@ class Wonderwood extends Phaser.Scene {
     this.progress=playChapter(this.progress,this.chapter.id);
     writeProgress(localStorage,this.progress);
     if(this.chapter.id==='luminous-grotto')this.level=compileCave();
+    else if(this.chapter.id==='skywell-ascent')this.level=compileCave(skywellLayout);
     else {
       const original=designs[this.chapter.id];
       const spec=this.chapter.id==='first-forest'?meadowDesign(original):original;
@@ -346,7 +357,8 @@ class Wonderwood extends Phaser.Scene {
     this.spawnMounts();
     this.makePlayer(0);
     if(this.twoPlayers)this.makePlayer(1);
-    if(this.level.cave)this.cameras.main.setZoom(.82);
+    if(this.level.cave)this.cameras.main.setZoom(
+      this.chapter.id==='skywell-ascent'?1.4:1.25);
     this.cameras.main.setBounds(0,0,this.worldW,this.worldH);
     this.cameras.main.startFollow(this.players[0].visual,true,.085,.12);
     // Let players see upcoming climbs and sky rather than half a screen of soil.
@@ -1042,7 +1054,8 @@ class Wonderwood extends Phaser.Scene {
       groundAt:x=>this.groundAt(x),inWater:(x,y)=>this.inWater(x,y),
       waterBodies:this.level.waterBodies,
       thermalVolumes:this.level.thermalVolumes,
-      platformSegments:this.level.platformSegments
+      platformSegments:this.level.platformSegments,
+      climbWalls:this.level.climbWalls
     });
     for(const event of events){
       if(event==='breach')this.powerEffect('tideling',p.x,p.y,p.face);
@@ -1056,6 +1069,8 @@ class Wonderwood extends Phaser.Scene {
         this.flash('Super spring!',850);
       }else if(event==='doubleJump'){
         gesture(p,'jump',.18);this.sparkle(p.x,p.y);
+      }else if(event==='wallJump'){
+        gesture(p,'jump',.23);this.sparkle(p.x,p.y-13,0xffdca8);
       }else if(event==='flap'){
         gesture(p,'flap',.22);this.sparkle(p.x,p.y,0xd3f6ff);
       }else if(event==='land'){
@@ -1207,7 +1222,7 @@ class Wonderwood extends Phaser.Scene {
     if(this.stage<0)return;
     const lead=this.players[0];
     this.hud.setText('♥ '+lead.health+'    ✦ '+this.shared.shards+
-      '    '+(this.chapter.id==='luminous-grotto'?
+      '    '+(this.level.cave?
         (this.shared.relic?'PEARL FOUND':'FIND THE PEARL'):
         (this.shared.relic?'LIGHT RESTORED':'FIND THE LIGHT'))+
       (lead.mount?'    '+(lead.mount.kind==='pegasus'?'PEGASUS':'UNICORN'):
@@ -1215,7 +1230,10 @@ class Wonderwood extends Phaser.Scene {
       (this.twoPlayers?'    P2 ♥ '+this.players[1]?.health:''));
     const first=this.animals.find(a=>a.kind==='springaroo'&&!a.captured);
     const teaching=this.chapter.id==='first-forest'&&first;
-    this.help.setText(lead.creatureBounceWindow>0?
+    this.help.setText(this.chapter.id==='skywell-ascent'&&
+      !lead.form&&lead.x<95*16?
+        'Skywell · Jump beside a glowing wall, then jump again to climb':
+      lead.creatureBounceWindow>0?
       'Tap Jump now for a super spring!':lead.mount?
       (lead.mount.kind==='pegasus'?
         'Pegasus · Tap Jump to flap · Down to descend · T dismount':
