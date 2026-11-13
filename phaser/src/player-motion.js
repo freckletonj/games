@@ -1,5 +1,6 @@
 import {landingY,safeHorizontalX} from './physics.js';
 import {tryBloomBoost} from './springboard.js';
+import {sweepRockBody} from './cave-solids.js';
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
@@ -102,10 +103,17 @@ export function stepPlayerMotion(p,actions,step,world){
       if(p.x>=wallX+12&&safeX<wallX+12)
         safeX=wallX+12;
     }
+    if(world.rockPolygons?.length)
+      safeX=sweepRockBody(world.rockPolygons,p.x,p.y,safeX,'x').value;
     if(Math.abs(safeX-nextX)>.2)p.vx=0;
     p.x=safeX;
     const priorY=p.y,wasGrounded=p.grounded,impactSpeed=p.vy;
-    p.y+=p.vy*step;
+    const vertical=world.rockPolygons?.length?
+      sweepRockBody(world.rockPolygons,p.x,p.y,p.y+p.vy*step,'y'):
+      {value:p.y+p.vy*step,blocked:false};
+    const rockLanding=vertical.blocked&&p.vy>0;
+    p.y=vertical.value;
+    if(vertical.blocked)p.vy=0;
     let landing=landingY(priorY,p.y,p.vy,p.grounded,
       p.x,world.groundAt(p.x),world.platformSegments,world.tile);
     // The top of a climbable rock face is solid too: players can stand
@@ -124,6 +132,9 @@ export function stepPlayerMotion(p,actions,step,world){
         events.push('land');
         if(impactSpeed>3.8)events.push('hardLand');
       }
+    }else if(rockLanding){
+      p.grounded=true;p.coyote=5;p.jumps=0;p.flaps=0;
+      if(impactSpeed>1.3)events.push('land');
     }else p.grounded=false;
     // Safety against upward-facing underwater banks: a wall cannot
     // convert a horizontal swim into a fall through the heightfield.
