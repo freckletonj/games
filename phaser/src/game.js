@@ -26,7 +26,7 @@ import {skywellChapter} from './skywell-chapter.js';
 import {paintCave,paintCaveGeometryOverlay} from './cave-renderer.js';
 import caveRockUrl from '../assets/generated/luminous-grotto-single.png';
 import skywellRockUrl from '../assets/generated/skywell-ascent.webp';
-import {readProgress,playChapter,completeChapter,writeProgress} from './progress.js';
+import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 import {addMeadowIllustration} from './meadow-art.js';
 import {validateEncounters} from './encounters.js';
 import {paintTerrain,paintScenery,addMeadowAtmosphere,
@@ -85,7 +85,8 @@ class Wonderwood extends Phaser.Scene {
     this.keyboard=bindings.map(layout=>Object.fromEntries(Object.entries(layout)
       .map(([action,codes])=>[action,codes.map(code=>this.input.keyboard.addKey(code))])));
     this.lastInput=[{},{}];
-    this.progress=readProgress(localStorage,CHAPTERS.map(chapter=>chapter.id));
+    this.progressStorage=browserProgressStorage();
+    this.progress=readProgress(this.progressStorage,CHAPTERS.map(chapter=>chapter.id));
     this.choice=Math.max(0,CHAPTERS.findIndex(chapter=>
       chapter.id===this.progress.lastPlayed));
     this.twoPlayers=false;
@@ -324,7 +325,7 @@ class Wonderwood extends Phaser.Scene {
     this.stage=index;
     this.chapter=CHAPTERS[index];
     this.progress=playChapter(this.progress,this.chapter.id);
-    writeProgress(localStorage,this.progress);
+    writeProgress(this.progressStorage,this.progress);
     if(this.chapter.id==='luminous-grotto')this.level=compileCave();
     else if(this.chapter.id==='skywell-ascent')this.level=compileCave(skywellLayout);
     else {
@@ -1125,7 +1126,7 @@ class Wonderwood extends Phaser.Scene {
           this.flash('The light needs '+FORMsName(required),1200);
       }else if(item.kind==='exit'&&this.shared.relic){
         this.progress=completeChapter(this.progress,this.chapter.id,this.shared.shards);
-        writeProgress(localStorage,this.progress);
+        writeProgress(this.progressStorage,this.progress);
         this.flash('Chapter complete! The next light awakens.',1600);
         const next=this.stage+1;
         if(next<CHAPTERS.length)this.startStage(next);
