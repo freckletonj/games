@@ -52,6 +52,27 @@ def main():
         page.wait_for_function(
             "window.__wonderwoodPhaser.snapshot().players[0].x > "+str(target),
             timeout=20000)
+        # Reach the first authored wall by normal input, then press Jump,
+        # release it, and press again to spring away from the rock face.
+        page.keyboard.down("d")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().players[0].x > 425",
+            timeout=30000)
+        page.keyboard.down("w")
+        initial=page.evaluate(
+            "window.__wonderwoodPhaser.snapshot().simulationSeconds")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().simulationSeconds >= "+str(initial+.12),
+            timeout=30000)
+        page.keyboard.up("w")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().simulationSeconds >= "+str(initial+.16),
+            timeout=30000)
+        page.keyboard.down("w")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().players[0].wallJumps > 0",
+            timeout=30000)
+        page.keyboard.up("w")
         page.keyboard.up("d")
         assert not errors,errors
         assert not external,external
