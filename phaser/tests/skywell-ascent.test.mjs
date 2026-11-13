@@ -118,3 +118,34 @@ test('wall spring is physically high enough for the demanding middle ramps',()=>
       'wall jump should clear from the intermediate perch at '+x);
   }
 });
+
+test('scripted player inputs actually carry explorers across all ten rock faces',()=>{
+  const level=compileCave(skywellLayout);
+  const world={width:level.width*16,height:level.height*16,tile:16,
+    groundAt:level.cave.groundAt,ceilingAt:level.cave.ceilingAt,
+    inWater:()=>false,waterBodies:level.waterBodies,
+    thermalVolumes:[],platformSegments:level.platformSegments,
+    climbWalls:level.climbWalls};
+  const approachPerch=new Map([[132,65],[152,58],[171,55],[190,54]]);
+  for(const wall of level.climbWalls){
+    // Early walls are climbed from the floor; later pillars have authored
+    // intermediate perches. No forced teleport is used after initialization.
+    const x=wall.x*16-14;
+    const y=approachPerch.has(wall.x)?
+      approachPerch.get(wall.x)*16:level.cave.groundAt(x);
+    const player={id:0,x,y,vx:0,vy:0,face:1,grounded:true,coyote:5,
+      jumpBuffer:0,jumps:0,flaps:0,flapWait:0,powers:0,hover:0,breach:0,
+      bloomWindow:0,creatureBounceWindow:0,form:null};
+    let wallJumped=false,crossed=false;
+    for(let frame=0;frame<100;frame++){
+      const {events}=stepPlayerMotion(player,{
+        left:false,right:true,down:false,
+        jump:true,jumpPressed:frame===0||frame===4
+      },1,world);
+      if(events.includes('wallJump'))wallJumped=true;
+      if(player.x>wall.x*16+12){crossed=true;break;}
+    }
+    assert.ok(wallJumped,'wall '+wall.x+' requires a real wall-jump input');
+    assert.ok(crossed,'wall '+wall.x+' must be crossable, not just visually climbable');
+  }
+});
