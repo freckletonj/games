@@ -76,11 +76,11 @@ export function caveGuidePng(level,{
       // paint vector lines, tint model pixels, or rescale source artwork.
       const solidMaterial=solid||shelf||wall;
       if(layer==='static-solid'){
-        paint=solid?color.rock:shelf?color.shelf:wall?color.wall:color.clear;
+        paint=solid?color.rock:wall?color.wall:shelf?color.shelf:color.clear;
       }else if(layer==='static-water'){
         paint=!solidMaterial&&absoluteY>=water[x]?color.water:color.clear;
       }else{
-        paint=solid?color.rock:shelf?color.shelf:wall?color.wall:
+        paint=solid?color.rock:wall?color.wall:shelf?color.shelf:
           absoluteY>=water[x]?color.water:color.air;
       }
       const pixel=offset+1+x*4;
