@@ -408,12 +408,16 @@ passed local Chromium checks and visual review.
 
 The second one-image authored chapter is a vertical, wall-jumpable cave.
 `phaser/src/cave-layout.js` defines its rock, pools, ledges and **real
-climbing-wall collision faces**. The game now embeds a **3520 × 2048
-physics-constrained WebP painting** based on maximum-native-size image-model
-art. The original generated source is retained in
-`assets/generated/skywell-model-source.webp`; the compositing script is
-`scripts/compose-painted-cave.py` (legacy draft only). The complete filled
-material guide and alpha masks export to `dist/cave-guides/skywell-ascent/`.
+climbing-wall collision faces**. The playable game now embeds the **user-selected Ancient Sanctuary**
+image-model variation as three world-locked WebP planes at 3520 × 2048:
+painted background air, physical solids, and water. Their alpha is derived
+from exactly the compiled gameplay materials—not separately drawn vector
+ledges or wedges. The 1644 × 957 source is retained at
+`assets/generated/skywell-ancient/skywell-ancient-source.webp`; resampling
+to world pixels is explicit and does not constitute native-resolution detail.
+The old `skywell-ascent.webp` is a legacy draft only.
+The complete material guide and alpha masks export to
+`dist/cave-guides/skywell-ascent/`.
 The separate vaulted authoring study now supports real polygon rock collision
 and overlapping native-resolution image-model crop guides; it is not yet a
 playable chapter or approved painting.
@@ -475,8 +479,8 @@ extract transparent layers without repainting isolated geometric wedges.
 Run `node phaser/scripts/export-cave-guides.mjs` to produce
 `world-static-solid.png` and `world-static-water.png`; use
 `phaser/scripts/extract-painted-layers.py` for an **approved native-size
-scene**, not the old stretched prototype. The existing runtime painting is
-still legacy art until a better scene is generated and approved.
+scene**, not the old stretched prototype. The playable Skywell now uses the selected Ancient Sanctuary scene; the
+higher-resolution nine-crop vaulted study is still a future art pass.
 
 To move exact repository contents to an offline build container that cannot
 clone GitHub, run `bash phaser/scripts/package-source-snapshot.sh` in a
