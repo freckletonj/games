@@ -22,6 +22,8 @@ export function caveMaskSvg(level){
   const walls=(level.climbWalls||[]).map(p=>
     '<rect x="'+(p.x*TILE-12)+'" y="'+p.top*TILE+
     '" width="24" height="'+(p.bottom-p.top)*TILE+'"/>').join('');
+  const rocks=(level.rockPolygons||[]).map(p=>
+    '<polygon points="'+p.points.map(v=>v.join(',')).join(' ')+'"/>').join('');
   const traversable=roof+' '+pathAlong(level,level.cave.groundAt,true);
   return '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+
     '" height="'+h+'" viewBox="0 0 '+w+' '+h+'">'+
@@ -35,7 +37,8 @@ export function caveMaskSvg(level){
     pathAlong(level,level.cave.ceilingAt,true)+'"/>'+
     '<polygon points="'+bed+' '+w+','+h+' 0,'+h+'"/></g>'+
     '<g fill="#f3cc76">'+shelves+'</g>'+
-    '<g fill="#ff9d63" clip-path="url(#traversable)">'+walls+'</g></svg>';
+    '<g fill="#ff9d63" clip-path="url(#traversable)">'+walls+'</g>'+
+    '<g fill="#645468">'+rocks+'</g></svg>';
 }
 
 export function caveArtManifest(level){
