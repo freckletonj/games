@@ -1,4 +1,5 @@
-// One static guide for one painted image. No chunks, planes or object sprites.
+// One authoritative full-world material guide for a coherent static painting.
+// World-locked solid/water alpha planes are derived from the same geometry.
 const TILE=16;
 function pathAlong(level,sample,reverse=false){
   const xs=Array.from({length:Math.ceil(level.width*TILE/8)+1},
@@ -45,7 +46,7 @@ export function caveArtManifest(level){
   const study=level.cave.layout.id==='skywell-vault-study';
   const skywell=level.cave.layout.id==='skywell-ascent'||study;
   return {
-    schema:'wonderwood-single-image-cave-v1',
+    schema:'wonderwood-physics-painted-cave-v2',
     world:{width:level.width*TILE,height:level.height*TILE},
     guide:'world-physical-rock.png',
     // One full-scene conditioning guide and two matching pixel-accurate
@@ -68,7 +69,7 @@ export function caveArtManifest(level){
     wallMaterial:'#ff9d63',
     imageGeneration:{
       resolution:'maximum available native pixels at the matching aspect ratio',
-      alignment:'no crops, stretching or hallucinated collision surfaces',
+      alignment:'Global composition first; overlapping authoring crops must keep exact geometry, without stretching or invented surfaces',
       staticOnly:true
     },
     referenceAspectRatio:level.width/level.height,
