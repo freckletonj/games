@@ -12,11 +12,17 @@ test('the new climbing chapter compiles as one reachable, physics-led world',()=
   assert.equal(level.width*16,3520);
   assert.equal(level.height*16,2048);
   assert.equal(level.climbWalls.length,10);
-  assert.equal(level.platformSegments.length,15);
+  assert.equal(level.platformSegments.length,24);
   assert.equal(level.waterBodies.length,3);
-  assert.ok(level.objects.some(o=>o.kind==='glimmermoth'));
+  const moth=level.objects.find(o=>o.kind==='glimmermoth');
+  assert.ok(moth);
+  assert.ok(Math.abs((moth.y+.5)*16-level.cave.groundAt((moth.x+.5)*16))<25,
+    'starting required transformation must be reachable from the floor');
   assert.ok(level.objects.some(o=>o.kind==='diveKey'));
   assert.ok(level.objects.some(o=>o.kind==='exit'));
+  assert.deepEqual(level.goalRoute.map(p=>p.kind),[
+    'start',...Array(10).fill('wallJump'),'objective','exit'
+  ]);
   assert.ok(level.platformSegments.every(p=>
     p.y*16<level.cave.groundAt((p.x+p.length/2)*16)));
   assert.ok(level.climbWalls.every(w=>
@@ -87,4 +93,28 @@ test('a wall blocks walking through it but enables a second jump to climb',()=>{
   assert.ok(!repeat.events.includes('wallJump'),'jump has a cooldown');
   assert.throws(()=>compileCave({...skywellLayout,
     walls:[{x:55,top:120,bottom:125}]}),/Invalid climb wall/);
+});
+
+test('wall spring is physically high enough for the demanding middle ramps',()=>{
+  const level=compileCave(skywellLayout);
+  // Exact fixed-tick ascent for held jump: first frame applies +.34
+  // gravity, then the next 29 upwards ticks. A released button shortens it.
+  let vy=-10.4,rise=0,peak=0;
+  while(vy<0){
+    vy+=.34;rise-=vy;peak=Math.max(peak,rise);
+  }
+  for(const x of [28,44,60,77,93,112]){
+    const wall=level.climbWalls.find(w=>w.x===x);
+    assert.ok(level.cave.groundAt(x*16)-wall.top*16<peak,
+      'authored wall at '+x+' must clear from the lower floor');
+  }
+  for(const x of [132,152,171,190]){
+    const wall=level.climbWalls.find(w=>w.x===x);
+    const candidates=level.platformSegments.filter(p=>
+      p.x<=x&&p.x+p.length>=x-2&&
+      p.y>=wall.top&&p.y<wall.bottom);
+    assert.ok(candidates.length>0,'tall wall needs a reachable intermediate ledge: '+x);
+    assert.ok(candidates.some(p=>(p.y-wall.top)*16<peak),
+      'wall jump should clear from the intermediate perch at '+x);
+  }
 });
