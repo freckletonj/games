@@ -32,7 +32,7 @@ def main():
         art=before["caveArt"]
         assert art and art["rockLoaded"] and art["imageCount"]==1,art
         assert before["parallaxLayers"]==0,before
-        assert len(art["chunks"])==1,art
+        assert "chunks" not in art,art
         assert art["painting"]=={
             "x":0,"y":0,"displayWidth":3200,"displayHeight":1792
         },art
