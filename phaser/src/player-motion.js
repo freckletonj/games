@@ -49,7 +49,8 @@ export function stepPlayerMotion(p,actions,step,world){
         events.push('creatureBounceBoost');
       }else if(actions.jumpPressed&&wallContact&&
         p.coyote===0&&p.wallJumpCooldown===0){
-        p.vy=-7.5;
+        // A forgiving high spring lets explorers gain a full ledge tier.
+        p.vy=-9.8;
         p.vx=p.x<wallContact.x*world.tile?-3.3:3.3;
         p.grounded=false;p.jumpBuffer=0;p.jumps=1;
         p.wallJumpCooldown=11;
