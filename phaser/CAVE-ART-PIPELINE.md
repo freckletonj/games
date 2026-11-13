@@ -218,3 +218,27 @@ text or UI. Do not treat image-model platforms as collision: this compositor
 relegates unapproved shapes to a blurred distant backdrop and explicitly
 highlights only physically registered ledges and wall faces. The full-
 resolution static painting is the only runtime Skywell scenery texture.
+
+## Playable HTML versus physics-only inspector
+
+The exported `world-painted-reference.svg` and standalone alignment
+inspector are authoring aids, **not** runnable game previews. For the
+self-contained Phaser game, run `npm run build --prefix phaser` and open
+`dist/wonderwood-phaser.html#skywell-ascent`. The URL fragment selects
+Skywell on the chapter menu; click **Begin adventure**. For a distinct
+verified download, run `bash phaser/scripts/package-preview.sh focused`.
+
+Firefox may restrict `localStorage` on downloaded `file://` pages.
+The standalone build now uses a session-only progress ledger for those
+origins. Hosted HTTP(S) builds retain persistent progress. The loading
+screen displays errors rather than failing silently, and the optional
+`PLAYWRIGHT_FIREFOX=1` local verification checks the real Firefox
+file-origin path (run `python -m playwright install firefox` first).
+The inline Chromium adapter retains hash fragments and uses the bundled
+artwork and real engine, not a replacement physics simulator.
+
+The new browser smoke includes star-treat selection, both Glimmermoth
+feedings, capture, transformation and a physical wall-jump. The pure
+simulation tests separately prove the 10-wall route reaches the lantern
+and exit. **Browser tests and a complete real-game finish are still required
+on the exact PR head before merging.**
