@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {PROGRESS_KEY,emptyProgress,readProgress,playChapter,completeChapter,writeProgress}
+import {PROGRESS_KEY,emptyProgress,readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage}
   from '../src/progress.js';
 
 const chapters=['first-forest','crystal-coast','starfall-summit',
@@ -38,4 +38,21 @@ test('saved progress only restores valid chapter ids and nonnegative shard count
   assert.equal(progress.lastPlayed,'first-forest');
   disk.value=JSON.stringify({version:123,completed:['first-forest']});
   assert.deepEqual(readProgress(disk,chapters),emptyProgress(chapters));
+});
+
+test('standalone file URL has working progress without localStorage access',()=>{
+  const storage=browserProgressStorage({location:{protocol:'file:'},
+    get localStorage(){throw Error('Firefox file origin denied storage');}});
+  const played=completeChapter(emptyProgress(chapters),'first-forest',2);
+  writeProgress(storage,played);
+  assert.deepEqual(readProgress(storage,chapters).completed,['first-forest']);
+});
+
+test('hosted page preserves normal persistent browser storage',()=>{
+  const persistent=storage();
+  const selected=browserProgressStorage({
+    location:{protocol:'https:'},localStorage:persistent});
+  assert.equal(selected,persistent);
+  writeProgress(selected,emptyProgress(chapters));
+  assert.ok(persistent.value);
 });
