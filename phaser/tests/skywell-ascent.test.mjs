@@ -87,6 +87,7 @@ test('a wall blocks walking through it but enables a second jump to climb',()=>{
   assert.ok(p.x<=wall.x*16-12,'wall cannot be walked through');
   const jump=stepPlayerMotion(p,{...move,jump:true,jumpPressed:true},1,world);
   assert.ok(jump.events.includes('wallJump'));
+  assert.equal(p.wallJumps,1);
   assert.ok(p.vy<0,'wall jump launches upward');
   assert.ok(p.vx<0,'wall jump rebounds away from obstacle');
   const repeat=stepPlayerMotion(p,{...move,jumpPressed:true},1,world);
