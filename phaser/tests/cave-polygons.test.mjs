@@ -41,7 +41,7 @@ test('Skywell vaulted candidate is physics-authored, not illustrative scenery',(
   const study=compileCave(vaultLayout);
   assert.equal(old.rockPolygons.length,0);
   assert.equal(study.rockPolygons.length,3);
-  for(const [x,y] of [[55,34],[112,35],[124,43],[175,33]]){
+  for(const [x,y] of [[55,34],[112,35],[124,35],[175,33]]){
     assert.equal(old.materialAt(x*16,y*16),'air');
     assert.equal(study.materialAt(x*16,y*16),'rock');
     assert.equal(study.grid[y][x],'ground');
