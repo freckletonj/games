@@ -416,3 +416,48 @@ art. The original generated source is retained in
 procedural SVG reference export to `dist/cave-guides/skywell-ascent/`.
 Use **V** to overlay the actual physical materials, including solid walls. See
 [CAVE-ART-PIPELINE.md](CAVE-ART-PIPELINE.md) for the new workflow.
+
+## Play the real Skywell chapter in Firefox (not the art inspector)
+
+The downloadable `skywell-painted-alignment-review*.html` files are **static
+art/physics inspectors**; they never contained the game runtime. To play
+the actual game, from the repository root:
+
+```sh
+npm install --prefix phaser
+npm run build --prefix phaser
+```
+
+Open `dist/wonderwood-phaser.html#skywell-ascent` in Firefox. It is a
+self-contained HTML file: the Phaser runtime, sprites, static world image and
+gameplay code are bundled directly into it. The chapter is preselected by
+the URL fragment; choose **Begin adventure** to start. Use **E** to select
+star treats, **F** twice to befriend the starting Glimmermoth, **G** to
+catch, **T** to transform, **D** to run and **W/Space** to jump; tap Jump
+again against the glowing walls to climb. **V** overlays physics.
+
+Downloaded `file://` previews intentionally use in-memory campaign progress
+because Firefox can deny localStorage on opaque local-file origins. Saves
+persist when the same build is hosted over HTTP(S).
+
+To package a new uniquely named playable HTML **after local verification**
+(no GitHub Actions), use:
+
+```sh
+python -m pip install playwright
+python -m playwright install chromium
+bash phaser/scripts/package-preview.sh focused
+```
+
+To additionally test Firefox against the **real downloaded-file origin**,
+install its Playwright browser and enable the optional check:
+
+```sh
+python -m playwright install firefox
+PLAYWRIGHT_FIREFOX=1 bash phaser/scripts/verify-cave-local.sh focused
+```
+
+The startup page explicitly displays loading status and any uncaught game
+error rather than leaving a blank canvas. This Firefox test is a local,
+opt-in requirement; it has not been executed in the connected GitHub
+environment.
