@@ -141,3 +141,20 @@ model-generated painting or dynamic actor is embedded in the SVG.
 The eventual model-generated replacement path is reserved as
 `phaser/assets/generated/skywell-ascent.png` in the export manifest, but
 **that file has not been produced or approved**.
+
+## Skywell full-resolution physics-grounded painting (Chapter 7)
+
+The runtime now embeds `phaser/assets/generated/skywell-ascent.webp` as
+one **3520 × 2048** static image. An image model generated the original
+**1644 × 957** scenery at its available native resolution. The painting was
+then resampled to authored world size and composed through the exact
+`skywellLayout` floor, ceiling, water, shelf and climb-wall masks, to
+prevent attractive but invented AI-painted terrain from becoming fake
+collision geometry. The resulting WebP is approximately 500 KB. The
+procedural `skywell-painting.js` survives as a separate static authoring
+reference, **not** the production background.
+
+The source image was generated as static-only scenery; no character,
+collectible or HUD was intentionally included. The authored physics remains
+the sole collision authority. Regeneration instructions are in
+`CAVE-ART-PIPELINE.md` and `scripts/compose-painted-cave.py`.
