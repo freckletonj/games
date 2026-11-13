@@ -461,3 +461,22 @@ The startup page explicitly displays loading status and any uncaught game
 error rather than leaving a blank canvas. This Firefox test is a local,
 opt-in requirement; it has not been executed in the connected GitHub
 environment.
+
+## Coherent static painting and exact-geometry RGBA masks
+
+The new [static art contract](STATIC-ART-CONTRACT.md) describes the intended
+pipeline: compile gameplay geometry, export **one complete color-filled scene**
+and full-resolution solid/water alpha masks, generate one globally coherent
+painting conditioned on that scene, refine to true world resolution, then
+extract transparent layers without repainting isolated geometric wedges.
+Run `node phaser/scripts/export-cave-guides.mjs` to produce
+`world-static-solid.png` and `world-static-water.png`; use
+`phaser/scripts/extract-painted-layers.py` for an **approved native-size
+scene**, not the old stretched prototype. The existing runtime painting is
+still legacy art until a better scene is generated and approved.
+
+To move exact repository contents to an offline build container that cannot
+clone GitHub, run `bash phaser/scripts/package-source-snapshot.sh` in a
+checked-out repository and upload its checksummed `dist/games-source-*.zip`.
+The Git tree remains authoritative; snapshots are **not** committed on
+every edit.
