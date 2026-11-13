@@ -41,10 +41,11 @@ export function caveArtManifest(level){
     schema:'wonderwood-single-image-cave-v1',
     world:{width:level.width*TILE,height:level.height*TILE},
     guide:'world-physical-rock.png',
-    painting:skywell?'phaser/assets/generated/skywell-ascent.png':
+    painting:skywell?'phaser/assets/generated/skywell-ascent.webp':
       'phaser/assets/generated/luminous-grotto-single.png',
-    paintingStatus:skywell?'awaiting-model-generation':'approved-prototype',
+    paintingStatus:skywell?'physics-masked-model-painting':'approved-prototype',
     illustratedPreview:skywell?'world-painted-reference.svg':null,
+    modelSource:skywell?'1644x957 image-model painting, enlarged to authored world and masked by physics':null,
     wallMaterial:'#ff9d63',
     imageGeneration:{
       resolution:'maximum available native pixels at the matching aspect ratio',
