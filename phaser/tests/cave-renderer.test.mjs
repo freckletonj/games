@@ -48,16 +48,11 @@ test('the cave renderer uses exactly one un-tiled full-level texture',()=>{
   assert.equal(scene.graphics.length,1);
 });
 
-test('Skywell uses exactly one level-sized, geometry-linked illustration',()=>{
+test('Skywell never falls back to rejected opaque artwork',()=>{
   const scene=makeScene();
   scene.level=compileCave(skywellLayout);
-  paintCave(scene);
-  paintCaveGeometryOverlay(scene);
-  assert.equal(scene.images.length,1);
-  assert.equal(scene.images[0].key,'skywell-painted-rock');
-  assert.deepEqual([scene.images[0].displayWidth,
-    scene.images[0].displayHeight],[3520,2048]);
-  assert.equal(scene.caveGeometryOverlay.visible,false);
+  assert.throws(()=>paintCave(scene),/No approved painted layers/);
+  assert.equal(scene.images.length,0);
 });
 
 test('approved painted solids are one world-locked alpha plane, not vector objects',()=>{
