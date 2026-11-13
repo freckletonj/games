@@ -24,7 +24,7 @@ export function caveMaskSvg(level){
     '" width="24" height="'+(p.bottom-p.top)*TILE+'"/>').join('');
   return '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+
     '" height="'+h+'" viewBox="0 0 '+w+' '+h+'">'+
-    '<title>Luminous Grotto static world guide</title>'+
+    '<title>'+level.cave.layout.id+' static world guide</title>'+
     '<desc>Smooth cave silhouette and water; no characters, enemies, items or HUD</desc>'+
     '<rect width="'+w+'" height="'+h+'" fill="#183147"/>'+
     '<g fill="#2388af">'+water+'</g>'+
