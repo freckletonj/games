@@ -36,5 +36,5 @@ test('Skywell ships the model-painted full-world WebP as a real embedded asset',
   assert.equal(source.readUInt16LE(28)&0x3fff,957);
   const manifest=caveArtManifest(compileCave(skywellLayout));
   assert.equal(manifest.painting,'phaser/assets/generated/skywell-ascent.webp');
-  assert.equal(manifest.paintingStatus,'physics-masked-model-painting');
+  assert.equal(manifest.paintingStatus,'legacy-physics-masked-draft');
 });
