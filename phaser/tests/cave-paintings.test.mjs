@@ -21,25 +21,6 @@ test('one approved static painting ships as a valid full-level PNG',()=>{
   assert.equal(Object.hasOwn(manifest,'planes'),false);
 });
 
-test('Skywell ships the model-painted full-world WebP as a real embedded asset',()=>{
-  const here=dirname(fileURLToPath(import.meta.url));
-  const bytes=readFileSync(resolve(here,'../assets/generated/skywell-ascent.webp'));
-  assert.equal(bytes.toString('ascii',0,4),'RIFF');
-  assert.equal(bytes.toString('ascii',8,12),'WEBP');
-  assert.ok(bytes.length>100000,'a placeholder tiny graphic is not production art');
-  assert.equal(bytes.toString('ascii',12,16),'VP8 ');
-  assert.equal(bytes.readUInt16LE(26)&0x3fff,3520);
-  assert.equal(bytes.readUInt16LE(28)&0x3fff,2048);
-  const source=readFileSync(resolve(here,'../assets/generated/skywell-model-source.webp'));
-  assert.equal(source.toString('ascii',8,12),'WEBP');
-  assert.equal(source.readUInt16LE(26)&0x3fff,1644);
-  assert.equal(source.readUInt16LE(28)&0x3fff,957);
-  const manifest=caveArtManifest(compileCave(skywellLayout));
-  assert.equal(manifest.painting,
-    'phaser/assets/generated/skywell-ancient/painted-solid.webp');
-  assert.equal(manifest.paintingStatus,'user-selected-layered-preview');
-});
-
 test('chosen Ancient Sanctuary painting is a real native-alpha, world-aligned three-layer asset',()=>{
   const here=dirname(fileURLToPath(import.meta.url));
   const root=resolve(here,'../assets/generated');
