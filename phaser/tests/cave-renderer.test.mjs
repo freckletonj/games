@@ -40,7 +40,7 @@ test('the cave renderer uses exactly one un-tiled full-level texture',()=>{
   assert.deepEqual([
     scene.images[0].displayWidth,scene.images[0].displayHeight
   ],[3200,1792]);
-  assert.equal(scene.cavePaintedChunks.length,1);
+  assert.equal(Object.hasOwn(scene,'cavePaintedChunks'),false);
   assert.equal(scene.caveGeometryOverlay.visible,false);
   assert.equal(scene.graphics.length,1);
 });
