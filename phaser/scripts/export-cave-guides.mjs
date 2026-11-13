@@ -47,7 +47,8 @@ await writeFile(new URL('manifest.json',vaultOutput),
 // These crops are IMAGE AUTHORING references, never run-time game tiles.
 // Every crop is sampled at its real full-world pixel coordinates and overlaps
 // neighbors. Give the model the complete guide first for global consistency.
-const xs=[[0,80],[70,150],[140,220]],ys=[[0,72],[56,128]];
+// 1536×896 native-pixel crop targets, under the known 1644×957 source cap.
+const xs=[[0,96],[62,158],[124,220]],ys=[[0,56],[36,92],[72,128]];
 const patches=[];
 const cropOutput=new URL('refinement/',vaultOutput);
 await mkdir(cropOutput,{recursive:true});
@@ -64,7 +65,7 @@ await writeFile(new URL('plan.json',cropOutput),JSON.stringify({
   globalGuide:'../world-physical-rock.png',
   source:'One approved global composition conditioned on the full guide',
   cropPolicy:'Refine overlapping native-resolution patches, never upscale the global source',
-  overlap:{horizontal:160,vertical:256},
+  overlap:{horizontal:544,vertical:320},
   patches
 },null,2)+'\n');
 console.log('Exported organic Skywell vault authoring study, full-scene RGBA masks, '+
