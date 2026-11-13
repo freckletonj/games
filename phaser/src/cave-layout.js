@@ -79,7 +79,7 @@ export const skywellLayout={
   ],
   objects:[
     {kind:'p1',x:7},{kind:'p2',x:9},
-    {kind:'glimmermoth',x:15,y:103},
+    {kind:'glimmermoth',x:15,y:107},
     {kind:'tideling',x:23},{kind:'prismtail',x:76},
     {kind:'springaroo',x:127},{kind:'skyling',x:104,y:59},
     {kind:'checkpoint',x:8},{kind:'checkpoint',x:114},
@@ -161,7 +161,8 @@ export function compileCave(layout=caveLayout){
   return {
     width,height,biome:'coast',surface,ceiling:roof,waterBodies,grid,
     platformSegments:shelves.map(p=>({...p,kind:'platform',style:'ledge'})),
-    climbWalls:walls.map(w=>({...w})),
+    climbWalls:walls.map(w=>({...w,
+      bottom:Math.min(w.bottom,contourY(floor,w.x))})),
     thermalVolumes:[],setpieces:[],vistas:[],dressing:[],landmarks:[],
     sections:[],goalRoute:[],objects:objects.map(o=>({
       ...o,y:o.y??Math.ceil(contourY(floor,o.x))-1
