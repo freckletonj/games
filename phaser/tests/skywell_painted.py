@@ -40,6 +40,56 @@ def main():
         },art
         assert state["parallaxLayers"]==0,state
         assert state["players"][0]["grounded"],state
+        # Real gameplay: choose stars (two E presses), feed the nearby
+        # Glimmermoth twice, catch it with G and transform with T.
+        # Poll fixed-tick state rather than relying on animation-frame timing.
+        page.keyboard.down("e")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().players[0].food === 'nectar'",
+            timeout=30000)
+        page.keyboard.up("e")
+        released=page.evaluate(
+            "window.__wonderwoodPhaser.snapshot().simulationSeconds")
+        page.wait_for_function(
+            "(s) => window.__wonderwoodPhaser.snapshot().simulationSeconds > s",
+            arg=released+.05,timeout=30000)
+        page.keyboard.down("e")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().players[0].food === 'star'",
+            timeout=30000)
+        page.keyboard.up("e")
+        page.wait_for_function(
+            "(s) => window.__wonderwoodPhaser.snapshot().simulationSeconds > s",
+            arg=page.evaluate(
+                "window.__wonderwoodPhaser.snapshot().simulationSeconds")+.05,
+            timeout=30000)
+
+        for trust in (60,100):
+            page.keyboard.down("f")
+            page.wait_for_function(
+                "window.__wonderwoodPhaser.snapshot().lures.length > 0",
+                timeout=30000)
+            page.keyboard.up("f")
+            page.wait_for_function(
+                "(t) => window.__wonderwoodPhaser.snapshot().animals"
+                ".some(a => a.kind === 'glimmermoth' && a.trust >= t)",
+                arg=trust,timeout=90000)
+            page.wait_for_function(
+                "(s) => window.__wonderwoodPhaser.snapshot().simulationSeconds > s",
+                arg=page.evaluate(
+                    "window.__wonderwoodPhaser.snapshot().simulationSeconds")+.05,
+                timeout=30000)
+        page.keyboard.down("g")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().players[0].caught === 'glimmermoth'",
+            timeout=90000)
+        page.keyboard.up("g")
+        page.keyboard.down("t")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().players[0].form === 'glimmermoth'",
+            timeout=30000)
+        page.keyboard.up("t")
+
         page.screenshot(path=str(ROOT/"dist"/"phaser-skywell-painted.png"))
         page.keyboard.press("v")
         assert page.evaluate(
