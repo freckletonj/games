@@ -29,7 +29,7 @@ node phaser/scripts/export-cave-guides.mjs
 For the active Skywell, this writes under `dist/cave-guides/skywell-ascent/`.
 The separate **vaulted geometry study** exports under
 `dist/cave-guides/skywell-vault-study/` with additional physically solid
-polygons, six overlapping art-refinement guides and a plan.json:
+polygons, nine overlapping art-refinement guides and a plan.json:
 
 - `world-physical-rock.png`: **the one complete static geometry reference**
   for global image conditioning, at native 3520 × 2048 world pixels.
