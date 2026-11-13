@@ -1,5 +1,6 @@
 import {mkdir,writeFile} from 'node:fs/promises';
-import {compileCave} from '../src/cave-layout.js';
+import {compileCave,skywellLayout} from '../src/cave-layout.js';
+import {skywellPaintingSvg} from '../src/skywell-painting.js';
 import {caveArtManifest,caveMaskSvg} from '../src/cave-art-guide.js';
 import {caveGuidePng} from './cave-png.mjs';
 
@@ -12,3 +13,17 @@ await writeFile(new URL('manifest.json',output),
   JSON.stringify(caveArtManifest(level),null,2)+'\n');
 console.log('Exported one '+level.width*16+' x '+level.height*16+
   ' static cave guide, sourced from gameplay geometry.');
+
+const skywell=compileCave(skywellLayout);
+const skywellOutput=new URL('skywell-ascent/',output);
+await mkdir(skywellOutput,{recursive:true});
+await writeFile(new URL('world-physical-rock.png',skywellOutput),
+  caveGuidePng(skywell));
+await writeFile(new URL('world-physical-rock.svg',skywellOutput),
+  caveMaskSvg(skywell));
+await writeFile(new URL('world-painted-reference.svg',skywellOutput),
+  skywellPaintingSvg(skywell));
+await writeFile(new URL('manifest.json',skywellOutput),
+  JSON.stringify(caveArtManifest(skywell),null,2)+'\n');
+console.log('Exported Skywell Ascent '+skywell.width*16+' x '+
+  skywell.height*16+' color-filled guide and resolution-independent painted reference.');
