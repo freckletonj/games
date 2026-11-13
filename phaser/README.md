@@ -415,7 +415,8 @@ from exactly the compiled gameplay materials—not separately drawn vector
 ledges or wedges. The 1644 × 957 source is retained at
 `assets/generated/skywell-ancient/skywell-ancient-source.webp`; resampling
 to world pixels is explicit and does not constitute native-resolution detail.
-The old `skywell-ascent.webp` is a legacy draft only.
+The obsolete opaque Skywell prototype was removed from the source tree;
+the selected layered painting is the only Skywell artwork loaded.
 The complete material guide and alpha masks export to
 `dist/cave-guides/skywell-ascent/`.
 The separate vaulted authoring study now supports real polygon rock collision
