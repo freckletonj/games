@@ -5,7 +5,6 @@ export function paintCave(scene){
   const painting=scene.add.image(0,0,'cave-painted-rock')
     .setOrigin(0).setDisplaySize(width,height).setDepth(-29);
   scene.cavePainting=painting;
-  scene.cavePaintedChunks=[{x:0,width,visual:painting}];
 }
 
 export function paintCaveGeometryOverlay(scene){
