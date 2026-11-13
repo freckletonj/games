@@ -19,6 +19,9 @@ export function caveMaskSvg(level){
   const shelves=level.platformSegments.map(p=>
     '<rect x="'+p.x*TILE+'" y="'+p.y*TILE+
     '" width="'+p.length*TILE+'" height="5"/>').join('');
+  const walls=(level.climbWalls||[]).map(p=>
+    '<rect x="'+(p.x*TILE-12)+'" y="'+p.top*TILE+
+    '" width="24" height="'+(p.bottom-p.top)*TILE+'"/>').join('');
   return '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+
     '" height="'+h+'" viewBox="0 0 '+w+' '+h+'">'+
     '<title>Luminous Grotto static world guide</title>'+
@@ -28,21 +31,34 @@ export function caveMaskSvg(level){
     '<g fill="#645468"><polygon points="0,0 '+w+',0 '+
     pathAlong(level,level.cave.ceilingAt,true)+'"/>'+
     '<polygon points="'+bed+' '+w+','+h+' 0,'+h+'"/></g>'+
-    '<g fill="#f3cc76">'+shelves+'</g></svg>';
+    '<g fill="#f3cc76">'+shelves+'</g>'+ 
+    '<g fill="#ff9d63">'+walls+'</g></svg>';
 }
 
 export function caveArtManifest(level){
+  const skywell=level.cave.layout.id==='skywell-ascent';
   return {
     schema:'wonderwood-single-image-cave-v1',
     world:{width:level.width*TILE,height:level.height*TILE},
     guide:'world-physical-rock.png',
-    painting:'phaser/assets/generated/luminous-grotto-single.png',
+    painting:skywell?'phaser/assets/generated/skywell-ascent.png':
+      'phaser/assets/generated/luminous-grotto-single.png',
+    paintingStatus:skywell?'awaiting-model-generation':'approved-prototype',
+    illustratedPreview:skywell?'world-painted-reference.svg':null,
+    wallMaterial:'#ff9d63',
+    imageGeneration:{
+      resolution:'maximum available native pixels at the matching aspect ratio',
+      alignment:'no crops, stretching or hallucinated collision surfaces',
+      staticOnly:true
+    },
     referenceAspectRatio:level.width/level.height,
     recommendedPainting:{
       width:level.width*TILE,height:level.height*TILE
     },
     dynamicExcluded:true,
     geometrySource:'phaser/src/cave-layout.js',
-    prompt:'Hand-painted 2D side-view magical water cavern. Follow the supplied smooth rock silhouettes, pool boundaries and ledges. Detailed mossy limestone, luminous crystals, sunlit openings and waterfalls. Static scenery only; no characters, animals, collectible objects, text or UI.'
+    prompt:skywell?
+      'Paint one exquisite, high-resolution 2D side-view vertical moonlit skywell cavern. The color-filled reference is authoritative: rock is solid, blue is navigable air, cyan is filled water, amber is a climbable physical wall and gold indicates landing shelves. Preserve every boundary and especially all wall-jump shafts. Detailed crystalline limestone, bioluminescence and atmospheric shafts of light. Static background only; NO characters, creatures, items, key, gate, UI, writing or invented platforms. Use the maximum available output resolution.':
+      'Hand-painted 2D side-view magical water cavern. Follow the supplied smooth rock silhouettes, filled pools and ledges precisely. Detailed mossy limestone, luminous crystals, sunlit openings and waterfalls. Static scenery only; no characters, animals, collectible objects, text or UI. Use maximum native resolution.'
   };
 }
