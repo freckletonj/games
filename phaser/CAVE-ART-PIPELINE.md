@@ -2,9 +2,8 @@
 
 Luminous Grotto (Chapter 6) and Skywell Ascent (Chapter 7) each have
 **one code-defined world, one fully colored material guide, and one full-level
-illustration**. The Luminous painting is model-generated; Skywell currently
-uses a deterministic geometry-derived SVG reference illustration while its
-final image-model painting is pending. It deliberately has
+illustration**. The Luminous painting is model-generated; Skywell uses a fully integrated, geometry-masked, image-model-generated
+painting. A deterministic SVG remains only as the exportable art reference. It deliberately has
 no tiles, chunk stitching, or parallax planes. Phaser's normal player,
 creature, collectible, and transformation systems remain separate.
 
@@ -161,12 +160,10 @@ The collectible is placed above the high route, with a checkpoint on the
 lower route. **These placements are prototypes; a full player-input
 completion route has not yet been proven.**
 
-The runtime currently paints the entire Skywell from one geometry-derived
-SVG through `skywellPaintingSvg`. This is an illustrative **procedural
-reference**, not a diffusion-model-produced image and not a promise of
-final visual quality. Its 3520 × 2048 intrinsic resolution is native
-world size and its vector shapes can be rendered sharply at higher size
-for image-model guidance. It shares roof, floor, filled water,
+The runtime now paints Skywell from the 3520 × 2048, full-world,
+model-generated, geometry-masked WebP. The exported SVG illustration from
+`skywellPaintingSvg` remains a separate authoring reference and is not
+runtime art. It shares roof, floor, filled water,
 shelf and wall boundaries with the gameplay code.
 
 To replace it with a **real AI-generated painting**:
@@ -179,9 +176,9 @@ To replace it with a **real AI-generated painting**:
    objects, key, exit or UI. If artwork clashes with collision, change
    the code and re-export instead of altering physics to match pixels.
 4. Save the approved result to
-   `phaser/assets/generated/skywell-ascent.png`, import it as a data URL
-   in `game.js` and replace the `skywell-painted-rock` SVG preload URL.
-   Keep the single full-level image and the current `paintCave` logic.
+   `phaser/assets/generated/skywell-ascent.webp` using the compositor below.
+   The game already imports this exact file; rebuild to embed it in the
+   standalone HTML. Keep the single full-level image and `paintCave` logic.
 5. Run `bash phaser/scripts/verify-cave-local.sh full` and play the new
    HTML through the high route with **V** enabled. Do not merge based
    only on PNG/SVG tests or a screenshot.
@@ -190,3 +187,31 @@ This iteration intentionally keeps the single-image renderer. Per-layer
 parallax, tiled diffusion refinement and arbitrary stacked tunnel polygons
 would require additional explicit physics and image-layer contracts; they
 have not been implemented or implied by the illustration.
+
+## Integrated Skywell model-generated painting (current PR head)
+
+The production runtime now embeds **one 3520 × 2048 WebP**, at
+`phaser/assets/generated/skywell-ascent.webp`, rather than loading the
+procedural SVG reference. This was produced from an image-model source
+(**1644 × 957 native pixels**, the maximum returned by the generator)
+with the independent geometry-alignment compositor in
+`phaser/scripts/compose-painted-cave.py`. The native source is not falsely
+claimed to have been generated at 3520 × 2048; the compositor outputs a
+full-size 3520 × 2048 bitmap, with the model's texture preserved and actual
+solid rock, air, water, ledge and climbing-wall materials enforced from code.
+
+Use `python -m pip install pillow numpy` if these optional authoring
+dependencies are absent, then from the repository root run:
+
+```sh
+python phaser/scripts/compose-painted-cave.py path/to/max-resolution-static-source.png
+node phaser/scripts/export-cave-guides.mjs
+npm run build --prefix phaser
+bash phaser/scripts/verify-cave-local.sh full
+```
+
+The generated artwork must contain no player, creatures, collectibles, gate,
+text or UI. Do not treat image-model platforms as collision: this compositor
+relegates unapproved shapes to a blurred distant backdrop and explicitly
+highlights only physically registered ledges and wall faces. The full-
+resolution static painting is the only runtime Skywell scenery texture.
