@@ -67,9 +67,10 @@ export const skywellLayout={
     // Short intermediate perches make the upper route more than decoration.
     {x:91,y:64,length:10},{x:96,y:63,length:9},
     {x:110,y:61,length:14},{x:122,y:65,length:11},
-    {x:134,y:58,length:13},{x:151,y:54,length:13},
+    {x:134,y:58,length:13},{x:141,y:58,length:12},
+    {x:151,y:54,length:13},
     {x:161,y:55,length:10},{x:170,y:51,length:12},
-    {x:176,y:50,length:12},
+    {x:176,y:50,length:14},{x:180,y:54,length:11},
     // Optional upper loop: transform to Moonwing to explore the vaulted sky.
     {x:108,y:50,length:13},{x:127,y:41,length:14},
     {x:151,y:34,length:16},{x:179,y:31,length:13}
