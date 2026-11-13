@@ -67,3 +67,31 @@ test('Skywell vaulted candidate is physics-authored, not illustrative scenery',(
       'the player body must never enter painted solid rock');
   }
 });
+
+test('Skyling reaches the high vaulted shelf while the ordinary player cannot',()=>{
+  const level=compileCave(vaultLayout);
+  const world={width:level.width*16,height:level.height*16,tile:16,
+    groundAt:level.cave.groundAt,ceilingAt:level.cave.ceilingAt,
+    inWater:(x,y)=>caveContainsWater(level,x,y),
+    waterBodies:level.waterBodies,thermalVolumes:[],
+    platformSegments:level.platformSegments,
+    climbWalls:level.climbWalls,rockPolygons:level.rockPolygons};
+  const attempts=form=>{
+    const p={id:0,x:118*16,y:50*16,vx:0,vy:0,face:1,
+      grounded:true,coyote:5,jumpBuffer:0,jumps:0,flaps:0,
+      flapWait:0,powers:0,hover:0,breach:0,bloomWindow:0,
+      creatureBounceWindow:0,form};
+    for(let tick=0;tick<140;tick++){
+      // Exactly the same D + W presses for both characters.
+      const jumpPressed=tick===0||[18,32,46,60].includes(tick);
+      stepPlayerMotion(p,{left:false,right:true,down:false,
+        jump:true,jumpPressed},1,world);
+      if(p.x>=127*16&&p.x<=141*16&&p.y<=41*16+6)return true;
+    }
+    return false;
+  };
+  assert.equal(attempts(null),false,
+    'the ordinary explorer cannot clear this optional upper shelf');
+  assert.equal(attempts('skyling'),true,
+    'the transformed Skyling can use earned flaps to reach it');
+});
