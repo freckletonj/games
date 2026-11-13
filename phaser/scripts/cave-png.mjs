@@ -36,21 +36,23 @@ const color={
 };
 
 export function caveGuidePng(level,{
-  from=0,to=level.width,layer='physical-rock',scale=1
+  from=0,to=level.width,top=0,bottom=level.height,
+  layer='physical-rock',scale=1
 }={}){
   if(!['physical-rock','static-solid','static-water'].includes(layer)||
      from<0||to>level.width||from>=to||
+     top<0||bottom>level.height||top>=bottom||
      !Number.isInteger(scale)||scale<1||scale>3)
     throw Error('Invalid cave guide raster dimensions or layer');
-  const worldX=from*16;
-  const width=(to-from)*16*scale,height=level.height*16*scale;
+  const worldX=from*16,worldY=top*16;
+  const width=(to-from)*16*scale,height=(bottom-top)*16*scale;
   const rows=Buffer.alloc((width*4+1)*height);
   const columns=Array.from({length:width},(_,x)=>
     level.materialColumn(worldX+(x+.5)/scale));
   for(let y=0;y<height;y++){
     const offset=y*(width*4+1);
     rows[offset]=0; // PNG filter: None
-    const absoluteY=(y+.5)/scale;
+    const absoluteY=worldY+(y+.5)/scale;
     for(let x=0;x<width;x++){
       const material=columns[x](absoluteY);
       const paint=layer==='physical-rock'?color[material]:
