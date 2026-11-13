@@ -1,7 +1,10 @@
-# Single-image level authoring: Luminous Grotto
+# Code-authored single-image caves: Luminous Grotto and Skywell Ascent
 
-Luminous Grotto is a sixth chapter built from **one code-defined world, one
-static guide image, and one complete painted background**. It deliberately has
+Luminous Grotto (Chapter 6) and Skywell Ascent (Chapter 7) each have
+**one code-defined world, one fully colored material guide, and one full-level
+illustration**. The Luminous painting is model-generated; Skywell currently
+uses a deterministic geometry-derived SVG reference illustration while its
+final image-model painting is pending. It deliberately has
 no tiles, chunk stitching, or parallax planes. Phaser's normal player,
 creature, collectible, and transformation systems remain separate.
 
@@ -33,18 +36,27 @@ bash phaser/scripts/verify-cave-local.sh
 bash phaser/scripts/verify-cave-local.sh full
 ```
 
-`export-cave-guides.mjs` writes exactly three files to `dist/cave-guides/`:
+`export-cave-guides.mjs` writes three Luminous files to `dist/cave-guides/`:
 `world-physical-rock.png` (the 3200 × 1792 static guide),
 `world-physical-rock.svg` (editable vector representation), and
 `manifest.json` (dimensions, painting path, suggested prompt).
-The local verifier tests the code, exports the guide, bundles one offline
+The same exporter also writes
+`dist/cave-guides/skywell-ascent/world-physical-rock.png`,
+`world-physical-rock.svg`, `world-painted-reference.svg` and
+`manifest.json`. The separate skywell manifest requests **the highest native
+resolution available from the image model** and lists exact static-only
+geometry constraints. The local verifier tests the code, exports the guides,
+bundles one offline
 `dist/wonderwood-phaser.html`, runs Chromium checks using the existing
 inline-browser adapter, and creates a uniquely named
 `dist/wonderwood-cave-preview-*.html` for review. GitHub Actions remains
 intentionally disabled.
 
-Select **Luminous Grotto** (Chapter 6) in the HTML. Press **V** to overlay the
-physical floor, roof, waterlines and platforms. **G** remains creature capture.
+Select **Luminous Grotto** (Chapter 6) or **Skywell Ascent** (Chapter 7)
+in the HTML. The Grotto camera now uses 1.25× zoom and Skywell uses 1.4×,
+instead of the old 0.82× Grotto framing. Press **V** to inspect
+the material-filled physical floor, roof, basins, platforms and climbable
+wall faces over the illustration. **G** remains creature capture.
 
 ## Make or regenerate the next painting
 
@@ -60,13 +72,16 @@ physical floor, roof, waterlines and platforms. **G** remains creature capture.
    The `objects` array places players, creatures, keys, pickups, checkpoints
    and exits; these are *dynamic game entities*, not background pixels.
 3. **Export the guide.** Run `node phaser/scripts/export-cave-guides.mjs`.
-   The guide uses dark blue for navigable air, purple for physical rock,
-   cyan for water, and amber for one-way ledges. Check the **entire**
+   The guides use dark blue for navigable air, purple for physical rock,
+   cyan for **fully filled water**, gold for one-way ledges, and orange for
+   **solid climbable wall faces**. Both the PNG and SVG come from the same
+   compiled physics geometry, with rock covering water below each floor. Check the **entire**
    guide for visually unexpected floors or blocked pools before painting.
 4. **Generate a single complete image.** Give the PNG guide and the
-   `manifest.json` prompt to an image model. Ask for the highest practical
-   resolution at the exact **3200:1792 aspect ratio**, or as close as the
-   model supports. Keep every traversable rock edge, platform and waterline
+   `manifest.json` prompt to an image model. Ask for the model's **maximum native output resolution** at the
+   exact aspect ratio of the selected level (Grotto **3200:1792**;
+   Skywell **3520:2048**), or the closest available ratio. Do not substitute
+   a low-resolution image and simply upscale it. Keep every traversable rock edge, platform and waterline
    in the same location. No tiling, crops or separate visual planes.
 5. **Keep dynamic objects out.** Do not generate the player, creatures,
    pickups, goal, signs, HUD or moving effects into the painting.
@@ -99,12 +114,12 @@ scaling and improves geometry alignment.
 ## Adding another code-authored chapter
 
 This is presently a working **single chapter example**, not a generic
-automatic image-to-chapter system. A second level needs a new layout,
-chapter metadata and painting, plus explicit registration/selection in
-`phaser/src/game.js` (as currently done for `grottoChapter`).
-The guide exporter currently calls `compileCave()` with the default
-Luminous Grotto layout; select the new layout explicitly when exporting
-its guide. Keeping the same layout→guide→painting contract is more important
+automatic image-to-chapter system. Skywell demonstrates the second authored chapter:
+`skywellLayout` in `cave-layout.js`, `skywell-chapter.js`,
+`skywell-painting.js`, and explicit chapter registration in `game.js`.
+The guide exporter compiles **both** level specs. For future levels,
+register a new spec, picture and chapter explicitly rather than inferring
+collision from paintings. Keeping the same layout→guide→painting contract is more important
 than building another generalized renderer.
 
 ## Known issue, intentionally deferred
@@ -133,3 +148,45 @@ merge #8 into #7 and later merge #7 to main, or first merge #7 to main,
 retarget/rebase #8 to main, then merge #8. Verify the resulting branch
 before the final main merge; do not assume merging #8 now lands it on main.
 The accepted water-art mismatch is documented and not a surprise blocker.
+
+## Skywell Ascent: climbable walls and image-model handoff
+
+Skywell is a 220 × 128-cell / **3520 × 2048 world-pixel** level. It has
+11 elevated physical shelves and 10 narrow, **solid** climbing walls.
+Running into a wall below its top blocks crossing. Jump beside it and tap
+jump again while airborne to rebound upward from the wall. The wall jump
+has an 11-tick cooldown and works for every form. Glimmermoth is near
+the dry starting area; its hover helps to reach the upper lantern.
+The collectible is placed above the high route, with a checkpoint on the
+lower route. **These placements are prototypes; a full player-input
+completion route has not yet been proven.**
+
+The runtime currently paints the entire Skywell from one geometry-derived
+SVG through `skywellPaintingSvg`. This is an illustrative **procedural
+reference**, not a diffusion-model-produced image and not a promise of
+final visual quality. Its 3520 × 2048 intrinsic resolution is native
+world size and its vector shapes can be rendered sharply at higher size
+for image-model guidance. It shares roof, floor, filled water,
+shelf and wall boundaries with the gameplay code.
+
+To replace it with a **real AI-generated painting**:
+
+1. Export the Skywell PNG/SVG materials and inspect the colored fills.
+2. Give the image model the Skywell PNG, optional SVG illustration and
+   `dist/cave-guides/skywell-ascent/manifest.json`. Select the model's
+   largest native resolution and the nearest 55:32 aspect ratio.
+3. Reject outputs moving any solid boundary or showing dynamic actors,
+   objects, key, exit or UI. If artwork clashes with collision, change
+   the code and re-export instead of altering physics to match pixels.
+4. Save the approved result to
+   `phaser/assets/generated/skywell-ascent.png`, import it as a data URL
+   in `game.js` and replace the `skywell-painted-rock` SVG preload URL.
+   Keep the single full-level image and the current `paintCave` logic.
+5. Run `bash phaser/scripts/verify-cave-local.sh full` and play the new
+   HTML through the high route with **V** enabled. Do not merge based
+   only on PNG/SVG tests or a screenshot.
+
+This iteration intentionally keeps the single-image renderer. Per-layer
+parallax, tiled diffusion refinement and arbitrary stacked tunnel polygons
+would require additional explicit physics and image-layer contracts; they
+have not been implemented or implied by the illustration.
