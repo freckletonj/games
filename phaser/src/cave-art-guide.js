@@ -62,7 +62,7 @@ export function caveArtManifest(level){
       'phaser/assets/generated/luminous-grotto-single.png',
     paintingStatus:study?'awaiting-coherent-high-resolution-art':
       skywell?'legacy-physics-masked-draft':'approved-prototype',
-    illustratedPreview:study?null:skywell?'world-painted-reference.svg':null,
+    illustratedPreview:null,
     modelSource:study?null:skywell?'1644x957 legacy draft, not native world resolution':null,
     wallMaterial:'#ff9d63',
     imageGeneration:{
