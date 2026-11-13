@@ -381,7 +381,7 @@ From a checkout with Node.js, npm, Python and Chromium available:
 
 ```sh
 npm install --prefix phaser
-python -m pip install playwright
+python -m pip install playwright Pillow
 python -m playwright install chromium
 bash phaser/scripts/verify-local.sh
 bash phaser/scripts/package-preview.sh
@@ -437,7 +437,7 @@ npm run build --prefix phaser
 ```
 
 Open `dist/wonderwood-phaser.html#skywell-ascent` in Firefox. It is a
-self-contained HTML file: the Phaser runtime, sprites, static world image and
+self-contained HTML file: the Phaser runtime, sprites, painted static layers and
 gameplay code are bundled directly into it. The chapter is preselected by
 the URL fragment; choose **Begin adventure** to start. Use **E** to select
 star treats, **F** twice to befriend the starting Glimmermoth, **G** to
