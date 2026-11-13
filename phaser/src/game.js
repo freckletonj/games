@@ -81,8 +81,10 @@ class Wonderwood extends Phaser.Scene {
     // Collision remains the independently compiled authored cave layout.
     this.load.image('skywell-painted-rock',skywellRockUrl);
     for(const [chapter,layers] of Object.entries(APPROVED_CAVE_ART))
-      for(const [material,url] of Object.entries(layers))
+      for(const [material,url] of Object.entries(layers)){
+        if(material==='backgroundScrollFactor')continue;
         this.load.image('cave-'+chapter+'-'+material,url);
+      }
   }
 
   create(){
