@@ -3,10 +3,30 @@ import {mkdir, writeFile, readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 
 const root = resolve(import.meta.dirname, '../..');
+// Only explicitly approved art layers are packaged. A missing file makes the
+// build fail instead of silently substituting low-resolution draft scenery.
+const approvedSpec=JSON.parse(await readFile(resolve(root,
+  'phaser/assets/generated/approved-cave-art.json'),'utf8'));
+const approvedCaveAssets={};
+for(const [id,layers] of Object.entries(approvedSpec)){
+  if(!layers.solid||!layers.water)
+    throw Error('Approved cave '+id+' requires solid and water RGBA paintings');
+  approvedCaveAssets[id]={};
+  for(const [name,path] of Object.entries(layers)){
+    if(!['solid','water','background'].includes(name)||
+       !/\\.(png|webp)$/.test(path))
+      throw Error('Invalid painted cave layer '+id+' '+name);
+    const media=path.endsWith('.png')?'image/png':'image/webp';
+    const bytes=await readFile(resolve(root,path));
+    approvedCaveAssets[id][name]='data:'+media+';base64,'+
+      bytes.toString('base64');
+  }
+}
 const result = await build({
   entryPoints:[resolve(root,'phaser/src/game.js')],
   bundle:true,
   write:false,
+  define:{__CAVE_ASSETS__:JSON.stringify(approvedCaveAssets)},
   minify:true,
   format:'iife',
   target:'es2022',
