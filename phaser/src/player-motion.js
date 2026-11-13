@@ -54,6 +54,7 @@ export function stepPlayerMotion(p,actions,step,world){
         p.vx=p.x<wallContact.x*world.tile?-3.3:3.3;
         p.grounded=false;p.jumpBuffer=0;p.jumps=1;
         p.wallJumpCooldown=11;
+        p.wallJumps=(p.wallJumps||0)+1;
         events.push('wallJump');
       }else if(tryBloomBoost(p,actions.jumpPressed)){
         events.push('bloomBoost');
