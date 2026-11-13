@@ -44,7 +44,7 @@ test('guides and full-size illustration agree on material and collision markers'
     assert.ok(!guide.includes(dynamic),'guide must exclude '+dynamic);
   }
   assert.deepEqual(manifest.world,{width:3520,height:2048});
-  assert.equal(manifest.paintingStatus,'physics-masked-model-painting');
+  assert.equal(manifest.paintingStatus,'legacy-physics-masked-draft');
   assert.equal(manifest.dynamicExcluded,true);
   assert.match(manifest.imageGeneration.resolution,/maximum/);
 });
