@@ -171,14 +171,67 @@ test('water and climbable rock never claim the same pixel',()=>{
   assert.deepEqual(at(wallX+15-from*16,1120),[35,136,175,255]);
 });
 
-test('the high lantern is within a standard jump of a real platform',()=>{
+test('the high lantern can be picked up from a real platform',()=>{
   const level=compileCave(skywellLayout);
   const goal=level.objects.find(o=>o.kind==='diveKey');
   const support=level.platformSegments.find(p=>
-    p.x<=goal.x&&goal.x<=p.x+p.length&&p.y>goal.y);
-  assert.ok(support,'lantern needs a physical landing shelf');
-  // Item interaction compares player feet with item.y-12 and permits 26px.
-  const climbNeeded=support.y*16-(goal.y+.5)*16+12-26;
-  assert.ok(climbNeeded>0&&climbNeeded<40,
-    'lantern should be a reachable single jump from its platform');
+    p.x<=goal.x&&goal.x<=p.x+p.length&&
+    Math.abs(p.y*16-((goal.y+.5)*16-12))<26);
+  assert.ok(support,'lantern must be reachable while standing on a high ledge');
+});
+
+test('one uninterrupted real-input traversal reaches lantern and exit',()=>{
+  const level=compileCave(skywellLayout);
+  const world={width:level.width*16,height:level.height*16,tile:16,
+    groundAt:level.cave.groundAt,ceilingAt:level.cave.ceilingAt,
+    inWater:(x,y)=>caveContainsWater(level,x,y),
+    waterBodies:level.waterBodies,thermalVolumes:[],
+    platformSegments:level.platformSegments,climbWalls:level.climbWalls};
+  const player={id:0,x:7.5*16,y:world.groundAt(7.5*16),vx:0,vy:0,
+    face:1,grounded:true,coyote:5,jumpBuffer:0,jumps:0,
+    flaps:0,flapWait:0,powers:0,hover:0,breach:0,
+    bloomWindow:0,creatureBounceWindow:0,form:'glimmermoth'};
+  const lantern=level.objects.find(o=>o.kind==='diveKey');
+  const exit=level.objects.find(o=>o.kind==='exit');
+  const lanternX=(lantern.x+.5)*16,lanternY=(lantern.y+.5)*16;
+  const exitX=(exit.x+.5)*16;
+  let currentWall=0,phase='approach',firstJump=-100;
+  let lanternFound=false,exitReached=false,wallJumps=0;
+  for(let frame=0;frame<2400;frame++){
+    // These are keyboard-style jump press, hold and release inputs.
+    // No position edits, time skips, or setting the grounded flag.
+    const wall=level.climbWalls[currentWall];
+    let jump=false,jumpPressed=false;
+    if(wall){
+      const distance=wall.x*16-player.x;
+      if(phase==='approach'&&distance<=28&&distance>=9&&
+         player.y>wall.top*16+3&&player.grounded){
+        jump=true;jumpPressed=true;phase='prepare';firstJump=frame;
+      }else if(phase==='prepare'){
+        jump=frame-firstJump!==6;
+        if(frame-firstJump===7){
+          jumpPressed=true;phase='cross';
+        }
+      }else if(phase==='cross'){
+        jump=true;
+        if(player.x>wall.x*16+25){
+          currentWall++;phase='approach';jump=false;
+        }
+      }
+    }
+    const state=stepPlayerMotion(player,{left:false,right:true,
+      down:false,jump,jumpPressed},1,world);
+    if(state.events.includes('wallJump'))wallJumps++;
+    if(!lanternFound&&Math.abs(player.x-lanternX)<19&&
+       Math.abs(player.y-(lanternY-12))<26)
+      lanternFound=true;
+    if(lanternFound&&Math.abs(player.x-exitX)<19&&
+       Math.abs(player.y-world.groundAt(exitX))<40){
+      exitReached=true;break;
+    }
+  }
+  assert.equal(currentWall,10,'continuous traversal must pass every wall');
+  assert.equal(wallJumps,10,'each wall needs its own deliberate second jump');
+  assert.equal(lanternFound,true,'actual collision proximity must reach lantern');
+  assert.equal(exitReached,true,'player must reach the actual exit after lantern');
 });
