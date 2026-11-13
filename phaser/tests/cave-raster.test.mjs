@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {inflateSync} from 'node:zlib';
-import {compileCave,skywellLayout} from '../src/cave-layout.js';
+import {compileCave,skywellLayout,vaultLayout} from '../src/cave-layout.js';
 import {caveGuidePng} from '../scripts/cave-png.mjs';
 
 function bitmap(bytes){
@@ -64,4 +64,37 @@ test('transparent layer raster is permitted only for explicit materials',()=>{
   const level=compileCave(skywellLayout);
   assert.throws(()=>caveGuidePng(level,{layer:'distant-arches'}),
     /Invalid cave guide/);
+});
+
+test('organic rock polygon is the same material in full/cropped guides and alpha masks',()=>{
+  const vault=compileCave(vaultLayout);
+  const opts={from:108,to:116,top:30,bottom:48};
+  const full=bitmap(caveGuidePng(vault,opts));
+  const solid=bitmap(caveGuidePng(vault,{...opts,layer:'static-solid'}));
+  const water=bitmap(caveGuidePng(vault,{...opts,layer:'static-water'}));
+  assert.deepEqual([full.w,full.h],[128,288]);
+  const x=(112-108)*16,y=(35-30)*16;
+  assert.deepEqual(full.at(x,y),[128,92,119,255]);
+  assert.deepEqual(solid.at(x,y),[128,92,119,255],
+    'polygon collision must be visible in the ONE physical painting mask');
+  assert.deepEqual(water.at(x,y),[0,0,0,0],
+    'no water can pass through solid overhanging rock');
+  const airX=(110-108)*16,airY=(43-30)*16;
+  assert.deepEqual(solid.at(airX,airY),[0,0,0,0]);
+  assert.deepEqual(full.at(airX,airY),[24,45,64,255]);
+});
+
+test('overlapping native crop guides preserve absolute world coordinates',()=>{
+  const level=compileCave(vaultLayout);
+  const a=bitmap(caveGuidePng(level,{
+    from:100,to:115,top:25,bottom:55
+  }));
+  const b=bitmap(caveGuidePng(level,{
+    from:108,to:125,top:32,bottom:60
+  }));
+  for(let x=0;x<7*16;x+=9)for(let y=0;y<23*16;y+=9){
+    const worldX=108*16+x,worldY=32*16+y;
+    assert.deepEqual(a.at(worldX-100*16,worldY-25*16),
+      b.at(x,y),'overlap guides cannot drift or change materials');
+  }
 });
