@@ -27,7 +27,7 @@ def main():
             timeout=30000)
         state=page.evaluate("window.__wonderwoodPhaser.snapshot()")
         assert state["worldWidth"]==3520,state
-        assert state["platformCount"]==11,state
+        assert state["platformCount"]==15,state
         assert state["cameraZoom"]==1.4,state
         art=state["caveArt"]
         assert art and art["rockLoaded"],state
