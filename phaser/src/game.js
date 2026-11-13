@@ -141,6 +141,8 @@ class Wonderwood extends Phaser.Scene {
           rockLoaded:this.textures.exists(this.cavePainting.texture.key),
            textureKey:this.cavePainting.texture.key,
           imageCount:1,
+          sourcePixels:{width:this.cavePainting.width,
+            height:this.cavePainting.height},
           painting:{x:this.cavePainting.x,y:this.cavePainting.y,
             displayWidth:this.cavePainting.displayWidth,
             displayHeight:this.cavePainting.displayHeight}
