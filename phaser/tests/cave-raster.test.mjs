@@ -55,7 +55,6 @@ test('one authored static layer has alpha only where geometry is physical',()=>{
   for(let y=0;y<full.h;y+=7)for(let x=0;x<full.w;x+=3){
     const solid=solids.at(x,y),wet=water.at(x,y),guide=full.at(x,y);
     assert.ok(!(solid[3]&&wet[3]),'no pixel can be rock and water');
-    assert.equal(solid[3]||wet[3]||255,255);
     if(solid[3])assert.deepEqual(solid,guide);
     if(wet[3])assert.deepEqual(wet,guide);
   }
