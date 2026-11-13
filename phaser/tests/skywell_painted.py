@@ -1,4 +1,4 @@
-"""Real-input browser smoke for the full-scale, one-image Skywell chapter."""
+"""Real-input browser smoke for the selected layered Ancient Sanctuary art."""
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
@@ -31,8 +31,8 @@ def main():
         assert state["cameraZoom"]==1.4,state
         art=state["caveArt"]
         assert art and art["rockLoaded"],state
-        assert art["textureKey"]=="skywell-painted-rock",art
-        assert art["imageCount"]==1,art
+        assert art["textureKey"]=="cave-skywell-ascent-solid",art
+        assert art["imageCount"]==3,art
         assert art["sourcePixels"]=={"width":3520,"height":2048},art
         assert art["painting"]=={
             "x":0,"y":0,"displayWidth":3520,"displayHeight":2048
