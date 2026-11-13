@@ -10,6 +10,7 @@ export function stepPlayerMotion(p,actions,step,world){
   const events=[];
     p.powers=Math.max(0,p.powers-step/60);
     p.flapWait=Math.max(0,p.flapWait-step);
+    p.wallJumpCooldown=Math.max(0,(p.wallJumpCooldown||0)-step);
     p.hover=Math.max(0,p.hover-step/60);
     p.breach=Math.max(0,p.breach-step/60);
     p.bloomWindow=Math.max(0,p.bloomWindow-step);
@@ -19,6 +20,9 @@ export function stepPlayerMotion(p,actions,step,world){
     const inWater=world.inWater(p.x,p.y-8);
     const swimmer=p.form==='tideling'&&inWater;
     const direction=Number(actions.right)-Number(actions.left);
+    const wallContact=(world.climbWalls||[]).find(w=>
+      Math.abs(p.x-w.x*world.tile)<=21&&
+      p.y>w.top*world.tile+3&&p.y-27<w.bottom*world.tile);
     if(direction)p.face=direction;
     // Emberkit gets a modest sprint, not a game-breaking traversal power.
     const desired=direction*(swimmer?2.15:
@@ -43,6 +47,13 @@ export function stepPlayerMotion(p,actions,step,world){
         p.creatureBounceWindow=0;p.jumps=2;
         p.creatureBounceBoosts=(p.creatureBounceBoosts||0)+1;
         events.push('creatureBounceBoost');
+      }else if(actions.jumpPressed&&wallContact&&
+        p.coyote===0&&p.wallJumpCooldown===0){
+        p.vy=-7.5;
+        p.vx=p.x<wallContact.x*world.tile?-3.3:3.3;
+        p.grounded=false;p.jumpBuffer=0;p.jumps=1;
+        p.wallJumpCooldown=11;
+        events.push('wallJump');
       }else if(tryBloomBoost(p,actions.jumpPressed)){
         events.push('bloomBoost');
       }else if(p.jumpBuffer>0&&p.coyote>0){
@@ -76,8 +87,19 @@ export function stepPlayerMotion(p,actions,step,world){
       (world.groundAt(p.x+2)-world.groundAt(p.x-2))/4:0;
     const surfaceVx=p.grounded?p.vx/Math.hypot(1,slope):p.vx;
     const nextX=clamp(p.x+surfaceVx*step,10,world.width-10);
-    const safeX=safeHorizontalX(p.x,nextX,p.y,
+    let safeX=safeHorizontalX(p.x,nextX,p.y,
       x=>world.groundAt(x),swimmer);
+    // Authored climbing faces are real solid obstacles. Jump over a wall's
+    // top, or use a second jump while adjacent to spring off its face.
+    for(const wall of world.climbWalls||[]){
+      const wallX=wall.x*world.tile;
+      if(p.y<=wall.top*world.tile+3||
+         p.y-27>=wall.bottom*world.tile)continue;
+      if(p.x<=wallX-12&&safeX>wallX-12)
+        safeX=wallX-12;
+      if(p.x>=wallX+12&&safeX<wallX+12)
+        safeX=wallX+12;
+    }
     if(Math.abs(safeX-nextX)>.2)p.vx=0;
     p.x=safeX;
     const priorY=p.y,wasGrounded=p.grounded,impactSpeed=p.vy;
