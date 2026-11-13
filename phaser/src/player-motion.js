@@ -50,7 +50,7 @@ export function stepPlayerMotion(p,actions,step,world){
       }else if(actions.jumpPressed&&wallContact&&
         p.coyote===0&&p.wallJumpCooldown===0){
         // A forgiving high spring lets explorers gain a full ledge tier.
-        p.vy=-9.8;
+        p.vy=-10.4;
         p.vx=p.x<wallContact.x*world.tile?-3.3:3.3;
         p.grounded=false;p.jumpBuffer=0;p.jumps=1;
         p.wallJumpCooldown=11;
@@ -105,8 +105,18 @@ export function stepPlayerMotion(p,actions,step,world){
     p.x=safeX;
     const priorY=p.y,wasGrounded=p.grounded,impactSpeed=p.vy;
     p.y+=p.vy*step;
-    const landing=landingY(priorY,p.y,p.vy,p.grounded,
+    let landing=landingY(priorY,p.y,p.vy,p.grounded,
       p.x,world.groundAt(p.x),world.platformSegments,world.tile);
+    // The top of a climbable rock face is solid too: players can stand
+    // there after a wall jump instead of falling through the illustrated cap.
+    if(p.vy>=0){
+      for(const wall of world.climbWalls||[]){
+        const top=wall.top*world.tile;
+        if(Math.abs(p.x-wall.x*world.tile)<=12&&
+          priorY<=top+2&&p.y>=top&&
+          (landing===null||top<landing))landing=top;
+      }
+    }
     if(landing!==null){
       p.y=landing;p.vy=0;p.grounded=true;p.jumps=0;p.flaps=0;p.coyote=5;
       if(!wasGrounded&&impactSpeed>1.3){
