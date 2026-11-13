@@ -28,11 +28,11 @@ export function caveMaskSvg(level){
     '<desc>Smooth cave silhouette and water; no characters, enemies, items or HUD</desc>'+
     '<rect width="'+w+'" height="'+h+'" fill="#183147"/>'+
     '<g fill="#2388af">'+water+'</g>'+
+    '<g fill="#ff9d63">'+walls+'</g>'+ 
     '<g fill="#645468"><polygon points="0,0 '+w+',0 '+
     pathAlong(level,level.cave.ceilingAt,true)+'"/>'+
     '<polygon points="'+bed+' '+w+','+h+' 0,'+h+'"/></g>'+
-    '<g fill="#f3cc76">'+shelves+'</g>'+ 
-    '<g fill="#ff9d63">'+walls+'</g></svg>';
+    '<g fill="#f3cc76">'+shelves+'</g></svg>';
 }
 
 export function caveArtManifest(level){
