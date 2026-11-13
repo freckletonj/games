@@ -25,7 +25,6 @@ import {compileCave,caveContainsWater,skywellLayout} from './cave-layout.js';
 import {skywellChapter} from './skywell-chapter.js';
 import {paintCave,paintCaveGeometryOverlay} from './cave-renderer.js';
 import caveRockUrl from '../assets/generated/luminous-grotto-single.png';
-import skywellRockUrl from '../assets/generated/skywell-ascent.webp';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 import {addMeadowIllustration} from './meadow-art.js';
 import {validateEncounters} from './encounters.js';
@@ -77,9 +76,7 @@ class Wonderwood extends Phaser.Scene {
     for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
     this.load.image('painted-states',paintedStates);
     this.load.image('cave-painted-rock',caveRockUrl);
-    // One full-resolution, geometry-constrained AI-painted bitmap.
-    // Collision remains the independently compiled authored cave layout.
-    this.load.image('skywell-painted-rock',skywellRockUrl);
+    // Only selected world-registered painting layers are loaded for Skywell.
     for(const [chapter,layers] of Object.entries(APPROVED_CAVE_ART))
       for(const [material,url] of Object.entries(layers)){
         if(material==='backgroundScrollFactor')continue;
