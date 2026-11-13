@@ -163,6 +163,7 @@ class Wonderwood extends Phaser.Scene {
           bloomWindow:p.bloomWindow||0,bloomBoosts:p.bloomBoosts||0,
           creatureBounceWindow:p.creatureBounceWindow||0,
           creatureBounceBoosts:p.creatureBounceBoosts||0,
+          wallJumps:p.wallJumps||0,
           recalls:p.recalls||0}))||[],
         animals:this.animals?.map(a=>({kind:a.kind,x:a.x,y:a.y,action:a.action,
           frame:Number(a.visual?.frame?.name),
