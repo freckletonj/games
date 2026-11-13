@@ -28,7 +28,7 @@ const bootErrors='<script>(function(){'+
     '"Game failed to start: "+String(event.reason);});'+
   'setTimeout(()=>{if(!status.hidden)status.textContent='+
     '"Still loading. Check Firefox WebGL support or the browser console.";},15000);'+
-  '})();<\\/script>';
+  '})();</script>';
 const html = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">' +
   '<meta name="viewport" content="width=device-width,initial-scale=1">' +
   '<title>Wonderwood · Phaser</title>' +
