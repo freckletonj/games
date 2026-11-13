@@ -87,8 +87,11 @@ class Wonderwood extends Phaser.Scene {
     this.lastInput=[{},{}];
     this.progressStorage=browserProgressStorage();
     this.progress=readProgress(this.progressStorage,CHAPTERS.map(chapter=>chapter.id));
-    this.choice=Math.max(0,CHAPTERS.findIndex(chapter=>
-      chapter.id===this.progress.lastPlayed));
+    const requested=location.hash.slice(1);
+    const requestedChapter=CHAPTERS.findIndex(chapter=>chapter.id===requested);
+    this.choice=requestedChapter>=0?requestedChapter:
+      Math.max(0,CHAPTERS.findIndex(chapter=>
+        chapter.id===this.progress.lastPlayed));
     this.twoPlayers=false;
     this.paused=false;
     // The title is native-resolution HTML, independent of the 2x world camera.
@@ -120,7 +123,7 @@ class Wonderwood extends Phaser.Scene {
         this.caveGeometryOverlay.setVisible(!this.caveGeometryOverlay.visible);
     });
     this.showMenu();
-    document.getElementById('ww-startup').hidden=true;
+    document.getElementById('ww-startup')?.setAttribute('hidden','');
     // The smoke test reads state but never mutates gameplay state directly.
     window.__wonderwoodPhaser={
       engine:'Phaser 4',
@@ -1238,9 +1241,14 @@ class Wonderwood extends Phaser.Scene {
       (this.twoPlayers?'    P2 ♥ '+this.players[1]?.health:''));
     const first=this.animals.find(a=>a.kind==='springaroo'&&!a.captured);
     const teaching=this.chapter.id==='first-forest'&&first;
-    this.help.setText(this.chapter.id==='skywell-ascent'&&
-      !lead.form&&lead.x<95*16?
-        'Skywell · Jump beside a glowing wall, then jump again to climb':
+    this.help.setText(this.chapter.id==='skywell-ascent'&&lead.x<50*TILE?
+      lead.caught&&!lead.form?
+        'T / Y · transform into your Glimmermoth':
+      !lead.form?
+        lead.food===2?
+          'F / B · offer two star treats · G / X to catch the Glimmermoth':
+          'E / RB · select star treats for the nearby Glimmermoth':
+        'Amber walls · hold toward the wall, tap Jump, release and tap again':
       lead.creatureBounceWindow>0?
       'Tap Jump now for a super spring!':lead.mount?
       (lead.mount.kind==='pegasus'?
