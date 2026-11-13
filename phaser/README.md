@@ -408,10 +408,11 @@ passed local Chromium checks and visual review.
 
 The second one-image authored chapter is a vertical, wall-jumpable cave.
 `phaser/src/cave-layout.js` defines its rock, pools, ledges and **real
-climbing-wall collision faces**; `skywell-painting.js` builds a single
-high-resolution geometry-aligned procedural illustration. The separate
-color-filled reference and image-model prompt export to
-`dist/cave-guides/skywell-ascent/`. Use **V** to overlay the physical
-materials, including solid walls. A final diffusion-model painting has
-**not yet been generated or integrated**. See
+climbing-wall collision faces**. The game now embeds a **3520 × 2048
+physics-constrained WebP painting** based on maximum-native-size image-model
+art. The original generated source is retained in
+`assets/generated/skywell-model-source.webp`; the compositing script is
+`scripts/compose-painted-cave.py`. The separate filled material guide and
+procedural SVG reference export to `dist/cave-guides/skywell-ascent/`.
+Use **V** to overlay the actual physical materials, including solid walls. See
 [CAVE-ART-PIPELINE.md](CAVE-ART-PIPELINE.md) for the new workflow.
