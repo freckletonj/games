@@ -18,6 +18,8 @@ controls, build setup, and browser verification.
   See [art direction](phaser/ART-DIRECTION.md) for the shared workflow.
   [Clockwork Orchard](phaser/DYNAMIC-SCENE-ART.md) covers moving cutouts,
   green repair masks, and model-painted background patches.
+  [The Brassworks](phaser/BRASSWORKS-ART.md) adds model-assisted alpha cutouts
+  and compares transparent-hole and green-hole repairs.
 
 ## Build and verify
 

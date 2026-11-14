@@ -52,5 +52,18 @@
       "garden-ferry": "phaser/assets/generated/clockwork-orchard/garden-ferry.webp",
       "wheel-gondola": "phaser/assets/generated/clockwork-orchard/wheel-gondola.webp"
     }
+  },
+  "brassworks": {
+    "scene": [
+      "phaser/assets/generated/brassworks/scene.webp"
+    ],
+    "platforms": {
+      "feed-belt": "phaser/assets/generated/brassworks/feed-belt.webp",
+      "feed-tread": "phaser/assets/generated/brassworks/feed-tread.webp",
+      "gear-one": "phaser/assets/generated/brassworks/gear.webp",
+      "gear-two": "phaser/assets/generated/brassworks/gear.webp",
+      "gear-three": "phaser/assets/generated/brassworks/gear.webp",
+      "launch-piston": "phaser/assets/generated/brassworks/launch-piston.webp"
+    }
   }
 }

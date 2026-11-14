@@ -21,28 +21,38 @@ export function stepPlatforms(platforms,seconds){
   }
 }
 
-function deckAt(platform,x){
-  return Math.abs(x-platform.position[0])<=platform.size[0]/2;
+export function deckTopAt(platform,x,position=platform.position){
+  const [center,top]=position;
+  const offset=x-center;
+  if(platform.kind==='gear'){
+    const radius=platform.size[1]/2;
+    if(Math.abs(offset)>Math.min(platform.treadWidth/2,radius))return null;
+    return top+radius-Math.sqrt(radius**2-offset**2);
+  }
+  return Math.abs(offset)<=platform.size[0]/2?top:null;
 }
 
 // Cross the top in the moving frame. An ascending deck can catch a falling
 // explorer, and explorers jumping up through the deck pass through it.
 export function movingLanding(platforms,rider,fromX,fromY,toX,toY){
-  let landing=null;
+  let landing=null,landingY=Infinity;
   for(const deck of platforms){
-    const [x,y]=deck.position;
-    if(rider===deck.id&&deckAt(deck,toX)){
-      if(!landing||y<landing.position[1])landing=deck;
-      continue;
+    const y=deckTopAt(deck,toX);
+    if(y===null||y>=landingY)continue;
+    const walkingOntoBelt=deck.kind==='conveyor'&&fromY===y&&toY>=y;
+    if(rider!==deck.id&&!walkingOntoBelt){
+      const [x]=deck.position;
+      const [previousX,previousY]=deck.previous;
+      const oldTop=deckTopAt(deck,fromX,deck.previous);
+      const previousTop=oldTop??(y-deck.position[1]+previousY);
+      const above=fromY-previousTop,below=toY-y;
+      if(below<0||above>0||below<=above||toY<fromY)continue;
+      const t=-above/(below-above);
+      const crossingX=fromX+(toX-fromX)*t;
+      const center=previousX+(x-previousX)*t;
+      if(deckTopAt(deck,crossingX,[center,y])===null)continue;
     }
-    const [previousX,previousY]=deck.previous;
-    const above=fromY-previousY,below=toY-y;
-    if(below<0||above>0||below<=above||toY<fromY)continue;
-    const t=-above/(below-above);
-    const crossingX=fromX+(toX-fromX)*t;
-    const deckX=previousX+(x-previousX)*t;
-    if(Math.abs(crossingX-deckX)<=deck.size[0]/2&&deckAt(deck,toX)&&
-      (!landing||y<landing.position[1]))landing=deck;
+    landing=deck;landingY=y;
   }
   return landing;
 }

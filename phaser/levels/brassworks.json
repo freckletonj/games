@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "id": "brassworks",
+  "biome": "summit",
+  "width": 112,
+  "height": 48,
+  "ridge": [[0,35],[27,35],[28,44],[54,44],[55,30],[69,30],[70,44],[90,44],[91,30],[112,30]],
+  "water": [],
+  "bridges": [],
+  "ledges": [[53,30,8],[89,30,7]],
+  "creatures": [],
+  "checkpoints": [60, 96],
+  "snacks": [],
+  "stars": [[14,33],[59,27],[99,27]],
+  "relic": ["springKey",103,29.5],
+  "landmarks": [],
+  "sections": [
+    {"id":"belt","range":[0,28],"challenge":"conveyor","goal":"Ride the running belt and jump from the edge."},
+    {"id":"gear-train","range":[28,61],"challenge":"rotating gears","goal":"Jump between three turning gears to reach the press."},
+    {"id":"press","range":[61,112],"challenge":"piston launch","goal":"Stand on the launch piston and wait for it to fire."}
+  ],
+  "recallBelow": 677,
+  "sceneFeatures": [
+    {"material":"boiler","color":"#61504e","polygon":[[905,474],[905,225],[922,225],[922,198],[960,198],[960,225],[997,225],[997,474]]},
+    {"material":"foundry","color":"#755e60","polygon":[[1535,475],[1535,280],[1575,244],[1660,244],[1705,280],[1705,475]]}
+  ],
+  "machines": [
+    {"id":"feed-belt","kind":"conveyor","home":[270,560],"size":[300,38],"speed":1.35,"color":"#587f78"},
+    {"id":"gear-one","kind":"gear","home":[515,589],"size":[124,124],"turn":0.007,"treadWidth":102,"color":"#b7834d"},
+    {"id":"gear-two","kind":"gear","home":[641,570],"size":[124,124],"turn":-0.007,"treadWidth":102,"color":"#a57449"},
+    {"id":"gear-three","kind":"gear","home":[769,549],"size":[124,124],"turn":0.007,"treadWidth":102,"color":"#c79553"},
+    {"id":"launch-piston","kind":"piston","home":[1065,469],"size":[90,44],"period":156,"fireTick":105,"boost":7.4,"rise":10.7,"color":"#9b6552"}
+  ]
+}

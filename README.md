@@ -3,7 +3,7 @@
 An offline 2D creature adventure for one or two players.
 
 **Play the Phaser campaign:** See the [Phaser build instructions](phaser/README.md#build).
-It includes all eight chapters and builds a standalone offline HTML file.
+It includes all nine chapters and builds a standalone offline HTML file.
 
 **Play the original Canvas game:** Run `node scripts/build.mjs` from the repository
 root, then open `dist/wonderwood.html` in Firefox or Chromium.
