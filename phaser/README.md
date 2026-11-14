@@ -28,6 +28,16 @@ browser test adapter is necessary only in environments where browser
 URL navigation is blocked. Normal `npm install` remains available for
 other platforms. GitHub Actions stays disabled.
 
+## Luminous Grotto: one-image authored level (Chapter 6)
+
+The optional sixth chapter demonstrates **one code-authored cave → one
+static geometry guide → one model-painted full-level image**, with no tiles
+or chunk stitching. It retains the existing Phaser movement, creatures and
+transformations. See the [step-by-step level authoring guide](CAVE-ART-PIPELINE.md)
+for the exact export/build commands, image-generation prompt, V-key collision
+overlay, and the accepted painted-water / rising-floor mismatch. The original
+five chapters keep their existing level/rendering pipelines.
+
 ## Build
 
 From `phaser/`:
@@ -371,7 +381,7 @@ From a checkout with Node.js, npm, Python and Chromium available:
 
 ```sh
 npm install --prefix phaser
-python -m pip install playwright
+python -m pip install playwright Pillow
 python -m playwright install chromium
 bash phaser/scripts/verify-local.sh
 bash phaser/scripts/package-preview.sh
@@ -393,3 +403,88 @@ corresponding esbuild platform executable. Extract those into
 A pre-existing playable HTML from an older commit is **not** proof the
 current source builds. Keep PR #7 in draft until its new bundle has
 passed local Chromium checks and visual review.
+
+## Skywell Ascent: code-defined climbing cavern (Chapter 7)
+
+The second code-authored chapter is a vertical, wall-jumpable cave.
+`phaser/src/cave-layout.js` defines its rock, pools, ledges and **real
+climbing-wall collision faces**. The playable game now embeds the **user-selected Ancient Sanctuary**
+image-model variation as three world-locked WebP planes at 3520 × 2048:
+painted background air, physical solids, and water. Their alpha is derived
+from exactly the compiled gameplay materials—not separately drawn vector
+ledges or wedges. The 1644 × 957 source is retained at
+`assets/generated/skywell-ancient/skywell-ancient-source.webp`; resampling
+to world pixels is explicit and does not constitute native-resolution detail.
+The obsolete opaque Skywell prototype was removed from the source tree;
+the selected layered painting is the only Skywell artwork loaded.
+The complete material guide and alpha masks export to
+`dist/cave-guides/skywell-ascent/`.
+The separate vaulted authoring study now supports real polygon rock collision
+and overlapping native-resolution image-model crop guides; it is not yet a
+playable chapter or approved painting.
+Use **V** to overlay the actual physical materials, including solid walls. See
+[CAVE-ART-PIPELINE.md](CAVE-ART-PIPELINE.md) for the new workflow.
+
+## Play the real Skywell chapter in Firefox (not the art inspector)
+
+The downloadable `skywell-painted-alignment-review*.html` files are **static
+art/physics inspectors**; they never contained the game runtime. To play
+the actual game, from the repository root:
+
+```sh
+npm install --prefix phaser
+npm run build --prefix phaser
+```
+
+Open `dist/wonderwood-phaser.html#skywell-ascent` in Firefox. It is a
+self-contained HTML file: the Phaser runtime, sprites, painted static layers and
+gameplay code are bundled directly into it. The chapter is preselected by
+the URL fragment; choose **Begin adventure** to start. Use **E** to select
+star treats, **F** twice to befriend the starting Glimmermoth, **G** to
+catch, **T** to transform, **D** to run and **W/Space** to jump; tap Jump
+again against the glowing walls to climb. **V** overlays physics.
+
+Downloaded `file://` previews intentionally use in-memory campaign progress
+because Firefox can deny localStorage on opaque local-file origins. Saves
+persist when the same build is hosted over HTTP(S).
+
+To package a new uniquely named playable HTML **after local verification**
+(no GitHub Actions), use:
+
+```sh
+python -m pip install playwright
+python -m playwright install chromium
+bash phaser/scripts/package-preview.sh focused
+```
+
+To additionally test Firefox against the **real downloaded-file origin**,
+install its Playwright browser and enable the optional check:
+
+```sh
+python -m playwright install firefox
+PLAYWRIGHT_FIREFOX=1 bash phaser/scripts/verify-cave-local.sh focused
+```
+
+The startup page explicitly displays loading status and any uncaught game
+error rather than leaving a blank canvas. This Firefox test is a local,
+opt-in requirement; it has not been executed in the connected GitHub
+environment.
+
+## Coherent static painting and exact-geometry RGBA masks
+
+The new [static art contract](STATIC-ART-CONTRACT.md) describes the intended
+pipeline: compile gameplay geometry, export **one complete color-filled scene**
+and full-resolution solid/water alpha masks, generate one globally coherent
+painting conditioned on that scene, refine to true world resolution, then
+extract transparent layers without repainting isolated geometric wedges.
+Run `node phaser/scripts/export-cave-guides.mjs` to produce
+`world-static-solid.png` and `world-static-water.png`; use
+`phaser/scripts/extract-painted-layers.py` for an **approved native-size
+scene**, not the old stretched prototype. The playable Skywell now uses the selected Ancient Sanctuary scene; the
+higher-resolution nine-crop vaulted study is still a future art pass.
+
+To move exact repository contents to an offline build container that cannot
+clone GitHub, run `bash phaser/scripts/package-source-snapshot.sh` in a
+checked-out repository and upload its checksummed `dist/games-source-*.zip`.
+The Git tree remains authoritative; snapshots are **not** committed on
+every edit.

@@ -38,3 +38,17 @@ export function completeChapter(progress,chapterId,shards){
 export function writeProgress(storage,progress){
   storage.setItem(PROGRESS_KEY,JSON.stringify(progress));
 }
+
+/**
+ * Downloaded, standalone HTML runs on file://, where Firefox may deny
+ * localStorage access. Keep that mode playable without touching disk.
+ * Hosted http(s) builds retain the persistent campaign ledger.
+ */
+export function browserProgressStorage(environment=globalThis){
+  if(environment.location.protocol!=='file:')return environment.localStorage;
+  const entries=new Map();
+  return {
+    getItem:key=>entries.get(key)??null,
+    setItem:(key,value)=>{entries.set(key,String(value));}
+  };
+}

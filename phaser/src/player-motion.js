@@ -1,5 +1,6 @@
 import {landingY,safeHorizontalX} from './physics.js';
 import {tryBloomBoost} from './springboard.js';
+import {sweepRockBody} from './cave-solids.js';
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
@@ -10,6 +11,7 @@ export function stepPlayerMotion(p,actions,step,world){
   const events=[];
     p.powers=Math.max(0,p.powers-step/60);
     p.flapWait=Math.max(0,p.flapWait-step);
+    p.wallJumpCooldown=Math.max(0,(p.wallJumpCooldown||0)-step);
     p.hover=Math.max(0,p.hover-step/60);
     p.breach=Math.max(0,p.breach-step/60);
     p.bloomWindow=Math.max(0,p.bloomWindow-step);
@@ -19,6 +21,9 @@ export function stepPlayerMotion(p,actions,step,world){
     const inWater=world.inWater(p.x,p.y-8);
     const swimmer=p.form==='tideling'&&inWater;
     const direction=Number(actions.right)-Number(actions.left);
+    const wallContact=(world.climbWalls||[]).find(w=>
+      Math.abs(p.x-w.x*world.tile)<=21&&
+      p.y>w.top*world.tile+3&&p.y-27<w.bottom*world.tile);
     if(direction)p.face=direction;
     // Emberkit gets a modest sprint, not a game-breaking traversal power.
     const desired=direction*(swimmer?2.15:
@@ -43,6 +48,15 @@ export function stepPlayerMotion(p,actions,step,world){
         p.creatureBounceWindow=0;p.jumps=2;
         p.creatureBounceBoosts=(p.creatureBounceBoosts||0)+1;
         events.push('creatureBounceBoost');
+      }else if(actions.jumpPressed&&wallContact&&
+        p.coyote===0&&p.wallJumpCooldown===0){
+        // A forgiving high spring lets explorers gain a full ledge tier.
+        p.vy=-10.4;
+        p.vx=p.x<wallContact.x*world.tile?-3.3:3.3;
+        p.grounded=false;p.jumpBuffer=0;p.jumps=1;
+        p.wallJumpCooldown=11;
+        p.wallJumps=(p.wallJumps||0)+1;
+        events.push('wallJump');
       }else if(tryBloomBoost(p,actions.jumpPressed)){
         events.push('bloomBoost');
       }else if(p.jumpBuffer>0&&p.coyote>0){
@@ -76,24 +90,62 @@ export function stepPlayerMotion(p,actions,step,world){
       (world.groundAt(p.x+2)-world.groundAt(p.x-2))/4:0;
     const surfaceVx=p.grounded?p.vx/Math.hypot(1,slope):p.vx;
     const nextX=clamp(p.x+surfaceVx*step,10,world.width-10);
-    const safeX=safeHorizontalX(p.x,nextX,p.y,
+    let safeX=safeHorizontalX(p.x,nextX,p.y,
       x=>world.groundAt(x),swimmer);
+    // Authored climbing faces are real solid obstacles. Jump over a wall's
+    // top, or use a second jump while adjacent to spring off its face.
+    for(const wall of world.climbWalls||[]){
+      const wallX=wall.x*world.tile;
+      if(p.y<=wall.top*world.tile+3||
+         p.y-27>=wall.bottom*world.tile)continue;
+      if(p.x<=wallX-12&&safeX>wallX-12)
+        safeX=wallX-12;
+      if(p.x>=wallX+12&&safeX<wallX+12)
+        safeX=wallX+12;
+    }
+    if(world.rockPolygons?.length)
+      safeX=sweepRockBody(world.rockPolygons,p.x,p.y,safeX,'x').value;
     if(Math.abs(safeX-nextX)>.2)p.vx=0;
     p.x=safeX;
     const priorY=p.y,wasGrounded=p.grounded,impactSpeed=p.vy;
-    p.y+=p.vy*step;
-    const landing=landingY(priorY,p.y,p.vy,p.grounded,
+    const vertical=world.rockPolygons?.length?
+      sweepRockBody(world.rockPolygons,p.x,p.y,p.y+p.vy*step,'y'):
+      {value:p.y+p.vy*step,blocked:false};
+    const rockLanding=vertical.blocked&&p.vy>0;
+    p.y=vertical.value;
+    if(vertical.blocked)p.vy=0;
+    let landing=landingY(priorY,p.y,p.vy,p.grounded,
       p.x,world.groundAt(p.x),world.platformSegments,world.tile);
+    // The top of a climbable rock face is solid too: players can stand
+    // there after a wall jump instead of falling through the illustrated cap.
+    if(p.vy>=0){
+      for(const wall of world.climbWalls||[]){
+        const top=wall.top*world.tile;
+        if(Math.abs(p.x-wall.x*world.tile)<=12&&
+          priorY<=top+2&&p.y>=top&&
+          (landing===null||top<landing))landing=top;
+      }
+    }
     if(landing!==null){
       p.y=landing;p.vy=0;p.grounded=true;p.jumps=0;p.flaps=0;p.coyote=5;
       if(!wasGrounded&&impactSpeed>1.3){
         events.push('land');
         if(impactSpeed>3.8)events.push('hardLand');
       }
+    }else if(rockLanding){
+      p.grounded=true;p.coyote=5;p.jumps=0;p.flaps=0;
+      if(impactSpeed>1.3)events.push('land');
     }else p.grounded=false;
     // Safety against upward-facing underwater banks: a wall cannot
     // convert a horizontal swim into a fall through the heightfield.
     const ground=world.groundAt(p.x);
+    if(world.ceilingAt){
+      const roof=world.ceilingAt(p.x);
+      if(p.y-27<roof){
+        p.y=roof+27;
+        if(p.vy<0)p.vy=0;
+      }
+    }
     if(p.y>ground+3){
       p.y=ground;p.vy=Math.min(p.vy,0);p.grounded=true;
     }

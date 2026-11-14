@@ -12,3 +12,10 @@ test('Phaser build script guarantees inline runtime instead of a CDN',()=>{
   assert.match(script,/javascript\+'<\/script>/);
   assert.match(script,/wonderwood-phaser\.html/);
 });
+
+test('standalone build exposes explicit loading and startup failures',()=>{
+  const script=readFileSync(path.join(root,'phaser/scripts/build.mjs'),'utf8');
+  assert.match(script,/ww-startup/);
+  assert.match(script,/unhandledrejection/);
+  assert.match(script,/Still loading/);
+});

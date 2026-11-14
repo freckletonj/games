@@ -1,5 +1,19 @@
 # Third-party assets and visual cohesion
 
+## Luminous Grotto single-image painting (PR #8)
+
+`phaser/assets/generated/luminous-grotto-single.png` is the approved
+**1672 × 941** single-frame cave painting generated using OpenAI image
+generation during the November 12, 2026 Luminous Grotto prototype.
+It was not imported from ArtByte, Kenney, or a third-party image search.
+The 3200 × 1792 static guide can be regenerated from
+`phaser/src/cave-layout.js` as described in
+[CAVE-ART-PIPELINE.md](CAVE-ART-PIPELINE.md). The existing painting predates
+that final guide, so the appearance of some water/rock boundaries is not
+perfectly collision-aligned; this known issue is accepted for the
+initial proof of concept. Actors, items, effects and UI are separate
+existing gameplay assets; they are not part of the cave painting.
+
 The baseline Wonderwood game uses original generated painterly character sheets,
 slope materials, props and chapter backgrounds from the repo's `src/assets/`.
 The Phaser renderer **does not use the original low-resolution Kenney tree/pine/
@@ -116,3 +130,36 @@ an entirely new illustrated wing animation.
 The berry lure sprite also reuses the original `flora.webp` artwork:
 a tight crop and alpha mask of its purple berry cluster. No separate
 unlicensed berry image is imported.
+
+## Skywell Ascent — selected Ancient Sanctuary artwork
+
+The authored rock, ledges, climbing walls and water are defined by
+`phaser/src/cave-layout.js`. Export the **complete colored physics guide**
+and matching full-world RGBA masks with
+`node phaser/scripts/export-cave-guides.mjs`. The renderer does not draw
+individual scenic wedges or procedural fake-rock platforms.
+
+The user chose the warm, sculptural sanctuary painting from the two image
+generations. The original generator's PNG had **1644 × 957** pixels. A
+faithful high-quality WebP copy lives at
+`assets/generated/skywell-ancient/skywell-ancient-source.webp`, with
+original SHA-256 recorded in `art-provenance.json`.
+
+The playable Skywell level uses three full-world **3520 × 2048** WebP
+assets from that single composition: `painted-solid.webp`,
+`painted-water.webp` and `painted-background.webp`. The code-authored
+solid and water masks define the alpha channels. Open air is the complement
+of both masks, with no alpha overlap. All three draw in the original world
+coordinates with **no parallax**, preserving accurate geometry alignment.
+
+The accepted *style* is not yet native-resolution final art: its RGB was
+resampled from the 1644 × 957 source, so final detail must later come from
+overlapping world-space image-model refinement. The rejected
+opaque Skywell draft, its source copy, and the obsolete wedge compositor
+were removed from the working tree. Their history remains in Git, rather
+than being loaded or kept as redundant assets.
+
+Regenerate or validate the alpha against freshly exported materials with
+`scripts/bake-selected-skywell.py`. The separate
+`skywell-vault-study` contains extra physical polygons and must never
+borrow these layers without repainting its changed geometry.

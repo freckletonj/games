@@ -1,0 +1,8 @@
+{
+  "skywell-ascent": {
+    "background": "phaser/assets/generated/skywell-ancient/painted-background.webp",
+    "water": "phaser/assets/generated/skywell-ancient/painted-water.webp",
+    "solid": "phaser/assets/generated/skywell-ancient/painted-solid.webp",
+    "backgroundScrollFactor": 1
+  }
+}

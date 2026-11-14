@@ -1,0 +1,28 @@
+{
+  "title": "Skywell Ascent — Ancient Sanctuary (user-selected second painting)",
+  "source": "phaser/assets/generated/skywell-ancient/skywell-ancient-source.webp",
+  "originalGeneratedPngSha256": "f82e92b502c40c7fd8dc61caa57d74d1c5fe0cf1107c68f33758fa8d92669039",
+  "sourcePixels": [
+    1644,
+    957
+  ],
+  "worldPixels": [
+    3520,
+    2048
+  ],
+  "geometry": "compileCave(skywellLayout)",
+  "materials": [
+    "air",
+    "water",
+    "rock",
+    "shelf",
+    "wall"
+  ],
+  "layers": {
+    "background": "painted-background.webp",
+    "water": "painted-water.webp",
+    "solid": "painted-solid.webp"
+  },
+  "parallax": false,
+  "note": "Image model output is 1644x957 native pixels and has been resampled for 3520x2048 world registration; the game asset is not native 3520x2048 generated detail. All layer RGB is from the same original illustration; all alpha is code-derived."
+}
