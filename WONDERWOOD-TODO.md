@@ -11,7 +11,9 @@ This branch brings the Wonderwood experiments together on top of `main`. Start h
 
 ## Current checkpoint
 
-A fresh checkout passed all 119 Node tests, generated the mechanics report and cave guides, and verified the three Skywell masks against the committed art. `npm run build --prefix phaser` produced a 15,840,464-byte `dist/wonderwood-phaser.html`. The remaining checks cover extended browser gameplay, committing the single-file build, and retiring #7 and #8 after consolidation.
+PR #9 contains the full PR #8 implementation on top of the Phaser work from #7. Compared with the #8 head, the integration branch adds this checklist, drops the workflow, updates local output ignores, fixes a stale wall-guide assertion, and rebakes the three selected Skywell layers. No cave source files are missing.
+
+The offline dependency install passed checksums. A fresh run passed all 119 Phaser Node tests, exported the cave guides, and verified the committed Skywell alpha layers pixel for pixel. The rebuilt `dist/wonderwood-phaser.html` is 15,840,464 bytes with SHA-256 `de85aa020634218126ecca3777be1605ee3d89d737880aa9e65d01dd198162d1`. Extended browser checks and checking in the standalone HTML are next.
 
 ## Earlier verification
 
