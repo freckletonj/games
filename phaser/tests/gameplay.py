@@ -76,11 +76,14 @@ def main():
         page.keyboard.up("g")
         caught = snapshot(page)
         assert caught["players"][0]["caught"] == "springaroo", caught
+        assert caught["captureBursts"], caught
         press_until(
             page, "t",
             "window.__wonderwoodPhaser.snapshot().players[0].form === 'springaroo'",
         )
-        before_jump = snapshot(page)["players"][0]
+        transformed = snapshot(page)
+        assert any(age < 20 for age in transformed["captureBursts"]), transformed
+        before_jump = transformed["players"][0]
         press_until(
             page, "Space",
             f"window.__wonderwoodPhaser.snapshot().players[0].y < {before_jump['y'] - 10}",
@@ -118,6 +121,10 @@ def main():
         player = snapshot(page)["players"][0]
         assert abs(player["x"] - initial["players"][0]["x"]) < 3
         assert player["health"] == 3 and not player["sleep"]
+        press_until(page, "t", "window.__wonderwoodPhaser.snapshot().players[0].form === null")
+        reverted = snapshot(page)
+        assert reverted["players"][0]["texture"] == "actor-hero", reverted
+        assert any(age < 20 for age in reverted["captureBursts"]), reverted
 
         # Treats are finite, and the first picnic basket refills them.
         # A fast player may have collected it during the earlier run.

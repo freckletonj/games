@@ -1,6 +1,5 @@
 import {landingY,safeHorizontalX} from './physics.js';
 
-// Original Wonderwood painted Unicorn and Pegasus from PR #6.
 // Neither species is capturable or usable as a transformed creature.
 export const MOUNTS=Object.freeze({
   unicorn:{favorite:'berry',speed:4.2,jump:-8.1,kind:'ground'},
@@ -12,6 +11,7 @@ export const LOCATIONS=Object.freeze({
   'willow-wetlands':[['unicorn',122]],
   'cloud-gardens':[['pegasus',28],['pegasus',300,23]]
 });
+
 export function seatFor(kind,action){
   const seats=kind==='pegasus'?
     {idle:{x:-5,y:-32},run:{x:-6,y:-31},jump:{x:-4,y:-31}}:

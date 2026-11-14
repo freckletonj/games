@@ -1,26 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {MOUNTS,LOCATIONS,seatFor} from '../src/mounts.js';
+import {MOUNTS,LOCATIONS} from '../src/mounts.js';
 
 const base=new URL('../../src/assets/characters/',import.meta.url);
-test('both original illustrated mounts are compact, real eight-pose AVIF atlases',()=>{
+test('mount clips reference painted frames and their matching saddle anchors',()=>{
+  const rider=JSON.parse(readFileSync(new URL('../assets/generated/riders.json',import.meta.url)));
   for(const kind of Object.keys(MOUNTS)){
     const manifest=JSON.parse(readFileSync(new URL(kind+'/manifest.json',base)));
-    const image=readFileSync(new URL(kind+'/sheet.avif',base));
-    assert.equal(manifest.frameWidth,160);
-    assert.equal(manifest.frameHeight,160);
-    assert.equal(manifest.columns,4);
-    assert.ok(image.subarray(0,24).includes(Buffer.from('ftypavif')),
-      kind+' must contain the original AVIF image');
-    assert.ok(image.length>15000&&image.length<150000,kind);
-    assert.deepEqual(manifest.animations.run.frames,[2,3,4,5]);
-    assert.ok(manifest.animations.jump.frames.includes(6));
-    for(const action of ['idle','run','jump']){
-      assert.ok(Number.isFinite(manifest.seats[action].x));
-      assert.ok(Number.isFinite(manifest.seats[action].y));
-      assert.ok(seatFor(kind,action).y<0);
+    const image=readFileSync(new URL(kind+'/'+manifest.image,base));
+    assert.equal(image.toString('ascii',8,16),'WEBPVP8X');
+    const width=1+image.readUIntLE(24,3);
+    const height=1+image.readUIntLE(27,3);
+    const frameCount=width/manifest.frameWidth*height/manifest.frameHeight;
+    assert.equal(width,manifest.columns*manifest.frameWidth);
+    assert.equal(manifest.seats.length,frameCount);
+    assert.equal(manifest.riderFrames.length,frameCount);
+    for(const clip of Object.values(manifest.animations)){
+      for(const frame of clip.frames){
+        const [x,y]=manifest.seats[frame];
+        assert.ok(Math.abs(x)<manifest.frameWidth/2&&y<0&&y>=-manifest.origin.y);
+        const riderFrame=manifest.riderFrames[frame];
+        assert.ok(Number.isInteger(riderFrame)&&riderFrame>=0&&riderFrame<rider.columns);
+      }
     }
+    assert.equal(new Set(manifest.animations.run.frames).size,4);
+    assert.equal(new Set(manifest.animations.jump.frames).size,2);
+    if(kind==='pegasus')assert.equal(new Set(manifest.animations.flap.frames).size,4);
   }
 });
 test('the two mounts are present in compatible world chapters',()=>{

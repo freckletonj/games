@@ -43,7 +43,8 @@ levels. [Stonewake Hollow](phaser/STONEWAKE-ART.md) is the end-to-end example.
 
 See [art direction](phaser/ART-DIRECTION.md) for the shared conventions,
 [Clockwork Orchard](phaser/DYNAMIC-SCENE-ART.md) for moving platforms, and
-[The Brassworks](phaser/BRASSWORKS-ART.md) for alpha cutouts and scene repair.
+[The Brassworks](phaser/BRASSWORKS-ART.md) for alpha cutouts and scene repair. See [character animation](phaser/CHARACTER-ART.md)
+for the explorer, mount, and rider pose plans.
 
 ## Build and verify
 

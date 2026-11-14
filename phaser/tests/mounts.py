@@ -45,6 +45,7 @@ def main():
         hold_until(page,"t",
             "window.__wonderwoodPhaser.snapshot().players[0].mount === 'unicorn'")
         mounted=snapshot(page)
+        assert mounted["players"][0]["texture"]=="riders"
         assert mounted["mounts"][0]["rider"]==0 and mounted["players"][0]["form"] is None
         page.screenshot(path=str(GAME.parent/"phaser-unicorn-mounted.png"))
 
@@ -102,6 +103,7 @@ def main():
         flown=snapshot(page)
         assert flown["mounts"][0]["flaps"]>=2,flown
         assert flown["players"][0]["mount"]=="pegasus"
+        assert flown["players"][0]["texture"]=="riders"
         page.screenshot(path=str(GAME.parent/"phaser-pegasus-flight.png"))
         assert not errors,"Browser errors: "+"; ".join(errors)
         browser.close()

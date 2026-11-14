@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
 import './bootstrap.js';
 import {campaign,compileChapter} from './campaign.js';
-import {characters,mounts,backgrounds,sheets,silhouettes,paintedStates} from './assets.js';
+import {characters,mounts,riders,captureOrb,backgrounds,sheets,silhouettes,paintedStates} from './assets.js';
 import {EFFECT_FRAMES,paintedAction,powerFrame,setpieceFrame,enemyTellFrame,
   paintedFootOrigin} from './action-art.js';
 import {MOUNTS,LOCATIONS,seatFor,stepMountedMotion} from './mounts.js';
+import {captureBurst,drawCaptureBurst} from './capture-effects.js';
 import {bindings,readActions} from './input.js';
 import {landingY,platformTopAt,safeHorizontalX,orbStep,orbHitsAnimal} from './physics.js';
 import {triggerBloom} from './springboard.js';
@@ -71,6 +72,10 @@ class Wonderwood extends Phaser.Scene {
         frameWidth:manifest.frameWidth,frameHeight:manifest.frameHeight
       });
     }
+    this.load.spritesheet('riders',riders.url,{
+      frameWidth:riders.manifest.frameWidth,frameHeight:riders.manifest.frameHeight
+    });
+    this.load.image('capture-orb',captureOrb);
     for(const [name,url] of Object.entries(backgrounds))this.load.image('back-'+name,url);
     for(const [name,url] of Object.entries(sheets))
       this.load.spritesheet(name,url,{frameWidth:180,frameHeight:270});
@@ -105,6 +110,9 @@ class Wonderwood extends Phaser.Scene {
     this.menuHint=document.getElementById('ww-menu-description');
     this.menuCounter=document.getElementById('ww-menu-counter');
     this.menuMode=document.getElementById('ww-menu-mode');
+    this.explorerSelect=document.getElementById('ww-explorer');
+    for(const event of ['keydown','keyup'])
+      this.explorerSelect.addEventListener(event,e=>e.stopPropagation());
     document.getElementById('ww-menu-prev').addEventListener('click',()=>this.changeChapter(-1));
     document.getElementById('ww-menu-next').addEventListener('click',()=>this.changeChapter(1));
     document.getElementById('ww-menu-play').addEventListener('click',()=>this.startStage(this.choice));
@@ -176,6 +184,7 @@ class Wonderwood extends Phaser.Scene {
           warningAlpha:a.warningArt?.alpha??null}))||[],
         lures:this.lures?.map(f=>({x:f.x,food:f.food,landed:f.landed,age:f.age}))||[],
         orbs:this.orbs?.length||0,
+        captureBursts:this.captureBursts?.map(({age})=>age)||[],
         powersInFlight:this.powerShots?.map(s=>({kind:s.kind,
           x:s.x,y:s.y,life:s.life,frame:s.visual?.frame?.name}))||[],
         honeyPuddles:this.honeyPuddles?.map(p=>({x:p.x,life:p.life}))||[],
@@ -212,6 +221,7 @@ class Wonderwood extends Phaser.Scene {
     this.mounts=[];
     this.items=[];
     this.orbs=[];
+    this.captureBursts=[];
     this.powerShots=[];
     this.honeyPuddles=[];
     this.lures=[];
@@ -543,17 +553,10 @@ class Wonderwood extends Phaser.Scene {
     const manifest=mounts[m.kind].manifest;
     if(m.action!==action){m.action=action;m.animationTime=0;}
     else m.animationTime+=delta;
-    const pose=poseFor(manifest,action,m.animationTime,m.vx,m.homeX);
-    // Painted extended-wing frame and a folded-wing transition create
-    // distinguishable flapping without stretching the entire horse flat.
-    const wingPhase=Math.floor(m.animationTime*10)%4;
-    const frame=m.kind==='pegasus'&&action==='flap'?
-      [5,6,6,5][wingPhase]:pose.frame;
-    m.visual.setFrame(frame);
-    m.visual.setPosition(m.x,m.y+pose.dy);
-    m.visual.setFlipX(m.face<0);
-    m.visual.setScale(manifest.worldScale*pose.sx,manifest.worldScale*pose.sy);
-    m.visual.setRotation(m.face*pose.rotation);
+    const clip=manifest.animations[action];
+    const index=Math.floor(m.animationTime*clip.fps);
+    const frame=clip.frames[action==='jump'?Math.min(index,clip.frames.length-1):index%clip.frames.length];
+    m.visual.setFrame(frame).setPosition(m.x,m.y).setFlipX(m.face<0);
     const support=m.perched?m.homeY:this.supportAt(m.x,m.y);
     m.shadow.setPosition(m.x,support+3);
     const elevation=Math.max(0,support-m.y);
@@ -561,6 +564,7 @@ class Wonderwood extends Phaser.Scene {
     m.aura.setPosition(m.x,m.y-24);
     m.aura.setStrokeStyle(1.2,m.trust>=100?0xc1ffce:0xf2dfb6,
       m.trust>=100?.78:.34);
+    return frame;
   }
 
   wingbeatTrail(x,y){
@@ -574,9 +578,11 @@ class Wonderwood extends Phaser.Scene {
 
   board(p,m){
     if(m.trust<100||m.rider!==null||p.mount)return false;
-    p.form=null;p.bubble=false;p.creatureBounceWindow=0;
+    this.changeForm(p,null);
+    p.bubble=false;p.creatureBounceWindow=0;
     m.rider=p.id;p.mount=m;m.perched=false;
     p.visual.shadow?.setVisible(false);
+    p.gestureTime=0;
     p.invincible=.45;
     this.flash(m.kind==='pegasus'?'Pegasus — take to the sky!':
       'Unicorn — gallop!',1300);
@@ -604,17 +610,28 @@ class Wonderwood extends Phaser.Scene {
       platformSegments:this.level.platformSegments,
       ceilingAt:this.level.cave?x=>this.level.cave.ceilingAt(x):null
     });
+    if(launch)m.action='';
     if(launch==='takeoff')this.sparkle(m.x,m.y-35,0xffecce);
     else if(launch==='wingbeat'){
       this.sparkle(m.x,m.y-39,0xd9efff);
       this.wingbeatTrail(m.x,m.y);
     }
-    this.animateMount(m,action,step/60);
-    const seat=seatFor(m.kind,m.grounded?(Math.abs(m.vx)>.4?'run':'idle'):'jump');
-    p.x=m.x+seat.x*(m.face<0?-1:1);
+    const frame=this.animateMount(m,action,step/60);
+    const mountArt=mounts[m.kind].manifest;
+    // Preserve the gameplay position while the art follows the painted saddle.
+    const seat=seatFor(m.kind,m.grounded?action:'jump');
+    p.x=m.x+seat.x*m.face;
     p.y=m.y+seat.y;
+    const [seatX,seatY]=mountArt.seats[frame];
     p.vx=m.vx;p.vy=m.vy;p.face=m.face;p.grounded=m.grounded;
-    this.animate(p,'hero',m.grounded?(Math.abs(m.vx)>.5?'run':'idle'):'jump',step/60);
+    const riderArt=riders.manifest;
+    const riderFrame=riderArt.explorers.indexOf(p.explorer)*riderArt.columns+mountArt.riderFrames[frame];
+    p.textureName='riders';
+    p.action='ride';
+    p.visual.setTexture('riders',riderFrame)
+      .setOrigin(riderArt.origin.x/riderArt.frameWidth,riderArt.origin.y/riderArt.frameHeight)
+      .setPosition(m.x+seatX*mountArt.worldScale*m.face,m.y+seatY*mountArt.worldScale)
+      .setFlipX(p.face<0).setScale(riderArt.worldScale).setRotation(0);
     if(p.id===1&&this.players[0]&&
        (Math.abs(p.x-this.players[0].x)>210||Math.abs(p.y-this.players[0].y)>145)){
       this.dismount(p);
@@ -657,7 +674,7 @@ class Wonderwood extends Phaser.Scene {
           this.groundAt(m.x),this.level.platformSegments,TILE);
         if(floor!==null){m.y=floor;m.vy=0;m.grounded=true;}
       }
-      const action=m.chew>0?'eat':m.trust>=100?'happy':food?'run':'idle';
+      const action=m.chew>0?'eat':!m.grounded?(m.vy<0?'jump':'glide'):food&&m.trust<100?'run':'idle';
       this.animateMount(m,action,step/60);
     }
   }
@@ -665,9 +682,10 @@ class Wonderwood extends Phaser.Scene {
   makePlayer(id){
     const spawn=this.level.objects.find(o=>o.kind==='p1');
     const x=(spawn.x+.5)*TILE+(id?14:0), y=this.groundAt(x);
-    const visual=this.actor('hero',x,y).setDepth(30+id);
+    const explorer=id===0?this.explorerSelect.value:'hero';
+    const visual=this.actor(explorer,x,y).setDepth(30+id);
     if(id===1)visual.setTint(0xcacaff);
-    const player={id,x,y,vx:0,vy:0,face:1,grounded:true,coyote:5,
+    const player={id,explorer,x,y,vx:0,vy:0,face:1,grounded:true,coyote:5,
       jumpBuffer:0,jumps:0,flaps:0,flapWait:0,health:3,sleep:false,invincible:0,
       creatureBounceWindow:0,creatureBounceBoosts:0,
       form:null,caught:null,food:0,powers:0,punchTicks:0,hover:0,breach:0,bubble:false,
@@ -886,11 +904,32 @@ class Wonderwood extends Phaser.Scene {
     }
   }
 
+  changeForm(p,form){
+    if(p.form===form)return;
+    p.form=form;
+    gesture(p,'transform',.54);
+    this.burstAt(p.x,p.y-17);
+  }
+
+  burstAt(x,y){
+    const burst=captureBurst(this,x,y);
+    drawCaptureBurst(burst);
+    this.captureBursts.push(burst);
+  }
+
+  updateCaptureBursts(){
+    this.captureBursts=this.captureBursts.filter(burst=>{
+      burst.age++;
+      if(drawCaptureBurst(burst))return true;
+      burst.art.destroy();
+      return false;
+    });
+  }
+
   throwOrb(p){
     gesture(p,'capture',.38);
     const x=p.x+p.face*7,y=p.y-17;
-    const visual=this.add.image(x,y,'effects',EFFECT_FRAMES.bubble)
-      .setScale(.06).setAlpha(.93).setDepth(32);
+    const visual=this.add.image(x,y,'capture-orb').setDisplaySize(14,14).setDepth(32);
     // A *fixed*, slow, predictably bouncing trajectory. No target-aware
     // adjustments, homing, or hidden capture assistance.
     const perch=this.playerPerch(p);
@@ -1028,7 +1067,7 @@ class Wonderwood extends Phaser.Scene {
       const next=orbStep(orb,floor,step);
       Object.assign(orb,next);
       orb.visual.setPosition(orb.x,orb.y)
-        .setScale(.06*(.96+.04*Math.cos(this.simulationTime*.006)));
+        .setRotation((150-orb.life)*.09*Math.sign(orb.vx));
       if(orb.bounces>oldBounces)
         this.sparkle(orb.x,orb.y+5,0xc5f5ff);
       const animal=this.animals.find(a=>!a.captured&&a.distraction>0&&
@@ -1043,11 +1082,11 @@ class Wonderwood extends Phaser.Scene {
         animal.warningArt?.setVisible(false);
         if(animal.halo)animal.halo.setVisible(false);
         orb.owner.caught=animal.kind;
-        orb.owner.form=null;
+        this.changeForm(orb.owner,null);
         if(animal.perch&&!this.puzzleObjects.some(o=>o.kind==='tipping-log'&&o.state==='settled')){
           orb.owner.checkpoint={x:animal.perch.left+22,y:animal.perch.y};
         }
-        this.sparkle(animal.x,animal.y,0xe1ffb5);
+        this.burstAt(orb.x,orb.y);
         this.flash('Befriended '+FORMsName(animal.kind)+'! Press T / Y to transform',3000);
         orb.life=0;
       }
@@ -1072,7 +1111,7 @@ class Wonderwood extends Phaser.Scene {
   movePlayer(p,actions,step){
     if(p.sleep){
       if(actions.revivePressed||actions.recallPressed)this.recall(p);
-      else this.animate(p,p.form||'hero','sleep',step/60);
+      else this.animate(p,p.form||p.explorer,'sleep',step/60);
       return;
     }
     if(actions.revivePressed){
@@ -1102,11 +1141,9 @@ class Wonderwood extends Phaser.Scene {
     }else if(actions.transformPressed&&nearbyMount){
       this.board(p,nearbyMount);
     }else if(actions.transformPressed&&p.caught){
-      p.form=p.form?null:p.caught;
+      this.changeForm(p,p.form?null:p.caught);
       // Switching back and forth in midair cannot refill the ravine's flight budget.
       if(!this.puzzleObjects.length||p.grounded){p.flaps=0;p.jumps=0;}
-      gesture(p,'transform',.54);
-      this.sparkle(p.x,p.y-12,0xe9ffcd);
       this.flash(p.form?FORMsName(p.form)+' form':'Explorer form',1300);
     }
     if(p.punchTicks>0&&--p.punchTicks===0&&p.form==='flintfist')this.strikeWall(p);
@@ -1158,7 +1195,7 @@ class Wonderwood extends Phaser.Scene {
       }else if(event==='hardLand')this.sparkle(p.x,p.y,0xe4f4c9);
       else if(event==='recall')this.recall(p);
     }
-    this.animate(p,p.form||'hero',pushing&&p.grounded?'push':action,step/60);
+    this.animate(p,p.form||p.explorer,pushing&&p.grounded?'push':action,step/60);
     if(p.id===1&&this.players[0]&&
       (Math.abs(p.x-this.players[0].x)>210||Math.abs(p.y-this.players[0].y)>145)){
       p.bubble=true;
@@ -1290,6 +1327,7 @@ class Wonderwood extends Phaser.Scene {
           }
         }
       }
+      this.updateCaptureBursts();
       stepPlatforms(this.movingPlatforms,tickTime/1000);
       stepMachines(this.machines,Math.round(tickTime/TICK_MS));
       const settled=stepPuzzleObjects(this.puzzleObjects,this.walkableMachines);

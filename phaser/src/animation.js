@@ -8,17 +8,15 @@ export const ACTIONS = Object.freeze([
 
 const ALIASES = {
   land:'idle',feed:'eat',capture:'alert',transform:'happy',
-  punch:'alert',stunned:'hurt',dash:'run',flap:'run',glide:'fall',swim:'run'
+  punch:'alert',stunned:'hurt',dash:'run',flap:'run',glide:'jump',swim:'run'
 };
 const ONCE = new Set(['land','feed','capture','transform','hurt','stunned','alert','punch']);
 const clamp=(value,minimum,maximum)=>Math.max(minimum,Math.min(maximum,value));
 
 export function poseFor(manifest, action, elapsed, motion=0, phase=0) {
   const animations=manifest.animations;
-  const key=(action==='punch'||action==='land')&&animations[action]?action:
-    action==='flap'&&animations.run?'run':
-    action==='glide'&&animations.jump?'jump':ALIASES[action]||action;
-  const clip=animations[key]||animations.idle;
+  const clip=animations[action]||animations[ALIASES[action]]||
+    (action==='glide'?animations.fall:null)||animations.idle;
   const index=ONCE.has(action) ?
     Math.min(clip.frames.length-1,Math.floor(elapsed*clip.fps)) :
     Math.floor(Math.max(0,elapsed)*clip.fps)%clip.frames.length;

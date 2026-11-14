@@ -1,6 +1,13 @@
 // Original Wonderwood character and environment art, with Kenney sky details.
-import hero from '../../src/assets/characters/hero/sheet.png';
+import hero from '../../src/assets/characters/hero/sheet.webp';
 import heroManifest from '../../src/assets/characters/hero/manifest.json';
+import princess from '../../src/assets/characters/princess/sheet.webp';
+import princessManifest from '../../src/assets/characters/princess/manifest.json';
+import steampunk from '../../src/assets/characters/steampunk/sheet.webp';
+import steampunkManifest from '../../src/assets/characters/steampunk/manifest.json';
+import riderSheet from '../assets/generated/riders.webp';
+import riderManifest from '../assets/generated/riders.json';
+import captureOrb from '../assets/generated/capture-orb.webp';
 import springaroo from '../../src/assets/characters/springaroo/sheet.png';
 import springManifest from '../../src/assets/characters/springaroo/manifest.json';
 import tideling from '../../src/assets/characters/tideling/sheet.webp';
@@ -20,9 +27,9 @@ import emberManifest from '../../src/assets/characters/emberkit/manifest.json';
 import rockPoses from '../assets/generated/stonewake-hollow/poses/rock-poses.json';
 import gravelback from '../assets/generated/stonewake-hollow/gravelback.webp';
 import flintfist from '../assets/generated/stonewake-hollow/flintfist.webp';
-import unicorn from '../../src/assets/characters/unicorn/sheet.avif';
+import unicorn from '../../src/assets/characters/unicorn/sheet.webp';
 import unicornManifest from '../../src/assets/characters/unicorn/manifest.json';
-import pegasus from '../../src/assets/characters/pegasus/sheet.avif';
+import pegasus from '../../src/assets/characters/pegasus/sheet.webp';
 import pegasusManifest from '../../src/assets/characters/pegasus/manifest.json';
 
 import meadow from '../../src/assets/scenes/meadow/backdrop.webp';
@@ -43,6 +50,8 @@ const rockManifest={
 
 export const characters = {
   hero:{url:hero,manifest:heroManifest},
+  princess:{url:princess,manifest:princessManifest},
+  steampunk:{url:steampunk,manifest:steampunkManifest},
   springaroo:{url:springaroo,manifest:springManifest},
   tideling:{url:tideling,manifest:tideManifest},
   skyling:{url:skyling,manifest:skyManifest},
@@ -58,6 +67,8 @@ export const mounts = {
   unicorn:{url:unicorn,manifest:unicornManifest},
   pegasus:{url:pegasus,manifest:pegasusManifest}
 };
+export const riders={url:riderSheet,manifest:riderManifest};
+export {captureOrb};
 export const backgrounds = {meadow,coast,summit};
 export const sheets = {flora,props,effects};
 export const paintedStates=states;

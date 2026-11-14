@@ -1,14 +1,14 @@
 {
   "name": "hero",
-  "image": "sheet.png",
-  "frameWidth": 444,
-  "frameHeight": 444,
+  "image": "sheet.webp",
+  "frameWidth": 160,
+  "frameHeight": 160,
   "columns": 4,
   "origin": {
-    "x": 220,
-    "y": 398
+    "x": 80.0,
+    "y": 138.125
   },
-  "worldScale": 0.11,
+  "worldScale": 0.32,
   "animations": {
     "idle": {
       "frames": [
@@ -22,25 +22,40 @@
         2,
         3,
         4,
-        5
+        5,
+        6,
+        7
       ],
-      "fps": 10
+      "fps": 15
     },
     "jump": {
       "frames": [
-        6
+        8
       ],
       "fps": 1
     },
     "fall": {
       "frames": [
-        6
+        9
       ],
       "fps": 1
     },
-    "eat": {
+    "land": {
       "frames": [
-        1
+        10,
+        0
+      ],
+      "fps": 12
+    },
+    "feed": {
+      "frames": [
+        11
+      ],
+      "fps": 1
+    },
+    "capture": {
+      "frames": [
+        11
       ],
       "fps": 1
     },
@@ -52,19 +67,13 @@
     },
     "hurt": {
       "frames": [
-        7
+        10
       ],
       "fps": 1
     },
     "sleep": {
       "frames": [
-        1
-      ],
-      "fps": 1
-    },
-    "alert": {
-      "frames": [
-        2
+        10
       ],
       "fps": 1
     }
