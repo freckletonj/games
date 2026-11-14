@@ -10,6 +10,6 @@ This branch brings the Wonderwood experiments together on top of `main`. Start h
 
 ## Current checkpoint
 
-The Phaser campaign and #8 cave sources are in this branch. The first local run passed 118 of 119 Node tests. The integration corrects the stale assertion for the SVG’s clipped climb-wall group, bringing the suite to 119 passing. Guide export succeeds. The current Skywell solid WebP fails exact alpha registration, so the next step is to measure the mismatch, rebake against the current exported masks if needed, and verify the offline game.
+The Phaser campaign and #8 cave sources are in this branch. The first local run passed 118 of 119 Node tests. The integration corrects the stale assertion for the SVG’s clipped climb-wall group, bringing the suite to 119 passing. Guide export succeeds. The original painting differed from the current masks by 41 solid, 15 water, and 26 background pixels. The rebaked WebP layers match all three masks pixel for pixel. The standalone build launches from a local file in Firefox, renders Skywell’s three layers, toggles the geometry overlay, and responds to movement without HTTP requests. Extended Chromium checks and release packaging are next.
 
 GitHub Actions is intentionally disabled. Use local builds and browser verification. Keep diffs and logs scoped to source and summarize binary assets by path and size. Avoid printing generated HTML, embedded assets, and vendored dependencies into the conversation.
