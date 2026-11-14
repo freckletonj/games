@@ -72,7 +72,7 @@
     ],
     "platforms": {
       "grove-boulder": "phaser/assets/generated/stonewake-hollow/grove-boulder.webp",
-      "perched-boulder": "phaser/assets/generated/stonewake-hollow/perched-boulder.webp",
+      "bridge-log": "phaser/assets/generated/stonewake-hollow/bridge-log.webp",
       "cave-seal": "phaser/assets/generated/stonewake-hollow/cave-seal.webp"
     }
   }

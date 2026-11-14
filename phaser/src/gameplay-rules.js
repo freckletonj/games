@@ -11,6 +11,8 @@ export function chooseCreatureLure(animal,lures,groundAt){
   return lures.filter(lure=>{
     if(!lure.landed||Math.abs(lure.x-animal.homeX)>radius||
       Math.abs(lure.x-animal.x)>=155)return false;
+    if(animal.perch)return lure.y===animal.perch.y&&
+      lure.x>=animal.perch.left&&lure.x<=animal.perch.right;
     if(animal.flying)return Math.abs(lure.y-animal.homeY)<80;
     if(Math.abs(lure.y-groundAt(lure.x))>=24)return false;
     // A fruit beyond a wall or discontinuity must not monopolize the AI.

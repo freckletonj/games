@@ -70,7 +70,7 @@ def pack(scene, art, output):
     spire = brassworks.clean_cutout(spire_source)
     landscape = panorama.convert("RGBA")
     for piece in LAYOUT["puzzleObjects"]:
-        if "platform" not in piece:
+        if piece["kind"] != "push-boulder":
             continue
         x, y = piece["platform"]
         bed = y + piece["size"][1] - 3
@@ -87,16 +87,6 @@ def pack(scene, art, output):
         frame = Image.new("RGBA", (width, height))
         frame.paste(sprite.resize((width - 2, height - 1), RESAMPLE), (1, 1))
         frame.save(output / f"{piece['id']}.webp", lossless=True)
-    creatures = Image.open(art / "creatures.webp").convert("RGBA")
-    for i, name in enumerate(("gravelback", "flintfist")):
-        sprite = creatures.crop((i * creatures.width // 2, 0, (i + 1) * creatures.width // 2, creatures.height))
-        alpha = sprite.getchannel("A")
-        sprite.putalpha(alpha.point(lambda a: a if a >= 24 else 0))
-        sprite = sprite.crop(sprite.getbbox())
-        sprite.thumbnail((114, 112), RESAMPLE)
-        frame = Image.new("RGBA", (128, 128))
-        frame.paste(sprite, ((128 - sprite.width) // 2, 112 - sprite.height))
-        frame.save(output / f"{name}.webp", quality=91, method=6)
 
 
 def main():

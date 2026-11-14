@@ -376,9 +376,15 @@ WW.worldCompiler = (() => {
     stamp('p2', 6, floorAt(6) - 1);
     stamp('exit', width - 5, floorAt(width - 5) - 1);
     stamp(...spec.relic);
-    for (const [kind, x, explicitY] of spec.creatures) {
+    for (const [kind, x, explicitY, placement] of spec.creatures) {
       const aerial = ['skyling', 'cloudwhisp', 'glimmermoth'].includes(kind);
       stamp(kind, x, explicitY ?? floorAt(x) - (aerial ? 4 : 1));
+      if (placement === 'perched') {
+        const perch = platformSegments.find(p => p.kind === 'platform' &&
+          p.y === explicitY && x >= p.x && x < p.x + p.length);
+        if (!perch || aerial) throw Error('Perched creature must be on a ledge: ' + kind);
+        objects.at(-1).perch = perch;
+      }
     }
     for (const x of spec.checkpoints) stamp('checkpoint', x, floorAt(x) - 1);
     for (const x of spec.snacks) stamp('snack', x, floorAt(x) - 1);

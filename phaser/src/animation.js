@@ -2,7 +2,7 @@
 // foot-anchored sprite contract. All poses remain artist-drawn atlas frames;
 // small secondary motion adds anticipation and weight without stretching tiles.
 export const ACTIONS = Object.freeze([
-  'idle','run','jump','fall','land','feed','capture','transform',
+  'idle','run','push','jump','fall','land','feed','capture','transform',
   'eat','happy','alert','punch','hurt','stunned','dash','flap','glide','swim','sleep'
 ]);
 
@@ -15,7 +15,8 @@ const clamp=(value,minimum,maximum)=>Math.max(minimum,Math.min(maximum,value));
 
 export function poseFor(manifest, action, elapsed, motion=0, phase=0) {
   const animations=manifest.animations;
-  const key=action==='flap'&&animations.run?'run':
+  const key=(action==='punch'||action==='land')&&animations[action]?action:
+    action==='flap'&&animations.run?'run':
     action==='glide'&&animations.jump?'jump':ALIASES[action]||action;
   const clip=animations[key]||animations.idle;
   const index=ONCE.has(action) ?
@@ -78,6 +79,7 @@ export function poseFor(manifest, action, elapsed, motion=0, phase=0) {
     case 'happy':sy=1+.055*breath;dy=-2.2*Math.abs(breath);break;
     case 'alert':sx=1.06;sy=.98;rotation=.045*breath;break;
     case 'punch': {
+      if(animations.punch)break;
       const strike=Math.exp(-elapsed*14);
       dx=9*strike;sx=1+.11*strike;sy=1-.055*strike;rotation=.1*strike;break;
     }

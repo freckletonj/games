@@ -39,8 +39,9 @@ export function movingLanding(platforms,rider,fromX,fromY,toX,toY){
   for(const deck of platforms){
     const y=deckTopAt(deck,toX);
     if(y===null||y>=landingY)continue;
-    const walkingOntoBelt=deck.kind==='conveyor'&&fromY===y&&toY>=y;
-    if(rider!==deck.id&&!walkingOntoBelt){
+    const walkingOntoDeck=(deck.kind==='conveyor'||deck.kind==='puzzle-bridge')&&
+      fromY===y&&toY>=y;
+    if(rider!==deck.id&&!walkingOntoDeck){
       const [x]=deck.position;
       const [previousX,previousY]=deck.previous;
       const oldTop=deckTopAt(deck,fromX,deck.previous);

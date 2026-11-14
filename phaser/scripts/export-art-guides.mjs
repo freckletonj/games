@@ -45,7 +45,7 @@ for(const chapter of chapters){
     for(const object of level.puzzleObjects){
       const [x,bottom]=object.home,[width,height]=object.size;
       const left=x-width/2,right=x+width/2,top=bottom-height;
-      const polygon=object.kind==='breakable-wall'?
+      const polygon=object.kind!=='push-boulder'?
         [[left,top],[right,top],[right,bottom],[left,bottom]]:
         [[left,bottom],[left,top+height*.46],[x-width*.25,top],
           [x+width*.25,top],[right,top+height*.42],[right,bottom]];

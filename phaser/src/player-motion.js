@@ -42,8 +42,8 @@ export function stepPlayerMotion(p,actions,step,world){
       p.y>w.top*world.tile+3&&p.y-27<w.bottom*world.tile);
     if(direction)p.face=direction;
     // Emberkit gets a modest sprint, not a game-breaking traversal power.
-    const desired=direction*(swimmer?2.15:
-      p.form==='springaroo'?2.65:p.form==='emberkit'?2.6:2.3);
+    const desired=direction*(world.pushSpeed??(swimmer?2.15:
+      p.form==='springaroo'?2.65:p.form==='emberkit'?2.6:2.3));
     const traction=p.grounded ? .22 : .14;
     p.vx+=(desired-p.vx)*Math.min(1,traction*step);
     if(swimmer){
@@ -147,7 +147,7 @@ export function stepPlayerMotion(p,actions,step,world){
       fromX,priorY,p.x,p.y):null;
     const movingTop=moving?deckTopAt(moving,p.x):null;
     const onDeck=moving&&(landing===null||movingTop<landing||
-      (moving.kind==='conveyor'&&movingTop===landing));
+      ((moving.kind==='conveyor'||moving.kind==='puzzle-bridge')&&movingTop===landing));
     p.onPlatform=onDeck?moving.id:null;
     if(onDeck)landing=movingTop;
     if(landing!==null){
