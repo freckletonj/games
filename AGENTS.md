@@ -30,12 +30,11 @@ controls, build setup, and browser verification.
 
 ## Git and large files
 
-- Start with a full local clone and check `git status` and the remote head
-  before editing. Use filenames and sizes first, then bounded source and diff
-  excerpts. In chat, tell the user which files and sizes you plan to preview.
-- Keep generated HTML, PNGs, archives, and base64 out of model-visible tool
-  output. Process files on disk and report sizes, hashes, and test summaries.
-  The standalone HTML bundles the engine and art into a roughly 16 MB file.
+- Work in a local clone and check the branch and working tree before editing.
+- Keep large files on disk or transfer them as files. Large model-visible
+  payloads, including bundled HTML and base64, consume the context window
+  and shorten how long a chat can continue. Use targeted excerpts or a short
+  summary when inspecting them.
 - Deliver `dist/wonderwood-phaser.html` in chat as a file with a unique
   filename. Keep generated builds out of GitHub. For source changes, use
   authenticated Git when available or the connected GitHub app for bounded

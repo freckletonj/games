@@ -204,7 +204,7 @@ trajectories. Browser tests cover standard gameplay, chapter rendering,
 and the full first Meadow route; physical gamepad confirmation remains
 necessary.
 
-## Modularization in progress
+## Rendering and gameplay modules
 
 The playable Phaser scene delegates the terrain and atmosphere layers to
 `src/world-renderer.js`, so texture choices and biome composition can be
@@ -218,12 +218,6 @@ Mosslight Meadow now declares three reusable encounter prefabs as
 a second map format. See [ENCOUNTERS.md](ENCOUNTERS.md) for the
 authoring contract, validation limits, and the next LLM-level-generation
 steps.
-
-The core `game.js` still contains explorer movement, creature AI and
-interaction orchestration. Those are explicitly next in the PR TODO
-roadmap; this extraction intentionally preserves the already-tested
-controller, bloom, water and full-Meadow input sequences. Fixed-timestep
-conversion requires separate testing and has not been made in this pass.
 
 ## Deterministic gameplay step (60 Hz)
 

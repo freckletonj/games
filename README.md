@@ -1,8 +1,12 @@
 # Wonderwood — a little world worth exploring
 
-A dependency-free, offline 2D creature adventure for one or two players. Five extended chapters, eight catchable creatures with distinct behaviors, three essential traversal transformations, and one hidden light to recover per chapter.
+An offline 2D creature adventure for one or two players.
 
-**Play:** Run `node scripts/build.mjs` from the repository root, then open `dist/wonderwood.html` in Firefox or Chromium. No server, npm packages, or internet connection are needed. Pull request builds also publish a **wonderwood-playable-preview** artifact in GitHub Actions containing the complete standalone HTML.
+**Play the Phaser campaign:** See the [Phaser build instructions](phaser/README.md#build).
+It includes all seven chapters and builds a standalone offline HTML file.
+
+**Play the original Canvas game:** Run `node scripts/build.mjs` from the repository
+root, then open `dist/wonderwood.html` in Firefox or Chromium.
 
 ## The loop
 
