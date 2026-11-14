@@ -1,0 +1,106 @@
+import {landingY,safeHorizontalX} from './physics.js';
+import {tryBloomBoost} from './springboard.js';
+
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+
+// Mutates only simulation data. Phaser displays animations and effects from
+// returned semantic events. Uses the same world geometry and movement values
+// as the previous Scene.movePlayer body.
+export function stepPlayerMotion(p,actions,step,world){
+  const events=[];
+    p.powers=Math.max(0,p.powers-step/60);
+    p.flapWait=Math.max(0,p.flapWait-step);
+    p.hover=Math.max(0,p.hover-step/60);
+    p.breach=Math.max(0,p.breach-step/60);
+    p.bloomWindow=Math.max(0,p.bloomWindow-step);
+    p.creatureBounceWindow=Math.max(0,(p.creatureBounceWindow||0)-step);
+    p.coyote=p.grounded?5:Math.max(0,p.coyote-step);
+    p.jumpBuffer=actions.jumpPressed?6:Math.max(0,p.jumpBuffer-step);
+    const inWater=world.inWater(p.x,p.y-8);
+    const swimmer=p.form==='tideling'&&inWater;
+    const direction=Number(actions.right)-Number(actions.left);
+    if(direction)p.face=direction;
+    // Emberkit gets a modest sprint, not a game-breaking traversal power.
+    const desired=direction*(swimmer?2.15:
+      p.form==='springaroo'?2.65:p.form==='emberkit'?2.6:2.3);
+    const traction=p.grounded ? .22 : .14;
+    p.vx+=(desired-p.vx)*Math.min(1,traction*step);
+    if(swimmer){
+      p.vy+=((actions.jump?-.23:actions.down?.24:.046)-p.vy*.035)*step;
+      p.vy=clamp(p.vy,-2.3,2.6);
+      const basin=world.waterBodies.find(b=>
+        p.x>=b.start*world.tile&&p.x<=b.end*world.tile);
+      if(actions.jumpPressed&&basin&&p.breach===0&&
+        p.y-basin.surface*world.tile<30){
+        p.vy=-5.1;p.breach=.48;
+        events.push('breach');
+      }
+    }else{
+      if(actions.jumpPressed&&p.creatureBounceWindow>0){
+        // A deliberate second press after a head-stomp, not an unlimited
+        // midair jump. Consume the window and normal double-jump budget.
+        p.vy=-8.0;p.grounded=false;p.coyote=0;p.jumpBuffer=0;
+        p.creatureBounceWindow=0;p.jumps=2;
+        p.creatureBounceBoosts=(p.creatureBounceBoosts||0)+1;
+        events.push('creatureBounceBoost');
+      }else if(tryBloomBoost(p,actions.jumpPressed)){
+        events.push('bloomBoost');
+      }else if(p.jumpBuffer>0&&p.coyote>0){
+        p.vy=-5.4;p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumps=1;
+      }else if(actions.jumpPressed&&p.form==='springaroo'&&p.jumps===1){
+        p.vy=-6.6;p.jumps=2;p.jumpBuffer=0;
+        events.push('doubleJump');
+      }else if(actions.jumpPressed&&p.form==='skyling'&&p.flaps<4&&p.flapWait<=0){
+        p.vy=-5.65;p.flaps++;p.flapWait=8;p.jumpBuffer=0;
+        events.push('flap');
+      }
+      if(!actions.jump&&p.vy<-2.3&&p.form!=='skyling')p.vy+=.28*step;
+      const hover=p.form==='glimmermoth'&&p.hover>0&&p.vy>0;
+      p.vy+=(p.vy>=0 ? (hover ? .12 : .52) : .34)*step;
+      // Hover must remain a real slow descent for its entire duration.
+      if(hover)p.vy=Math.min(p.vy,.9);
+      if(world.inWater(p.x,p.y-6))p.vy=Math.min(p.vy,1.4);
+    }
+    const updraft=world.thermalVolumes.some(c=>
+      p.x>=c.x*world.tile&&p.x<=(c.x+c.width)*world.tile&&
+      p.y>c.y*world.tile&&p.y<(c.y+c.height)*world.tile);
+    if(updraft){
+      p.vy-=.48*step;
+      if(p.form==='skyling')p.flaps=0;
+    }
+    p.vy=clamp(p.vy,-11,7.5);
+    // Horizontal velocity is input intent. On a steep slope constrain
+    // travel along the surface, otherwise a 2.3 px/tick run can teleport
+    // 8+ world pixels vertically every tick.
+    const slope=p.grounded?
+      (world.groundAt(p.x+2)-world.groundAt(p.x-2))/4:0;
+    const surfaceVx=p.grounded?p.vx/Math.hypot(1,slope):p.vx;
+    const nextX=clamp(p.x+surfaceVx*step,10,world.width-10);
+    const safeX=safeHorizontalX(p.x,nextX,p.y,
+      x=>world.groundAt(x),swimmer);
+    if(Math.abs(safeX-nextX)>.2)p.vx=0;
+    p.x=safeX;
+    const priorY=p.y,wasGrounded=p.grounded,impactSpeed=p.vy;
+    p.y+=p.vy*step;
+    const landing=landingY(priorY,p.y,p.vy,p.grounded,
+      p.x,world.groundAt(p.x),world.platformSegments,world.tile);
+    if(landing!==null){
+      p.y=landing;p.vy=0;p.grounded=true;p.jumps=0;p.flaps=0;p.coyote=5;
+      if(!wasGrounded&&impactSpeed>1.3){
+        events.push('land');
+        if(impactSpeed>3.8)events.push('hardLand');
+      }
+    }else p.grounded=false;
+    // Safety against upward-facing underwater banks: a wall cannot
+    // convert a horizontal swim into a fall through the heightfield.
+    const ground=world.groundAt(p.x);
+    if(p.y>ground+3){
+      p.y=ground;p.vy=Math.min(p.vy,0);p.grounded=true;
+    }
+    if(p.y>world.height-10)events.push('recall');
+    const action=swimmer?'swim':p.grounded?(Math.abs(p.vx)>.3?'run':'idle'):
+      p.form==='skyling'||(p.form==='glimmermoth'&&p.hover>0&&p.vy>=0)?
+        'glide':p.vy<0?'jump':'fall';
+    return {action,events};
+
+}
