@@ -23,6 +23,8 @@ import {caveContainsWater} from './cave-layout.js';
 import {makeGeometryOverlay,paintScene,paintThermals,sceneTextures} from './painted-scene.js';
 import {deckTopAt,platformPosition,stepPlatforms} from './moving-platforms.js';
 import {machinePlatforms,stepMachines} from './machines.js';
+import {createPuzzleObjects,pushBoulder,blockPuzzleX,gustBoulder,punchWall,
+  stepPuzzleObjects,puzzleHint} from './puzzle-objects.js';
 import {surfaceGroundAt} from './surface-geometry.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
@@ -33,10 +35,11 @@ const VIEW_W=480;
 const VIEW_H=270;
 const SKY={meadow:0xa4d9c2,coast:0xa8dbe0,summit:0x98a4ce};
 const FORMS={springaroo:'Double jump',tideling:'Swim and dive',skyling:'Four wingbeats',
-  mossback:'Honey',prismtail:'Bubbles',glimmermoth:'Hover',cloudwhisp:'Gust',emberkit:'Spark'};
+  mossback:'Honey',prismtail:'Bubbles',glimmermoth:'Hover',cloudwhisp:'Gust',emberkit:'Spark',
+  gravelback:'Push boulders',flintfist:'Stone punch'};
 const FRUITS=['berry','nectar','star'];
 const FAVORITES={springaroo:'berry',tideling:'nectar',skyling:'star',mossback:'berry',
-  prismtail:'berry',glimmermoth:'star',cloudwhisp:'nectar',emberkit:'berry'};
+  prismtail:'berry',glimmermoth:'star',cloudwhisp:'nectar',emberkit:'berry',gravelback:'berry',flintfist:'berry'};
 const FORM_HINTS={
   springaroo:'Tap Jump twice to leap higher',
   tideling:'Hold Jump to swim · Down to dive',
@@ -45,7 +48,9 @@ const FORM_HINTS={
   prismtail:'F / B to float creatures in bubbles',
   glimmermoth:'F / B for a long feather-hover',
   cloudwhisp:'F / B to blow creatures back',
-  emberkit:'Run faster · F / B for a gentle spark'
+  emberkit:'Run faster · F / B for a gentle spark',
+  gravelback:'Walk into a boulder to push it',
+  flintfist:'F / B · punch cracked stone'
 };
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -141,6 +146,7 @@ class Wonderwood extends Phaser.Scene {
           }))
         }:null,
         movingPlatforms:this.walkableMachines?.map(({id,position})=>({id,position}))||[],
+        puzzleObjects:this.puzzleObjects?.map(({id,x,bottom,state})=>({id,x,bottom,state}))||[],
         players:this.players?.map(p=>({x:p.x,y:p.y,face:p.face,vx:p.vx,vy:p.vy,
           action:p.action,frame:Number(p.visual?.frame?.name),
           texture:p.visual?.texture?.key,grounded:p.grounded,
@@ -208,6 +214,7 @@ class Wonderwood extends Phaser.Scene {
     this.geometryOverlay=null;
     this.movingPlatforms=[];
     this.machines=[];
+    this.puzzleObjects=[];
     this.walkableMachines=[];
     this.deckOverlay=null;
     this.lastInput=[{},{}];
@@ -337,7 +344,11 @@ class Wonderwood extends Phaser.Scene {
       }
     }
     this.walkableMachines=[...this.movingPlatforms,...this.machines];
-    if(this.walkableMachines.length)this.deckOverlay=this.add.graphics().setDepth(101);
+    this.puzzleObjects=createPuzzleObjects(this.level.puzzleObjects??[]);
+    for(const object of this.puzzleObjects)
+      object.visual=this.add.image(object.x,object.bottom,'deck-'+this.chapter.id+'-'+object.id)
+        .setOrigin(.5,1).setDisplaySize(...object.size).setDepth(-19);
+    if(this.walkableMachines.length||this.puzzleObjects.length)this.deckOverlay=this.add.graphics().setDepth(101);
     paintThermals(this);
     this.spawnObjects();
     this.spawnMounts();
@@ -741,9 +752,22 @@ class Wonderwood extends Phaser.Scene {
 
   castPower(p){
     if(!p.form||p.powers>0)return;
-    if(p.form==='springaroo'||p.form==='tideling')return;
+    if(p.form==='springaroo'||p.form==='tideling'||p.form==='gravelback')return;
     p.powers=.8;
     gesture(p,'alert',.28);
+    if(p.form==='flintfist'){
+      gesture(p,'punch',.28);
+      this.sparkle(p.x+p.face*24,p.y-18,0xffd398);
+      const wall=punchWall(this.puzzleObjects,p);
+      if(wall){
+        for(const offset of [23,54,85,113])
+          this.sparkle(wall.x,wall.bottom-offset,0xffc584);
+        this.tweens.add({targets:wall.visual,alpha:0,y:wall.bottom+25,
+          duration:330,ease:'Quad.easeIn',onComplete:()=>wall.visual.destroy()});
+        this.flash('The cave is open!',1400);
+      }
+      return;
+    }
     if(p.form==='glimmermoth'){
       p.hover=HOVER_SECONDS;
       this.powerEffect(p.form,p.x,p.y,p.face);
@@ -803,8 +827,10 @@ class Wonderwood extends Phaser.Scene {
       // cannot be stunned by a projectile whose trajectory is blocked.
       const animal=result.ground?null:this.animals.find(a=>powerHitsCreature(
         shot,result.fromX,result.fromY,a));
+      const boulder=result.ground||animal?null:gustBoulder(this.puzzleObjects,shot,result.fromX);
+      if(boulder)this.sparkle(shot.x,shot.y,0xd3f6ff);
       if(animal)this.powerImpact(shot,animal);
-      if(animal||result.expired){
+      if(boulder||animal||result.expired){
         if(!animal&&result.ground&&shot.kind==='mossback')
           this.addHoneyPuddle(shot.x);
         shot.visual.destroy();
@@ -865,8 +891,8 @@ class Wonderwood extends Phaser.Scene {
         this.sparkle(animal.x,animal.y,0xffd4ee);
         gesture(animal,animal.trust>=100?'happy':'eat',.5);
         this.flash(animal.trust>=100?
-          animal.kind+' is friendly — throw a capture orb!':
-          animal.kind+' enjoyed the treat',1300);
+          FORMsName(animal.kind)+' is friendly — throw a capture orb!':
+          FORMsName(animal.kind)+' enjoyed the treat',1300);
       }
       if(animal.bubbleVisual){
         if(animal.bubbleRise>0)
@@ -968,7 +994,7 @@ class Wonderwood extends Phaser.Scene {
         orb.owner.caught=animal.kind;
         orb.owner.form=null;
         this.sparkle(animal.x,animal.y,0xe1ffb5);
-        this.flash('Befriended '+animal.kind+'! Press T / Y to transform',3000);
+        this.flash('Befriended '+FORMsName(animal.kind)+'! Press T / Y to transform',3000);
         orb.life=0;
       }
       if(orb.life<=0||orb.bounces>3||
@@ -1023,7 +1049,8 @@ class Wonderwood extends Phaser.Scene {
       this.board(p,nearbyMount);
     }else if(actions.transformPressed&&p.caught){
       p.form=p.form?null:p.caught;
-      p.flaps=0;p.jumps=0;
+      // Switching back and forth in midair cannot refill the ravine's flight budget.
+      if(!this.puzzleObjects.length||p.grounded){p.flaps=0;p.jumps=0;}
       gesture(p,'transform',.54);
       this.sparkle(p.x,p.y-12,0xe9ffcd);
       this.flash(p.form?FORMsName(p.form)+' form':'Explorer form',1300);
@@ -1036,6 +1063,7 @@ class Wonderwood extends Phaser.Scene {
       this.moveMountedPlayer(p,actions,step);
       return;
     }
+    pushBoulder(this.puzzleObjects,p,actions);
     const {action,events}=stepPlayerMotion(p,actions,step,{
       width:this.worldW,height:this.worldH,tile:TILE,
       groundAt:x=>this.groundAt(x),
@@ -1046,7 +1074,9 @@ class Wonderwood extends Phaser.Scene {
       platformSegments:this.level.platformSegments,
       climbWalls:this.level.climbWalls,
       movingPlatforms:this.walkableMachines,
-      rockPolygons:this.level.rockPolygons
+      rockPolygons:this.level.rockPolygons,
+      blockHorizontal:this.puzzleObjects.length?
+        (from,to,feet)=>blockPuzzleX(this.puzzleObjects,from,to,feet):null
     });
     for(const event of events){
       if(event==='breach')this.powerEffect('tideling',p.x,p.y,p.face);
@@ -1206,6 +1236,12 @@ class Wonderwood extends Phaser.Scene {
       }
       stepPlatforms(this.movingPlatforms,tickTime/1000);
       stepMachines(this.machines,Math.round(tickTime/TICK_MS));
+      const settled=stepPuzzleObjects(this.puzzleObjects,this.walkableMachines);
+      for(const object of this.puzzleObjects){
+        if(object.state!=='broken')object.visual.setPosition(object.x,object.bottom);
+      }
+      for(const object of settled)
+        this.sparkle(object.x,object.platform[1],0xffe9ad);
       for(const p of [...this.players])
         this.movePlayer(p,tickActions[p.id],step);
       this.updateMounts(step,tickTime);
@@ -1221,6 +1257,11 @@ class Wonderwood extends Phaser.Scene {
       this.deckOverlay.clear();
       if(this.geometryOverlay.visible){
         this.deckOverlay.lineStyle(2,0xffd28d,1);
+        for(const object of this.puzzleObjects){
+          if(object.state!=='ready'||object.kind==='gust-boulder')continue;
+          const [width,height]=object.size;
+          this.deckOverlay.strokeRect(object.x-width/2,object.bottom-height,width,height);
+        }
         for(const deck of this.walkableMachines){
           const [x]=deck.position,half=(deck.treadWidth??deck.size[0])/2;
           for(let px=x-half;px<x+half;px+=4){
@@ -1249,7 +1290,8 @@ class Wonderwood extends Phaser.Scene {
       lead.x<845?'Jump across the turning gears.':
       lead.x<1450?'Stand on the flashing piston and wait for the launch.':
         'Find the Foundry Light and take it to the gate.';
-    this.help.setText(this.chapter.id==='brassworks'?machineHint:
+    this.help.setText(this.puzzleObjects.length?puzzleHint(this.puzzleObjects,lead,this.animals):
+      this.chapter.id==='brassworks'?machineHint:
       this.chapter.id==='clockwork-orchard'?orchardHint:
       this.chapter.id==='skywell-ascent'&&lead.x<50*TILE?
       lead.caught&&!lead.form?
@@ -1279,7 +1321,7 @@ class Wonderwood extends Phaser.Scene {
 function FORMsName(name){
   return {springaroo:'Springaroo',tideling:'Tidefox',skyling:'Moonwing',
     mossback:'Mossback',prismtail:'Prismtail',glimmermoth:'Glimmermoth',
-    cloudwhisp:'Cloudwhisp',emberkit:'Emberkit'}[name]||name;
+    cloudwhisp:'Cloudwhisp',emberkit:'Emberkit',gravelback:'Gravelback',flintfist:'Flintfist'}[name]||name;
 }
 
 new Phaser.Game({

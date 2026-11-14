@@ -3,14 +3,14 @@
 // small secondary motion adds anticipation and weight without stretching tiles.
 export const ACTIONS = Object.freeze([
   'idle','run','jump','fall','land','feed','capture','transform',
-  'eat','happy','alert','hurt','stunned','dash','flap','glide','swim','sleep'
+  'eat','happy','alert','punch','hurt','stunned','dash','flap','glide','swim','sleep'
 ]);
 
 const ALIASES = {
   land:'idle',feed:'eat',capture:'alert',transform:'happy',
-  stunned:'hurt',dash:'run',flap:'run',glide:'fall',swim:'run'
+  punch:'alert',stunned:'hurt',dash:'run',flap:'run',glide:'fall',swim:'run'
 };
-const ONCE = new Set(['land','feed','capture','transform','hurt','stunned','alert']);
+const ONCE = new Set(['land','feed','capture','transform','hurt','stunned','alert','punch']);
 const clamp=(value,minimum,maximum)=>Math.max(minimum,Math.min(maximum,value));
 
 export function poseFor(manifest, action, elapsed, motion=0, phase=0) {
@@ -77,6 +77,10 @@ export function poseFor(manifest, action, elapsed, motion=0, phase=0) {
     case 'eat':sy=.94+.035*breath;rotation=.045*breath;break;
     case 'happy':sy=1+.055*breath;dy=-2.2*Math.abs(breath);break;
     case 'alert':sx=1.06;sy=.98;rotation=.045*breath;break;
+    case 'punch': {
+      const strike=Math.exp(-elapsed*14);
+      dx=9*strike;sx=1+.11*strike;sy=1-.055*strike;rotation=.1*strike;break;
+    }
     case 'dash':sx=1.07;sy=.96;rotation=.035*Math.sign(motion||1);break;
     case 'stunned':rotation=.055*Math.sin(cycle*2);sy=.96;break;
     case 'hurt':sx=1.06;sy=.93;rotation=.08;break;

@@ -28,7 +28,7 @@ for(const chapter of chapters){
     await writeFile(new URL('world-static-'+material+'.png',output),
       materialGuidePng(level,{layer:'static-'+material}));
 
-  if(level.movingPlatforms.length||level.machines.length){
+  if(level.movingPlatforms.length||level.machines.length||level.puzzleObjects.length){
     const paints=[...level.sceneFeatures,...[...level.movingPlatforms,...level.machines].map(deck=>{
       const [x,y]=deck.home,[width,height]=deck.size;
       const left=x-width/2,right=x+width/2;
@@ -42,6 +42,15 @@ for(const chapter of chapters){
         [left,y],[right,y],[right,y+height],[left,y+height]
       ]};
     })];
+    for(const object of level.puzzleObjects){
+      const [x,bottom]=object.home,[width,height]=object.size;
+      const left=x-width/2,right=x+width/2,top=bottom-height;
+      const polygon=object.kind==='breakable-wall'?
+        [[left,top],[right,top],[right,bottom],[left,bottom]]:
+        [[left,bottom],[left,top+height*.46],[x-width*.25,top],
+          [x+width*.25,top],[right,top+height*.42],[right,bottom]];
+      paints.push({...object,material:object.id,polygon});
+    }
     const palette={
       air:[164,185,168,255],rock:[113,100,82,255],shelf:[180,160,140,255],
       water:[35,136,175,255]

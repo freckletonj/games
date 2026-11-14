@@ -4,7 +4,7 @@ window.WW = window.WW || {};
 WW.worldCompiler = (() => {
   const terrainKinds = new Set(['ground', 'platform', 'water', 'thermal']);
   const creatures = new Set(['springaroo', 'tideling', 'skyling', 'mossback',
-    'prismtail', 'glimmermoth', 'cloudwhisp', 'emberkit']);
+    'prismtail', 'glimmermoth', 'cloudwhisp', 'emberkit', 'gravelback', 'flintfist']);
   const setpieceKinds = new Set(['bounceBloom', 'windRing', 'bubbleVent']);
   const vistaKinds = new Set(['root-arch', 'elder-tree', 'lily-garden',
     'firefly-ruins', 'shell-cove', 'reef-arch', 'tide-temple',

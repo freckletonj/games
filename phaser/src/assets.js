@@ -17,6 +17,8 @@ import glimmermoth from '../../src/assets/characters/glimmermoth/sheet.webp';
 import mothManifest from '../../src/assets/characters/glimmermoth/manifest.json';
 import emberkit from '../../src/assets/characters/emberkit/sheet.webp';
 import emberManifest from '../../src/assets/characters/emberkit/manifest.json';
+import gravelback from '../assets/generated/stonewake-hollow/gravelback.webp';
+import flintfist from '../assets/generated/stonewake-hollow/flintfist.webp';
 import unicorn from '../../src/assets/characters/unicorn/sheet.avif';
 import unicornManifest from '../../src/assets/characters/unicorn/manifest.json';
 import pegasus from '../../src/assets/characters/pegasus/sheet.avif';
@@ -33,6 +35,11 @@ import kenneyCloud from '../assets/kenney/cloud1.png';
 import kenneyCloudAlt from '../assets/kenney/cloud3.png';
 import kenneyMoon from '../assets/kenney/moonFull.png';
 
+const rockManifest={
+  frameWidth:128,frameHeight:128,origin:{x:64,y:112},worldScale:.37,
+  animations:{idle:{frames:[0],fps:1}}
+};
+
 export const characters = {
   hero:{url:hero,manifest:heroManifest},
   springaroo:{url:springaroo,manifest:springManifest},
@@ -42,7 +49,9 @@ export const characters = {
   prismtail:{url:prismtail,manifest:prismManifest},
   cloudwhisp:{url:cloudwhisp,manifest:cloudManifest},
   glimmermoth:{url:glimmermoth,manifest:mothManifest},
-  emberkit:{url:emberkit,manifest:emberManifest}
+  emberkit:{url:emberkit,manifest:emberManifest},
+  gravelback:{url:gravelback,manifest:rockManifest},
+  flintfist:{url:flintfist,manifest:rockManifest}
 };
 export const mounts = {
   unicorn:{url:unicorn,manifest:unicornManifest},

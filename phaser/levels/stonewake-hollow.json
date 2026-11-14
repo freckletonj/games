@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "id": "stonewake-hollow",
+  "biome": "summit",
+  "width": 128,
+  "height": 56,
+  "ridge": [[0,34],[22,34],[23,49],[29,49],[30,34],[47,34],[48,49],[74,49],[75,34],[128,34]],
+  "water": [],
+  "bridges": [],
+  "ledges": [[40,29,7]],
+  "creatures": [["gravelback",9],["skyling",35,33],["flintfist",88]],
+  "checkpoints": [33, 79],
+  "snacks": [6, 37, 92],
+  "stars": [[13,33],[60,34],[117,32]],
+  "relic": ["springKey",118,33],
+  "landmarks": [],
+  "sections": [
+    {"id":"grove","range":[0,20],"challenge":"friendship","goal":"Befriend the Gravelback with berries."},
+    {"id":"split","range":[20,30],"requires":"gravelback","challenge":"push boulder","goal":"Roll the boulder into the split and jump across."},
+    {"id":"perch","range":[30,47],"challenge":"friendship","goal":"Befriend the Moonwing with star treats."},
+    {"id":"ravine","range":[47,75],"requires":"skyling","challenge":"four flaps and gust","goal":"Fly up and blow the perched boulder into the ravine."},
+    {"id":"foothill","range":[75,99],"challenge":"friendship","goal":"Befriend the Flintfist with berries."},
+    {"id":"cave","range":[99,128],"requires":"flintfist","challenge":"break wall","goal":"Punch through the seal and recover the Hollow Light."}
+  ],
+  "recallBelow": 710,
+  "rockPolygons": [
+    {"id":"cave-roof","points":[[96,0],[128,0],[128,26],[104,26],[99,25],[96,21]]}
+  ],
+  "puzzleObjects": [
+    {"id":"grove-boulder","kind":"push-boulder","home":[255,544],"size":[72,67],"dropX":349,"platform":[416,551],"color":"#b08458"},
+    {"id":"perched-boulder","kind":"gust-boulder","home":[705,464],"size":[112,85],"platform":[976,555],"color":"#d2a577"},
+    {"id":"cave-seal","kind":"breakable-wall","home":[1645,544],"size":[58,134],"color":"#9c7560"}
+  ]
+}

@@ -121,6 +121,7 @@ export function stepPlayerMotion(p,actions,step,world){
     }
     if(world.rockPolygons?.length)
       safeX=sweepRockBody(world.rockPolygons,p.x,p.y,safeX,'x').value;
+    if(world.blockHorizontal) safeX=world.blockHorizontal(p.x,safeX,p.y);
     if(Math.abs(safeX-nextX)>.2)p.vx=0;
     p.x=safeX;
     const priorY=p.y,wasGrounded=p.grounded,impactSpeed=p.vy;
