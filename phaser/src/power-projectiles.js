@@ -78,3 +78,10 @@ export function honeyPuddleCatches(puddle,animal,groundAt){
     Math.abs(animal.x-puddle.x)<17&&
     Math.abs(animal.y-groundAt(animal.x))<20;
 }
+
+// A Jump edge after the first second breaks the trap. Otherwise it times out
+// after three seconds, independent of render rate or how long Jump is held.
+export function stepPlayerTrap(trap,jumpPressed,step){
+  trap.ticks+=step;
+  return trap.ticks>=180||trap.ticks>=60&&jumpPressed;
+}

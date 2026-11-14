@@ -17,6 +17,8 @@ def main():
         page.goto(GAME.as_uri())
         page.wait_for_function("window.__wonderwoodPhaser?.snapshot().stage === -1",
             timeout=30000)
+        page.locator(".ww-explorers button").first.click()
+        page.locator("#ww-menu-continue").click()
         page.keyboard.down("Space")
         page.wait_for_function("window.__wonderwoodPhaser.snapshot().stage === 0")
         page.keyboard.up("Space")

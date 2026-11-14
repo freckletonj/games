@@ -36,25 +36,39 @@ export function stepPlayerMotion(p,actions,step,world){
     p.jumpBuffer=actions.jumpPressed?6:Math.max(0,p.jumpBuffer-step);
     const inWater=world.inWater(p.x,p.y-8);
     const swimmer=p.form==='tideling'&&inWater;
+    p.floatTime=(p.floatTime??0)+step;
+    const basin=world.waterBodies?.find(b=>
+      p.x>=b.start*world.tile&&p.x<=b.end*world.tile);
+    const waterline=basin?basin.surface*world.tile:null;
+    const floating=p.form!=='tideling'&&basin&&
+      p.y>=waterline+9&&(inWater||p.floating&&world.inWater(p.x,waterline+1));
+    p.floating=Boolean(floating);
+    let floatJump=false;
     const direction=Number(actions.right)-Number(actions.left);
     const wallContact=(world.climbWalls||[]).find(w=>
       Math.abs(p.x-w.x*world.tile)<=21&&
       p.y>w.top*world.tile+3&&p.y-27<w.bottom*world.tile);
-    if(direction)p.face=direction;
     // Emberkit gets a modest sprint, not a game-breaking traversal power.
     const desired=direction*(world.pushSpeed??(swimmer?2.15:
       p.form==='springaroo'?2.65:p.form==='emberkit'?2.6:2.3));
     const traction=p.grounded ? .22 : .14;
     p.vx+=(desired-p.vx)*Math.min(1,traction*step);
+    if(!direction&&Math.abs(p.vx)<.06)p.vx=0;
     if(swimmer){
       p.vy+=((actions.jump?-.23:actions.down?.24:.046)-p.vy*.035)*step;
       p.vy=clamp(p.vy,-2.3,2.6);
-      const basin=world.waterBodies.find(b=>
-        p.x>=b.start*world.tile&&p.x<=b.end*world.tile);
       if(actions.jumpPressed&&basin&&p.breach===0&&
         p.y-basin.surface*world.tile<30){
         p.vy=-5.1;p.breach=.48;
         events.push('breach');
+      }
+    }else if(floating){
+      p.grounded=false;p.coyote=0;p.jumps=0;p.flaps=0;
+      if(p.jumpBuffer>0){
+        p.vy=-5.7;p.jumpBuffer=0;p.jumps=1;floatJump=true;p.floating=false;
+      }else{
+        const target=waterline+11+1.6*Math.sin(p.floatTime*.085);
+        p.vy=clamp((p.vy+(target-p.y)*.085)*.72,-2.9,2.8);
       }
     }else{
       if(actions.jumpPressed&&p.creatureBounceWindow>0){
@@ -123,6 +137,8 @@ export function stepPlayerMotion(p,actions,step,world){
       safeX=sweepRockBody(world.rockPolygons,p.x,p.y,safeX,'x').value;
     if(world.blockHorizontal) safeX=world.blockHorizontal(p.x,safeX,p.y);
     if(Math.abs(safeX-nextX)>.2)p.vx=0;
+    const dx=safeX-p.x;
+    if(dx||direction)p.face=Math.sign(dx||direction);
     p.x=safeX;
     const priorY=p.y,wasGrounded=p.grounded,impactSpeed=p.vy;
     const vertical=world.rockPolygons?.length?
@@ -175,7 +191,7 @@ export function stepPlayerMotion(p,actions,step,world){
     }
     if(p.grounded)p.launchSpeed=0;
     if(p.y>world.height-10)events.push('recall');
-    const action=swimmer?'swim':p.grounded?(Math.abs(p.vx)>.3?'run':'idle'):
+    const action=swimmer?'swim':floating&&!floatJump?'float':p.grounded?(dx?'run':'idle'):
       p.form==='skyling'||(p.form==='glimmermoth'&&p.hover>0&&p.vy>=0)?
         'glide':p.vy<0?'jump':'fall';
     return {action,events};

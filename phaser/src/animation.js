@@ -3,7 +3,7 @@
 // small secondary motion adds anticipation and weight without stretching tiles.
 export const ACTIONS = Object.freeze([
   'idle','run','push','jump','fall','land','feed','capture','transform',
-  'eat','happy','alert','punch','hurt','stunned','dash','flap','glide','swim','sleep'
+  'eat','happy','alert','punch','hurt','stunned','dash','flap','glide','swim','float','sleep'
 ]);
 
 const ALIASES = {
@@ -67,6 +67,7 @@ export function poseFor(manifest, action, elapsed, motion=0, phase=0) {
       rotation=.045*stroke;sx=1+.012*stroke;sy=1-.018*stroke;
       dy=.8*Math.sin(cycle*2);break;
     }
+    case 'float':rotation=.02*breath;break;
     case 'feed':rotation=-.09;sy=.96;dx=2;break;
     case 'capture':rotation=-.15; sx=.97;sy=1.04;dx=3;break;
     case 'transform': {
@@ -84,7 +85,7 @@ export function poseFor(manifest, action, elapsed, motion=0, phase=0) {
     case 'dash':sx=1.07;sy=.96;rotation=.035*Math.sign(motion||1);break;
     case 'stunned':rotation=.055*Math.sin(cycle*2);sy=.96;break;
     case 'hurt':sx=1.06;sy=.93;rotation=.08;break;
-    case 'sleep':sy=.92;dy=1.5;break;
+    case 'sleep':sy=1+.019*breath;break;
     default:break;
   }
   return {frame:base,sx,sy,rotation,dx,dy};

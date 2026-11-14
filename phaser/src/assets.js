@@ -7,6 +7,7 @@ import steampunk from '../../src/assets/characters/steampunk/sheet.webp';
 import steampunkManifest from '../../src/assets/characters/steampunk/manifest.json';
 import riderSheet from '../assets/generated/riders.webp';
 import riderManifest from '../assets/generated/riders.json';
+import fainted from '../assets/generated/fainted.webp';
 import captureOrb from '../assets/generated/capture-orb.webp';
 import springaroo from '../../src/assets/characters/springaroo/sheet.png';
 import springManifest from '../../src/assets/characters/springaroo/manifest.json';
@@ -68,7 +69,7 @@ export const mounts = {
   pegasus:{url:pegasus,manifest:pegasusManifest}
 };
 export const riders={url:riderSheet,manifest:riderManifest};
-export {captureOrb};
+export {captureOrb,fainted};
 export const backgrounds = {meadow,coast,summit};
 export const sheets = {flora,props,effects};
 export const paintedStates=states;

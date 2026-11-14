@@ -28,13 +28,9 @@ def main():
                     "window.__wonderwoodPhaser.snapshot().stage === -1"
                 )
                 page.keyboard.up("h")
-                page.wait_for_timeout(90)
-                page.keyboard.down("d")
-                page.wait_for_function(
-                    "window.__wonderwoodPhaser.snapshot().choice === " + str(i)
-                )
-                page.keyboard.up("d")
-                page.wait_for_timeout(90)
+            page.locator(".ww-explorers button").first.click()
+            page.locator("#ww-menu-continue").click()
+            page.locator("#ww-level-grid button").nth(i).click()
 
             page.keyboard.down("Space")
             page.wait_for_function(

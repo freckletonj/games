@@ -58,6 +58,7 @@ def human(pose, skin, riding):
         draw.polygon([(x-18,y-19),(x-18,y-34),(x-8,y-26),(x-1,y-37),(x+6,y-25),(x+16,y-31),(x+13,y-18)], fill="#be954b")
         dot(draw, (x-22,y+17), 12, 23, hair)
     else:
+        dot(draw, (x-34,y-15), 14, 14, hair)
         draw.rounded_rectangle((x-24,y-22,x+18,y-10), 5, fill="#915941")
         dot(draw, (x+7,y-15), 8, 7, "#ca9b51")
     dot(draw, (x+4,y+3), 18, 19, flesh)

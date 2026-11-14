@@ -30,6 +30,8 @@ def main():
         page.on("pageerror", lambda error: errors.append(str(error)))
         page.goto(GAME.as_uri())
         page.wait_for_function("window.__wonderwoodPhaser?.snapshot().stage === -1")
+        page.locator(".ww-explorers button").first.click()
+        page.locator("#ww-menu-continue").click()
         press_until(page, "Space", "window.__wonderwoodPhaser.snapshot().stage === 0")
         page.wait_for_function(
             "window.__wonderwoodPhaser.snapshot().players[0].grounded"

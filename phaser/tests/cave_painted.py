@@ -21,8 +21,9 @@ def main():
             "window.__wonderwoodPhaser?.snapshot().stage === -1",
             timeout=30000
         )
-        for _ in range(5):
-            page.locator("#ww-menu-next").click()
+        page.locator(".ww-explorers button").first.click()
+        page.locator("#ww-menu-continue").click()
+        page.get_by_role("button", name="Luminous Grotto").click()
         page.locator("#ww-menu-play").click()
         page.wait_for_function(
             "window.__wonderwoodPhaser.snapshot().chapter === 'luminous-grotto'",

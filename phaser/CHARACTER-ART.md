@@ -42,3 +42,9 @@ grounded gaits, takeoff, wingbeats, and descent at gameplay zoom.
 
 The catch orb uses its own painted WebP. Capture hits and form changes
 share a spark and light burst timed by the fixed simulation clock.
+
+The steampunk explorer wears a bun in the locomotion sheet and the seated
+rider row. Both use the existing frame bounds and pivots. The separate
+fainted atlas in `assets/generated/fainted.webp` has a ground-aligned pose
+for each playable explorer and creature form. The fainted animation gently
+scales the pose around its ground pivot.

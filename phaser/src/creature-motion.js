@@ -20,74 +20,77 @@ export function tickCreatureRespawn(animal,step){
   animal.captured=false;animal.trust=0;animal.distraction=0;
   animal.respawn=0;animal.stun=0;animal.bubble=0;animal.bubbleRise=0;
   animal.knockVX=0;
-  animal.windup=0;animal.dash=0;
+  animal.windup=0;animal.dash=0;animal.shotWindup=0;animal.shotWait=1;
   animal.x=animal.homeX;animal.y=animal.homeY;
   return 'returned';
 }
 
 export function stepCreatureMotion(animal,lure,step,time,world){
-      animal.stun=Math.max(0,animal.stun-step/60);
-      animal.bubble=Math.max(0,animal.bubble-step/60);
-      const bubbleLift=advanceBubbleLift(animal,step);
-      const trust=tickDistraction(animal.trust,animal.distraction,step/60);
-      animal.trust=trust.trust;animal.distraction=trust.seconds;
-      animal.attack=Math.max(0,animal.attack-step/60);
-      const friendly=animal.distraction>0;
-      if(friendly||animal.stun>0){
-        animal.windup=0;animal.dash=0;
-      }
-      let target=lure?.x ?? (animal.homeX+Math.sin(time*.00055+animal.homeX)*32);
-      const diff=target-animal.x;
-      // At full trust, pause in place for the player's capture attempt.
-      // Without this a friendly animal immediately wandered out of orb range.
-      const speed=animal.stun || bubbleLift>0 || friendly || animal.windup>0 ? 0 :
-        lure ? .55 : animal.kind==='prismtail' ? .76 : .36;
-      const slope=animal.flying?0:
-        (world.groundAt(animal.x+2)-world.groundAt(animal.x-2))/4;
-      const groundSpeed=animal.flying?speed:
-        speed/Math.hypot(1,slope);
-      animal.x+=clamp(diff,-groundSpeed*step,groundSpeed*step);
-      if(animal.knockVX){
-        // A gust moves over several ticks, but cannot punch a grounded
-        // creature through a steep wall or snap it up a cliff.
-        const nextX=clamp(animal.x+animal.knockVX*step,10,world.width-10);
-        const safeX=safeHorizontalX(animal.x,nextX,animal.y,
-          x=>world.groundAt(x));
-        animal.knockVX=Math.abs(safeX-nextX)>.2?0:
-          animal.knockVX*Math.pow(.82,step);
-        animal.x=safeX;
-        if(Math.abs(animal.knockVX)<.08)animal.knockVX=0;
-      }
-      if(animal.dash>0){
-        const attack=ATTACKS[animal.kind];
-        const nextX=clamp(animal.x+animal.attackFace*attack.speed*step,
-          10,world.width-10);
-        animal.x=safeHorizontalX(animal.x,nextX,animal.y,
-          x=>world.groundAt(x));
-        animal.dash=Math.max(0,animal.dash-step/60);
-      }
-      if(animal.perch)animal.x=clamp(animal.x,animal.perch.left+10,animal.perch.right-10);
-      if(animal.windup>0||animal.dash>0)animal.face=animal.attackFace;
-      else if(Math.abs(diff)>2)animal.face=Math.sign(diff);
-      if(animal.flying){
-        const rest=animal.homeY+Math.sin(time*.0014+animal.homeX)*7;
-        const wanted=lure?Math.min(rest+40,lure.y-15):rest;
-        animal.y+=(wanted-bubbleLift-animal.y)*.035*step;
-      }else{
-        const attack=ATTACKS[animal.kind];
-        const hop=attack?.lift&&animal.dash>0?
-          attack.lift*Math.sin(Math.PI*(1-animal.dash/attack.duration)):0;
-        animal.y=world.groundAt(animal.x)-bubbleLift-hop;
-      }
-      return {friendly,diff};
+  animal.stun=Math.max(0,animal.stun-step/60);
+  animal.bubble=Math.max(0,animal.bubble-step/60);
+  const bubbleLift=advanceBubbleLift(animal,step);
+  const trust=tickDistraction(animal.trust,animal.distraction,step/60);
+  animal.trust=trust.trust;animal.distraction=trust.seconds;
+  animal.attack=Math.max(0,animal.attack-step/60);
+  const friendly=animal.distraction>0;
+  if(friendly||animal.stun>0){
+    animal.windup=0;animal.dash=0;
+  }
+  const startX=animal.x;
+  const target=lure?.x ?? (animal.homeX+Math.sin(time*.00055+animal.homeX)*32);
+  const diff=target-animal.x;
+  // At full trust, pause in place for the player's capture attempt.
+  // Without this a friendly animal immediately wandered out of orb range.
+  const speed=animal.stun || bubbleLift>0 || friendly || animal.windup>0 || animal.shotWindup>0 ? 0 :
+    lure ? .55 : animal.kind==='prismtail' ? .76 : .36;
+  const slope=animal.flying?0:
+    (world.groundAt(animal.x+2)-world.groundAt(animal.x-2))/4;
+  const groundSpeed=animal.flying?speed:
+    speed/Math.hypot(1,slope);
+  const walkX=clamp(animal.x+clamp(diff,-groundSpeed*step,groundSpeed*step),
+    10,world.width-10);
+  animal.x=animal.flying?walkX:safeHorizontalX(animal.x,walkX,animal.y,world.groundAt);
+  if(animal.knockVX){
+    // A gust moves over several ticks, but cannot punch a grounded
+    // creature through a steep wall or snap it up a cliff.
+    const nextX=clamp(animal.x+animal.knockVX*step,10,world.width-10);
+    const safeX=safeHorizontalX(animal.x,nextX,animal.y,
+      x=>world.groundAt(x));
+    animal.knockVX=Math.abs(safeX-nextX)>.2?0:
+      animal.knockVX*Math.pow(.82,step);
+    animal.x=safeX;
+    if(Math.abs(animal.knockVX)<.08)animal.knockVX=0;
+  }
+  if(animal.dash>0){
+    const attack=ATTACKS[animal.kind];
+    const nextX=clamp(animal.x+animal.attackFace*attack.speed*step,
+      10,world.width-10);
+    animal.x=safeHorizontalX(animal.x,nextX,animal.y,
+      x=>world.groundAt(x));
+    animal.dash=Math.max(0,animal.dash-step/60);
+  }
+  if(animal.perch)animal.x=clamp(animal.x,animal.perch.left+10,animal.perch.right-10);
+  animal.vx=(animal.x-startX)/step;
+  if(animal.windup>0)animal.face=animal.attackFace;
+  else if(animal.vx)animal.face=Math.sign(animal.vx);
+  if(animal.flying){
+    const rest=animal.homeY+Math.sin(time*.0014+animal.homeX)*7;
+    const wanted=lure?Math.min(rest+40,lure.y-15):rest;
+    animal.y+=(wanted-bubbleLift-animal.y)*.035*step;
+  }else{
+    const attack=ATTACKS[animal.kind];
+    const hop=attack?.lift&&animal.dash>0?
+      attack.lift*Math.sin(Math.PI*(1-animal.dash/attack.duration)):0;
+    animal.y=world.groundAt(animal.x)-bubbleLift-hop;
+  }
+  return {friendly};
 
 }
 
-export function creatureAction(animal,lure,diff){
+export function creatureAction(animal){
   return animal.stun||animal.bubbleRise>0?'stunned':
     animal.windup>0?'alert':animal.dash>0?'dash':
-    animal.distraction>0?'happy':lure?'run':
-    animal.flying?'flap':Math.abs(diff)>6?'run':'idle';
+    animal.distraction>0?'happy':animal.flying?'flap':animal.vx?'run':'idle';
 }
 
 export function stepCreatureThreat(animal,close,hasLure,step){
