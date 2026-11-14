@@ -19,33 +19,13 @@ slope materials, props and chapter backgrounds from the repo's `src/assets/`.
 The Phaser renderer **does not use the original low-resolution Kenney tree/pine/
 bush PNGs as main scenery**. They clashed with the hand-painted sprites.
 
-## Licensed environment source library: ArtByte (CC BY 4.0)
+## Historical ArtByte attribution
 
-- **Pack:** [2D Platformer Forest Kit](https://opengameart.org/content/2d-platformer-forest-kit)
-- **Creator:** ArtByte
-- **License:** [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/)
-- **Retained sources, not currently bundled into the standalone game:**
-  `platform-jungle.png`, `jungle-trees.png` and `jungle-misc.png`.
-  The game now renders biome-specific painted ledge silhouettes derived
-  directly from collision geometry, and no longer shows the kit's
-  mismatched bright jungle tiles or decorative props. The source PNGs
-  remain in the repository for future use and license review.
-- **Redistributable upstream copy:** `tilnewman/halloween` on GitHub at
-  `media/image/map/jungle-*.png` and `media/image/platform-jungle.png`.
-  The upstream project credits ArtByte and identifies the jungle artwork as
-  CC BY 4.0 in `media/image/map/license.txt`.
-- **Modifications:** Older commits cropped, scaled and tinted this source art.
-  The current renderer instead uses its own painted ledge textures for all
-  three biome families, preserving the source artwork unmodified in-repo.
-- **Credit:** The provenance of the retained source pack remains in this
-  file and in the project's third-party notice.
-
-The source kit also provides a seamless layered background and tile atlas.
-Wonderwood continues to use its original painted chapter backdrops and
-slope surfaces. Every floating shelf is now generated from the **same
-semantic platform geometry** as its collider and painted with its biome's
-earth/stone palette. Distant haze scrolls at two independent fractions of
-camera movement, behind the world and never as interactive scenery.
+Earlier Wonderwood revisions used cropped, scaled and tinted images from
+ArtByte’s [2D Platformer Forest Kit](https://opengameart.org/content/2d-platformer-forest-kit)
+under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The original
+source PNGs are available in Git history. Current ledges use Wonderwood art
+and are painted from the same semantic platform geometry as their colliders.
 
 ## Supplemental CC0 assets
 
@@ -100,10 +80,6 @@ character style indiscriminately:
   A strong candidate for a first distinct gentle forest enemy; it has a
   more rendered appearance and must be tested in context before adoption.
   Not bundled.
-- **ArtByte Forest Kit** — licensed and retained in the source tree but
-  excluded from the current offline game. Reconsider only after verifying
-  brushwork and scale in gameplay screenshots; never turn decorative art
-  into misleading catchable silhouettes.
 
 The critical distinction: **external pack candidates are researched, not
 claimed as imported**. The visible gameplay art reuses the original

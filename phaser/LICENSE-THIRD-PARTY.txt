@@ -23,11 +23,6 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-ArtByte — 2D Platformer Forest Kit (three source PNGs retained in repository, no longer bundled into the playable HTML): CC BY 4.0
-https://opengameart.org/content/2d-platformer-forest-kit
-https://creativecommons.org/licenses/by/4.0/
-Original environment illustration by ArtByte. Earlier versions cropped, scaled and tinted these sprites; current runtime uses original Wonderwood art and procedurally painted terrain instead.
-
 Kenney Background Elements Remastered (three sky images): Creative Commons Zero 1.0 (CC0)
 https://creativecommons.org/publicdomain/zero/1.0/
 https://kenney.nl/

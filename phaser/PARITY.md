@@ -27,7 +27,7 @@ This is an engineering ledger, not a claim that automated tests prove fun.
 | Creature pursuit/fleeing, species-specific attack lanes | Partial | Emberkit/Prismtail dash first; more behaviors pending |
 | Co-op instant revive & controller hardware rumble | Revive supported; rumble not yet ported | Hardware test required |
 | Whole first chapter traversal to relic and gate without cheating | **Verified on one scripted route** | `tests/complete_meadow.py` crosses three acts with real key presses, jumps, relic contact and gate transition |
-| Single standalone HTML, no runtime network | Verified | Offline Chromium smoke and CI artifact |
+| Single standalone HTML, no runtime network | Verified | Offline Chromium smoke |
 
 Mosslight Meadow is the intentional first **gold-standard vertical slice**:
 three acts, coherent illustrated scenery, a guided Springaroo, a telegraphed

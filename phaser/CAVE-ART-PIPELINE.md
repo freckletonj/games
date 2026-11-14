@@ -6,31 +6,7 @@ physical surfaces. The final world-locked solid painting is one transparent
 image layer, even if it was refined using multiple overlapping image-model
 requests during authoring.
 
-## Which version is authoritative?
-
-The last commit before the November 12 conversation was
-`09bba5146abd`: **Luminous Grotto**, one code-defined scene, one complete
-material guide, one full-world painting. Earlier PR #8 history
-(`5b3e4eee401d`) had also explored high-resolution overlapping chunks and
-parallax planes; those were removed to simplify the initial proof. The
-subsequent Skywell level demonstrated wall-jumping but drifted into an
-unacceptable 1644 × 957 image stretched to 3520 × 2048, with isolated
-geometric overlays. That artwork is a **legacy draft, not final visual art**.
-
-The current reconstruction combines the sound parts:
-
-- A *single semantic physical model*, not geometry inferred from a painting.
-- One full-world, material-filled image to condition a **global composition**.
-- Real **2D rock polygons** for overhangs and undersides in the new vaulted
-  authoring study; the older levels retain their tested heightfield physics.
-- Optional overlapping, high-resolution **authoring** crops, all derived
-  from the same world coordinate system and global art reference. They are
-  assembled before being used in the game; there are no runtime tile seams.
-- A single world-locked **static-solid RGBA painting**, a separate world-locked
-  water plane, and optionally a genuinely distinct *noninteractive* distant
-  painting allowed to parallax. Players and collectible objects are sprites.
-
-The technical contracts are in [STATIC-ART-CONTRACT.md](STATIC-ART-CONTRACT.md).
+The compiled level geometry supplies the material guide and masks. Luminous Grotto and Skywell Ascent are playable caves. The separate vaulted study adds polygonal overhangs and overlapping crops for future native-resolution art. See the [static art contract](STATIC-ART-CONTRACT.md) for the layer requirements.
 
 ## Export the geometry without generating fake scenic objects
 
@@ -135,36 +111,20 @@ The renderer locks solid and water to the world; parallax is applied only
 to a distinct background. It does not draw individual rock and ledge vectors
 during normal gameplay; **V** shows a diagnostic overlay only.
 
-## Verification and merge gate
+## Verification
 
 ```sh
-npm test --prefix phaser
 python phaser/tests/art_stitch.py
 bash phaser/scripts/verify-cave-local.sh full
-PLAYWRIGHT_FIREFOX=1 bash phaser/scripts/verify-cave-local.sh full
 ```
 
-The authoring scripts require Pillow; the browser suites require Playwright
-Chromium and (optionally) Firefox. This PR is deliberately draft and GitHub
-Actions must stay disabled. The tests for polygon contact, material masks,
-cropped-overlap coordinates and a continuous 10-wall-jump route are included,
-but a finished vaulted image and a complete exact-head browser validation
-have **not** been produced by this art-restoration pass.
+The authoring scripts require Pillow. The browser suite requires
+Playwright Chromium. With Playwright Firefox installed, set
+`PLAYWRIGHT_FIREFOX=1` to test the downloaded-file origin too.
 
-The present polygon model handles additional solid overhangs while preserving
-the existing heightfield foundation. It does **not yet** support independent
-stacked walkable tunnels carved below the ground heightfield, or guarantee
-that every optional path is reachable in every creature form.
-
-## Reproducible checkouts
-
-Direct checkout remains the preferred method. When a tool environment can
-read GitHub through an app but cannot `git clone` to its local filesystem,
-run `bash phaser/scripts/package-source-snapshot.sh` in a working checkout,
-and upload the exact-commit checksummed ZIP to that environment. Do not
-commit a second giant source ZIP after every source edit; keep the Git branch
-authoritative. The pinned dependency archives are already vendored under
-`phaser/vendor/` for offline Linux x86_64 builds.
+The polygon model supports solid overhangs above the heightfield.
+Independent walkable tunnels below the heightfield would require
+additional collision support.
 
 ## User-selected Ancient Sanctuary painting for playable Skywell
 

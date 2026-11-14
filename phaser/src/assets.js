@@ -1,6 +1,4 @@
-// Original Wonderwood painted artwork is reused directly from main.
-// ArtByte's illustrated CC-BY-4.0 forest environment is the cohesive scenery kit.
-// Native Wonderwood characters and collision surfaces remain independent.
+// Original Wonderwood character and environment art, with Kenney sky details.
 import hero from '../../src/assets/characters/hero/sheet.png';
 import heroManifest from '../../src/assets/characters/hero/manifest.json';
 import springaroo from '../../src/assets/characters/springaroo/sheet.png';

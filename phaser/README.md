@@ -4,29 +4,27 @@ A playable, parallel Phaser 4 remake, created **from main**. The established
 Canvas game remains intact while this implementation earns gameplay parity.
 Five canonical JSON worlds are compiled through the existing deterministic
 `world-compiler.js`. Original Wonderwood painted assets are reused with subtle CC0 Kenney skies.
-The CC BY 4.0 ArtByte source kit remains licensed and archived in-repo,
-but is not currently loaded in the self-contained game. No CDN, external images or fetches are needed to play.
+The self-contained game plays offline with no CDN, external images or fetches.
 
 ## Reusable offline build (Linux x86_64)
 
-Three version-pinned vendored archives (approximately 5.9 MB total)
+Three version-pinned vendored archives (approximately 24 MB total)
 provide Phaser 4.2.1 and esbuild 0.25.12 without npm/CDN access.
-Once the archives under `phaser/vendor/` have been checked in, every
-Linux x64 checkout can regenerate the playable HTML entirely offline:
+The archives under `phaser/vendor/` let Linux x86_64 checkouts build
+the playable HTML offline:
 
 ```sh
 bash phaser/scripts/verify-offline.sh
-# Include the seven extended real-input Chromium gameplay suites:
+# Include the extended real-input Chromium gameplay suites:
 bash phaser/scripts/verify-offline.sh full
 ```
 
 This checks SHA-256 hashes, installs the build tools in ignored
 `node_modules`, runs unit tests and quality metrics, creates a fresh
-self-contained HTML, and verifies real gameplay in Chromium. The output
-has a uniquely named `dist/wonderwood-preview-*.html`. The inline
-browser test adapter is necessary only in environments where browser
-URL navigation is blocked. Normal `npm install` remains available for
-other platforms. GitHub Actions stays disabled.
+self-contained HTML at `dist/wonderwood-phaser.html`, and verifies
+gameplay in Chromium. The browser and Python test dependencies must be
+installed in advance. Other platforms can install the pinned build
+dependencies with npm.
 
 ## Luminous Grotto: one-image authored level (Chapter 6)
 
@@ -50,8 +48,7 @@ npm run build
 
 Open `../dist/wonderwood-phaser.html` directly in Chromium or Firefox.
 The build inlines **Phaser 4 itself**, compiled code, all nine painted character
-atlases, backgrounds, sprite sheets, levels, and the CC0 additions. Use the local preview script to package this self-contained HTML; GitHub Actions
-is intentionally disabled.
+atlases, backgrounds, sprite sheets, levels, and the CC0 sky art.
 
 ## Controls
 
@@ -371,38 +368,21 @@ impact travel ticks for all five offensive powers and slope speeds for
 both mounts. These metrics are regression limits, not a substitute for
 watching actual gameplay.
 
-## Build, package and test locally (CI is deliberately disabled)
+## Verify locally
 
-GitHub Actions has been disabled by the repository owner to avoid
-excessive automatic runs. **Do not reactivate it, rerun its failures or
-treat its status as a merge-readiness signal.**
-
-From a checkout with Node.js, npm, Python and Chromium available:
+From the repository root with Node.js and Python installed:
 
 ```sh
 npm install --prefix phaser
 python -m pip install playwright Pillow
 python -m playwright install chromium
-bash phaser/scripts/verify-local.sh
-bash phaser/scripts/package-preview.sh
+bash phaser/scripts/verify-cave-local.sh full
 ```
 
-`verify-local.sh` runs focused Node regressions, writes the numeric
-quality report, bundles `dist/wonderwood-phaser.html` and boots that
-**fresh** offline HTML in real Chromium with `tests/smoke.py`.
-`package-preview.sh` performs the same verification and copies the HTML
-to a **uniquely named** `dist/wonderwood-preview-*.html` suitable for
-sharing without stale-file caching. Use either command with `full`
-before a merge decision to run all Node and Chromium gameplay routes,
-including chapter completion. Browser checks use real keyboard input.
-
-If the build host has no network access, provide a ZIP of the PR branch
-and the npm package tarballs for Phaser 4.2.1, esbuild 0.25.12, and the
-corresponding esbuild platform executable. Extract those into
-`phaser/node_modules` before invoking the verification command.
-A pre-existing playable HTML from an older commit is **not** proof the
-current source builds. Keep PR #7 in draft until its new bundle has
-passed local Chromium checks and visual review.
+This command runs the Node tests, exports bitmap guides, verifies the
+Skywell layer masks, builds `dist/wonderwood-phaser.html`, and runs the
+browser regressions. Omit `full` for the core browser smoke tests.
+To share the build, copy the HTML to a unique filename outside the Git tree.
 
 ## Skywell Ascent: code-defined climbing cavern (Chapter 7)
 
@@ -425,16 +405,7 @@ playable chapter or approved painting.
 Use **V** to overlay the actual physical materials, including solid walls. See
 [CAVE-ART-PIPELINE.md](CAVE-ART-PIPELINE.md) for the new workflow.
 
-## Play the real Skywell chapter in Firefox (not the art inspector)
-
-The downloadable `skywell-painted-alignment-review*.html` files are **static
-art/physics inspectors**; they never contained the game runtime. To play
-the actual game, from the repository root:
-
-```sh
-npm install --prefix phaser
-npm run build --prefix phaser
-```
+## Play Skywell Ascent
 
 Open `dist/wonderwood-phaser.html#skywell-ascent` in Firefox. It is a
 self-contained HTML file: the Phaser runtime, sprites, painted static layers and
@@ -448,27 +419,12 @@ Downloaded `file://` previews intentionally use in-memory campaign progress
 because Firefox can deny localStorage on opaque local-file origins. Saves
 persist when the same build is hosted over HTTP(S).
 
-To package a new uniquely named playable HTML **after local verification**
-(no GitHub Actions), use:
-
-```sh
-python -m pip install playwright
-python -m playwright install chromium
-bash phaser/scripts/package-preview.sh focused
-```
-
-To additionally test Firefox against the **real downloaded-file origin**,
-install its Playwright browser and enable the optional check:
+To verify the real downloaded-file origin in Firefox:
 
 ```sh
 python -m playwright install firefox
-PLAYWRIGHT_FIREFOX=1 bash phaser/scripts/verify-cave-local.sh focused
+PLAYWRIGHT_FIREFOX=1 bash phaser/scripts/verify-cave-local.sh
 ```
-
-The startup page explicitly displays loading status and any uncaught game
-error rather than leaving a blank canvas. This Firefox test is a local,
-opt-in requirement; it has not been executed in the connected GitHub
-environment.
 
 ## Coherent static painting and exact-geometry RGBA masks
 
@@ -482,9 +438,3 @@ Run `node phaser/scripts/export-cave-guides.mjs` to produce
 `phaser/scripts/extract-painted-layers.py` for an **approved native-size
 scene**, not the old stretched prototype. The playable Skywell now uses the selected Ancient Sanctuary scene; the
 higher-resolution nine-crop vaulted study is still a future art pass.
-
-To move exact repository contents to an offline build container that cannot
-clone GitHub, run `bash phaser/scripts/package-source-snapshot.sh` in a
-checked-out repository and upload its checksummed `dist/games-source-*.zip`.
-The Git tree remains authoritative; snapshots are **not** committed on
-every edit.

@@ -1,10 +1,10 @@
 // Small, Phaser-independent interaction rules used by both the live Scene and
 // deterministic quality scenarios. Units: world pixels and fixed 60 Hz ticks.
-export const CREATURE_PATROL_RADIUS=112;
+const CREATURE_PATROL_RADIUS=112;
 export const BUBBLE_DURATION=3.2;
-export const BUBBLE_MAX_RISE=155;
+const BUBBLE_MAX_RISE=155;
 export const HOVER_SECONDS=3.2;
-export const VENT_PUSH=.85;
+const VENT_PUSH=.85;
 
 export function chooseCreatureLure(animal,lures,groundAt){
   const radius=animal.flying?140:CREATURE_PATROL_RADIUS;

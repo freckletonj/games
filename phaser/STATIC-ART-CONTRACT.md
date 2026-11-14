@@ -1,10 +1,7 @@
 # Code-defined interaction, coherent painted scenery
 
-This is the replacement authoring contract for new painted cave levels.
-The earlier Skywell **low-resolution source → resize → tint rock/water →
-paint isolated vector ledges** compositor is a visual draft and is **not**
-the target pipeline. It produces inconsistent texture scale and scenery
-that does not faithfully depict the physical construction.
+This contract describes how to paint a coherent cave scene from authored
+gameplay geometry.
 
 ## Non-negotiable invariant
 

@@ -2,7 +2,7 @@
 // in the SAME semantic design consumed by world-compiler.js, never in a
 // separate collision map. Prefabs describe intent; the ridge/ledges/objects
 // in the design remain authoritative for actual mechanics.
-export const PREFABS=Object.freeze({
+const PREFABS=Object.freeze({
   'befriend-creature':{challenge:'lure-and-befriend'},
   'ability-ascent':{challenge:'vertical-traversal',requires:'springaroo'},
   'rest-and-exit':{challenge:'gentle-finale'}

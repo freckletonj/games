@@ -1,8 +1,7 @@
 # Reproducible offline build dependencies
 
-PR #8 includes the exact three uploaded, version-pinned npm archives needed
-to build Wonderwood on Linux x86_64 without downloading packages or enabling
-GitHub Actions.
+These three version-pinned npm archives build Wonderwood on Linux x86_64
+without downloading packages.
 
 - `esbuild-0.25.12.tgz`: esbuild JavaScript API (MIT), committed directly
 - `linux-x64-0.25.12.tgz.part00` through `.part07`: original Linux x64
@@ -34,8 +33,8 @@ Build and verify the real game after installation:
 bash phaser/scripts/verify-cave-local.sh full
 ```
 
-Or run `bash phaser/scripts/verify-offline.sh full` for the general Phaser
-build and browser suites. Art-mask verification additionally requires Python Pillow. Browser tests
+Or run `bash phaser/scripts/verify-offline.sh full` to install the archives and run
+the same build and browser suites. Art-mask verification additionally requires Python Pillow. Browser tests
 also require Playwright and its Chromium installation; Firefox acceptance
 can be enabled separately with
 `PLAYWRIGHT_FIREFOX=1` and Playwright Firefox installed.

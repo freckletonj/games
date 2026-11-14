@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# PR #8 local verification; GitHub Actions is intentionally disabled.
+# Verify the standalone Phaser game and its generated art guides.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
@@ -28,8 +28,4 @@ if [[ "${1:-focused}" == full ]]; then
   done
 fi
 
-stamp="$(date -u +%Y%m%dT%H%M%SZ)"
-digest="$(sha256sum dist/wonderwood-phaser.html | cut -c1-8)"
-preview="dist/wonderwood-cave-preview-${stamp}-${digest}.html"
-cp dist/wonderwood-phaser.html "$preview"
-printf 'Fresh layered-art Phaser preview: %s\n' "$preview"
+printf 'Wonderwood verification passed: dist/wonderwood-phaser.html\n'

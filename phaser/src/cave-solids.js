@@ -1,7 +1,7 @@
 // Optional authored rock polygons shared by collision, swimming, and
 // static-art masks. Coordinates in the authoring spec are 16px cells.
 // Unlike a heightfield, these shapes can have overhangs and undersides.
-export function pointInRock(polygon,x,y){
+function pointInRock(polygon,x,y){
   if(x<polygon.left||x>polygon.right||y<polygon.top||y>polygon.bottom)
     return false;
   const points=polygon.points;

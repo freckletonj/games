@@ -11,7 +11,7 @@ const EDGE={meadow:0xa5cbaa,coast:0xa1d2c9,summit:0xc8bcdd};
 const DRESSING={flowers:4,reeds:5,stones:6,shells:6};
 const LANDMARKS={tree:0,crystal:1,reef:2,observatory:3,island:4,pond:5,lantern:6,shells:7};
 
-export function paintSoil(scene,contour){
+function paintSoil(scene,contour){
     // Paint in bounded, seam-aligned world-coordinate chunks. Long worlds
     // exceed 4096px horizontally, the texture limit of some mobile GPUs.
     const source=scene.textures.get('painted-terrain').getSourceImage();

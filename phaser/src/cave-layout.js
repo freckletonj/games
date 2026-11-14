@@ -122,7 +122,7 @@ export const vaultLayout={
 
 // Cubic Hermite interpolation with Catmull-Rom control tangents. Movement,
 // raster guides and wireframe inspection all call the same evaluator.
-export function contourY(points,x){
+function contourY(points,x){
   if(x<=points[0][0])return points[0][1];
   for(let i=1;i<points.length;i++){
     const [x2,y2]=points[i];
