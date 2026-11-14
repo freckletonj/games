@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "id": "stonewake-hollow",
+  "biome": "summit",
+  "width": 128,
+  "height": 56,
+  "ridge": [[0,34],[22,34],[23,49],[29,49],[30,34],[47,34],[48,49],[74,49],[75,34],[128,34]],
+  "water": [],
+  "bridges": [],
+  "ledges": [[38,28,9]],
+  "creatures": [["gravelback",9],["skyling",35,33],["flintfist",44,28,"perched"]],
+  "checkpoints": [33, 79],
+  "snacks": [6, 37, 92],
+  "stars": [[13,33],[60,32.5],[117,32]],
+  "relic": ["springKey",118,33],
+  "landmarks": [],
+  "sections": [
+    {"id":"grove","range":[0,20],"challenge":"friendship","goal":"Befriend the Gravelback with berries."},
+    {"id":"split","range":[20,30],"requires":"gravelback","challenge":"push boulder","goal":"Roll the boulder into the split and jump across."},
+    {"id":"perch","range":[30,47],"challenge":"friendship","goal":"Befriend the Moonwing with star treats and fly up to the ledge."},
+    {"id":"ravine","range":[47,75],"requires":"skyling","challenge":"lever arm","goal":"Befriend Flintfist on the ledge and push the trunk high above its base."},
+    {"id":"foothill","range":[75,99],"challenge":"log bridge","goal":"Walk across the fallen trunk and keep Flintfist for the cave."},
+    {"id":"cave","range":[99,128],"requires":"flintfist","challenge":"break wall","goal":"Punch through the seal and recover the Hollow Light."}
+  ],
+  "recallBelow": 710,
+  "rockPolygons": [
+    {"id":"cave-roof","points":[[96,0],[128,0],[128,26],[104,26],[99,25],[96,21]]}
+  ],
+  "puzzleObjects": [
+    {"id":"grove-boulder","kind":"push-boulder","home":[255,544],"size":[72,67],"dropX":349,"platform":[416,551],"color":"#b08458"},
+    {"id":"bridge-log","kind":"tipping-log","home":[777,569],"size":[50,456],"pushAbove":470,"platform":[980,544],"color":"#8d613e"},
+    {"id":"cave-seal","kind":"breakable-wall","home":[1645,544],"color":"#9c7560"}
+  ]
+}

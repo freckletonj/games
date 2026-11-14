@@ -17,7 +17,7 @@ const registry=JSON.parse(readFileSync(new URL(
   'phaser/assets/generated/approved-scene-art.json',root),'utf8'));
 
 test('every playable chapter compiles and has registered art',()=>{
-  assert.equal(chapters.length,9);
+  assert.equal(chapters.length,10);
   assert.deepEqual(Object.keys(registry).sort(),chapters.map(chapter=>chapter.id).sort());
   for(const chapter of chapters){
     const level=compileChapter(chapter,compiler);

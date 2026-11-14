@@ -66,6 +66,7 @@ export function stepCreatureMotion(animal,lure,step,time,world){
           x=>world.groundAt(x));
         animal.dash=Math.max(0,animal.dash-step/60);
       }
+      if(animal.perch)animal.x=clamp(animal.x,animal.perch.left+10,animal.perch.right-10);
       if(animal.windup>0||animal.dash>0)animal.face=animal.attackFace;
       else if(Math.abs(diff)>2)animal.face=Math.sign(diff);
       if(animal.flying){

@@ -5,21 +5,45 @@ game remains buildable with `node scripts/build.mjs`. Both use the shared
 assets under `src/assets/`. See [the Phaser README](phaser/README.md) for
 controls, build setup, and browser verification.
 
-## Levels and art
+## Level generation
 
-- The Phaser campaign's chapter catalog and compiler are in
-  `phaser/src/campaign.js`. The compact Meadow is declared in
-  `phaser/levels/first-forest.json`. The other four surface chapters use
-  `src/games/animal-adventure/designs.json`; the caves use
-  `phaser/src/cave-layout.js`.
-- Export full-scene geometry guides with `node phaser/scripts/export-art-guides.mjs`
-  and `node phaser/scripts/export-cave-guides.mjs`. Use the material masks to
-  register static art to collision. Keep actors and pickups separate.
-  See [art direction](phaser/ART-DIRECTION.md) for the shared workflow.
-  [Clockwork Orchard](phaser/DYNAMIC-SCENE-ART.md) covers moving cutouts,
-  green repair masks, and model-painted background patches.
-  [The Brassworks](phaser/BRASSWORKS-ART.md) adds model-assisted alpha cutouts
-  and compares transparent-hole and green-hole repairs.
+Use the declarative layout and bitmap guide workflow for new Wonderwood
+levels. [Stonewake Hollow](phaser/STONEWAKE-ART.md) is the end-to-end example.
+
+1. Author the route first. Put the terrain, platforms, encounters, checkpoints,
+   goals, and interactive objects in a chapter spec under `phaser/levels/`
+   and register it in `phaser/src/campaign.js`. Use the authored geometry and
+   object states for collision and progression. The shared legacy surface
+   specs live in `src/games/animal-adventure/designs.json`, and the existing
+   cave layouts live in `phaser/src/cave-layout.js`.
+2. Export the bitmap guides with `node phaser/scripts/export-art-guides.mjs`
+   or `node phaser/scripts/export-cave-guides.mjs`. Give the image model the
+   composed geometry guide and a style reference for the initial panorama.
+   Use the material masks and world coordinates to align the painting
+   with the playable terrain.
+3. Separate moving objects from the scenery. Crop each object with margins
+   and ask the image model for a true-alpha cutout. Cut slightly larger
+   transparent holes in the panorama and have the model repaint them.
+   Blend the repaired patches back into the original canvas and keep the
+   authored origins and pivots for runtime sprites. Keep creatures and
+   pickups separate from the scenery.
+4. Use the same guide-first approach for animation. Declare sprite poses,
+   frame order, and a common anchor, then export a bitmap guide and have
+   the model paint aligned alpha frames. For breakable objects, declare
+   fragment shapes, hit order, remaining collision, and debris motion.
+   Register the painted pieces to those shapes so the visible and playable
+   states advance together.
+5. Keep reusable painting inputs and packing recipes with the chapter.
+   Register the finished art in
+   `phaser/assets/generated/approved-scene-art.json`. Test the intended
+   route with the production fixed-tick rules. Check that alternate forms
+   or actions cannot skip required steps and that checkpoints let players
+   recover from a failed attempt. Inspect the built game at gameplay
+   zoom and toggle **V** to compare the art against collision.
+
+See [art direction](phaser/ART-DIRECTION.md) for the shared conventions,
+[Clockwork Orchard](phaser/DYNAMIC-SCENE-ART.md) for moving platforms, and
+[The Brassworks](phaser/BRASSWORKS-ART.md) for alpha cutouts and scene repair.
 
 ## Build and verify
 
