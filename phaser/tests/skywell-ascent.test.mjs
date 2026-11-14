@@ -34,7 +34,7 @@ test('guides and full-size illustration agree on material and collision markers'
   const manifest=caveArtManifest(level);
   assert.ok(guide.includes('viewBox="0 0 3520 2048"'));
   assert.ok(guide.includes('<g fill="#2388af">'));
-  assert.ok(guide.includes('<g fill="#ff9d63">'));
+  assert.ok(guide.includes('<g fill="#ff9d63" clip-path="url(#traversable)">'));
   for(const dynamic of ['diveKey','glimmermoth','checkpoint','starShard']){
     assert.ok(!guide.includes(dynamic),'guide must exclude '+dynamic);
   }
