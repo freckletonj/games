@@ -1,22 +1,24 @@
-# Wonderwood painted-cave integration
+# Wonderwood integration checklist
 
-This branch brings the Wonderwood experiments together on top of `main`. Start here when resuming work and use the latest commits on the integration PR for the current implementation.
+**Resume on [PR #9](https://github.com/freckletonj/games/pull/9).** The next unchecked item is the next work session. Commit each completed slice to the PR branch and record its result here, including any blocked checks.
 
-- [x] Compare #7 (Phaser campaign) and #8 (geometry-authored painted caves). #8 extends #7, and both are represented in the integration branch. The earlier Canvas experiment remains accessible in #6.
-- [x] Bring the playable Phaser campaign and the authored cave pipeline into the integration branch in reviewable commits.
-- [x] Verify collision, water, guide export, and static-art registration. The fixed-step route crosses all ten walls, reaches the lantern, and reaches the exit in both the playable Skywell and the vaulted geometry study.
-- [ ] Run extended browser checks, including real-input traversal and campaign completion.
-- [ ] Build the standalone HTML locally, exercise it offline in a real browser, and check in the verified build.
-- [ ] Merge the integration PR and retire superseded experiments once their relevant work is accounted for.
+## Completed
 
-## Current checkpoint
+- [x] Compare the experiments and consolidate #7 (the Phaser campaign) and #8 (the geometry-authored cave pipeline) on top of `main`.
+- [x] Run the Phaser Node suite, export the cave guides, and verify the selected Skywell layers against the current material masks. A fixed-step simulation crossed all ten climb walls, collected the lantern, and reached the exit in both playable Skywell and the vaulted geometry study.
+- [x] Build a standalone HTML preview and smoke-test it in Firefox from a local file. Skywell rendered all three painted layers, responded to movement, and toggled the geometry overlay. The general offline smoke test covered movement and co-op. The smoke runs made no HTTP requests.
 
-PR #9 contains the full PR #8 implementation on top of the Phaser work from #7. Compared with the #8 head, the integration branch adds this checklist, drops the workflow, updates local output ignores, fixes a stale wall-guide assertion, and rebakes the three selected Skywell layers. No cave source files are missing.
+## Remaining
 
-The offline dependency install passed checksums. A fresh run passed all 119 Phaser Node tests, exported the cave guides, and verified the committed Skywell alpha layers pixel for pixel. The rebuilt `dist/wonderwood-phaser.html` is 15,840,464 bytes with SHA-256 `de85aa020634218126ecca3777be1605ee3d89d737880aa9e65d01dd198162d1`. Extended browser checks and checking in the standalone HTML are next.
+- [ ] **Finish extended browser verification.** Run `bash phaser/scripts/verify-offline.sh full` from a clean checkout with a supported browser. Exercise real-input Skywell traversal through the lantern and exit, campaign progression, water and slopes, mounts, and co-op. Record the browser, passing checks, and any unverified coverage. The previous environment could not start Chromium. Firefox smoke coverage is recorded below.
+- [ ] **Review the playable scope and art.** Keep #8’s authored stage geometry as the source for collision, water, climb walls, the whole-scene image-generation guide, and the masks that register the selected painting. Playable Skywell uses the selected Ancient Sanctuary artwork. Keep the separate vaulted geometry study out of the playable campaign until it has matching art. Check the shipped art and its provenance.
+- [ ] **Check in the playable HTML.** Rebuild `dist/wonderwood-phaser.html` from the accepted source, verify that the exact file opens offline, and commit it to PR #9. Record its SHA-256 and verify the committed file matches.
+- [ ] **Merge and retire the experiments.** Review PR #9 against `main`, confirm the intended #7 and #8 changes and the HTML are included, then merge #9. Close superseded PRs still open and remove their experiment branches once their work is accounted for. #8 is stacked on #7.
 
-## Earlier verification
+## Last recorded checkpoint
 
-The Phaser campaign and #8 cave sources are in this branch. The first local run passed 118 of 119 Node tests. The integration corrects the stale assertion for the SVG’s clipped climb-wall group, bringing the suite to 119 passing. Guide export succeeds. The original painting differed from the current masks by 41 solid, 15 water, and 26 background pixels. The rebaked WebP layers match all three masks pixel for pixel. The standalone build launches from a local file in Firefox, renders Skywell’s three layers, toggles the geometry overlay, and responds to movement without HTTP requests. A fresh build passed all 119 Node tests, the mechanics report, cave guide export, and the three-layer alpha comparison. Playwright Firefox verified Skywell from the actual local HTML and the general offline smoke test verified movement and co-op. The installed Chromium cannot start in this environment, so the extended browser tests are being exercised in Firefox.
+The integration branch includes #8 on top of #7. Compared with the #8 head, it also drops the workflow, updates local output ignores, fixes the clipped-wall guide assertion, and rebakes the three selected Skywell layers.
 
-GitHub Actions is intentionally disabled. Use local builds and browser verification. Keep diffs and logs scoped to source and summarize binary assets by path and size. Avoid printing generated HTML, embedded assets, and vendored dependencies into the conversation.
+The offline dependency install passed checksums. The build passed all 119 Phaser Node tests and the mechanics report. Cave guide export succeeded and all three baked alpha layers matched their masks pixel for pixel. The local HTML was 15,840,464 bytes with SHA-256 `de85aa020634218126ecca3777be1605ee3d89d737880aa9e65d01dd198162d1`. That build was used for the Firefox smoke checks and has yet to be checked in.
+
+GitHub Actions is intentionally disabled. Use local verification. Read one subsystem or a small set of source files at a time. Report generated HTML and binary assets by path, size, and checksum. Record the last completed check and the next action before moving on.
