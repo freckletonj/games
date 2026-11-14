@@ -29,15 +29,14 @@ def main():
         assert state["platformCount"]==26,state
         assert state["climbWallCount"]==10,state
         assert state["cameraZoom"]==1.4,state
-        art=state["caveArt"]
-        assert art and art["rockLoaded"],state
-        assert art["textureKey"]=="cave-skywell-ascent-solid",art
-        assert art["imageCount"]==3,art
-        assert art["sourcePixels"]=={"width":3520,"height":2048},art
-        assert art["painting"]=={
-            "x":0,"y":0,"displayWidth":3520,"displayHeight":2048
-        },art
-        assert state["parallaxLayers"]==0,state
+        art=state["sceneArt"]
+        assert [layer["textureKey"] for layer in art["layers"]]==[
+            "scene-skywell-ascent-background","scene-skywell-ascent-water",
+            "scene-skywell-ascent-solid"
+        ],art
+        for layer in art["layers"]:
+            assert layer["origin"]==[0,0] and layer["scrollFactor"]==1,art
+            assert layer["sourcePixels"]==layer["worldPixels"]==[3520,2048],art
         assert state["players"][0]["grounded"],state
         # Real gameplay: choose stars (two E presses), feed the nearby
         # Glimmermoth twice, catch it with G and transform with T.
@@ -92,7 +91,7 @@ def main():
         page.screenshot(path=str(ROOT/"dist"/"phaser-skywell-painted.png"))
         page.keyboard.press("v")
         assert page.evaluate(
-            "window.__wonderwoodPhaser.snapshot().caveArt.geometryOverlay"
+            "window.__wonderwoodPhaser.snapshot().sceneArt.geometryOverlay"
         ),"Filled geometry inspection must be available"
         page.screenshot(path=str(ROOT/"dist"/"phaser-skywell-physics.png"))
         page.keyboard.press("v")

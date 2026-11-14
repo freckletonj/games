@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {inflateSync} from 'node:zlib';
 import {compileCave,skywellLayout,vaultLayout,caveContainsWater} from '../src/cave-layout.js';
 import {caveArtManifest,caveMaskSvg} from '../src/cave-art-guide.js';
-import {caveGuidePng} from '../scripts/cave-png.mjs';
+import {materialGuidePng} from '../scripts/material-png.mjs';
 import {stepPlayerMotion} from '../src/player-motion.js';
 
 test('the new climbing chapter compiles as one reachable, physics-led world',()=>{
@@ -46,7 +46,7 @@ test('guides and full-size illustration agree on material and collision markers'
 
 test('the guide raster fills rock, swim volumes, and climb walls with real material colors',()=>{
   const level=compileCave(skywellLayout);
-  const from=24,bytes=caveGuidePng(level,{from,to:31});
+  const from=24,bytes=materialGuidePng(level,{from,to:31});
   const w=bytes.readUInt32BE(16),h=bytes.readUInt32BE(20);
   assert.deepEqual([w,h],[112,2048]);
   let off=8,compressed;
@@ -148,7 +148,7 @@ test('scripted player inputs actually carry explorers across all ten rock faces'
 
 test('water and climbable rock never claim the same pixel',()=>{
   const level=compileCave(skywellLayout);
-  const from=128,bytes=caveGuidePng(level,{from,to:136});
+  const from=128,bytes=materialGuidePng(level,{from,to:136});
   const width=bytes.readUInt32BE(16),row=width*4+1;
   let offset=8,packed;
   while(offset<bytes.length){

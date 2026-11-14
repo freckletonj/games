@@ -1,0 +1,206 @@
+{
+  "width": 148,
+  "height": 52,
+  "ridge": [
+    [0, 38],
+    [18, 38],
+    [36, 35],
+    [57, 32],
+    [76, 34],
+    [94, 30],
+    [120, 32],
+    [143, 37],
+    [148, 36.5]
+  ],
+  "water": [],
+  "bridges": [],
+  "ledges": [
+    [27, 32, 9],
+    [42, 28, 8],
+    [61, 28, 8],
+    [83, 26, 8],
+    [97, 27, 8],
+    [106, 24, 9],
+    [115, 26, 8],
+    [127, 30, 9],
+    [52, 29, 9]
+  ],
+  "relic": ["springKey", 112, 19],
+  "creatures": [
+    ["springaroo", 10],
+    ["glimmermoth", 45],
+    ["emberkit", 72],
+    ["springaroo", 96],
+    ["mossback", 132]
+  ],
+  "checkpoints": [57, 101, 139],
+  "snacks": [10, 41, 90, 133],
+  "stars": [
+    [35, 29],
+    [73, 26],
+    [107, 21],
+    [134, 28]
+  ],
+  "landmarks": [
+    {
+      "x": 38,
+      "type": "tree"
+    },
+    {
+      "x": 105,
+      "type": "tree"
+    },
+    {
+      "x": 139,
+      "type": "lantern"
+    }
+  ],
+  "version": 1,
+  "id": "first-forest",
+  "biome": "meadow",
+  "sections": [
+    {
+      "id": "picnic-trail",
+      "prefab": "befriend-creature",
+      "range": [0, 61],
+      "challenge": "lure-and-befriend",
+      "goal": "Practice feeding and catching Springaroo in a safe garden",
+      "recovery": 57,
+      "reward": "springaroo",
+      "expectedRoute": [10, 45, 57]
+    },
+    {
+      "id": "canopy-ascent",
+      "prefab": "ability-ascent",
+      "range": [61, 124],
+      "challenge": "vertical-traversal",
+      "requires": "springaroo",
+      "goal": "Read the enemy dash, then double-jump toward the light",
+      "recovery": 101,
+      "reward": "springKey",
+      "expectedRoute": [72, 101, 106, 112]
+    },
+    {
+      "id": "lantern-grove",
+      "prefab": "rest-and-exit",
+      "range": [124, 148],
+      "challenge": "gentle-finale",
+      "goal": "Rest at the lantern, meet Mossback and pass through the gate",
+      "recovery": 139,
+      "reward": "exit",
+      "expectedRoute": [132, 139, 147]
+    }
+  ],
+  "motifs": [],
+  "terrainFeatures": [
+    {
+      "center": 14,
+      "radius": 10,
+      "lift": -3
+    },
+    {
+      "center": 72,
+      "radius": 15,
+      "lift": 4
+    }
+  ],
+  "setpieces": [
+    {
+      "id": "picnic-trail-bounce-bloom-1",
+      "kind": "bounceBloom",
+      "section": "picnic-trail",
+      "x": 51,
+      "target": [56, 29]
+    },
+    {
+      "id": "lantern-bounce-bloom",
+      "kind": "bounceBloom",
+      "section": "lantern-grove",
+      "x": 132,
+      "target": [138, 26]
+    }
+  ],
+  "vistas": [
+    {
+      "id": "picnic-hollow",
+      "section": "picnic-trail",
+      "kind": "root-arch",
+      "role": "teach",
+      "x": 32,
+      "span": 20
+    },
+    {
+      "id": "elder-canopy",
+      "section": "canopy-ascent",
+      "kind": "elder-tree",
+      "role": "reveal",
+      "x": 108,
+      "span": 29
+    },
+    {
+      "id": "lantern-clearing",
+      "section": "lantern-grove",
+      "kind": "firefly-ruins",
+      "role": "reward",
+      "x": 137,
+      "span": 19
+    }
+  ],
+  "dressing": [
+    {
+      "x": 17,
+      "asset": "berryBush",
+      "scale": 1.2
+    },
+    {
+      "x": 29,
+      "asset": "flowers",
+      "scale": 1.1
+    },
+    {
+      "x": 37,
+      "asset": "mushrooms",
+      "scale": 0.9
+    },
+    {
+      "x": 54,
+      "asset": "stones",
+      "scale": 1.1
+    },
+    {
+      "x": 80,
+      "asset": "flowers",
+      "scale": 1.1
+    },
+    {
+      "x": 91,
+      "asset": "mushrooms",
+      "scale": 1
+    },
+    {
+      "x": 120,
+      "asset": "flowers",
+      "scale": 0.9
+    },
+    {
+      "x": 131,
+      "asset": "reeds",
+      "scale": 1.2
+    },
+    {
+      "x": 142,
+      "asset": "reeds",
+      "scale": 1
+    },
+    {
+      "x": 136,
+      "asset": "flowers",
+      "scale": 1.2
+    }
+  ],
+  "goalRoute": [
+    [106, 24],
+    [109, 22],
+    [112, 19]
+  ]
+}

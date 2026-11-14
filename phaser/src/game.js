@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import './bootstrap.js';
-import designs from '../../src/games/animal-adventure/designs.json';
-import {characters,mounts,backgrounds,sheets,silhouettes,terrainAtlas,paintedStates} from './assets.js';
+import {campaign,compileChapter} from './campaign.js';
+import {characters,mounts,backgrounds,sheets,silhouettes,paintedStates} from './assets.js';
 import {EFFECT_FRAMES,paintedAction,powerFrame,setpieceFrame,enemyTellFrame,
   paintedFootOrigin} from './action-art.js';
 import {MOUNTS,LOCATIONS,seatFor,stepMountedMotion} from './mounts.js';
@@ -19,20 +19,13 @@ import {launchPower,stepPower,powerHitsCreature,applyPowerHit,
   honeyPuddleCatches,HONEY_PUDDLE_TICKS} from './power-projectiles.js';
 import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat,
   stompCreature} from './creature-motion.js';
-import {meadowDesign} from './meadow-design.js';
-import {grottoChapter} from './cave-chapter.js';
-import {compileCave,caveContainsWater,skywellLayout} from './cave-layout.js';
-import {skywellChapter} from './skywell-chapter.js';
-import {paintCave,paintCaveGeometryOverlay} from './cave-renderer.js';
-import caveRockUrl from '../assets/generated/luminous-grotto-single.png';
+import {caveContainsWater} from './cave-layout.js';
+import {makeGeometryOverlay,paintScene,paintThermals,sceneTextures} from './painted-scene.js';
+import {surfaceGroundAt} from './surface-geometry.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
-import {addMeadowIllustration} from './meadow-art.js';
-import {validateEncounters} from './encounters.js';
-import {paintTerrain,paintScenery,addMeadowAtmosphere,
-  addParallaxAtmosphere,moveParallaxAtmosphere} from './world-renderer.js';
 
-const CHAPTERS=[...WW.chapters,grottoChapter,skywellChapter];
-const APPROVED_CAVE_ART=__CAVE_ASSETS__;
+const CHAPTERS=campaign(WW.chapters);
+const APPROVED_SCENE_ART=__SCENE_ASSETS__;
 const TILE=16;
 const VIEW_W=480;
 const VIEW_H=270;
@@ -70,22 +63,15 @@ class Wonderwood extends Phaser.Scene {
       });
     }
     for(const [name,url] of Object.entries(backgrounds))this.load.image('back-'+name,url);
-    this.load.image('painted-terrain',terrainAtlas);
     for(const [name,url] of Object.entries(sheets))
       this.load.spritesheet(name,url,{frameWidth:180,frameHeight:270});
     for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
     this.load.image('painted-states',paintedStates);
-    this.load.image('cave-painted-rock',caveRockUrl);
-    // Only selected world-registered painting layers are loaded for Skywell.
-    for(const [chapter,layers] of Object.entries(APPROVED_CAVE_ART))
-      for(const [material,url] of Object.entries(layers)){
-        if(material==='backgroundScrollFactor')continue;
-        this.load.image('cave-'+chapter+'-'+material,url);
-      }
+    for(const [chapter,art] of Object.entries(APPROVED_SCENE_ART))
+      for(const {key,url} of sceneTextures(chapter,art))this.load.image(key,url);
   }
 
   create(){
-    this.approvedCaveArt=APPROVED_CAVE_ART;
     this.keyboard=bindings.map(layout=>Object.fromEntries(Object.entries(layout)
       .map(([action,codes])=>[action,codes.map(code=>this.input.keyboard.addKey(code))])));
     this.lastInput=[{},{}];
@@ -123,8 +109,7 @@ class Wonderwood extends Phaser.Scene {
     // Revive has the same binding as the legacy game. H returns to the menu.
     this.input.keyboard.on('keydown-H',()=>{if(this.stage>=0)this.showMenu();});
     this.input.keyboard.on('keydown-V',()=>{
-      if(this.level?.cave&&this.caveGeometryOverlay)
-        this.caveGeometryOverlay.setVisible(!this.caveGeometryOverlay.visible);
+      if(this.geometryOverlay)this.geometryOverlay.setVisible(!this.geometryOverlay.visible);
     });
     this.showMenu();
     document.getElementById('ww-startup')?.setAttribute('hidden','');
@@ -141,27 +126,15 @@ class Wonderwood extends Phaser.Scene {
         worldWidth:this.worldW||0,
         cameraZoom:this.cameras.main.zoom,
         paintedStateFrames:this.textures.get('painted-states').frameTotal-1,
-        generatedTextureCount:this.generatedTextures?.length||0,
-        caveArt:this.stage>=0&&this.level?.cave?{
-          geometryOverlay:this.caveGeometryOverlay?.visible||false,
-          rockLoaded:this.textures.exists(this.cavePainting.texture.key),
-           textureKey:this.cavePainting.texture.key,
-          imageCount:this.cavePaintedLayers?.length||1,
-          sourcePixels:{width:this.cavePainting.width,
-            height:this.cavePainting.height},
-          painting:{x:this.cavePainting.x,y:this.cavePainting.y,
-            displayWidth:this.cavePainting.displayWidth,
-            displayHeight:this.cavePainting.displayHeight}
+        sceneArt:this.stage>=0?{
+          geometryOverlay:this.geometryOverlay.visible,
+          layers:this.sceneArt.map(layer=>({
+            textureKey:layer.texture.key,origin:[layer.x,layer.y],
+            sourcePixels:[layer.width,layer.height],
+            worldPixels:[layer.displayWidth,layer.displayHeight],
+            scrollFactor:layer.scrollFactorX
+          }))
         }:null,
-        // Read-only alignment probes for actual painted platform geometry.
-        soilTiles:this.soilTiles?.map(({x,width,height,visual})=>({
-          x,width,height,displayX:visual.x,displayWidth:visual.displayWidth
-        }))||[],
-        ledgeBounds:this.ledgeVisuals?.map(({platform,visual})=>({
-          x:platform.x*TILE,y:platform.y*TILE,width:platform.length*TILE,
-          artX:visual.x,artY:visual.y,artWidth:visual.displayWidth,
-          artScale:visual.scaleX
-        }))||[],
         players:this.players?.map(p=>({x:p.x,y:p.y,face:p.face,vx:p.vx,vy:p.vy,
           action:p.action,frame:Number(p.visual?.frame?.name),
           texture:p.visual?.texture?.key,grounded:p.grounded,
@@ -197,7 +170,6 @@ class Wonderwood extends Phaser.Scene {
           .map(p=>({x:p.x,y:p.y}))||[],
         paused:this.paused,
         simulationSeconds:Number((this.simulationTime/1000).toFixed(3)),
-        parallaxLayers:this.parallaxLayers?.length||0,
         foods:this.shared?.foods?{...this.shared.foods}:null,
         picnics:this.shared?.picnics||0,
         relic:this.shared?.relic||false,shards:this.shared?.shards||0,
@@ -213,10 +185,6 @@ class Wonderwood extends Phaser.Scene {
     this.tweens.resumeAll();
     this.tweens.killAll();
     this.children.removeAll(true);
-    for(const key of this.generatedTextures||[])this.textures.remove(key);
-    this.generatedTextures=[];
-    this.soilTiles=[];
-    this.ledgeVisuals=[];
     this.cameras.main.setZoom(2);
     this.cameras.main.setScroll(0,0);
     this.cameras.main.setBounds(0,0,VIEW_W,VIEW_H);
@@ -231,8 +199,7 @@ class Wonderwood extends Phaser.Scene {
     this.honeyPuddles=[];
     this.lures=[];
     this.setpieces=[];
-    this.parallaxLayers=[];
-    this.caveGeometryOverlay=null;
+    this.geometryOverlay=null;
     this.lastInput=[{},{}];
     this.pendingActions=[{},{}];
     this.pendingMs=0;
@@ -301,8 +268,7 @@ class Wonderwood extends Phaser.Scene {
     this.menuHint.textContent=chapter.tagline;
     // Chapter selection previews the actual painted biome, without a
     // separate low-resolution menu screenshot or new network assets.
-    const biome=['luminous-grotto','skywell-ascent'].includes(chapter.id)?
-      'coast':designs[chapter.id].biome;
+    const biome=chapter.biome;
     this.menuEl.dataset.biome=biome;
     this.backdrop.setTexture('back-'+biome);
     this.backdrop.setScale(Math.max(960/this.backdrop.width,540/this.backdrop.height));
@@ -334,37 +300,15 @@ class Wonderwood extends Phaser.Scene {
     this.chapter=CHAPTERS[index];
     this.progress=playChapter(this.progress,this.chapter.id);
     writeProgress(this.progressStorage,this.progress);
-    if(this.chapter.id==='luminous-grotto')this.level=compileCave();
-    else if(this.chapter.id==='skywell-ascent')this.level=compileCave(skywellLayout);
-    else {
-      const original=designs[this.chapter.id];
-      const spec=this.chapter.id==='first-forest'?meadowDesign(original):original;
-      if(this.chapter.id==='first-forest')validateEncounters(spec);
-      this.level=WW.worldCompiler.compile(spec,this.chapter);
-    }
+    this.level=compileChapter(this.chapter,WW.worldCompiler);
     this.worldW=this.level.width*TILE;
     this.worldH=this.level.height*TILE;
     this.shared={relic:false,shards:0,collected:new Set(),checkpoint:null,
       picnics:0,foods:{berry:14,nectar:6,star:6}};
-    if(this.level.cave){
-      // Paint the code-authored cave from its selected world-locked image layers.
-      this.cameras.main.setBackgroundColor(0x0b1c2c);
-    }else{
-      this.addBackground(this.level.biome);
-      this.backdrop.setScale(Math.max(1050/this.backdrop.width,
-        590/this.backdrop.height));
-    }
-    this.cavePaintedLayers=null;
-    if(this.level.cave){
-      paintCave(this);
-      paintCaveGeometryOverlay(this);
-    }else{
-      addParallaxAtmosphere(this);
-      addMeadowIllustration(this);
-      paintTerrain(this);
-      paintScenery(this);
-      addMeadowAtmosphere(this);
-    }
+    this.cameras.main.setBackgroundColor(this.level.cave?0x0b1c2c:SKY[this.level.biome]);
+    this.sceneArt=paintScene(this,APPROVED_SCENE_ART[this.chapter.id]);
+    this.geometryOverlay=makeGeometryOverlay(this);
+    paintThermals(this);
     this.spawnObjects();
     this.spawnMounts();
     this.makePlayer(0);
@@ -384,10 +328,7 @@ class Wonderwood extends Phaser.Scene {
 
   groundAt(x){
     if(this.level.cave)return this.level.cave.groundAt(x);
-    const position=clamp(x/TILE,0,this.level.width);
-    const cell=Math.min(Math.floor(position),this.level.width-1);
-    const t=position-cell;
-    return (this.level.surface[cell]*(1-t)+this.level.surface[cell+1]*t)*TILE;
+    return surfaceGroundAt(this.level,x);
   }
 
   inWater(x,y){
@@ -1186,7 +1127,6 @@ class Wonderwood extends Phaser.Scene {
       }
       return;
     }
-    if(!this.level.cave)moveParallaxAtmosphere(this);
     if(actions.some(a=>a.pausePressed)){
       this.paused=!this.paused;
       if(this.paused)this.tweens.pauseAll();

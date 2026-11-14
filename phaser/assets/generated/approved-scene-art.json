@@ -1,0 +1,46 @@
+{
+  "first-forest": {
+    "scene": [
+      "phaser/assets/generated/surface-scenes/first-forest.webp"
+    ]
+  },
+  "crystal-coast": {
+    "scene": [
+      "phaser/assets/generated/surface-scenes/crystal-coast-1.webp",
+      "phaser/assets/generated/surface-scenes/crystal-coast-2.webp",
+      "phaser/assets/generated/surface-scenes/crystal-coast-3.webp"
+    ]
+  },
+  "starfall-summit": {
+    "scene": [
+      "phaser/assets/generated/surface-scenes/starfall-summit-1.webp",
+      "phaser/assets/generated/surface-scenes/starfall-summit-2.webp",
+      "phaser/assets/generated/surface-scenes/starfall-summit-3.webp"
+    ]
+  },
+  "willow-wetlands": {
+    "scene": [
+      "phaser/assets/generated/surface-scenes/willow-wetlands-1.webp",
+      "phaser/assets/generated/surface-scenes/willow-wetlands-2.webp",
+      "phaser/assets/generated/surface-scenes/willow-wetlands-3.webp"
+    ]
+  },
+  "cloud-gardens": {
+    "scene": [
+      "phaser/assets/generated/surface-scenes/cloud-gardens-1.webp",
+      "phaser/assets/generated/surface-scenes/cloud-gardens-2.webp",
+      "phaser/assets/generated/surface-scenes/cloud-gardens-3.webp"
+    ]
+  },
+  "luminous-grotto": {
+    "scene": [
+      "phaser/assets/generated/luminous-grotto-single.png"
+    ]
+  },
+  "skywell-ascent": {
+    "background": "phaser/assets/generated/skywell-ancient/painted-background.webp",
+    "water": "phaser/assets/generated/skywell-ancient/painted-water.webp",
+    "solid": "phaser/assets/generated/skywell-ancient/painted-solid.webp",
+    "backgroundScrollFactor": 1
+  }
+}

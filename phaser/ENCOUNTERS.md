@@ -1,10 +1,8 @@
 # Encounter authoring for Wonderwood
 
-The **semantic world design remains the only source of truth**. Use
-`src/games/animal-adventure/designs.json` and the Phaser meadow transformation
-in `phaser/src/meadow-design.js`; no duplicate collision tilemaps or scene
-bitmaps. The compiler still determines ridge heights, ledges, wildlife,
-checkpoints and objective locations.
+The semantic world design is the source of truth. The Phaser Meadow is
+declared in `phaser/levels/first-forest.json`. The compiler still determines
+ridge heights, ledges, wildlife, checkpoints, and objective locations.
 
 ## Reusable first-chapter templates
 
@@ -66,8 +64,8 @@ by this first schema.
 
 ## Architecture boundary
 
-- `world-renderer.js`: world paint, slopes drawn as texture masks, flora,
-  water highlights, and atmospheric effects; **no collision decisions**.
+- `painted-scene.js` places the scene paintings at their authored world
+  coordinates. The collision overlay reads geometry from the compiler.
 - `physics.js`: heightfield/ledge and projectile geometry.
 - `mounts.js`: deterministic riderless mounted motion rules and mount data;
   scene code remains responsible for input, character visuals and effects.

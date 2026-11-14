@@ -3,12 +3,9 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {encounter,validateEncounters} from '../src/encounters.js';
-import {meadowDesign} from '../src/meadow-design.js';
+import meadow from '../levels/first-forest.json' with {type:'json'};
 
 const root=new URL('../../',import.meta.url);
-const designs=JSON.parse(readFileSync(new URL(
-  'src/games/animal-adventure/designs.json',root),'utf8'));
-const meadow=meadowDesign(designs['first-forest']);
 
 test('three reusable encounters validate on the actual semantic meadow',()=>{
   assert.deepEqual(meadow.sections.map(s=>s.prefab),

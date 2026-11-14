@@ -24,7 +24,7 @@ test('one approved static painting ships as a valid full-level PNG',()=>{
 test('chosen Ancient Sanctuary painting is a real native-alpha, world-aligned three-layer asset',()=>{
   const here=dirname(fileURLToPath(import.meta.url));
   const root=resolve(here,'../assets/generated');
-  const catalog=JSON.parse(readFileSync(resolve(root,'approved-cave-art.json')));
+  const catalog=JSON.parse(readFileSync(resolve(root,'approved-scene-art.json')));
   const selected=catalog['skywell-ascent'];
   assert.ok(selected);
   assert.equal(selected.backgroundScrollFactor,1,

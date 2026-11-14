@@ -1,5 +1,26 @@
 # Third-party assets and visual cohesion
 
+## Surface chapter panoramas
+
+The five paintings in `phaser/assets/generated/surface-scenes/` were
+created with OpenAI image generation, conditioned on each chapter's
+compiled material guide and the existing Skywell painting as a style
+reference. The ground profiles and shorelines were fitted to the exact
+guide. The draft ledges were cleaned up and painted ledge detail was
+aligned to the compiled one-way spans. The last four scenes are stored
+as contiguous strips cut from one finished composition per chapter.
+
+| Chapter | Generated source | Registered world |
+| --- | --- | --- |
+| Mosslight Meadow | 2115 × 744 | 2368 × 832 |
+| Crystal Coast | 2172 × 724 | 4704 × 960 |
+| Starfall Summit | 2172 × 724 | 4960 × 1184 |
+| Willow Wetlands | 2172 × 724 | 5184 × 992 |
+| Cloud Gardens | 2172 × 724 | 5408 × 1280 |
+
+The registered dimensions describe placement. These are resized preview
+paintings, with scope for a later native-detail art pass.
+
 ## Luminous Grotto single-image painting (PR #8)
 
 `phaser/assets/generated/luminous-grotto-single.png` is the approved
@@ -24,14 +45,13 @@ bush PNGs as main scenery**. They clashed with the hand-painted sprites.
 Earlier Wonderwood revisions used cropped, scaled and tinted images from
 ArtByte’s [2D Platformer Forest Kit](https://opengameart.org/content/2d-platformer-forest-kit)
 under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The original
-source PNGs are available in Git history. Current ledges use Wonderwood art
-and are painted from the same semantic platform geometry as their colliders.
+source PNGs are available in Git history. The current Phaser scenes align their painted ledges to the compiled platform spans.
 
 ## Supplemental CC0 assets
 
 Three small sky images (cloud1, cloud3, moonFull) from Kenney's
 [Background Elements Remastered](https://kenney.nl/assets/background-elements-redux)
-remain in use only at low opacity, as distant non-interactive sky elements.
+remain in use at low opacity in the title screen.
 Their license is [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
 Mirror: https://github.com/shorepine/kenney/tree/main/2d/Background%20Elements%20Remastered
 

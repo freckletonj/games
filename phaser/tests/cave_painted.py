@@ -29,19 +29,17 @@ def main():
             timeout=25000
         )
         before=page.evaluate("window.__wonderwoodPhaser.snapshot()")
-        art=before["caveArt"]
-        assert art and art["rockLoaded"] and art["imageCount"]==1,art
-        assert before["parallaxLayers"]==0,before
-        assert "chunks" not in art,art
-        assert art["painting"]=={
-            "x":0,"y":0,"displayWidth":3200,"displayHeight":1792
-        },art
+        art=before["sceneArt"]
+        layer,=art["layers"]
+        assert layer["textureKey"]=="scene-luminous-grotto-scene-0",art
+        assert layer["origin"]==[0,0] and layer["scrollFactor"]==1,art
+        assert layer["worldPixels"]==[3200,1792],art
         assert before["worldWidth"]==3200,before
         assert before["players"],before
         page.screenshot(path=str(ROOT/"dist"/"phaser-grotto-painted.png"))
         page.keyboard.press("v")
         assert page.evaluate(
-            "window.__wonderwoodPhaser.snapshot().caveArt.geometryOverlay"
+            "window.__wonderwoodPhaser.snapshot().sceneArt.geometryOverlay"
         ),"V must display the real collision spline"
         page.keyboard.press("v")
         page.evaluate("document.activeElement.blur()")

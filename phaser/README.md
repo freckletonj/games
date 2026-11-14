@@ -1,9 +1,9 @@
 # Wonderwood / Phaser 4
 
-A playable, parallel Phaser 4 remake, created **from main**. The established
-Canvas game remains intact while this implementation earns gameplay parity.
-Five canonical JSON worlds are compiled through the existing deterministic
-`world-compiler.js`. Original Wonderwood painted assets are reused with subtle CC0 Kenney skies.
+An offline seven-chapter adventure built with Phaser 4. The five surface
+chapters compile from declarative JSON and the two caves from declarative
+geometry in `src/cave-layout.js`. All seven use the same painted-scene renderer.
+The original Canvas campaign remains independently playable.
 The self-contained game plays offline with no CDN, external images or fetches.
 
 ## Reusable offline build (Linux x86_64)
@@ -32,9 +32,9 @@ The optional sixth chapter demonstrates **one code-authored cave → one
 static geometry guide → one model-painted full-level image**, with no tiles
 or chunk stitching. It retains the existing Phaser movement, creatures and
 transformations. See the [step-by-step level authoring guide](CAVE-ART-PIPELINE.md)
-for the exact export/build commands, image-generation prompt, V-key collision
-overlay, and the accepted painted-water / rising-floor mismatch. The original
-five chapters keep their existing level/rendering pipelines.
+for export and build commands, the V-key collision overlay, and the
+prototype's known water alignment limits. For the surface chapters, see
+[the shared art workflow](ART-DIRECTION.md).
 
 ## Build
 
@@ -206,9 +206,11 @@ necessary.
 
 ## Rendering and gameplay modules
 
-The playable Phaser scene delegates the terrain and atmosphere layers to
-`src/world-renderer.js`, so texture choices and biome composition can be
-iterated without editing player physics. Mounted acceleration, gravity,
+The game and guide exporter compile chapter declarations through
+`src/campaign.js`. The runtime draws registered paintings from
+`assets/generated/approved-scene-art.json` using `src/painted-scene.js`.
+Press **V** in any chapter to compare the painting with collision.
+Mounted acceleration, gravity,
 collisions and wingbeat cooldown are simulated by the deterministic,
 Phaser-independent `stepMountedMotion` function in `src/mounts.js`.
 Unit tests cover Unicorn/Pegasus movement independently of browser timing.
@@ -257,45 +259,7 @@ Actual hardware-controller and campaign-wide QA remain necessary.
   nonviolent and avoidable rather than causing damage on ordinary contact.
 - Fully friendly wildlife plays its **happy/waiting** animation even if
   the patrol target is elsewhere; this makes the capture window legible.
-- **Soil painting** uses a broader biome-specific earth gradient, low-opacity
-  original rock material, organic large-scale strata and a muted grass
-  edge instead of repeating a high-contrast 64-pixel rock tile. Platform
-  lips are shallower and pickups gently animate. Collision is unchanged:
-  no painted surface is ever treated as collision geometry.
-
-These refinements are aimed at control readability and moment-to-moment
-world cohesion, not a redesign of campaign logic. The existing full Meadow
-playthrough and multi-biome browser suites remain regression gates.
-
-### Biome-specific visual materials
-
-The meadow, coast and summit now draw **erosion-tapered floating ledges**
-from the same semantic collision spans, with separate painted soil,
-sea-stone and frosted-stone palettes. The bright jungle ledge bitmap and
-unrelated decorative cutouts no longer appear in the playable bundle.
-The sky retains its original chapter backdrop with two independently
-scrolling, subdued atmospheric layers. Actor gait responds to speed,
-takeoff stretch eases into flight, and Pegasus wingbeats have a less
-abrupt illustrated cadence plus a brief painted wind cue. No new
-third-party license or gameplay collision change is involved.
-
-
-### Chapter 1: platform alignment, painted canopy and creature rebound
-
-The illustrated ledges are painted on a 2×-resolution canvas **and displayed
-at 0.5× scale**. This is essential: allowing Phaser to display a supersampled
-canvas at full size made the drawn platforms twice as wide as their actual
-one-way collision spans. The regression suite now checks the alignment of
-every displayed ledge in all five chapters and keeps the player stationary
-on both upper Meadow platforms for a full second.
-
-Mosslight Meadow now adds two chapter-exclusive, 2048×512 transparent
-illustration layers in `src/meadow-art.js`: soft watercolor canopy leaves and
-warm dappled sunbeams. Their movement is gentle, at different fractions of
-camera motion, and entirely behind the gameplay plane. This art is generated
-from deterministic canvas brushwork at runtime, so there are no new
-third-party assets, fake platforms, or source-bitmap stretches. The other
-four chapters are unchanged.
+### Creature rebound
 
 Landing feet-first on the back of a creature retains the automatic soft hop
 and opens a 14-tick (~0.23s at 60Hz) opportunity to **tap Jump again** for

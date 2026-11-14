@@ -84,7 +84,7 @@ which would render a second misaligned copy of the physical cave.
 ## Put the approved RGBA images into the actual HTML build
 
 Only assets named in
-`phaser/assets/generated/approved-cave-art.json` are activated. For playable Skywell, the registry now selects the user's **Ancient Sanctuary**
+`phaser/assets/generated/approved-scene-art.json` are activated. For playable Skywell, the registry now selects the user's **Ancient Sanctuary**
 painting as a **preview-quality composited scene**, with world-locked air,
 water, and solid RGBA images and backgroundScrollFactor=1. The image was
 generated at 1644 × 957 and resampled to 3520 × 2048; this is NOT genuine
@@ -142,7 +142,7 @@ at `phaser/assets/generated/skywell-ancient/`:
   air and **world-locked**. This is not an independent parallax painting.
 - `art-provenance.json`: generation/source dimensions and alpha provenance.
 
-The **approved-cave-art.json** registry explicitly selects these images.
+The **approved-scene-art.json** registry explicitly selects these images.
 The actual game renderer loads and draws all three; there are no vector
 scenery sprites in normal play. The earlier opaque Skywell image and wedge compositor were removed from
 the working tree; their provenance is preserved in Git history.

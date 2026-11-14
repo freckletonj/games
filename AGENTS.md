@@ -7,15 +7,15 @@ controls, build setup, and browser verification.
 
 ## Levels and art
 
-- The five original chapter designs are in
-  `src/games/animal-adventure/designs.json`. Phaser applies its Meadow layout
-  in `phaser/src/meadow-design.js` before using the shared world compiler.
-  The two playable caves are declared in `phaser/src/cave-layout.js`.
-- Export full-scene PNG references from the compiled geometry with
-  `node phaser/scripts/export-art-guides.mjs` and
-  `node phaser/scripts/export-cave-guides.mjs`. Use the cave material masks
-  to register painted layers to collision. Keep actors and pickups separate.
-  The [art guide](phaser/ART-DIRECTION.md) describes the output.
+- The Phaser campaign's chapter catalog and compiler are in
+  `phaser/src/campaign.js`. The compact Meadow is declared in
+  `phaser/levels/first-forest.json`. The other four surface chapters use
+  `src/games/animal-adventure/designs.json`; the caves use
+  `phaser/src/cave-layout.js`.
+- Export full-scene geometry guides with `node phaser/scripts/export-art-guides.mjs`
+  and `node phaser/scripts/export-cave-guides.mjs`. Use the material masks to
+  register static art to collision. Keep actors and pickups separate.
+  See [art direction](phaser/ART-DIRECTION.md) for the shared workflow.
 
 ## Build and verify
 

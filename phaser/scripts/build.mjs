@@ -6,34 +6,39 @@ const root = resolve(import.meta.dirname, '../..');
 // Only explicitly approved art layers are packaged. A missing file makes the
 // build fail instead of silently substituting low-resolution draft scenery.
 const approvedSpec=JSON.parse(await readFile(resolve(root,
-  'phaser/assets/generated/approved-cave-art.json'),'utf8'));
-const approvedCaveAssets={};
+  'phaser/assets/generated/approved-scene-art.json'),'utf8'));
+async function embedImage(path){
+  if(typeof path!=='string'||!/\.(png|webp)$/.test(path))
+    throw Error('Invalid painted scene path '+path);
+  const media=path.endsWith('.png')?'image/png':'image/webp';
+  const bytes=await readFile(resolve(root,path));
+  return 'data:'+media+';base64,'+bytes.toString('base64');
+}
+
+const approvedSceneAssets={};
 for(const [id,layers] of Object.entries(approvedSpec)){
-  if(!layers.solid||!layers.water)
-    throw Error('Approved cave '+id+' requires solid and water RGBA paintings');
-  approvedCaveAssets[id]={};
+  if(layers.scene?Object.keys(layers).length!==1:!layers.solid)
+    throw Error('Approved art for '+id+' requires a complete scene or registered material layers');
+  approvedSceneAssets[id]={};
   if(layers.backgroundScrollFactor!==undefined){
     if(typeof layers.backgroundScrollFactor!=='number'||
        layers.backgroundScrollFactor<0||layers.backgroundScrollFactor>1)
       throw Error('Invalid background scroll factor for '+id);
-    approvedCaveAssets[id].backgroundScrollFactor=layers.backgroundScrollFactor;
+    approvedSceneAssets[id].backgroundScrollFactor=layers.backgroundScrollFactor;
   }
   for(const [name,path] of Object.entries(layers)){
     if(name==='backgroundScrollFactor')continue;
-    if(!['solid','water','background'].includes(name)||
-       !/\.(png|webp)$/.test(path))
-      throw Error('Invalid painted cave layer '+id+' '+name);
-    const media=path.endsWith('.png')?'image/png':'image/webp';
-    const bytes=await readFile(resolve(root,path));
-    approvedCaveAssets[id][name]='data:'+media+';base64,'+
-      bytes.toString('base64');
+    if(!['scene','solid','water','background'].includes(name))
+      throw Error('Invalid painted scene layer '+id+' '+name);
+    approvedSceneAssets[id][name]=name==='scene'?
+      await Promise.all(path.map(embedImage)):await embedImage(path);
   }
 }
 const result = await build({
   entryPoints:[resolve(root,'phaser/src/game.js')],
   bundle:true,
   write:false,
-  define:{__CAVE_ASSETS__:JSON.stringify(approvedCaveAssets)},
+  define:{__SCENE_ASSETS__:JSON.stringify(approvedSceneAssets)},
   minify:true,
   format:'iife',
   target:'es2022',
