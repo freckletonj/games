@@ -1,12 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {meadowDesign} from '../src/meadow-design.js';
+import meadow from '../levels/first-forest.json' with {type:'json'};
 import {bindings} from '../src/input.js';
 
 const root=new URL('../../',import.meta.url);
 const originals=JSON.parse(readFileSync(new URL('src/games/animal-adventure/designs.json',root),'utf8'));
-const meadow=meadowDesign(originals['first-forest']);
 const species=new Set(['springaroo','tideling','skyling','mossback','prismtail',
   'glimmermoth','cloudwhisp','emberkit']);
 test('all eight catchable species remain authored in the canonical campaign',()=>{

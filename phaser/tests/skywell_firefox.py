@@ -35,14 +35,13 @@ def main():
             timeout=90000
         )
         first = page.evaluate("window.__wonderwoodPhaser.snapshot()")
-        assert first["caveArt"]["rockLoaded"]
-        assert first["caveArt"]["sourcePixels"] == {"width": 3520, "height": 2048}
+        assert first["sceneArt"]["layers"][-1]["sourcePixels"] == [3520, 2048]
         assert first["platformCount"] == 26
         assert first["climbWallCount"] == 10
         page.screenshot(path=str(ROOT / "dist/phaser-skywell-firefox.png"))
         page.keyboard.press("v")
         assert page.evaluate(
-            "window.__wonderwoodPhaser.snapshot().caveArt.geometryOverlay"
+            "window.__wonderwoodPhaser.snapshot().sceneArt.geometryOverlay"
         )
         page.keyboard.press("v")
         page.keyboard.down("d")

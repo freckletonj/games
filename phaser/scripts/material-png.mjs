@@ -14,7 +14,7 @@ const color={
   clear:[0,0,0,0]
 };
 
-export function caveGuidePng(level,{
+export function materialGuidePng(level,{
   from=0,to=level.width,top=0,bottom=level.height,
   layer='physical-rock',scale=1
 }={}){
@@ -22,7 +22,7 @@ export function caveGuidePng(level,{
      from<0||to>level.width||from>=to||
      top<0||bottom>level.height||top>=bottom||
      !Number.isInteger(scale)||scale<1||scale>3)
-    throw Error('Invalid cave guide raster dimensions or layer');
+    throw Error('Invalid material guide raster dimensions or layer');
   const worldX=from*16,worldY=top*16;
   const width=(to-from)*16*scale,height=(bottom-top)*16*scale;
   const rows=Buffer.alloc((width*4+1)*height);

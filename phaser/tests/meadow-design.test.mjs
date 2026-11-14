@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {meadowDesign} from '../src/meadow-design.js';
+import meadow from '../levels/first-forest.json' with {type:'json'};
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
@@ -10,7 +10,7 @@ const context={};context.window=context;
 vm.createContext(context);
 vm.runInContext(readFileSync(new URL('src/platform/world-compiler.js',root),'utf8'),context);
 test('Mosslight Meadow is a compact, semantically valid three-act adventure',()=>{
-  const spec=meadowDesign(originals['first-forest']);
+  const spec=meadow;
   assert.equal(spec.width,148);
   assert.equal(spec.sections.length,3);
   assert.equal(spec.creatures[0][1],10);

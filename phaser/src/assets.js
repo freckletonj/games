@@ -22,13 +22,11 @@ import unicornManifest from '../../src/assets/characters/unicorn/manifest.json';
 import pegasus from '../../src/assets/characters/pegasus/sheet.avif';
 import pegasusManifest from '../../src/assets/characters/pegasus/manifest.json';
 
-import terrainAtlas from '../../src/assets/tiles/meadow/tiles.png';
 import meadow from '../../src/assets/scenes/meadow/backdrop.webp';
 import coast from '../../src/assets/scenes/coast/backdrop.webp';
 import summit from '../../src/assets/scenes/summit/backdrop.webp';
 import flora from '../../src/assets/illustrations/flora.webp';
 import props from '../../src/assets/illustrations/props.webp';
-import landmarks from '../../src/assets/illustrations/landmarks.webp';
 import effects from '../../src/assets/illustrations/effects.webp';
 import states from '../../src/assets/illustrations/states.webp';
 import kenneyCloud from '../assets/kenney/cloud1.png';
@@ -51,8 +49,7 @@ export const mounts = {
   pegasus:{url:pegasus,manifest:pegasusManifest}
 };
 export const backgrounds = {meadow,coast,summit};
-export {terrainAtlas};
-export const sheets = {flora,props,landmarks,effects};
+export const sheets = {flora,props,effects};
 export const paintedStates=states;
 export const silhouettes = {
   cloud:kenneyCloud,cloudAlt:kenneyCloudAlt,moon:kenneyMoon

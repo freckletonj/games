@@ -52,35 +52,21 @@ def main():
             assert state["animalCount"] > 0, state
             assert state["paintedStateFrames"] == 9, state
             assert state["platformCount"] > 0, state
-            # Each painted soil texture must fit a modest WebGL texture
-            # dimension; slices must exactly cover the semantic world width.
-            tiles = state["soilTiles"]
-            assert tiles and tiles[0]["x"] == 0, (chapter, tiles)
-            assert all(0 < tile["width"] <= 768 for tile in tiles), (
-                chapter, tiles
+            art = state["sceneArt"]
+            assert not art["geometryOverlay"], art
+            right = 0
+            for index, layer in enumerate(art["layers"]):
+                assert layer["textureKey"] == f"scene-{chapter}-scene-{index}", layer
+                assert layer["origin"] == [right, 0] and layer["scrollFactor"] == 1, layer
+                assert layer["sourcePixels"] == layer["worldPixels"], layer
+                assert layer["worldPixels"][0] <= 4096, layer
+                right += layer["worldPixels"][0]
+            assert right == state["worldWidth"], art
+            page.keyboard.press("v")
+            assert page.evaluate(
+                "window.__wonderwoodPhaser.snapshot().sceneArt.geometryOverlay"
             )
-            assert all(
-                tile["displayWidth"] == tile["width"]
-                and tile["displayX"] == tile["x"]
-                for tile in tiles
-            ), (chapter, tiles)
-            assert all(
-                tiles[k]["x"] + tiles[k]["width"] == tiles[k + 1]["x"]
-                for k in range(len(tiles) - 1)
-            ), (chapter, tiles)
-            assert tiles[-1]["x"] + tiles[-1]["width"] == state["worldWidth"]
-            assert state["generatedTextureCount"] >= len(tiles), state
-            assert state["ledgeBounds"], (chapter, state)
-            for ledge in state["ledgeBounds"]:
-                # A 2x backing canvas must resolve to 1x world units. In the
-                # broken version it looked twice as wide as its collider.
-                assert abs(ledge["artScale"] - .5) < 1e-6, ledge
-                assert abs(ledge["artWidth"] - (ledge["width"] + 16)) < 1, ledge
-                assert abs(ledge["artX"] - (ledge["x"] - 8)) < 1, ledge
-                assert abs(ledge["artY"] - (ledge["y"] - 7)) < 1, ledge
-            assert state["parallaxLayers"] == (4 if i == 0 else 2), (
-                chapter, state
-            )
+            page.keyboard.press("v")
             assert not errors, (chapter, errors)
             page.screenshot(path=str(ROOT / "dist" / f"phaser-chapter-{chapter}.png"))
             if i == 0:

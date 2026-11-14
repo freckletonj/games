@@ -130,7 +130,7 @@ must include real player and creature collision before any art is approved.
 Art refinement now uses `refinement/plan.json` and
 `stitch-cave-painting.py` to assemble one native-sized composition **before**
 applying alpha. The offline HTML build reads explicitly selected assets
-from `phaser/assets/generated/approved-cave-art.json`. The playable
+from `phaser/assets/generated/approved-scene-art.json`. The playable
 Skywell entry now points to the user's chosen Ancient Sanctuary alpha
 composition, with all three planes locked to scroll factor 1. The old opaque WebP and its compositor were removed from the working tree;
 there is no fallback for Skywell if the selected approved assets are absent.

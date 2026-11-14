@@ -1,9 +1,10 @@
-import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {writeFile,mkdir} from 'node:fs/promises';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {artGuide} from '../src/art-guide.js';
 import {artGuidePng} from './art-guide-png.mjs';
-import {meadowDesign} from '../src/meadow-design.js';
+import {materialGuidePng} from './material-png.mjs';
+import {compileChapter} from '../src/campaign.js';
 
 const root=new URL('../../',import.meta.url);
 const scope={};
@@ -13,16 +14,19 @@ for(const path of ['src/platform/world-compiler.js',
   'src/games/animal-adventure/chapters.js'])
   vm.runInContext(readFileSync(new URL(path,root),'utf8'),scope);
 
-const designs=JSON.parse(await readFile(
-  new URL('src/games/animal-adventure/designs.json',root),'utf8'));
 const destination=new URL('dist/art-guides/',root);
 await mkdir(destination,{recursive:true});
 
 for(const chapter of scope.WW.chapters){
-  const design=chapter.id==='first-forest'?
-    meadowDesign(designs[chapter.id]):designs[chapter.id];
-  const level=scope.WW.worldCompiler.compile(design,chapter);
+  const level=compileChapter(chapter,scope.WW.worldCompiler);
   const guide=artGuide(level,chapter);
+  const output=new URL(chapter.id+'/',destination);
+  await mkdir(output,{recursive:true});
+  await writeFile(new URL('world-physical-rock.png',output),materialGuidePng(level));
+  for(const material of ['solid','water'])
+    await writeFile(new URL('world-static-'+material+'.png',output),
+      materialGuidePng(level,{layer:'static-'+material}));
+
   await writeFile(new URL(chapter.id+'.svg',destination),guide.svg);
   await writeFile(new URL(chapter.id+'.png',destination),artGuidePng(level,guide.data));
   await writeFile(new URL(chapter.id+'.json',destination),
