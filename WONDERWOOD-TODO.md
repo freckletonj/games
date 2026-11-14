@@ -2,7 +2,7 @@
 
 This branch brings the Wonderwood experiments together on top of `main`. Start here when resuming work and use the latest commits on the integration PR for the current implementation.
 
-- [x] Compare #6 (Canvas gameplay and mounts), #7 (Phaser campaign), and #8 (geometry-authored painted caves). Record what carries forward. #7 already imports #6’s painted mounts and implements its own gameplay improvements. The Canvas-specific courses and physics remain accessible in #6.
+- [x] Compare #7 (Phaser campaign) and #8 (geometry-authored painted caves). #8 extends #7, and both are represented in the integration branch. The earlier Canvas experiment remains accessible in #6.
 - [x] Bring the playable Phaser campaign and the authored cave pipeline into the integration branch in reviewable commits.
 - [x] Verify collision, water, guide export, and static-art registration. The fixed-step route crosses all ten walls, reaches the lantern, and reaches the exit in both the playable Skywell and the vaulted geometry study.
 - [ ] Run extended browser checks, including real-input traversal and campaign completion.
@@ -10,6 +10,10 @@ This branch brings the Wonderwood experiments together on top of `main`. Start h
 - [ ] Merge the integration PR and retire superseded experiments once their relevant work is accounted for.
 
 ## Current checkpoint
+
+A fresh checkout passed all 119 Node tests, generated the mechanics report and cave guides, and verified the three Skywell masks against the committed art. `npm run build --prefix phaser` produced a 15,840,464-byte `dist/wonderwood-phaser.html`. The remaining checks cover extended browser gameplay, committing the single-file build, and retiring #7 and #8 after consolidation.
+
+## Earlier verification
 
 The Phaser campaign and #8 cave sources are in this branch. The first local run passed 118 of 119 Node tests. The integration corrects the stale assertion for the SVG’s clipped climb-wall group, bringing the suite to 119 passing. Guide export succeeds. The original painting differed from the current masks by 41 solid, 15 water, and 26 background pixels. The rebaked WebP layers match all three masks pixel for pixel. The standalone build launches from a local file in Firefox, renders Skywell’s three layers, toggles the geometry overlay, and responds to movement without HTTP requests. A fresh build passed all 119 Node tests, the mechanics report, cave guide export, and the three-layer alpha comparison. Playwright Firefox verified Skywell from the actual local HTML and the general offline smoke test verified movement and co-op. The installed Chromium cannot start in this environment, so the extended browser tests are being exercised in Firefox.
 
