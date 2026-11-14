@@ -45,20 +45,26 @@ Generate consistent source masks via:
 
 ```sh
 node phaser/scripts/export-art-guides.mjs
+node phaser/scripts/export-cave-guides.mjs
 ```
 
-The command writes each chapter's `dist/art-guides/<chapter>.svg` and
-`<chapter>.json`. The SVG contains independently addressable
+The campaign exporter writes each of the five JSON-authored chapters to
+`dist/art-guides/<chapter>.png`, `<chapter>.svg` and `<chapter>.json`.
+Use the full-scene PNG as the image model's structural reference. It marks
+air in dark blue, terrain in off-white, water in cyan and platform tops in
+amber. Actors and other interactive objects stay out of the bitmap. The SVG
+contains independently addressable
 **solid terrain, water, platform-top, object-anchor and goal-route** layers
 at exactly the semantic compiler coordinates. The JSON preserves pixel
-positions, platform collision spans, vistas and encounter sections.
+positions, platform collision spans, vistas and encounter sections. The cave
+exporter writes the Luminous Grotto and Skywell Ascent references under
+`dist/cave-guides/`, alongside the separate vault authoring study.
 
 Use the masks as constraints for layered illustration/inpainting. Keep
 the gameplay geometry, platform widths and water surfaces fixed. Do not
 generate a single poster containing visual platforms with different
 collision locations. Paint separately at higher resolution and render
-with known scale and source provenance. The editable guides are published
-as a CI artifact, alongside the playable build and screenshots.
+with known scale and source provenance.
 
 ## Quality gates
 

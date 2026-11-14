@@ -2,6 +2,7 @@ import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {artGuide} from '../src/art-guide.js';
+import {artGuidePng} from './art-guide-png.mjs';
 import {meadowDesign} from '../src/meadow-design.js';
 
 const root=new URL('../../',import.meta.url);
@@ -23,6 +24,7 @@ for(const chapter of scope.WW.chapters){
   const level=scope.WW.worldCompiler.compile(design,chapter);
   const guide=artGuide(level,chapter);
   await writeFile(new URL(chapter.id+'.svg',destination),guide.svg);
+  await writeFile(new URL(chapter.id+'.png',destination),artGuidePng(level,guide.data));
   await writeFile(new URL(chapter.id+'.json',destination),
     JSON.stringify(guide.data,null,2)+'\n');
 }
