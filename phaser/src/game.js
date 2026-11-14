@@ -6,7 +6,7 @@ import {EFFECT_FRAMES,paintedAction,powerFrame,setpieceFrame,enemyTellFrame,
   paintedFootOrigin} from './action-art.js';
 import {MOUNTS,LOCATIONS,seatFor,stepMountedMotion} from './mounts.js';
 import {bindings,readActions} from './input.js';
-import {landingY,safeHorizontalX,orbStep,orbHitsAnimal} from './physics.js';
+import {landingY,platformTopAt,safeHorizontalX,orbStep,orbHitsAnimal} from './physics.js';
 import {triggerBloom} from './springboard.js';
 import {stepPlayerMotion} from './player-motion.js';
 import {TICK_MS,simulationTicks,queueInputEdges,withoutInputEdges} from './fixed-clock.js';
@@ -21,6 +21,7 @@ import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatu
   stompCreature} from './creature-motion.js';
 import {caveContainsWater} from './cave-layout.js';
 import {makeGeometryOverlay,paintScene,paintThermals,sceneTextures} from './painted-scene.js';
+import {platformPosition,stepPlatforms} from './moving-platforms.js';
 import {surfaceGroundAt} from './surface-geometry.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
@@ -67,8 +68,11 @@ class Wonderwood extends Phaser.Scene {
       this.load.spritesheet(name,url,{frameWidth:180,frameHeight:270});
     for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
     this.load.image('painted-states',paintedStates);
-    for(const [chapter,art] of Object.entries(APPROVED_SCENE_ART))
+    for(const [chapter,art] of Object.entries(APPROVED_SCENE_ART)){
       for(const {key,url} of sceneTextures(chapter,art))this.load.image(key,url);
+      for(const [id,url] of Object.entries(art.platforms??{}))
+        this.load.image('deck-'+chapter+'-'+id,url);
+    }
   }
 
   create(){
@@ -135,10 +139,11 @@ class Wonderwood extends Phaser.Scene {
             scrollFactor:layer.scrollFactorX
           }))
         }:null,
+        movingPlatforms:this.movingPlatforms?.map(({id,position})=>({id,position}))||[],
         players:this.players?.map(p=>({x:p.x,y:p.y,face:p.face,vx:p.vx,vy:p.vy,
           action:p.action,frame:Number(p.visual?.frame?.name),
           texture:p.visual?.texture?.key,grounded:p.grounded,
-          jumps:p.jumps,flaps:p.flaps,food:FRUITS[p.food],form:p.form,
+          onPlatform:p.onPlatform,jumps:p.jumps,flaps:p.flaps,food:FRUITS[p.food],form:p.form,
           caught:p.caught,health:p.health,sleep:p.sleep,
           checkpoint:p.checkpoint,bubble:p.bubble,mount:p.mount?.kind||null,
           ground:this.groundAt(p.x),inWater:this.inWater(p.x,p.y-8),
@@ -200,6 +205,8 @@ class Wonderwood extends Phaser.Scene {
     this.lures=[];
     this.setpieces=[];
     this.geometryOverlay=null;
+    this.movingPlatforms=[];
+    this.deckOverlay=null;
     this.lastInput=[{},{}];
     this.pendingActions=[{},{}];
     this.pendingMs=0;
@@ -308,6 +315,13 @@ class Wonderwood extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(this.level.cave?0x0b1c2c:SKY[this.level.biome]);
     this.sceneArt=paintScene(this,APPROVED_SCENE_ART[this.chapter.id]);
     this.geometryOverlay=makeGeometryOverlay(this);
+    this.movingPlatforms=(this.level.movingPlatforms??[]).map(platform=>{
+      const position=platformPosition(platform,0);
+      const visual=this.add.image(...position,'deck-'+this.chapter.id+'-'+platform.id)
+        .setOrigin(.5,0).setDisplaySize(...platform.size).setDepth(-19);
+      return {...platform,position,previous:position,visual};
+    });
+    if(this.movingPlatforms.length)this.deckOverlay=this.add.graphics().setDepth(101);
     paintThermals(this);
     this.spawnObjects();
     this.spawnMounts();
@@ -376,10 +390,13 @@ class Wonderwood extends Phaser.Scene {
       (art?art.height/this.stateFrameHeight:manifest.worldScale)*pose.sy);
     entity.visual.setRotation(face*pose.rotation);
     if(entity.visual.shadow){
-      const ground=this.groundAt(entity.x);
-      const elevation=Math.max(0,ground-entity.y);
+      const floor=this.groundAt(entity.x);
+      const ledge=entity.id!==undefined&&!entity.grounded?
+        platformTopAt(entity.x,entity.y,floor,this.level.platformSegments,TILE):null;
+      const shadowY=entity.grounded?entity.y:ledge??floor;
+      const elevation=Math.max(0,shadowY-entity.y);
       const weight=Math.max(.33,1-elevation/155);
-      entity.visual.shadow.setPosition(entity.x,ground+3)
+      entity.visual.shadow.setPosition(entity.x,shadowY+3)
         .setScale(weight).setAlpha(.28*weight);
     }
     entity.gestureTime=Math.max(0,(entity.gestureTime||0)-delta);
@@ -946,6 +963,7 @@ class Wonderwood extends Phaser.Scene {
   }
 
   recall(p){
+    p.onPlatform=null;
     p.x=p.checkpoint.x;p.y=p.checkpoint.y;p.vx=0;p.vy=0;
     if(p.mount)this.dismount(p);
     p.recalls++;p.bloomWindow=0;p.creatureBounceWindow=0;
@@ -980,7 +998,7 @@ class Wonderwood extends Phaser.Scene {
     }
     p.visual.setAlpha(p.invincible>0&&Math.floor(this.time.now/100)%2===0?.53:1);
     if(actions.nextPressed)p.food=(p.food+1)%FRUITS.length;
-    if(actions.recallPressed)this.recall(p);
+    if(actions.recallPressed||p.y>=(this.level.recallBelow??Infinity))this.recall(p);
     const nearbyMount=this.mounts.find(m=>m.trust>=100&&m.rider===null&&
       Math.abs(m.x-p.x)<58&&Math.abs(m.y-p.y)<62);
     if(actions.transformPressed&&p.mount){
@@ -1011,6 +1029,7 @@ class Wonderwood extends Phaser.Scene {
       thermalVolumes:this.level.thermalVolumes,
       platformSegments:this.level.platformSegments,
       climbWalls:this.level.climbWalls,
+      movingPlatforms:this.movingPlatforms,
       rockPolygons:this.level.rockPolygons
     });
     for(const event of events){
@@ -1036,8 +1055,10 @@ class Wonderwood extends Phaser.Scene {
     }
     this.animate(p,p.form||'hero',action,step/60);
     if(p.id===1&&this.players[0]&&
-      (Math.abs(p.x-this.players[0].x)>210||Math.abs(p.y-this.players[0].y)>145))
+      (Math.abs(p.x-this.players[0].x)>210||Math.abs(p.y-this.players[0].y)>145)){
       p.bubble=true;
+      p.onPlatform=null;
+    }
   }
 
   touchWorld(p,step){
@@ -1068,7 +1089,7 @@ class Wonderwood extends Phaser.Scene {
         if(item.halo)item.halo.setStrokeStyle(1.4,0x9de9bb,.68);
       }else if(item.kind===this.chapter.key){
         const required=this.chapter.goals[0].form;
-        if(p.form===required){
+        if(!required||p.form===required){
           item.used=true;item.visual.destroy();item.halo?.destroy();
           this.shared.relic=true;
           this.sparkle(item.x,item.y,0xfffac1);
@@ -1164,6 +1185,7 @@ class Wonderwood extends Phaser.Scene {
           }
         }
       }
+      stepPlatforms(this.movingPlatforms,tickTime/1000);
       for(const p of [...this.players])
         this.movePlayer(p,tickActions[p.id],step);
       this.updateMounts(step,tickTime);
@@ -1175,6 +1197,16 @@ class Wonderwood extends Phaser.Scene {
       if(this.stage!==previousStage)return;
     }
     if(this.stage<0)return;
+    if(this.deckOverlay){
+      this.deckOverlay.clear();
+      if(this.geometryOverlay.visible){
+        this.deckOverlay.lineStyle(2,0xffd28d,1);
+        for(const deck of this.movingPlatforms){
+          const [x,y]=deck.position,half=deck.size[0]/2;
+          this.deckOverlay.lineBetween(x-half,y,x+half,y);
+        }
+      }
+    }
     const lead=this.players[0];
     this.hud.setText('♥ '+lead.health+'    ✦ '+this.shared.shards+
       '    '+(this.chapter.id==='skywell-ascent'?
@@ -1187,7 +1219,11 @@ class Wonderwood extends Phaser.Scene {
       (this.twoPlayers?'    P2 ♥ '+this.players[1]?.health:''));
     const first=this.animals.find(a=>a.kind==='springaroo'&&!a.captured);
     const teaching=this.chapter.id==='first-forest'&&first;
-    this.help.setText(this.chapter.id==='skywell-ascent'&&lead.x<50*TILE?
+    const orchardHint=lead.x<440?'Jump onto the copper lift. Ride up to the stone steps.':
+      lead.x<960?'Wait at the edge for the green ferry. Ride it across the ravine.':
+      lead.x<1230?'Ride the brass gondola up to the roof garden.':'Follow the garden to its light.';
+    this.help.setText(this.chapter.id==='clockwork-orchard'?orchardHint:
+      this.chapter.id==='skywell-ascent'&&lead.x<50*TILE?
       lead.caught&&!lead.form?
         'T / Y · transform into your Glimmermoth':
       !lead.form?

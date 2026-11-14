@@ -42,5 +42,15 @@
     "water": "phaser/assets/generated/skywell-ancient/painted-water.webp",
     "solid": "phaser/assets/generated/skywell-ancient/painted-solid.webp",
     "backgroundScrollFactor": 1
+  },
+  "clockwork-orchard": {
+    "scene": [
+      "phaser/assets/generated/clockwork-orchard/scene.webp"
+    ],
+    "platforms": {
+      "copper-lift": "phaser/assets/generated/clockwork-orchard/copper-lift.webp",
+      "garden-ferry": "phaser/assets/generated/clockwork-orchard/garden-ferry.webp",
+      "wheel-gondola": "phaser/assets/generated/clockwork-orchard/wheel-gondola.webp"
+    }
   }
 }

@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "id": "clockwork-orchard",
+  "biome": "meadow",
+  "width": 108,
+  "height": 44,
+  "ridge": [
+    [0, 33], [8, 33], [12, 32], [16, 33], [23, 33], [24, 38],
+    [27, 38], [28, 22], [32, 22], [33, 38], [54, 38],
+    [55, 22], [61, 22], [62, 37], [75, 37], [76, 14],
+    [85, 14], [89, 13], [94, 14], [101, 14], [108, 14]
+  ],
+  "terrainFeatures": [{"center": 8, "radius": 8, "lift": 1.1}],
+  "water": [],
+  "bridges": [],
+  "ledges": [[20, 24, 9], [23, 23, 6], [26, 22, 7], [52, 22, 4],
+    [57, 22, 6], [74, 14, 4]],
+  "creatures": [["mossback", 9]],
+  "checkpoints": [29, 57, 82],
+  "snacks": [6],
+  "stars": [[29, 20], [58, 20], [85, 12]],
+  "relic": ["springKey", 97, 13],
+  "landmarks": [],
+  "sections": [
+    {"id": "orchard-lift", "range": [0, 32], "challenge": "vertical lift",
+      "goal": "Ride the copper lift from the orchard floor to the masonry steps."},
+    {"id": "ravine-ferry", "range": [32, 61], "challenge": "horizontal ferry",
+      "goal": "Board the ferry at the steps and ride it over the ravine."},
+    {"id": "tower-wheel", "range": [61, 108], "challenge": "orbital lift",
+      "goal": "Ride the wheel's gondola up to the roof garden and recover its light."}
+  ],
+  "recallBelow": 592,
+  "sceneFeatures": [
+    {"material": "tower", "color": "#8a7066", "polygon": [[1270,225],[1270,112],[1284,112],[1284,98],[1298,98],[1298,83],[1320,64],[1342,83],[1342,98],[1356,98],[1356,112],[1370,112],[1370,225]]},
+    {"material": "stair masonry", "color": "#b4a08c", "polygon": [[320,384],[368,384],[368,368],[416,368],[416,352],[448,352],[448,416],[320,416]]}
+  ],
+  "movingPlatforms": [
+    {"id": "copper-lift", "color": "#be7950", "home": [272, 500], "size": [96, 24],
+      "motion": {"kind": "vertical", "to": 352, "seconds": 8}},
+    {"id": "garden-ferry", "color": "#78996d", "home": [590, 352], "size": [104, 24],
+      "motion": {"kind": "horizontal", "to": 808, "seconds": 8}},
+    {"id": "wheel-gondola", "color": "#b88e54", "home": [988, 320], "size": [100, 24],
+      "motion": {"kind": "orbit", "pivotX": 1070, "radiusY": 130, "seconds": 10}}
+  ]
+}

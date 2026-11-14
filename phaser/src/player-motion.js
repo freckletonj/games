@@ -1,4 +1,5 @@
-import {landingY,safeHorizontalX} from './physics.js';
+import {movingLanding} from './moving-platforms.js';
+import {landingY,platformTopAt,safeHorizontalX} from './physics.js';
 import {tryBloomBoost} from './springboard.js';
 import {sweepRockBody} from './cave-solids.js';
 
@@ -9,6 +10,16 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 // as the previous Scene.movePlayer body.
 export function stepPlayerMotion(p,actions,step,world){
   const events=[];
+  const decks=world.movingPlatforms??[];
+  const support=p.grounded?decks.find(deck=>deck.id===p.onPlatform):null;
+  if(support){
+    const [x,y]=support.position;
+    const [previousX,previousY]=support.previous;
+    const carriedX=clamp(p.x+x-previousX,10,world.width-10);
+    p.x=safeHorizontalX(p.x,carriedX,y,world.groundAt);
+    p.y+=y-previousY;
+  }
+  const fromX=p.x;
     p.powers=Math.max(0,p.powers-step/60);
     p.flapWait=Math.max(0,p.flapWait-step);
     p.wallJumpCooldown=Math.max(0,(p.wallJumpCooldown||0)-step);
@@ -83,12 +94,12 @@ export function stepPlayerMotion(p,actions,step,world){
       if(p.form==='skyling')p.flaps=0;
     }
     p.vy=clamp(p.vy,-11,7.5);
-    // Horizontal velocity is input intent. On a steep slope constrain
-    // travel along the surface, otherwise a 2.3 px/tick run can teleport
-    // 8+ world pixels vertically every tick.
-    const slope=p.grounded?
-      (world.groundAt(p.x+2)-world.groundAt(p.x-2))/4:0;
-    const surfaceVx=p.grounded?p.vx/Math.hypot(1,slope):p.vx;
+    // Scale horizontal speed only when the feet follow the heightfield.
+    // At a flush ledge edge the terrain below can slope away sharply.
+    const onTerrain=p.grounded&&!support&&p.y===world.groundAt(p.x)&&
+      platformTopAt(p.x,p.y,p.y,world.platformSegments,world.tile)===null;
+    const slope=onTerrain?(world.groundAt(p.x+2)-world.groundAt(p.x-2))/4:0;
+    const surfaceVx=p.vx/Math.hypot(1,slope);
     const nextX=clamp(p.x+surfaceVx*step,10,world.width-10);
     let safeX=safeHorizontalX(p.x,nextX,p.y,
       x=>world.groundAt(x),swimmer);
@@ -126,7 +137,12 @@ export function stepPlayerMotion(p,actions,step,world){
           (landing===null||top<landing))landing=top;
       }
     }
-    if(landing!==null){
+    const moving=p.vy>=0?movingLanding(decks,p.grounded?support?.id:null,
+    fromX,priorY,p.x,p.y):null;
+  const onDeck=moving&&(landing===null||moving.position[1]<landing);
+  p.onPlatform=onDeck?moving.id:null;
+  if(onDeck)landing=moving.position[1];
+  if(landing!==null){
       p.y=landing;p.vy=0;p.grounded=true;p.jumps=0;p.flaps=0;p.coyote=5;
       if(!wasGrounded&&impactSpeed>1.3){
         events.push('land');
@@ -147,7 +163,7 @@ export function stepPlayerMotion(p,actions,step,world){
       }
     }
     if(p.y>ground+3){
-      p.y=ground;p.vy=Math.min(p.vy,0);p.grounded=true;
+      p.y=ground;p.vy=Math.min(p.vy,0);p.grounded=true;p.onPlatform=null;
     }
     if(p.y>world.height-10)events.push('recall');
     const action=swimmer?'swim':p.grounded?(Math.abs(p.vx)>.3?'run':'idle'):

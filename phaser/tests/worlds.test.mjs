@@ -17,7 +17,7 @@ const registry=JSON.parse(readFileSync(new URL(
   'phaser/assets/generated/approved-scene-art.json',root),'utf8'));
 
 test('every playable chapter compiles and has registered art',()=>{
-  assert.equal(chapters.length,7);
+  assert.equal(chapters.length,8);
   assert.deepEqual(Object.keys(registry).sort(),chapters.map(chapter=>chapter.id).sort());
   for(const chapter of chapters){
     const level=compileChapter(chapter,compiler);
@@ -30,7 +30,7 @@ test('every playable chapter compiles and has registered art',()=>{
 });
 
 test('surface paintings cover each world at 1:1 with contiguous WebP textures',()=>{
-  for(const chapter of scope.WW.chapters){
+  for(const chapter of chapters.filter(chapter=>surfaceDesigns[chapter.id])){
     const level=compileChapter(chapter,compiler);
     let totalWidth=0;
     for(const file of registry[chapter.id].scene){
@@ -62,4 +62,15 @@ test('surface guide classifies platform tops and ignores traversable thermals',(
   const center=level.materialColumn((pool.start+pool.end)*8);
   assert.equal(center(pool.surface*16+.5),'water');
   assert.equal(center(pool.bottom*16+.5),'rock');
+});
+
+test('each Clockwork Orchard deck maps to one registered alpha cutout',()=>{
+  const id='clockwork-orchard';
+  const decks=compileChapter({id},compiler).movingPlatforms;
+  assert.deepEqual(Object.keys(registry[id].platforms),decks.map(deck=>deck.id));
+  for(const path of Object.values(registry[id].platforms)){
+    const image=readFileSync(new URL(path,root));
+    assert.equal(image.toString('ascii',8,16),'WEBPVP8L');
+    assert.ok(image.readUInt32LE(21)&(1<<28),path+' must carry alpha');
+  }
 });
