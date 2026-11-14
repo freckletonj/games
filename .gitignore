@@ -1,2 +1,12 @@
 /dist/wonderwood.html
+/dist/wonderwood-phaser.html
+/dist/art-guides/
+/dist/phaser-mechanics-quality.json
+/dist/phaser-meadow-route-metrics.json
 /dist/preview-*.png
+/dist/cave-guides/
+/dist/phaser-*.png
+/dist/wonderwood-cave-preview-*.html
+/phaser/vendor/phaser-4.2.1.tgz
+/phaser/vendor/linux-x64-0.25.12.tgz
+/phaser/node_modules/

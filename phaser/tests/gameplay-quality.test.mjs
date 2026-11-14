@@ -1,0 +1,93 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {qualityReport} from './quality-scenarios.mjs';
+import {chooseCreatureLure,advanceBubbleLift} from '../src/gameplay-rules.js';
+
+const metrics=qualityReport();
+
+test('capture orb has visible multi-bounce trajectory and clears a real uphill bank',()=>{
+  const orb=metrics.captureOrb;
+  assert.ok(orb.bounces>=2,`orb bounced only ${orb.bounces} times`);
+  assert.ok(orb.postBounceApex>25,`orb rebound only ${orb.postBounceApex.toFixed(1)}px`);
+  assert.ok(orb.climbedHill,`orb stopped at x=${orb.maxX.toFixed(1)}`);
+  assert.ok(orb.remainingLife>0);
+});
+
+for(const [name,run] of Object.entries(metrics.slope)){
+  test(`${name} stays at predictable surface speed on a steep incline`,()=>{
+    assert.ok(run.travelX>65,`blocked on the hill: ${JSON.stringify(run)}`);
+    assert.ok(run.maxSurfaceSpeed<=3.0,
+      `surface speed spike: ${JSON.stringify(run)}`);
+    assert.ok(Math.abs(run.endGroundError)<4,
+      `lost contact with terrain: ${JSON.stringify(run)}`);
+    assert.equal(run.grounded,true);
+  });
+}
+
+test('wildlife ignores inaccessible fruit and changes to a reachable newer berry',()=>{
+  const result=metrics.berryTargeting;
+  assert.equal(result.ignoredUnreachable,true,result);
+  assert.equal(result.selectedNear,true,result);
+  assert.equal(result.walkedTowardNear,true,result);
+  assert.equal(result.avoidsCliff,true,result);
+  const a={x:100,homeX:100,homeY:500,flying:false};
+  assert.equal(chooseCreatureLure(a,[{x:120,y:500,landed:false}],()=>500),null,
+    'An airborne treat must not redirect AI before landing');
+});
+
+test('bubble attack actually lifts an animal high, then returns it to ground',()=>{
+  const result=metrics.bubbleAttack;
+  assert.ok(result.lift>120,`bubble only lifted ${result.lift}px`);
+  assert.ok(result.airborneTicks>130,`bubble lasted only ${result.airborneTicks} ticks`);
+  assert.equal(result.remainingBubble,0);
+  assert.ok(Math.abs(result.restingY-500)<1,result);
+  const a={bubble:0,bubbleRise:100};
+  assert.ok(advanceBubbleLift(a,1)<100,
+    'Released creatures descend rather than teleport to the floor');
+});
+
+test('Glimmermoth hover remains slow for more than two seconds',()=>{
+  const result=metrics.glimmermothHover;
+  assert.ok(result.remainingHover>.9,result);
+  assert.ok(result.descent>35&&result.descent<125,result);
+  assert.ok(result.maxFallingSpeed<=.91,result);
+});
+
+test('Emberkit has a modest, measured speed bonus',()=>{
+  const ratio=metrics.emberkitSpeed.distanceRatio;
+  assert.ok(ratio>1.1&&ratio<1.2,`unexpected sprint ratio: ${ratio}`);
+});
+
+test('water vents provide a meaningful controlled lift within their authored column',()=>{
+  const result=metrics.waterVent;
+  assert.ok(result.activeTicks>18,result);
+  assert.ok(result.lift>75,`vent barely moved player: ${JSON.stringify(result)}`);
+  assert.equal(result.rejectsDryPlayer,true);
+  assert.equal(result.rejectsDistantPlayer,true);
+});
+
+test('all five transformation spells hit through flight and produce distinct impacts',()=>{
+  assert.equal(Object.keys(metrics.powerProjectiles).length,5);
+  for(const [kind,impact] of Object.entries(metrics.powerProjectiles)){
+    assert.ok(impact.hitAtTick>=8&&impact.hitAtTick<45,{kind,impact});
+    assert.ok(impact.travel>30,{kind,impact});
+    assert.ok(impact.stunSeconds>=1.4,{kind,impact});
+    assert.equal(impact.bubbleSeconds>0,kind==='prismtail',{kind,impact});
+    assert.equal(impact.knockback>0,
+      kind==='skyling'||kind==='cloudwhisp',{kind,impact});
+  }
+});
+
+test('both rideable mounts cap their actual uphill travel speed',()=>{
+  for(const [kind,run] of Object.entries(metrics.mountedSlopes)){
+    assert.ok(run.travelX>100,{kind,run});
+    assert.ok(run.maxSurfaceSpeed<=(kind==='unicorn'?4.21:3.46),{kind,run});
+    assert.ok(Math.abs(run.groundError)<2,{kind,run});
+  }
+});
+
+test('all quality metrics are valid numeric JSON for automatic tuning',()=>{
+  const json=JSON.stringify(metrics);
+  assert.ok(json.length>400);
+  assert.deepEqual(JSON.parse(json),metrics);
+});

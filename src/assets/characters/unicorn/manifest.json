@@ -1,0 +1,90 @@
+{
+  "name": "unicorn",
+  "image": "sheet.avif",
+  "frameWidth": 160,
+  "frameHeight": 160,
+  "columns": 4,
+  "origin": {
+    "x": 80,
+    "y": 140
+  },
+  "worldScale": 0.525,
+  "animations": {
+    "idle": {
+      "frames": [
+        0,
+        1
+      ],
+      "fps": 2
+    },
+    "run": {
+      "frames": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "fps": 9
+    },
+    "jump": {
+      "frames": [
+        6
+      ],
+      "fps": 1
+    },
+    "fall": {
+      "frames": [
+        6
+      ],
+      "fps": 1
+    },
+    "eat": {
+      "frames": [
+        1
+      ],
+      "fps": 1
+    },
+    "happy": {
+      "frames": [
+        1
+      ],
+      "fps": 2
+    },
+    "hurt": {
+      "frames": [
+        7
+      ],
+      "fps": 1
+    },
+    "sleep": {
+      "frames": [
+        0
+      ],
+      "fps": 1
+    },
+    "alert": {
+      "frames": [
+        2
+      ],
+      "fps": 1
+    }
+  },
+  "seats": {
+    "idle": {
+      "x": -9,
+      "y": -38
+    },
+    "run": {
+      "x": -10,
+      "y": -37
+    },
+    "jump": {
+      "x": -9,
+      "y": -37
+    },
+    "hurt": {
+      "x": -9,
+      "y": -38
+    }
+  }
+}
