@@ -28,7 +28,9 @@ def main():
         )
         assert page.locator("canvas").count() == 1
         assert page.locator(".ww-menu-title").inner_text() == "Wonderwood"
-        assert page.locator("#ww-menu-chapter").inner_text() == "Skywell Ascent"
+        page.locator(".ww-explorers button").first.click()
+        page.locator("#ww-menu-continue").click()
+        assert page.locator("#ww-level-grid [aria-pressed=true]").inner_text() == "Skywell Ascent"
         page.locator("#ww-menu-play").click()
         page.wait_for_function(
             "window.__wonderwoodPhaser.snapshot().chapter === 'skywell-ascent'",

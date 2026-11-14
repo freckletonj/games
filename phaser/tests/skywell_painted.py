@@ -19,7 +19,9 @@ def main():
         page.goto(GAME.as_uri()+"#skywell-ascent",wait_until="load")
         page.wait_for_function(
             "window.__wonderwoodPhaser?.snapshot().stage === -1",timeout=30000)
-        assert page.locator("#ww-menu-chapter").inner_text()=="Skywell Ascent"
+        page.locator(".ww-explorers button").first.click()
+        page.locator("#ww-menu-continue").click()
+        assert page.locator("#ww-level-grid [aria-pressed=true]").inner_text()=="Skywell Ascent"
         page.locator("#ww-menu-play").click()
         page.wait_for_function(
             "window.__wonderwoodPhaser.snapshot().chapter === 'skywell-ascent'",

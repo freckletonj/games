@@ -137,7 +137,7 @@ export function puzzleHint(objects,player,animals){
     return seal.hits===0?'Get close to the cracked wall and press F / B to punch.':
       remaining===1?'One punch left · F / B to punch.':remaining+' punches left · F / B to punch.';
   }
-  return 'Bring the Hollow Light to the gate.';
+  return 'Find the gate key and bring it to the exit.';
 }
 
 function friendshipHint(player,animals,kind,name,food){

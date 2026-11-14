@@ -17,6 +17,8 @@ def main():
         page.goto(GAME.as_uri())
         page.wait_for_function("window.__wonderwoodPhaser?.snapshot().stage === -1",
             timeout=30000)
+        page.locator(".ww-explorers button").first.click()
+        page.locator("#ww-menu-continue").click()
         page.keyboard.down("Space")
         page.wait_for_function("window.__wonderwoodPhaser.snapshot().stage === 0")
         page.keyboard.up("Space")
@@ -54,7 +56,7 @@ def main():
             timeout=10000)
         page.keyboard.up("g")
         launched=state(page)["orbStates"][0]
-        assert launched["texture"]=="effects" and launched["frame"]==2, launched
+        assert launched["texture"]=="capture-orb", launched
         assert 1.8 <= abs(launched["vx"]) <= 2.2, launched
         page.wait_for_function(
             "window.__wonderwoodPhaser.snapshot().orbStates.some(orb=>"
