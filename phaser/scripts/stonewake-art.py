@@ -17,6 +17,7 @@ spec.loader.exec_module(brassworks)
 LEVELS = HERE.parent / "levels"
 LAYOUT = json.loads((LEVELS / "stonewake-hollow.json").read_text())
 RECIPE = json.loads((LEVELS / "stonewake-hollow-art.json").read_text())
+SEAL = json.loads((LEVELS / "stonewake-seal.json").read_text())
 RESAMPLE = Image.Resampling.LANCZOS
 
 
@@ -83,7 +84,8 @@ def pack(scene, art, output):
     for piece in LAYOUT["puzzleObjects"]:
         sprite = brassworks.clean_cutout(art / f"{piece['id']}.webp")
         # Keep genuine outer alpha even at the frame boundary.
-        width, height = [dimension * 2 for dimension in piece["size"]]
+        size = SEAL["size"] if piece["kind"] == "breakable-wall" else piece["size"]
+        width, height = [dimension * 2 for dimension in size]
         frame = Image.new("RGBA", (width, height))
         frame.paste(sprite.resize((width - 2, height - 1), RESAMPLE), (1, 1))
         frame.save(output / f"{piece['id']}.webp", lossless=True)

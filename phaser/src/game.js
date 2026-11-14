@@ -23,8 +23,10 @@ import {caveContainsWater} from './cave-layout.js';
 import {makeGeometryOverlay,paintScene,paintThermals,sceneTextures} from './painted-scene.js';
 import {deckTopAt,platformPosition,stepPlatforms} from './moving-platforms.js';
 import {machinePlatforms,stepMachines} from './machines.js';
-import {createPuzzleObjects,pushPuzzleObject,blockPuzzleX,punchWall,
+import {createPuzzleObjects,pushPuzzleObject,blockPuzzleX,puzzleTop,punchWall,
   stepPuzzleObjects,puzzleHint} from './puzzle-objects.js';
+import sealAtlas from '../assets/generated/stonewake-hollow/seal-fragments.webp';
+import sealPlan from '../levels/stonewake-seal.json' with {type:'json'};
 import {surfaceGroundAt} from './surface-geometry.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
@@ -74,6 +76,9 @@ class Wonderwood extends Phaser.Scene {
       this.load.spritesheet(name,url,{frameWidth:180,frameHeight:270});
     for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
     this.load.image('painted-states',paintedStates);
+    this.load.spritesheet('seal-fragments',sealAtlas,{
+      frameWidth:sealPlan.size[0]*2,frameHeight:sealPlan.size[1]*2
+    });
     for(const [chapter,art] of Object.entries(APPROVED_SCENE_ART)){
       for(const {key,url} of sceneTextures(chapter,art))this.load.image(key,url);
       for(const [id,url] of Object.entries(art.platforms??{}))
@@ -146,7 +151,7 @@ class Wonderwood extends Phaser.Scene {
           }))
         }:null,
         movingPlatforms:this.walkableMachines?.map(({id,position})=>({id,position}))||[],
-        puzzleObjects:this.puzzleObjects?.map(({id,x,bottom,state,angle,speed})=>({id,x,bottom,state,angle,speed}))||[],
+        puzzleObjects:this.puzzleObjects?.map(({id,x,bottom,state,angle,speed,hits})=>({id,x,bottom,state,angle,speed,hits}))||[],
         players:this.players?.map(p=>({x:p.x,y:p.y,face:p.face,vx:p.vx,vy:p.vy,
           action:p.action,frame:Number(p.visual?.frame?.name),
           texture:p.visual?.texture?.key,grounded:p.grounded,
@@ -345,9 +350,11 @@ class Wonderwood extends Phaser.Scene {
     }
     this.walkableMachines=[...this.movingPlatforms,...this.machines];
     this.puzzleObjects=createPuzzleObjects(this.level.puzzleObjects??[]);
-    for(const object of this.puzzleObjects)
-      object.visual=this.add.image(object.x,object.bottom,'deck-'+this.chapter.id+'-'+object.id)
+    for(const object of this.puzzleObjects){
+      if(object.kind==='breakable-wall')this.makeSealVisual(object);
+      else object.visual=this.add.image(object.x,object.bottom,'deck-'+this.chapter.id+'-'+object.id)
         .setOrigin(.5,1).setDisplaySize(...object.size).setDepth(-19);
+    }
     if(this.walkableMachines.length||this.puzzleObjects.length)this.deckOverlay=this.add.graphics().setDepth(101);
     paintThermals(this);
     this.spawnObjects();
@@ -785,15 +792,41 @@ class Wonderwood extends Phaser.Scene {
     this.powerShots.push({...shot,visual});
   }
 
+  makeSealVisual(wall){
+    const [width,height]=wall.size;
+    let frame=0;
+    wall.fragments=wall.fracture.map(band=>band.pieces.map(points=>{
+      const xs=points.map(([x])=>x),ys=points.map(([,y])=>y);
+      const cx=(Math.min(...xs)+Math.max(...xs))/2;
+      const cy=(Math.min(...ys)+Math.max(...ys))/2;
+      return this.add.image(wall.x-width/2+cx,wall.bottom-height+cy,
+        'seal-fragments',frame++)
+        .setOrigin(cx/width,cy/height).setDisplaySize(width,height).setDepth(-19);
+    }));
+  }
+
   strikeWall(p){
+    const hit=punchWall(this.puzzleObjects,p);
     this.sparkle(p.x+p.face*24,p.y-18,0xffd398);
-    const wall=punchWall(this.puzzleObjects,p);
-    if(!wall)return;
-    for(const offset of [23,54,85,113])
-      this.sparkle(wall.x,wall.bottom-offset,0xffc584);
-    this.tweens.add({targets:wall.visual,alpha:0,y:wall.bottom+25,
-      duration:330,ease:'Quad.easeIn',onComplete:()=>wall.visual.destroy()});
-    this.flash('The cave is open!',1400);
+    if(!hit)return;
+    const {wall,band}=hit;
+    const {kick,fall,crumble}=sealPlan.debris;
+    for(const [i,fragment] of wall.fragments[band].entries()){
+      const side=i?1:-1;
+      const x=fragment.x,y=fragment.y;
+      const landing=wall.bottom-9;
+      fragment.setDepth(19);
+      this.sparkle(x,y,0xe5ad7d);
+      this.tweens.chain({targets:fragment,tweens:[
+        {x:x+side*(kick.spread+band*3)+p.face*9,y:y-kick.rise,angle:side*kick.turn,
+          duration:kick.ms,ease:'Quad.easeOut'},
+        {x:x+side*(fall.spread+band*3)+p.face*12,y:landing,angle:side*fall.turn,alpha:.78,
+          duration:fall.ms+Math.max(0,landing-y)*2,ease:'Quad.easeIn',
+          onComplete:()=>this.sparkle(fragment.x,landing+10,0xc79982)},
+        {scale:fragment.scale*crumble.scale,alpha:0,duration:crumble.ms,ease:'Quad.easeOut'}
+      ],onComplete:()=>fragment.destroy()});
+    }
+    if(wall.state==='broken')this.flash('The cave is open!',1400);
   }
 
   addHoneyPuddle(x){
@@ -1261,7 +1294,7 @@ class Wonderwood extends Phaser.Scene {
       stepMachines(this.machines,Math.round(tickTime/TICK_MS));
       const settled=stepPuzzleObjects(this.puzzleObjects,this.walkableMachines);
       for(const object of this.puzzleObjects){
-        if(object.state==='broken')continue;
+        if(!object.visual)continue;
         // State transitions own the transform. Snapshotting the pivot with
         // the angle keeps an unmoved prop exactly still between ticks.
         if(object.x!==object.visual.x||object.bottom!==object.visual.y)
@@ -1287,8 +1320,9 @@ class Wonderwood extends Phaser.Scene {
         this.deckOverlay.lineStyle(2,0xffd28d,1);
         for(const object of this.puzzleObjects){
           if(object.state!=='ready')continue;
-          const [width,height]=object.size;
-          this.deckOverlay.strokeRect(object.x-width/2,object.bottom-height,width,height);
+          const [width]=object.size;
+          const top=puzzleTop(object);
+          this.deckOverlay.strokeRect(object.x-width/2,top,width,object.bottom-top);
         }
         for(const deck of this.walkableMachines){
           const [x]=deck.position,half=(deck.treadWidth??deck.size[0])/2;

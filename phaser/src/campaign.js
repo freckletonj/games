@@ -1,6 +1,7 @@
 import designs from '../../src/games/animal-adventure/designs.json' with {type:'json'};
 import meadow from '../levels/first-forest.json' with {type:'json'};
 import orchard from '../levels/clockwork-orchard.json' with {type:'json'};
+import sealPlan from '../levels/stonewake-seal.json' with {type:'json'};
 import stonewake from '../levels/stonewake-hollow.json' with {type:'json'};
 import brassworks from '../levels/brassworks.json' with {type:'json'};
 import {grottoChapter} from './cave-chapter.js';
@@ -50,7 +51,9 @@ export function compileChapter(chapter,compiler){
     const rocks=level.rockPolygons.filter(rock=>x>=rock.left&&x<=rock.right);
     return y=>rockContains(rocks,x,y)?'rock':base(y);
   };
-  level.puzzleObjects=design.puzzleObjects??[];
+  level.puzzleObjects=(design.puzzleObjects??[]).map(object=>
+    object.kind==='breakable-wall'?
+      {...object,size:sealPlan.size,fracture:sealPlan.bands}:object);
   level.movingPlatforms=design.movingPlatforms??[];
   level.machines=design.machines??[];
   level.sceneFeatures=design.sceneFeatures??[];

@@ -9,7 +9,7 @@ import {feedTrust} from '../src/creatures.js';
 import {chooseCreatureLure} from '../src/gameplay-rules.js';
 import {stepCreatureMotion} from '../src/creature-motion.js';
 import {orbStep,orbHitsAnimal} from '../src/physics.js';
-import {createPuzzleObjects,pushPuzzleObject,blockPuzzleX,punchWall,
+import {createPuzzleObjects,pushPuzzleObject,blockPuzzleX,puzzleTop,punchWall,
   stepPuzzleObjects} from '../src/puzzle-objects.js';
 import {poseFor} from '../src/animation.js';
 import poses from '../assets/generated/stonewake-hollow/poses/rock-poses.json' with {type:'json'};
@@ -175,7 +175,26 @@ test('the authored route uses three friends, turns the log into a bridge and pun
   walk(()=>p.x>=1208&&p.grounded);
   walk(()=>p.x>=1605);
   assert.equal(punchWall(objects,{...p,form:'gravelback'}),null);
-  assert.equal(punchWall(objects,p)?.id,'cave-seal');
+  const wall=objects[2];
+  for(const [band,height] of [87,44,0].entries()){
+    assert.equal(punchWall(objects,{...p,x:p.x-70}),null);
+    assert.equal(punchWall(objects,{...p,face:-1}),null);
+    assert.deepEqual(punchWall(objects,p),{wall,band});
+    assert.equal(puzzleTop(wall),wall.bottom-height);
+    assert.equal(wall.state,height?'ready':'broken');
+    if(height){
+      for(let i=0;i<15;i++)tick({right:true});
+      assert.ok(p.x<=1606);
+      let highest=p.y;
+      for(let i=0;i<60;i++){
+        tick({right:true,jump:true,jumpPressed:i===0});
+        highest=Math.min(highest,p.y);
+        assert.ok(p.x<=1606,'Jump bypassed the damaged seal');
+      }
+      assert.ok(highest<wall.bottom&&p.grounded);
+    }
+  }
+  assert.equal(punchWall(objects,p),null);
   const exit=level.objects.find(o=>o.kind==='exit');
   walk(()=>Math.abs(p.x-(exit.x+.5)*16)<19);
 });

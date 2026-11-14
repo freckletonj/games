@@ -2,20 +2,24 @@
 export function createPuzzleObjects(specs){
   return specs.map(spec=>({
     ...spec,x:spec.home[0],bottom:spec.home[1],state:'ready',
-    time:0,speed:0,angle:0,pressure:0,phase:0
+    time:0,speed:0,angle:0,pressure:0,phase:0,hits:0
   }));
 }
 
 const left=object=>object.x-object.size[0]/2;
 const right=object=>object.x+object.size[0]/2;
-const top=object=>object.bottom-object.size[1];
+export function puzzleTop(object){
+  const height=object.kind==='breakable-wall'&&object.hits>0?
+    object.fracture[object.hits-1].remainingHeight:object.size[1];
+  return object.bottom-height;
+}
 
 export function pushPuzzleObject(objects,player,actions){
   if(!player.grounded||!actions.right||
     !['gravelback','flintfist'].includes(player.form))return null;
   const contact=objects.find(object=>object.state==='ready'&&
     object.kind!=='breakable-wall'&&player.x<=left(object)&&
-    left(object)-player.x<=12&&player.y>top(object)&&player.y<=object.bottom+2);
+    left(object)-player.x<=12&&player.y>puzzleTop(object)&&player.y<=object.bottom+2);
   if(!contact)return null;
   if(contact.kind==='push-boulder'){
     if(player.form!=='gravelback'||Math.abs(player.y-contact.bottom)>12)return null;
@@ -36,7 +40,7 @@ export function blockPuzzleX(objects,fromX,toX,feet){
   let x=toX;
   for(const object of objects){
     if((object.state!=='ready'&&object.state!=='tipping')||
-      feet<=top(object)||feet-27>=object.bottom)continue;
+      feet<=puzzleTop(object)||feet-27>=object.bottom)continue;
     // Keep the near edge closed during the fall, so holding push does not
     // send the explorer into the ravine before the bridge supports them.
     const center=object.state==='tipping'?object.home[0]:object.x;
@@ -54,9 +58,11 @@ export function punchWall(objects,player){
   const wall=objects.find(object=>object.kind==='breakable-wall'&&
     object.state==='ready'&&Math.max(fist,player.x)>=left(object)&&
     Math.min(fist,player.x)<=right(object)&&
-    player.y-18>top(object)&&player.y-18<object.bottom);
-  if(wall)wall.state='broken';
-  return wall;
+    player.y-18>puzzleTop(object)&&player.y-18<object.bottom);
+  if(!wall)return null;
+  const band=wall.hits++;
+  if(wall.hits===wall.fracture.length)wall.state='broken';
+  return {wall,band};
 }
 
 export function stepPuzzleObjects(objects,decks){
@@ -125,9 +131,12 @@ export function puzzleHint(objects,player,animals){
   }
   if(player.x<1200)return player.y<log.platform[1]-12?
     'Drop onto the fallen log and cross.':'Jump onto the fallen log and cross.';
-  if(seal.state==='ready')return player.form==='flintfist'?
-    'Get close to the cracked wall and press F / B to punch.':
-    'T / Y · become Flintfist to break the cave seal.';
+  if(seal.state==='ready'){
+    if(player.form!=='flintfist')return 'T / Y · become Flintfist to break the cave seal.';
+    const remaining=seal.fracture.length-seal.hits;
+    return seal.hits===0?'Get close to the cracked wall and press F / B to punch.':
+      remaining===1?'One punch left · F / B to punch.':remaining+' punches left · F / B to punch.';
+  }
   return 'Bring the Hollow Light to the gate.';
 }
 

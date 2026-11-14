@@ -64,6 +64,25 @@ The packer crops the cell alpha, aligns feet to a common baseline and leaves
 room for the extended push and punch poses. The scene uses the declared
 clip frames during contact and at punch impact.
 
+## Cave seal fracture
+
+`levels/stonewake-seal.json` lays out the three fracture bands in punch
+order. It holds the fragment polygons, the remaining collision height
+after each hit, and the debris motion. Flintfist chips away the top,
+middle, and base, while the exposed rock remains in place.
+
+```sh
+python phaser/scripts/stonewake-seal-art.py dist/stonewake-seal-guide.png
+python phaser/scripts/stonewake-seal-art.py "$art/seal-fragments.webp" \
+  --painted "$art/authoring/seal-fracture-paint.webp"
+```
+
+Give the guide and the original `cave-seal.webp` cutout to the image model.
+Ask for a single intact, sandstone column with the guide's fracture lines
+and transparent margins. The packer registers the new paint to the
+original silhouette and clips it to the authored pieces, keeping the
+rock in register as the bands break off.
+
 ## Verify
 
 ```sh

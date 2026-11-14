@@ -29,6 +29,6 @@
   "puzzleObjects": [
     {"id":"grove-boulder","kind":"push-boulder","home":[255,544],"size":[72,67],"dropX":349,"platform":[416,551],"color":"#b08458"},
     {"id":"bridge-log","kind":"tipping-log","home":[777,569],"size":[50,456],"pushAbove":470,"platform":[980,544],"color":"#8d613e"},
-    {"id":"cave-seal","kind":"breakable-wall","home":[1645,544],"size":[58,134],"color":"#9c7560"}
+    {"id":"cave-seal","kind":"breakable-wall","home":[1645,544],"color":"#9c7560"}
   ]
 }
