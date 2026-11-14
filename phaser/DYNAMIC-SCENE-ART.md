@@ -30,13 +30,28 @@ level's final platform routes were tuned during physics testing.
 
 ## 2. Trace once and export the repair image
 
-The model can shift outlines even when it follows the composition. Open
-the first painting at the recipe's `referenceSize` and trace the actual
-painted silhouettes. Use the deck's painted top as the top of the trace.
-Give each trace a slightly larger `repairBox` that includes antialiased
-edges and any attached shadow. The boxes are half-open pixel rectangles
-and should leave adjacent static surfaces intact. The IDs match the
-corresponding decks in the level JSON.
+The model can shift outlines even when it follows the composition. Use
+the guide to find each deck, then trace the actual first-pass pixels at
+the recipe's `referenceSize`. Orchard used a Pillow preview with an x/y
+grid at 1152 × 469. The six vertices in each `outline` were read by eye
+from the painted deck and entered as `[x, y]` pairs, starting at the
+top-left corner and proceeding clockwise. The deck's painted landing
+edge is the top of the sprite. Coordinates are relative to the upper-left
+corner of the full reference painting.
+
+For the next scene, crop around each deck at its rough guide position
+and enlarge the crop with nearest-neighbor sampling. Record the crop's
+upper-left coordinate and add that offset to every local vertex. A polygon
+selection in an image editor also works at the same reference size.
+Trace the top and corners first, then preview the alpha against a light
+and a dark background for clipped edges and stray background pixels.
+
+Give each silhouette a slightly larger `repairBox` that covers edge
+pixels and any baked shadow while avoiding neighboring static ledges.
+For example, the copper deck starts at `[133, 332]` and runs along its
+top to `[207, 332]`. Its repair box is `[131, 330, 211, 350]`.
+Boxes are half-open rectangles in `[left, top, right, bottom]` order.
+The IDs match the corresponding decks in the level JSON.
 
 ```sh
 art=phaser/assets/generated/clockwork-orchard
@@ -72,6 +87,14 @@ pixel. Registration pins map the painted stairs, pier tops and upper
 terrace to their intended world coordinates. Painting registration and
 cutout extraction are repeatable from the saved source pair. A fresh
 model generation still needs inspection, tracing, and registration.
+
+For more complex silhouettes, try an edge-aware selection in the crop,
+seeded with a few strokes on the object and its surroundings. Review the
+alpha at gameplay scale before committing it. A before/after difference
+image is useful for locating missed edge pixels inside the repair box.
+On the saved Orchard pair, a simple per-channel difference also picked
+up repainting in the surrounding sky and missed parts of the decks. Keep
+the authored silhouette and repair box as the source of truth.
 
 Review the WebPs in `dist/orchard-art/` before replacing the registered
 files in `phaser/assets/generated/clockwork-orchard/`. The build embeds
