@@ -1,6 +1,6 @@
 # Wonderwood / Phaser 4
 
-An offline eight-chapter adventure built with Phaser 4. The surface
+An offline nine-chapter adventure built with Phaser 4. The surface
 chapters compile from declarative JSON and the two caves from declarative
 geometry in `src/cave-layout.js`. The campaign uses one painted-scene renderer.
 The original Canvas campaign remains independently playable.
@@ -41,6 +41,12 @@ prototype's known water alignment limits. For the surface chapters, see
 Ride a copper lift, a green ferry, and an orbiting brass gondola. The
 [dynamic scene art workflow](DYNAMIC-SCENE-ART.md) shows how to isolate the
 three decks from the original painting and fill the holes behind them.
+
+## The Brassworks (Chapter 9)
+
+Ride an animated conveyor, jump across three turning gears, and wait on
+the flashing piston for a steam launch. The [art write-up](BRASSWORKS-ART.md)
+records how the machine sprites and wider background repairs were made.
 
 ## Build
 

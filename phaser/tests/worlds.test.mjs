@@ -17,7 +17,7 @@ const registry=JSON.parse(readFileSync(new URL(
   'phaser/assets/generated/approved-scene-art.json',root),'utf8'));
 
 test('every playable chapter compiles and has registered art',()=>{
-  assert.equal(chapters.length,8);
+  assert.equal(chapters.length,9);
   assert.deepEqual(Object.keys(registry).sort(),chapters.map(chapter=>chapter.id).sort());
   for(const chapter of chapters){
     const level=compileChapter(chapter,compiler);
@@ -72,5 +72,18 @@ test('each Clockwork Orchard deck maps to one registered alpha cutout',()=>{
     const image=readFileSync(new URL(path,root));
     assert.equal(image.toString('ascii',8,16),'WEBPVP8L');
     assert.ok(image.readUInt32LE(21)&(1<<28),path+' must carry alpha');
+  }
+});
+
+test('the Brassworks registers an alpha sprite for each machine',()=>{
+  const id='brassworks';
+  const state=registry[id];
+  const machines=compileChapter({id},compiler).machines;
+  assert.deepEqual(Object.keys(state.platforms).filter(key=>key!=='feed-tread'),
+    machines.map(machine=>machine.id));
+  for(const {id:machine} of machines){
+    const data=readFileSync(new URL(state.platforms[machine],root));
+    assert.equal(data.toString('ascii',8,16),'WEBPVP8L');
+    assert.ok(data.readUInt32LE(21)&(1<<28),machine+' must carry alpha');
   }
 });

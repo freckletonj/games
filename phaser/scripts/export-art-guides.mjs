@@ -28,10 +28,16 @@ for(const chapter of chapters){
     await writeFile(new URL('world-static-'+material+'.png',output),
       materialGuidePng(level,{layer:'static-'+material}));
 
-  if(level.movingPlatforms.length){
-    const paints=[...level.sceneFeatures,...level.movingPlatforms.map(deck=>{
+  if(level.movingPlatforms.length||level.machines.length){
+    const paints=[...level.sceneFeatures,...[...level.movingPlatforms,...level.machines].map(deck=>{
       const [x,y]=deck.home,[width,height]=deck.size;
       const left=x-width/2,right=x+width/2;
+      if(deck.kind==='gear')return {...deck,material:deck.id,
+        polygon:Array.from({length:48},(_,i)=>{
+          const angle=i*Math.PI/24;
+          return [x+Math.cos(angle)*width/2,y+Math.sin(angle)*height/2];
+        })
+      };
       return {...deck,material:deck.id,polygon:[
         [left,y],[right,y],[right,y+height],[left,y+height]
       ]};

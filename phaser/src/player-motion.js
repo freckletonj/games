@@ -1,4 +1,4 @@
-import {movingLanding} from './moving-platforms.js';
+import {deckTopAt,movingLanding} from './moving-platforms.js';
 import {landingY,platformTopAt,safeHorizontalX} from './physics.js';
 import {tryBloomBoost} from './springboard.js';
 import {sweepRockBody} from './cave-solids.js';
@@ -15,9 +15,14 @@ export function stepPlayerMotion(p,actions,step,world){
   if(support){
     const [x,y]=support.position;
     const [previousX,previousY]=support.previous;
-    const carriedX=clamp(p.x+x-previousX,10,world.width-10);
+    const carriedX=clamp(p.x+x-previousX+(support.beltSpeed??0),10,world.width-10);
     p.x=safeHorizontalX(p.x,carriedX,y,world.groundAt);
-    p.y+=y-previousY;
+    p.y=deckTopAt(support,p.x)??p.y+y-previousY;
+    if(support.fire){
+      p.launchSpeed=support.boost;p.vy=-support.rise;
+      p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumps=1;
+      events.push('piston');
+    }
   }
   const fromX=p.x;
     p.powers=Math.max(0,p.powers-step/60);
@@ -79,7 +84,7 @@ export function stepPlayerMotion(p,actions,step,world){
         p.vy=-5.65;p.flaps++;p.flapWait=8;p.jumpBuffer=0;
         events.push('flap');
       }
-      if(!actions.jump&&p.vy<-2.3&&p.form!=='skyling')p.vy+=.28*step;
+      if(!p.launchSpeed&&!actions.jump&&p.vy<-2.3&&p.form!=='skyling')p.vy+=.28*step;
       const hover=p.form==='glimmermoth'&&p.hover>0&&p.vy>0;
       p.vy+=(p.vy>=0 ? (hover ? .12 : .52) : .34)*step;
       // Hover must remain a real slow descent for its entire duration.
@@ -100,7 +105,7 @@ export function stepPlayerMotion(p,actions,step,world){
       platformTopAt(p.x,p.y,p.y,world.platformSegments,world.tile)===null;
     const slope=onTerrain?(world.groundAt(p.x+2)-world.groundAt(p.x-2))/4:0;
     const surfaceVx=p.vx/Math.hypot(1,slope);
-    const nextX=clamp(p.x+surfaceVx*step,10,world.width-10);
+    const nextX=clamp(p.x+(surfaceVx+(p.launchSpeed??0))*step,10,world.width-10);
     let safeX=safeHorizontalX(p.x,nextX,p.y,
       x=>world.groundAt(x),swimmer);
     // Authored climbing faces are real solid obstacles. Jump over a wall's
@@ -138,12 +143,14 @@ export function stepPlayerMotion(p,actions,step,world){
       }
     }
     const moving=p.vy>=0?movingLanding(decks,p.grounded?support?.id:null,
-    fromX,priorY,p.x,p.y):null;
-  const onDeck=moving&&(landing===null||moving.position[1]<landing);
-  p.onPlatform=onDeck?moving.id:null;
-  if(onDeck)landing=moving.position[1];
-  if(landing!==null){
-      p.y=landing;p.vy=0;p.grounded=true;p.jumps=0;p.flaps=0;p.coyote=5;
+      fromX,priorY,p.x,p.y):null;
+    const movingTop=moving?deckTopAt(moving,p.x):null;
+    const onDeck=moving&&(landing===null||movingTop<landing||
+      (moving.kind==='conveyor'&&movingTop===landing));
+    p.onPlatform=onDeck?moving.id:null;
+    if(onDeck)landing=movingTop;
+    if(landing!==null){
+      p.y=landing;p.vy=0;p.launchSpeed=0;p.grounded=true;p.jumps=0;p.flaps=0;p.coyote=5;
       if(!wasGrounded&&impactSpeed>1.3){
         events.push('land');
         if(impactSpeed>3.8)events.push('hardLand');
@@ -165,6 +172,7 @@ export function stepPlayerMotion(p,actions,step,world){
     if(p.y>ground+3){
       p.y=ground;p.vy=Math.min(p.vy,0);p.grounded=true;p.onPlatform=null;
     }
+    if(p.grounded)p.launchSpeed=0;
     if(p.y>world.height-10)events.push('recall');
     const action=swimmer?'swim':p.grounded?(Math.abs(p.vx)>.3?'run':'idle'):
       p.form==='skyling'||(p.form==='glimmermoth'&&p.hover>0&&p.vy>=0)?

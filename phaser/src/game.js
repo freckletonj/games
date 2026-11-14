@@ -21,7 +21,8 @@ import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatu
   stompCreature} from './creature-motion.js';
 import {caveContainsWater} from './cave-layout.js';
 import {makeGeometryOverlay,paintScene,paintThermals,sceneTextures} from './painted-scene.js';
-import {platformPosition,stepPlatforms} from './moving-platforms.js';
+import {deckTopAt,platformPosition,stepPlatforms} from './moving-platforms.js';
+import {machinePlatforms,stepMachines} from './machines.js';
 import {surfaceGroundAt} from './surface-geometry.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
@@ -139,7 +140,7 @@ class Wonderwood extends Phaser.Scene {
             scrollFactor:layer.scrollFactorX
           }))
         }:null,
-        movingPlatforms:this.movingPlatforms?.map(({id,position})=>({id,position}))||[],
+        movingPlatforms:this.walkableMachines?.map(({id,position})=>({id,position}))||[],
         players:this.players?.map(p=>({x:p.x,y:p.y,face:p.face,vx:p.vx,vy:p.vy,
           action:p.action,frame:Number(p.visual?.frame?.name),
           texture:p.visual?.texture?.key,grounded:p.grounded,
@@ -206,6 +207,8 @@ class Wonderwood extends Phaser.Scene {
     this.setpieces=[];
     this.geometryOverlay=null;
     this.movingPlatforms=[];
+    this.machines=[];
+    this.walkableMachines=[];
     this.deckOverlay=null;
     this.lastInput=[{},{}];
     this.pendingActions=[{},{}];
@@ -321,7 +324,20 @@ class Wonderwood extends Phaser.Scene {
         .setOrigin(.5,0).setDisplaySize(...platform.size).setDepth(-19);
       return {...platform,position,previous:position,visual};
     });
-    if(this.movingPlatforms.length)this.deckOverlay=this.add.graphics().setDepth(101);
+    this.machines=machinePlatforms(this.level.machines??[]);
+    for(const machine of this.machines){
+      const [x,y]=machine.home,[w,h]=machine.size;
+      const gear=machine.kind==='gear';
+      machine.visual=this.add.image(x,y,'deck-'+this.chapter.id+'-'+machine.id)
+        .setOrigin(.5,gear ? .5 : 0).setDisplaySize(w,h).setDepth(-19);
+      if(machine.kind==='conveyor'){
+        machine.tread=this.add.tileSprite(x,y+1,w-22,11,
+          'deck-'+this.chapter.id+'-feed-tread')
+          .setOrigin(.5,0).setDepth(-18);
+      }
+    }
+    this.walkableMachines=[...this.movingPlatforms,...this.machines];
+    if(this.walkableMachines.length)this.deckOverlay=this.add.graphics().setDepth(101);
     paintThermals(this);
     this.spawnObjects();
     this.spawnMounts();
@@ -963,7 +979,7 @@ class Wonderwood extends Phaser.Scene {
   }
 
   recall(p){
-    p.onPlatform=null;
+    p.onPlatform=null;p.launchSpeed=0;
     p.x=p.checkpoint.x;p.y=p.checkpoint.y;p.vx=0;p.vy=0;
     if(p.mount)this.dismount(p);
     p.recalls++;p.bloomWindow=0;p.creatureBounceWindow=0;
@@ -1029,12 +1045,15 @@ class Wonderwood extends Phaser.Scene {
       thermalVolumes:this.level.thermalVolumes,
       platformSegments:this.level.platformSegments,
       climbWalls:this.level.climbWalls,
-      movingPlatforms:this.movingPlatforms,
+      movingPlatforms:this.walkableMachines,
       rockPolygons:this.level.rockPolygons
     });
     for(const event of events){
       if(event==='breach')this.powerEffect('tideling',p.x,p.y,p.face);
-      else if(event==='bloomBoost'){
+      else if(event==='piston'){
+        this.sparkle(p.x,p.y,0xffdf9a);
+        this.flash('Steam launch!',950);
+      }else if(event==='bloomBoost'){
         gesture(p,'jump',.22);
         this.sparkle(p.x,p.y,0xffc6e8);
         this.flash('Perfect spring! Extra-high jump',1050);
@@ -1186,6 +1205,7 @@ class Wonderwood extends Phaser.Scene {
         }
       }
       stepPlatforms(this.movingPlatforms,tickTime/1000);
+      stepMachines(this.machines,Math.round(tickTime/TICK_MS));
       for(const p of [...this.players])
         this.movePlayer(p,tickActions[p.id],step);
       this.updateMounts(step,tickTime);
@@ -1201,9 +1221,12 @@ class Wonderwood extends Phaser.Scene {
       this.deckOverlay.clear();
       if(this.geometryOverlay.visible){
         this.deckOverlay.lineStyle(2,0xffd28d,1);
-        for(const deck of this.movingPlatforms){
-          const [x,y]=deck.position,half=deck.size[0]/2;
-          this.deckOverlay.lineBetween(x-half,y,x+half,y);
+        for(const deck of this.walkableMachines){
+          const [x]=deck.position,half=(deck.treadWidth??deck.size[0])/2;
+          for(let px=x-half;px<x+half;px+=4){
+            const end=Math.min(px+4,x+half);
+            this.deckOverlay.lineBetween(px,deckTopAt(deck,px),end,deckTopAt(deck,end));
+          }
         }
       }
     }
@@ -1222,7 +1245,12 @@ class Wonderwood extends Phaser.Scene {
     const orchardHint=lead.x<440?'Jump onto the copper lift. Ride up to the stone steps.':
       lead.x<960?'Wait at the edge for the green ferry. Ride it across the ravine.':
       lead.x<1230?'Ride the brass gondola up to the roof garden.':'Follow the garden to its light.';
-    this.help.setText(this.chapter.id==='clockwork-orchard'?orchardHint:
+    const machineHint=lead.x<427?'Run with the belt and jump from the edge.':
+      lead.x<845?'Jump across the turning gears.':
+      lead.x<1450?'Stand on the flashing piston and wait for the launch.':
+        'Find the Foundry Light and take it to the gate.';
+    this.help.setText(this.chapter.id==='brassworks'?machineHint:
+      this.chapter.id==='clockwork-orchard'?orchardHint:
       this.chapter.id==='skywell-ascent'&&lead.x<50*TILE?
       lead.caught&&!lead.form?
         'T / Y · transform into your Glimmermoth':

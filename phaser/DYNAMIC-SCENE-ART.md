@@ -114,3 +114,6 @@ The same paint, trace, and repair sequence could extract foreground or
 parallax art. Each such layer would need its own mask, draw depth, and
 scroll behavior. This experiment ships one repaired world-locked
 composition and three independently moving cutouts.
+
+[The Brassworks](BRASSWORKS-ART.md) documents the follow-up experiment with
+model-assisted alpha extraction and wider background repairs.
