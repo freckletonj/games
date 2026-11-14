@@ -16,7 +16,7 @@ const color={
 
 export function materialGuidePng(level,{
   from=0,to=level.width,top=0,bottom=level.height,
-  layer='physical-rock',scale=1
+  layer='physical-rock',scale=1,palette=color
 }={}){
   if(!['physical-rock','static-solid','static-water'].includes(layer)||
      from<0||to>level.width||from>=to||
@@ -34,7 +34,7 @@ export function materialGuidePng(level,{
     const absoluteY=worldY+(y+.5)/scale;
     for(let x=0;x<width;x++){
       const material=columns[x](absoluteY);
-      const paint=layer==='physical-rock'?color[material]:
+      const paint=layer==='physical-rock'?palette[material]:
         layer==='static-solid'?
           (material==='rock'||material==='wall'||material==='shelf'?
             color[material]:color.clear):

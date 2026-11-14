@@ -1,19 +1,26 @@
 import designs from '../../src/games/animal-adventure/designs.json' with {type:'json'};
 import meadow from '../levels/first-forest.json' with {type:'json'};
+import orchard from '../levels/clockwork-orchard.json' with {type:'json'};
 import {grottoChapter} from './cave-chapter.js';
 import {skywellChapter} from './skywell-chapter.js';
 import {caveLayout,compileCave,skywellLayout} from './cave-layout.js';
 import {validateEncounters} from './encounters.js';
 import {surfaceMaterialColumn} from './surface-geometry.js';
 
-export const surfaceDesigns={...designs,[meadow.id]:meadow};
+export const surfaceDesigns={...designs,[meadow.id]:meadow,[orchard.id]:orchard};
+const orchardChapter={
+  id:orchard.id,biome:orchard.biome,name:'Clockwork Orchard',difficulty:'Ride',
+  tagline:'Ride a harvest lift, a ravine ferry, and a wheel gondola to the roof garden.',
+  key:'springKey',goals:[{kind:'springKey',name:'Orchard Light',form:null}],
+  signs:[],events:[]
+};
 const caves={
   [grottoChapter.id]:caveLayout,
   [skywellChapter.id]:skywellLayout
 };
 
 export function campaign(surfaceChapters){
-  return [...surfaceChapters,grottoChapter,skywellChapter];
+  return [...surfaceChapters,grottoChapter,skywellChapter,orchardChapter];
 }
 
 export function compileChapter(chapter,compiler){
@@ -23,5 +30,8 @@ export function compileChapter(chapter,compiler){
   if(chapter.id===meadow.id)validateEncounters(design);
   const level=compiler.compile(design,chapter);
   level.materialColumn=x=>surfaceMaterialColumn(level,x);
+  level.movingPlatforms=design.movingPlatforms??[];
+  level.sceneFeatures=design.sceneFeatures??[];
+  level.recallBelow=design.recallBelow??Infinity;
   return level;
 }

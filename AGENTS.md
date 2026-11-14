@@ -16,6 +16,8 @@ controls, build setup, and browser verification.
   and `node phaser/scripts/export-cave-guides.mjs`. Use the material masks to
   register static art to collision. Keep actors and pickups separate.
   See [art direction](phaser/ART-DIRECTION.md) for the shared workflow.
+  [Clockwork Orchard](phaser/DYNAMIC-SCENE-ART.md) covers moving cutouts,
+  green repair masks, and model-painted background patches.
 
 ## Build and verify
 

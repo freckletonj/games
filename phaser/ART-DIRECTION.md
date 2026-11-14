@@ -53,3 +53,6 @@ chapter directory as the image model's input. It contains only materials.
 
 See [the cave pipeline](CAVE-ART-PIPELINE.md) for separate alpha layer
 extraction and overlap-aware painting refinement.
+
+For a painted scene with moving objects, see the
+[Clockwork Orchard workflow](DYNAMIC-SCENE-ART.md).

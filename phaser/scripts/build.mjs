@@ -17,7 +17,7 @@ async function embedImage(path){
 
 const approvedSceneAssets={};
 for(const [id,layers] of Object.entries(approvedSpec)){
-  if(layers.scene?Object.keys(layers).length!==1:!layers.solid)
+  if(layers.scene?Boolean(layers.solid||layers.water||layers.background):!layers.solid)
     throw Error('Approved art for '+id+' requires a complete scene or registered material layers');
   approvedSceneAssets[id]={};
   if(layers.backgroundScrollFactor!==undefined){
@@ -28,6 +28,11 @@ for(const [id,layers] of Object.entries(approvedSpec)){
   }
   for(const [name,path] of Object.entries(layers)){
     if(name==='backgroundScrollFactor')continue;
+    if(name==='platforms'){
+      approvedSceneAssets[id].platforms=Object.fromEntries(await Promise.all(
+        Object.entries(path).map(async ([key,file])=>[key,await embedImage(file)])));
+      continue;
+    }
     if(!['scene','solid','water','background'].includes(name))
       throw Error('Invalid painted scene layer '+id+' '+name);
     approvedSceneAssets[id][name]=name==='scene'?

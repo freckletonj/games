@@ -1,8 +1,8 @@
 # Wonderwood / Phaser 4
 
-An offline seven-chapter adventure built with Phaser 4. The five surface
+An offline eight-chapter adventure built with Phaser 4. The surface
 chapters compile from declarative JSON and the two caves from declarative
-geometry in `src/cave-layout.js`. All seven use the same painted-scene renderer.
+geometry in `src/cave-layout.js`. The campaign uses one painted-scene renderer.
 The original Canvas campaign remains independently playable.
 The self-contained game plays offline with no CDN, external images or fetches.
 
@@ -35,6 +35,12 @@ transformations. See the [step-by-step level authoring guide](CAVE-ART-PIPELINE.
 for export and build commands, the V-key collision overlay, and the
 prototype's known water alignment limits. For the surface chapters, see
 [the shared art workflow](ART-DIRECTION.md).
+
+## Clockwork Orchard (Chapter 8)
+
+Ride a copper lift, a green ferry, and an orbiting brass gondola. The
+[dynamic scene art workflow](DYNAMIC-SCENE-ART.md) shows how to isolate the
+three decks from the original painting and fill the holes behind them.
 
 ## Build
 
