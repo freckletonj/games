@@ -1,5 +1,5 @@
 import {movingLanding} from './moving-platforms.js';
-import {landingY,safeHorizontalX} from './physics.js';
+import {landingY,platformTopAt,safeHorizontalX} from './physics.js';
 import {tryBloomBoost} from './springboard.js';
 import {sweepRockBody} from './cave-solids.js';
 
@@ -94,12 +94,12 @@ export function stepPlayerMotion(p,actions,step,world){
       if(p.form==='skyling')p.flaps=0;
     }
     p.vy=clamp(p.vy,-11,7.5);
-    // Horizontal velocity is input intent. On a steep slope constrain
-    // travel along the surface, otherwise a 2.3 px/tick run can teleport
-    // 8+ world pixels vertically every tick.
-    const slope=p.grounded&&!support?
-      (world.groundAt(p.x+2)-world.groundAt(p.x-2))/4:0;
-    const surfaceVx=p.grounded?p.vx/Math.hypot(1,slope):p.vx;
+    // Scale horizontal speed only when the feet follow the heightfield.
+    // At a flush ledge edge the terrain below can slope away sharply.
+    const onTerrain=p.grounded&&!support&&p.y===world.groundAt(p.x)&&
+      platformTopAt(p.x,p.y,p.y,world.platformSegments,world.tile)===null;
+    const slope=onTerrain?(world.groundAt(p.x+2)-world.groundAt(p.x-2))/4:0;
+    const surfaceVx=p.vx/Math.hypot(1,slope);
     const nextX=clamp(p.x+surfaceVx*step,10,world.width-10);
     let safeX=safeHorizontalX(p.x,nextX,p.y,
       x=>world.groundAt(x),swimmer);

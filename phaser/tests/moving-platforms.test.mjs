@@ -32,16 +32,39 @@ test('one-way decks catch crossed tops in the moving frame and let upward jumps 
   assert.equal(movingLanding([deck],'lift',100,98,102,98),deck);
 });
 
+const scope={};scope.window=scope;vm.createContext(scope);
+vm.runInContext(readFileSync(new URL('../../src/platform/world-compiler.js',import.meta.url),'utf8'),scope);
+const level=compileChapter({id:orchard.id},scope.WW.worldCompiler);
+
+const orchardWorld={width:level.width*16,height:level.height*16,tile:16,
+  groundAt:x=>surfaceGroundAt(level,x),inWater:()=>false,
+  thermalVolumes:[],platformSegments:level.platformSegments};
+const explorer=(x,y)=>({x,y,vx:0,vy:0,face:1,grounded:true,coyote:5,
+  jumpBuffer:0,jumps:0,flaps:0,flapWait:0,powers:0,hover:0,breach:0,bloomWindow:0});
+
+test('the ferry landing lip preserves full walking speed over the pier wall',()=>{
+  const pierTop=55*16;
+  const shelfY=22*16;
+  for(const [start,right] of [[pierTop-12,true],[pierTop+1,false]]){
+    const player=explorer(start,shelfY);
+    player.vx=right?2.3:-2.3;
+    stepPlayerMotion(player,{right,left:!right,jump:false,jumpPressed:false},1,orchardWorld);
+    near(player.x-start,right?2.3:-2.3);
+    near(player.y,shelfY);
+    assert.equal(player.grounded,true);
+  }
+
+  const player=explorer(52*16-4,shelfY);
+  player.vx=-2.3;
+  stepPlayerMotion(player,{right:false,left:true,jump:false,jumpPressed:false},1,orchardWorld);
+  assert.equal(player.grounded,false);
+  assert.ok(player.y>shelfY);
+});
+
 test('Clockwork Orchard can reach its light as an explorer using all three rides',()=>{
-  const scope={};scope.window=scope;vm.createContext(scope);
-  vm.runInContext(readFileSync(new URL('../../src/platform/world-compiler.js',import.meta.url),'utf8'),scope);
-  const level=compileChapter({id:orchard.id},scope.WW.worldCompiler);
   const decks=level.movingPlatforms.map(spec=>({...spec,position:spec.home,previous:spec.home}));
-  const world={width:level.width*16,height:level.height*16,tile:16,
-    groundAt:x=>surfaceGroundAt(level,x),inWater:()=>false,
-    thermalVolumes:[],platformSegments:level.platformSegments,movingPlatforms:decks};
-  const p={x:72,y:world.groundAt(72),vx:0,vy:0,face:1,grounded:true,coyote:5,
-    jumpBuffer:0,jumps:0,flaps:0,flapWait:0,powers:0,hover:0,breach:0,bloomWindow:0};
+  const world={...orchardWorld,movingPlatforms:decks};
+  const p=explorer(72,world.groundAt(72));
   let frame=0;
   const ridden=new Set();
   function tick(right=false,jump=false,jumpPressed=false){

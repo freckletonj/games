@@ -6,7 +6,7 @@ import {EFFECT_FRAMES,paintedAction,powerFrame,setpieceFrame,enemyTellFrame,
   paintedFootOrigin} from './action-art.js';
 import {MOUNTS,LOCATIONS,seatFor,stepMountedMotion} from './mounts.js';
 import {bindings,readActions} from './input.js';
-import {landingY,safeHorizontalX,orbStep,orbHitsAnimal} from './physics.js';
+import {landingY,platformTopAt,safeHorizontalX,orbStep,orbHitsAnimal} from './physics.js';
 import {triggerBloom} from './springboard.js';
 import {stepPlayerMotion} from './player-motion.js';
 import {TICK_MS,simulationTicks,queueInputEdges,withoutInputEdges} from './fixed-clock.js';
@@ -390,11 +390,13 @@ class Wonderwood extends Phaser.Scene {
       (art?art.height/this.stateFrameHeight:manifest.worldScale)*pose.sy);
     entity.visual.setRotation(face*pose.rotation);
     if(entity.visual.shadow){
-      const deck=this.movingPlatforms.find(platform=>platform.id===entity.onPlatform);
-      const ground=deck?deck.position[1]:this.groundAt(entity.x);
-      const elevation=Math.max(0,ground-entity.y);
+      const floor=this.groundAt(entity.x);
+      const ledge=entity.id!==undefined&&!entity.grounded?
+        platformTopAt(entity.x,entity.y,floor,this.level.platformSegments,TILE):null;
+      const shadowY=entity.grounded?entity.y:ledge??floor;
+      const elevation=Math.max(0,shadowY-entity.y);
       const weight=Math.max(.33,1-elevation/155);
-      entity.visual.shadow.setPosition(entity.x,ground+3)
+      entity.visual.shadow.setPosition(entity.x,shadowY+3)
         .setScale(weight).setAlpha(.28*weight);
     }
     entity.gestureTime=Math.max(0,(entity.gestureTime||0)-delta);

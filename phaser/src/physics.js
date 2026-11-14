@@ -1,19 +1,23 @@
 // Platformer geometry utilities. World-space feet are at y; falling is +y.
+export function platformTopAt(x,fromY,toY,segments,tile=16){
+  let top=null;
+  for(const platform of segments){
+    if(platform.kind!=='platform'||x<platform.x*tile-4||
+       x>(platform.x+platform.length)*tile+4)continue;
+    const y=platform.y*tile;
+    if(y>=fromY&&y<=toY&&(top===null||y<top))top=y;
+  }
+  return top;
+}
+
 export function landingY(previousY,nextY,velocityY,grounded,x,floor,segments,tile=16){
   if(velocityY<0)return null;
   const stepAllowance=grounded?9:0;
   // A slope may rise under the feet between adjacent horizontal samples.
-  // Always resolve a descending body against solid ground, even when its
-  // previous frame was already marginally inside the uphill bank.
-  let landing=nextY>=floor-stepAllowance?floor:null;
-  for(const platform of segments){
-    if(platform.kind!=='platform'||x<platform.x*tile-4||
-       x>(platform.x+platform.length)*tile+4)continue;
-    const top=platform.y*tile;
-    if(previousY<=top+2&&nextY>=top&&
-       (landing===null||top<landing))landing=top;
-  }
-  return landing;
+  // Resolve against solid ground even after a marginal uphill intersection.
+  const ground=nextY>=floor-stepAllowance?floor:null;
+  const ledge=platformTopAt(x,previousY-2,Math.min(nextY,ground??Infinity),segments,tile);
+  return ledge??ground;
 }
 
 export function safeHorizontalX(fromX,toX,footY,groundAt,swimming=false){
