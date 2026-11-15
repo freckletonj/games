@@ -751,6 +751,7 @@
       151,
       228
     ],
+    "pickups": [["iceWater", 18], ["toadstool", 47], ["dandelion", 119]],
     "snacks": [
       12,
       44,
@@ -1334,6 +1335,7 @@
       177,
       269
     ],
+    "pickups": [["dandelion", 16], ["toadstool", 33], ["iceWater", 54]],
     "snacks": [
       9,
       45,

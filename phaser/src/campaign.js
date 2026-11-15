@@ -64,6 +64,7 @@ export function compileChapter(chapter,compiler){
   level.movingPlatforms=design.movingPlatforms??[];
   level.machines=design.machines??[];
   level.sceneFeatures=design.sceneFeatures??[];
+  for(const [kind,x] of design.pickups??[])level.objects.push({kind,x});
   level.ropes=design.ropes??[];
   level.monkeys=design.monkeys??[];
   level.recallBelow=design.recallBelow??Infinity;

@@ -34,6 +34,7 @@
     ["mossback", 132]
   ],
   "checkpoints": [57, 101, 139],
+  "pickups": [["dandelion", 18], ["iceWater", 27], ["toadstool", 36]],
   "snacks": [10, 41, 90, 133],
   "stars": [
     [35, 29],
