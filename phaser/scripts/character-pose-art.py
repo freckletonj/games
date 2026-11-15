@@ -180,11 +180,12 @@ def manifest_for(name, plan):
     return manifest
 
 
-def pack_sheet(plan, layers, painted):
+def pack_sheet(plan, layers, painted, alpha_range):
     columns = plan["columns"]
     rows = len(layers)//columns
     width, height = plan["frame"]
     scale, inset = geometry(plan)
+    clear, solid = alpha_range
     atlas = Image.new("RGBA",(columns*width,rows*height))
     if painted.mode != "RGBA":
         raise ValueError("Expected a true-alpha painted sheet")
@@ -197,7 +198,7 @@ def pack_sheet(plan, layers, painted):
                (3,patch.height-4),(patch.width-4,patch.height-4)]) > 100:
             raise ValueError(f"Pose {i+1} ({label}) has a background matte")
         # Keep the model's alpha edge while removing translucent background haze.
-        alpha = alpha.point(lambda a: round(255*max(0,a-120)/(255-120)))
+        alpha = alpha.point(lambda a: min(255, round(255*max(0,a-clear)/(solid-clear))))
         patch.putalpha(alpha)
         bounds = alpha.getbbox()
         if bounds is None:
@@ -216,13 +217,28 @@ def main():
     parser.add_argument("output",type=Path)
     parser.add_argument("--painted-sheet",type=Path)
     parser.add_argument("--manifest", type=Path)
+    parser.add_argument("--pixel-scale", type=int, default=1,
+                        help="Multiply texture dimensions while preserving world size")
+    parser.add_argument("--alpha-range", nargs=2, type=int, default=(120, 255),
+                        metavar=("CLEAR", "SOLID"), help="Input alpha levels for clear and opaque")
     args = parser.parse_args()
+    if args.pixel_scale < 1:
+        parser.error("--pixel-scale must be a positive integer")
+    if not 0 <= args.alpha_range[0] < args.alpha_range[1] <= 255:
+        parser.error("--alpha-range must increase from clear to solid within 0–255")
     plan = plan_for(args.name)
+    plan["frame"] = [edge * args.pixel_scale for edge in plan["frame"]]
+    plan["worldScale"] /= args.pixel_scale
+    if args.name in ("unicorn", "pegasus"):
+        plan["seatAdjustments"][args.name] = [
+            [x * args.pixel_scale, y * args.pixel_scale]
+            for x, y in plan["seatAdjustments"][args.name]
+        ]
     if args.manifest:
         args.manifest.write_text(json.dumps(manifest_for(args.name,plan),indent=2)+"\n")
     layers = silhouettes(args.name,plan)
     if args.painted_sheet:
-        atlas = pack_sheet(plan,layers,Image.open(args.painted_sheet))
+        atlas = pack_sheet(plan,layers,Image.open(args.painted_sheet),args.alpha_range)
         atlas.save(args.output,quality=92,method=6)
     else:
         draw_guide(plan,layers).save(args.output)
