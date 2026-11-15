@@ -1,6 +1,7 @@
 import {deckTopAt,movingLanding} from './moving-platforms.js';
 import {landingY,platformTopAt,safeHorizontalX} from './physics.js';
 import {tryBloomBoost} from './springboard.js';
+import {stepRopePlayer} from './rope-swing.js';
 import {sweepRockBody} from './cave-solids.js';
 
 const FLAPPING_FORMS=new Set(['skyling','glimmermoth','cloudwhisp']);
@@ -37,6 +38,14 @@ export function stepPlayerMotion(p,actions,step,world){
     p.creatureBounceWindow=Math.max(0,(p.creatureBounceWindow||0)-step);
     p.coyote=p.grounded?5:Math.max(0,p.coyote-step);
     p.jumpBuffer=actions.jumpPressed?6:Math.max(0,p.jumpBuffer-step);
+    if(world.ropes?.length&&!p.sleep){
+      const rope=stepRopePlayer(p,actions,world.ropes,world.groundAt,step);
+      if(rope==='release')actions={...actions,jumpPressed:false};
+      else if(rope){
+        if(rope==='pump')events.push('ropePump');
+        return {action:'hang',events};
+      }
+    }
     const inWater=world.inWater(p.x,p.y-8);
     const swimmer=p.form==='tideling'&&inWater;
     const canFlap=FLAPPING_FORMS.has(p.form);

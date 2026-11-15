@@ -9,6 +9,8 @@ import riderSheet from '../assets/generated/riders.webp';
 import riderManifest from '../assets/generated/riders.json';
 import floaters from '../assets/generated/floaters.webp';
 import fainted from '../assets/generated/fainted.webp';
+import jungleMonkey from '../assets/generated/monkey-jungle/monkey.webp';
+import jungleRope from '../assets/generated/monkey-jungle/rope.webp';
 import windColumn from '../assets/generated/wind-column.webp';
 import ventBubbles from '../assets/generated/vent-bubbles.webp';
 import bounceBloom from '../assets/generated/bounce-bloom.webp';
@@ -72,7 +74,7 @@ export const mounts = {
   pegasus:{url:pegasus,manifest:pegasusManifest}
 };
 export const riders={url:riderSheet,manifest:riderManifest};
-export {bounceBloom,captureOrb,fainted,floaters,ventBubbles,windColumn};
+export {bounceBloom,captureOrb,fainted,floaters,jungleMonkey,jungleRope,ventBubbles,windColumn};
 export const backgrounds = {meadow,coast,summit};
 export const sheets = {flora,props,effects};
 export const silhouettes = {

@@ -3,6 +3,7 @@ import meadow from '../levels/first-forest.json' with {type:'json'};
 import orchard from '../levels/clockwork-orchard.json' with {type:'json'};
 import sealPlan from '../levels/stonewake-seal.json' with {type:'json'};
 import stonewake from '../levels/stonewake-hollow.json' with {type:'json'};
+import jungle from '../levels/monkey-jungle.json' with {type:'json'};
 import brassworks from '../levels/brassworks.json' with {type:'json'};
 import {grottoChapter} from './cave-chapter.js';
 import {skywellChapter} from './skywell-chapter.js';
@@ -11,7 +12,7 @@ import {validateEncounters} from './encounters.js';
 import {compileRockPolygons,rockContains} from './cave-solids.js';
 import {surfaceMaterialColumn} from './surface-geometry.js';
 
-export const surfaceDesigns={...designs,[meadow.id]:meadow,[orchard.id]:orchard,[brassworks.id]:brassworks,[stonewake.id]:stonewake};
+export const surfaceDesigns={...designs,[meadow.id]:meadow,[orchard.id]:orchard,[brassworks.id]:brassworks,[stonewake.id]:stonewake,[jungle.id]:jungle};
 const orchardChapter={
   id:orchard.id,biome:orchard.biome,name:'Clockwork Orchard',difficulty:'Ride',
   tagline:'Ride a harvest lift, a ravine ferry, and a wheel gondola to the roof garden.',
@@ -30,13 +31,19 @@ const stonewakeChapter={
   key:'springKey',goals:[{kind:'springKey',name:'Hollow Light',form:null}],
   signs:[],events:[]
 };
+const jungleChapter={
+  id:jungle.id,biome:jungle.biome,name:'Monkey Jungle',difficulty:'Swing',
+  tagline:'Swing over three ravines and climb to the canopy with mischievous monkeys underfoot.',
+  key:'springKey',goals:[{kind:'springKey',name:'Canopy Light',form:null}],
+  signs:[],events:[]
+};
 const caves={
   [grottoChapter.id]:caveLayout,
   [skywellChapter.id]:skywellLayout
 };
 
 export function campaign(surfaceChapters){
-  return [...surfaceChapters,grottoChapter,skywellChapter,orchardChapter,brassworksChapter,stonewakeChapter];
+  return [...surfaceChapters,grottoChapter,skywellChapter,orchardChapter,brassworksChapter,stonewakeChapter,jungleChapter];
 }
 
 export function compileChapter(chapter,compiler){
@@ -57,6 +64,8 @@ export function compileChapter(chapter,compiler){
   level.movingPlatforms=design.movingPlatforms??[];
   level.machines=design.machines??[];
   level.sceneFeatures=design.sceneFeatures??[];
+  level.ropes=design.ropes??[];
+  level.monkeys=design.monkeys??[];
   level.recallBelow=design.recallBelow??Infinity;
   return level;
 }

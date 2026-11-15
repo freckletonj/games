@@ -80,6 +80,21 @@ movement keys and confirms with A or Jump. Press confirm again to continue
 with the confirmed players. Use the stick or arrow keys to move through the
 level grid and confirm to start. Escape or Start pauses during play.
 
+### Monkey Jungle
+
+Hold Up (player two uses 8) to grab a rope as it reaches you.
+Use Up and Down to climb. Tap the direction of travel as the rope swings
+through the bottom of its arc to gain speed, then Jump to release.
+The final bank is higher, so climb partway up before you swing and let go.
+Monkeys crouch before pouncing and can ride on your head until you jump.
+
+The terrain and rope anchors are authored in
+`levels/monkey-jungle.json`. Export the terrain mask with
+`node phaser/scripts/export-art-guides.mjs` from the repository root.
+Supply the mask and a Wonderwood style reference to the image model, then
+pack the panorama, monkey atlas, and rope with
+`python phaser/scripts/monkey-jungle-art.py PAINTING MONKEY_ATLAS ROPE`.
+
 ## Migration status
 
 This is a **new, real Phaser renderer and game loop**, not the old Canvas
@@ -112,7 +127,7 @@ recall** loop in the game itself (no direct player-state cheating). Pure
 physics tests cover slope snapping, one-way platform collision and swept
 projectile contact, and a browser smoke visits the built offline HTML.
 
-`tests/chapters.py` loads all five chapters in the real browser and saves
+`tests/chapters.py` loads the five original surface chapters and Monkey Jungle in Chromium and saves
 per-chapter screenshots and asserts that each chapter builds both
 atmospheric layers. License notices remain embedded in the standalone HTML.
 

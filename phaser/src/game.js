@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import './bootstrap.js';
 import {campaign,compileChapter} from './campaign.js';
-import {characters,mounts,riders,bounceBloom,captureOrb,fainted,floaters,backgrounds,sheets,silhouettes,ventBubbles,windColumn} from './assets.js';
+import {characters,mounts,riders,bounceBloom,captureOrb,fainted,floaters,jungleMonkey,jungleRope,backgrounds,sheets,silhouettes,ventBubbles,windColumn} from './assets.js';
 import {EFFECT_FRAMES,FAINTED_FRAME,FLOAT_FRAME,paintedAction,powerFrame,enemyTellFrame,
   paintedFootOrigin} from './action-art.js';
 import {MOUNTS,LOCATIONS,seatFor,stepMountedMotion,stepWildMount,landsOnMount} from './mounts.js';
@@ -12,6 +12,8 @@ import {triggerBloom,bloomFrame,BLOOM_COOLDOWN,BLOOM_ART} from './springboard.js
 import {makeVentBubbles,animateVentBubbles,VENT_BUBBLE_FRAME,
   makeThermals,makeWindSprite,animateWind,WIND_FRAME} from './traversal-art.js';
 import {stepPlayerMotion} from './player-motion.js';
+import {createRopes,stepRopes} from './rope-swing.js';
+import {createMonkeys,stepMonkeys,monkeyFrame} from './monkey-motion.js';
 import {TICK_MS,simulationTicks,queueInputEdges,withoutInputEdges} from './fixed-clock.js';
 import {poseFor,gesture} from './animation.js';
 import {feedTrust,RESPAWN_SECONDS,DISTRACTION_SECONDS} from './creatures.js';
@@ -84,6 +86,8 @@ class Wonderwood extends Phaser.Scene {
       frameWidth:riders.manifest.frameWidth,frameHeight:riders.manifest.frameHeight
     });
     this.load.image('capture-orb',captureOrb);
+    this.load.image('jungle-rope',jungleRope);
+    this.load.spritesheet('jungle-monkey',jungleMonkey,{frameWidth:192,frameHeight:192});
     this.load.spritesheet('wind-column',windColumn,{frameWidth:WIND_FRAME.width,frameHeight:WIND_FRAME.height});
     this.load.spritesheet('vent-bubbles',ventBubbles,{frameWidth:VENT_BUBBLE_FRAME,frameHeight:VENT_BUBBLE_FRAME});
     this.load.spritesheet('bounce-bloom',bounceBloom,{frameWidth:BLOOM_ART.width,frameHeight:BLOOM_ART.height});
@@ -147,6 +151,9 @@ class Wonderwood extends Phaser.Scene {
           trust:m.trust,rider:m.rider,grounded:m.grounded,flaps:m.flaps,
           action:m.action,frame:m.visual?.frame?.name}))||[],
         animalCount:this.animals?.length||0,
+        ropes:this.ropes.map(({id,angle,omega})=>({id,angle,omega})),
+        monkeys:this.monkeys.map(({id,x,y,state,perchedOn,visual})=>
+          ({id,x,y,state,perchedOn,frame:Number(visual.frame.name)})),
         platformCount:this.level?.platformSegments?.length||0,
         climbWallCount:this.level?.climbWalls?.length||0,
         worldWidth:this.worldW||0,
@@ -165,6 +172,7 @@ class Wonderwood extends Phaser.Scene {
         players:this.players?.map(p=>({x:p.x,y:p.y,face:p.face,vx:p.vx,vy:p.vy,
           floating:p.floating??false,action:p.action,frame:Number(p.visual?.frame?.name),
           texture:p.visual?.texture?.key,grounded:p.grounded,explorer:p.explorer,trap:p.trap?.kind??null,
+          rope:p.rope?.id??null,ropeGrip:p.rope?p.ropeGrip:null,
           onPlatform:p.onPlatform,jumps:p.jumps,flaps:p.flaps,food:FRUITS[p.food],form:p.form,
           caught:p.caught,health:p.health,sleep:p.sleep,
           checkpoint:p.checkpoint,bubble:p.bubble,mount:p.mount?.kind||null,
@@ -221,6 +229,8 @@ class Wonderwood extends Phaser.Scene {
     this.players=[];
     this.animals=[];
     this.mounts=[];
+    this.ropes=[];
+    this.monkeys=[];
     this.items=[];
     this.orbs=[];
     this.captureBursts=[];
@@ -488,6 +498,16 @@ class Wonderwood extends Phaser.Scene {
     this.windColumns=makeThermals(this,this.level.thermalVolumes,TILE);
     this.spawnObjects();
     this.spawnMounts();
+    this.ropes=createRopes(this.level.ropes??[]);
+    for(const rope of this.ropes){
+      rope.visual=this.add.image(...rope.anchor,'jungle-rope')
+        .setOrigin(.5,0).setDisplaySize(8,rope.length).setDepth(16)
+        .setRotation(-rope.angle);
+    }
+    this.monkeys=createMonkeys(this.level.monkeys??[],TILE,x=>this.groundAt(x));
+    for(const monkey of this.monkeys)
+      monkey.visual=this.add.image(monkey.x,monkey.y,'jungle-monkey',0)
+        .setOrigin(.5,164/192).setScale(.16).setDepth(28);
     this.confirmedExplorers.forEach((explorer,id)=>{
       if(explorer)this.makePlayer(id,explorer);
     });
@@ -530,7 +550,7 @@ class Wonderwood extends Phaser.Scene {
 
   animate(entity,name,action,delta){
     const manifest=characters[name].manifest;
-    const visibleAction=action!=='float'&&entity.gestureTime>0?entity.gesture:action;
+    const visibleAction=action!=='float'&&action!=='hang'&&entity.gestureTime>0?entity.gesture:action;
     const art=paintedAction(name,visibleAction);
     const textureName=art?.texture??'actor-'+name;
     if(entity.textureName!==textureName){
@@ -1263,6 +1283,7 @@ class Wonderwood extends Phaser.Scene {
 
   recall(p){
     p.onPlatform=null;p.launchSpeed=0;p.floatTime=0;p.floating=false;
+    p.rope=null;p.ropeLock=0;
     if(p.mount)this.dismount(p);
     this.clearTrap(p);p.trapGrace=0;p.gestureTime=0;
     p.x=p.checkpoint.x;p.y=p.checkpoint.y;p.vx=0;p.vy=0;
@@ -1356,6 +1377,8 @@ class Wonderwood extends Phaser.Scene {
       else if(event==='piston'){
         this.sparkle(p.x,p.y,0xffdf9a);
         this.flash('Steam launch!',950);
+      }else if(event==='ropePump'){
+        this.sparkle(p.x,p.y-23,0xffecc2);
       }else if(event==='bloomBoost'){
         gesture(p,'jump',.22);
         this.sparkle(p.x,p.y,0xffc6e8);
@@ -1379,7 +1402,7 @@ class Wonderwood extends Phaser.Scene {
     if(p.id===1&&this.players.length===2&&
       (Math.abs(p.x-this.players[0].x)>210||Math.abs(p.y-this.players[0].y)>145)){
       p.bubble=true;
-      p.onPlatform=null;
+      p.onPlatform=null;p.rope=null;
     }
   }
 
@@ -1395,6 +1418,7 @@ class Wonderwood extends Phaser.Scene {
       climbWalls:this.level.climbWalls,
       movingPlatforms:this.walkableMachines,
       rockPolygons:this.level.rockPolygons,
+      ropes:this.ropes,
       pushSpeed,
       blockHorizontal:this.puzzleObjects.length?
         (from,to,feet)=>blockPuzzleX(this.puzzleObjects,from,to,feet):null
@@ -1528,8 +1552,14 @@ class Wonderwood extends Phaser.Scene {
       }
       for(const object of settled)
         this.sparkle(object.x,object.platform[1],0xffe9ad);
-      for(const p of [...this.players])
-        this.movePlayer(p,tickActions[p.id],step);
+      const floor=x=>this.groundAt(x);
+      stepRopes(this.ropes,this.players,floor,step);
+      for(const rope of this.ropes)rope.visual.setRotation(-rope.angle);
+      for(const p of this.players)this.movePlayer(p,tickActions[p.id],step);
+      stepMonkeys(this.monkeys,this.players,tickActions,floor,this.level.recallBelow,step);
+      for(const monkey of this.monkeys)
+        monkey.visual.setPosition(monkey.x,monkey.y).setFrame(monkeyFrame(monkey))
+          .setFlipX(monkey.face<0).setDepth(monkey.perchedOn===null?28:34);
       this.updateMounts(step,tickTime);
       this.updateAnimals(step,tickTime);
       this.updatePowers(step);
@@ -1577,9 +1607,13 @@ class Wonderwood extends Phaser.Scene {
       lead.x<845?'Jump across the turning gears.':
       lead.x<1450?'Stand on the flashing piston and wait for the launch.':
         'Find the gate key.';
+    const jungleHint=lead.rope?
+      'Up / Down · climb   ·   Tap ← / → low to swing higher   ·   Jump · let go':
+      lead.x<1410?'Hold ↑ to grab a rope · P2 uses 8':'Find the key on the canopy shelf.';
     this.help.setText(lead.sleep?'R / LB · revive at camp':this.puzzleObjects.length?puzzleHint(this.puzzleObjects,lead,this.animals):
       this.chapter.id==='brassworks'?machineHint:
       this.chapter.id==='clockwork-orchard'?orchardHint:
+      this.chapter.id==='monkey-jungle'?jungleHint:
       this.chapter.id==='skywell-ascent'&&lead.x<50*TILE?
       lead.caught&&!lead.form?
         'T / Y · transform into your Glimmermoth':

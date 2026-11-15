@@ -1,4 +1,4 @@
-"""Inspect all five Phaser chapters under the actual 60 Hz browser loop."""
+"""Inspect the surface chapter samples under the actual 60 Hz browser loop."""
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parents[2]
 GAME = ROOT / "dist/wonderwood-phaser.html"
 CHAPTERS = [
     "first-forest", "crystal-coast", "starfall-summit",
-    "willow-wetlands", "cloud-gardens"
+    "willow-wetlands", "cloud-gardens", "monkey-jungle"
 ]
 
 
@@ -30,11 +30,15 @@ def main():
                 page.keyboard.up("h")
             page.locator(".ww-explorers button").first.click()
             page.locator("#ww-menu-continue").click()
-            page.locator("#ww-level-grid button").nth(i).click()
+            if chapter == "monkey-jungle":
+                page.get_by_role("button", name="Monkey Jungle").click()
+            else:
+                page.locator("#ww-level-grid button").nth(i).click()
 
             page.keyboard.down("Space")
             page.wait_for_function(
-                "window.__wonderwoodPhaser.snapshot().stage === " + str(i),
+                "chapter => window.__wonderwoodPhaser.snapshot().chapter === chapter",
+                arg=chapter,
                 timeout=20000,
             )
             page.keyboard.up("Space")
@@ -88,7 +92,7 @@ def main():
                     page.screenshot(path=str(ROOT / "dist" / f"phaser-meadow-{label}.png"))
                 page.set_viewport_size({"width": 960, "height": 540})
         browser.close()
-    print("All five worlds render and spawn in the standalone Phaser build: PASS")
+    print("Sampled worlds render and spawn in the standalone Phaser build: PASS")
 
 
 if __name__ == "__main__":
