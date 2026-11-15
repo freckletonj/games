@@ -41,7 +41,7 @@ const VIEW_W=480;
 const VIEW_H=270;
 const SKY={meadow:0xa4d9c2,coast:0xa8dbe0,summit:0x98a4ce};
 const FORMS={springaroo:'Double jump',tideling:'Swim and dive',skyling:'Four wingbeats',
-  mossback:'Honey',prismtail:'Bubbles',glimmermoth:'Hover',cloudwhisp:'Gust',emberkit:'Sprint and high jump',
+  mossback:'Honey',prismtail:'Bubbles',glimmermoth:'Four flaps and hover',cloudwhisp:'Four flaps and gust',emberkit:'Sprint and high jump',
   gravelback:'Push boulders',flintfist:'Stone punch'};
 const EXPLORERS={hero:'Original',princess:'Princess',steampunk:'Steampunk'};
 const EXPLORER_IDS=Object.keys(EXPLORERS);
@@ -57,8 +57,8 @@ const FORM_HINTS={
   skyling:'Tap Jump to flap · F / B to cast a gust',
   mossback:'F / B to throw sticky honey',
   prismtail:'F / B to float creatures in bubbles',
-  glimmermoth:'F / B for a long feather-hover',
-  cloudwhisp:'F / B to blow creatures back',
+  glimmermoth:'Tap Jump to flap · F / B to hover',
+  cloudwhisp:'Tap Jump to flap · F / B to cast a gust',
   emberkit:'Run fast · Jump to leap higher',
   gravelback:'Walk into a boulder to push it',
   flintfist:'F / B · punch cracked stone'
@@ -1268,6 +1268,7 @@ class Wonderwood extends Phaser.Scene {
     p.x=p.checkpoint.x;p.y=p.checkpoint.y;p.vx=0;p.vy=0;
     p.recalls++;p.bloomWindow=0;p.creatureBounceWindow=0;
     p.grounded=true;p.bubble=false;p.sleep=false;p.punchTicks=0;
+    p.jumps=0;p.flaps=0;p.flapWait=0;
     p.invincible=1.5;p.health=3;
     p.visual.setPosition(p.x,p.y);
     this.flash('Back at the last safe camp',1300);
@@ -1329,8 +1330,6 @@ class Wonderwood extends Phaser.Scene {
       this.board(p,nearbyMount);
     }else if(actions.transformPressed&&p.caught){
       this.changeForm(p,p.form?null:p.caught);
-      // Switching back and forth in midair cannot refill the ravine's flight budget.
-      if(!this.puzzleObjects.length||p.grounded){p.flaps=0;p.jumps=0;}
       this.flash(p.form?FORMsName(p.form)+' form':'Explorer form',1300);
     }
     if(p.punchTicks>0&&--p.punchTicks===0&&p.form==='flintfist')this.strikeWall(p);

@@ -311,19 +311,18 @@ illustration, encounter delight, or subjective game feel.
 
 ## Action and interaction fidelity
 
-The Phaser version reuses the existing painted `effects.webp` and
-`states.webp` atlases for bubble, honey, gust, spark, petal, splash,
-eight species-specific eating poses, and the explorer's sleep pose.
-Ordinary locomotion remains on the painted character atlases;
-intermediate wingbeats and several distinct action keyframes still need
-dedicated art.
+The painted creature atlases supply the running, aerial, and eating poses.
+The three explorers have dedicated surface swimming sheets. The fainted
+atlas covers all playable forms. Spring blooms, water vents, and wind
+columns have their own fixed-clock sprite sequences.
 
-Mossback, Prismtail, Skyling and Cloudwhisp cast **real**
-fixed-clock projectiles with finite ranges, swept creature contact and
-terrain collision. Honey can leave a temporary sticky puddle. Prismtail
-creates a floating trapped-creature bubble, wind applies eased physical
-knockback, and knockback/hostile dashes respect steep terrain. Hover and
-swimming, double-jump, and Emberkit’s sprint and high jump operate through their own movement controls.
+Mossback, Prismtail, Moonwing and Cloudwhisp cast fixed-clock projectiles
+with finite ranges and swept collision. Honey can leave a temporary sticky
+puddle. Prismtail floats trapped creatures in a bubble. Wind applies
+knockback, and knockback and hostile dashes respect steep terrain.
+Moonwing, Glimmermoth and Cloudwhisp can flap four times before landing or
+entering a thermal. Glimmermoth can also hover. Emberkit sprints and jumps
+higher with the ordinary movement controls.
 The creature-target and projectile rules are in `src/power-projectiles.js`,
 `src/creature-motion.js` and `src/gameplay-rules.js`.
 

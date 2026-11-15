@@ -3,6 +3,9 @@ import {landingY,platformTopAt,safeHorizontalX} from './physics.js';
 import {tryBloomBoost} from './springboard.js';
 import {sweepRockBody} from './cave-solids.js';
 
+const FLAPPING_FORMS=new Set(['skyling','glimmermoth','cloudwhisp']);
+const FLAP_LIMIT=4;
+
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
 // Mutates only simulation data. Phaser displays animations and effects from
@@ -36,6 +39,7 @@ export function stepPlayerMotion(p,actions,step,world){
     p.jumpBuffer=actions.jumpPressed?6:Math.max(0,p.jumpBuffer-step);
     const inWater=world.inWater(p.x,p.y-8);
     const swimmer=p.form==='tideling'&&inWater;
+    const canFlap=FLAPPING_FORMS.has(p.form);
     p.floatTime=(p.floatTime??0)+step;
     const basin=world.waterBodies?.find(b=>
       p.x>=b.start*world.tile&&p.x<=b.end*world.tile);
@@ -93,11 +97,11 @@ export function stepPlayerMotion(p,actions,step,world){
       }else if(actions.jumpPressed&&p.form==='springaroo'&&p.jumps===1){
         p.vy=-6.6;p.jumps=2;p.jumpBuffer=0;
         events.push('doubleJump');
-      }else if(actions.jumpPressed&&p.form==='skyling'&&p.flaps<4&&p.flapWait<=0){
+      }else if(actions.jumpPressed&&canFlap&&p.flaps<FLAP_LIMIT&&p.flapWait<=0){
         p.vy=-5.65;p.flaps++;p.flapWait=8;p.jumpBuffer=0;
         events.push('flap');
       }
-      if(!p.launchSpeed&&!actions.jump&&p.vy<-2.3&&p.form!=='skyling')p.vy+=.28*step;
+      if(!p.launchSpeed&&!actions.jump&&p.vy<-2.3&&!canFlap)p.vy+=.28*step;
       const hover=p.form==='glimmermoth'&&p.hover>0&&p.vy>0;
       p.vy+=(p.vy>=0 ? (hover ? .12 : .52) : .34)*step;
       // Hover must remain a real slow descent for its entire duration.
@@ -109,7 +113,7 @@ export function stepPlayerMotion(p,actions,step,world){
       p.y>c.y*world.tile&&p.y<(c.y+c.height)*world.tile);
     if(updraft){
       p.vy-=.48*step;
-      if(p.form==='skyling')p.flaps=0;
+      if(canFlap)p.flaps=0;
     }
     p.vy=clamp(p.vy,-11,7.5);
     // Scale horizontal speed only when the feet follow the heightfield.
