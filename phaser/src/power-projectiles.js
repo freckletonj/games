@@ -4,8 +4,7 @@ export const PROJECTILE_POWERS=Object.freeze({
   mossback:{speed:2.45,vy:-1.2,gravity:.085,life:84,radius:17,stun:3.7},
   prismtail:{speed:3,vy:-.35,gravity:-.006,life:78,radius:19,stun:3.2},
   skyling:{speed:3.8,vy:0,gravity:0,life:51,radius:18,stun:1.8,push:4.3},
-  cloudwhisp:{speed:3.8,vy:0,gravity:0,life:51,radius:18,stun:1.8,push:4.3},
-  emberkit:{speed:4.2,vy:-.25,gravity:.02,life:42,radius:14,stun:1.4}
+  cloudwhisp:{speed:3.8,vy:0,gravity:0,life:51,radius:18,stun:1.8,push:4.3}
 });
 export const HONEY_PUDDLE_TICKS=180;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
@@ -70,7 +69,7 @@ export function applyPowerHit(shot,animal){
   if(settings.push)animal.knockVX=Math.sign(shot.vx)*settings.push;
   return shot.kind==='prismtail'?'bubble':
     shot.kind==='mossback'?'honey':
-    settings.push?'gust':'spark';
+    'gust';
 }
 
 export function honeyPuddleCatches(puddle,animal,groundAt){

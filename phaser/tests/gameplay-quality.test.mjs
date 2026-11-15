@@ -53,9 +53,9 @@ test('Glimmermoth hover remains slow for more than two seconds',()=>{
   assert.ok(result.maxFallingSpeed<=.91,result);
 });
 
-test('Emberkit has a modest, measured speed bonus',()=>{
+test('Emberkit runs considerably faster',()=>{
   const ratio=metrics.emberkitSpeed.distanceRatio;
-  assert.ok(ratio>1.1&&ratio<1.2,`unexpected sprint ratio: ${ratio}`);
+  assert.ok(ratio>1.3&&ratio<1.45,`unexpected sprint ratio: ${ratio}`);
 });
 
 test('water vents provide a meaningful controlled lift within their authored column',()=>{
@@ -66,8 +66,8 @@ test('water vents provide a meaningful controlled lift within their authored col
   assert.equal(result.rejectsDistantPlayer,true);
 });
 
-test('all five transformation spells hit through flight and produce distinct impacts',()=>{
-  assert.equal(Object.keys(metrics.powerProjectiles).length,5);
+test('all four transformation spells hit through flight and produce distinct impacts',()=>{
+  assert.equal(Object.keys(metrics.powerProjectiles).length,4);
   for(const [kind,impact] of Object.entries(metrics.powerProjectiles)){
     assert.ok(impact.hitAtTick>=8&&impact.hitAtTick<45,{kind,impact});
     assert.ok(impact.travel>30,{kind,impact});

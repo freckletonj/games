@@ -1,12 +1,10 @@
 // Illustrated action vocabulary from src/platform/illustrations.js. Keep the
-// Phaser remake aligned with the existing 4x2 effects and 3x3 state atlases.
+// Phaser remake aligned with the existing 4x2 effects atlas.
+import floatPlan from '../assets/poses/floaters.json' with {type:'json'};
+
 export const EFFECT_FRAMES=Object.freeze({
   honey:0,honeyPuddle:1,bubble:2,bubbleTrap:3,
   gust:4,petal:5,splash:6,spark:7
-});
-const EATING_FRAMES=Object.freeze({
-  springaroo:0,tideling:1,skyling:2,mossback:3,
-  prismtail:4,glimmermoth:5,cloudwhisp:6,emberkit:7
 });
 
 const FAINTED_FORMS=[
@@ -15,13 +13,21 @@ const FAINTED_FORMS=[
 ];
 export const FAINTED_FRAME={width:160,height:96};
 
+export const FLOAT_FRAME={width:floatPlan.frame[0],height:floatPlan.frame[1]};
+
 export function paintedAction(kind,action){
+  if(action==='float'){
+    const row=floatPlan.explorers.indexOf(kind);
+    if(row>=0)return {
+      texture:'floaters',frame:row*floatPlan.columns,
+      clip:floatPlan.animations.float,width:FLOAT_FRAME.width*floatPlan.worldScale,
+      originY:floatPlan.origin[1]/floatPlan.cell
+    };
+  }
   if(action==='sleep'){
     const frame=FAINTED_FORMS.indexOf(kind);
     if(frame>=0)return {texture:'fainted',frame,width:frame<3?47:49,originY:91/96};
   }
-  if(action==='eat'&&EATING_FRAMES[kind]!==undefined)
-    return {texture:'painted-states',frame:EATING_FRAMES[kind],width:43,height:39,originY:1};
   return null;
 }
 
@@ -39,18 +45,11 @@ export const PROP_FEET=Object.freeze({
   snack:229,checkpoint:243,exit:246
 });
 export const SETPIECE_FEET=Object.freeze({
-  bounceBloom:162,bubbleVent:211,windRing:155,
   honeyPuddle:241
 });
 export function paintedFootOrigin(kind){
   return (PROP_FEET[kind]??SETPIECE_FEET[kind]??ILLUSTRATION_FRAME_HEIGHT)/
     ILLUSTRATION_FRAME_HEIGHT;
-}
-
-export function setpieceFrame(kind){
-  return {bounceBloom:EFFECT_FRAMES.petal,
-    windRing:EFFECT_FRAMES.gust,
-    bubbleVent:EFFECT_FRAMES.bubble}[kind];
 }
 
 export function powerFrame(kind){
@@ -61,7 +60,6 @@ export function powerFrame(kind){
     mossback:EFFECT_FRAMES.honey,
     prismtail:EFFECT_FRAMES.bubble,
     glimmermoth:EFFECT_FRAMES.petal,
-    cloudwhisp:EFFECT_FRAMES.gust,
-    emberkit:EFFECT_FRAMES.spark
+    cloudwhisp:EFFECT_FRAMES.gust
   }[kind]??EFFECT_FRAMES.spark;
 }

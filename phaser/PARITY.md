@@ -15,7 +15,7 @@ This is an engineering ledger, not a claim that automated tests prove fun.
 | Springaroo double jump | Implemented | `tests/gameplay.py` |
 | Tidefox underwater swimming and surface breach | Implemented, needs water route tests | `src/game.js` |
 | Moonwing wingbeats; thermal refill | Implemented, needs aerial route tests | `src/game.js` |
-| Mossback honey / Prismtail bubble / Cloudwhisp gust / Emberkit stun | Implemented, approximate combat feel | `src/game.js` |
+| Mossback honey / Prismtail bubble / Cloudwhisp gust / Emberkit sprint and high jump | Implemented, approximate combat feel | `src/game.js` |
 | Glimmermoth slow-fall hover | Implemented | `src/game.js` |
 | Telegraph before damaging enemy dash; head-stomp | Implemented, enemy tactics simplified | `src/game.js` |
 | Picnic baskets restock finite fruit | Implemented | `tests/gameplay.py` |

@@ -28,8 +28,8 @@ row shows four different seated poses with a shared hip pivot. The near
 leg and boot are visible along the mount's flank.
 
 The princess uses a dedicated 1280 × 960 painting with the shared human
-poses. Her plum traveling coat, gold crown, and blonde braid carry across
-the locomotion and rider art. The locomotion atlas retains the shared
+poses. Her sapphire coat, gold embroidery, crimson cape, crown, and blonde braid
+carry across the locomotion, rider, and fainted art. The locomotion atlas retains the shared
 world-space foot origin and animation clips.
 
 Pack the model's painted alpha sheet and derive the runtime manifest from
@@ -65,3 +65,12 @@ rider row. Both use the existing frame bounds and pivots. The separate
 fainted atlas in `assets/generated/fainted.webp` has a ground-aligned pose
 for each playable explorer and creature form. The fainted animation gently
 scales the pose around its ground pivot.
+
+The surface float plan uses four side-view strokes and a shared waterline.
+Run `python phaser/scripts/character-pose-art.py floaters float-guide.png`.
+Supply each row of the guide and the corresponding explorer portrait to the
+image model. Register each painted row to the plan's waterline before packing
+the four strokes in explorer order. Keep the underwater fade and the
+surface ripple in alpha so the same poses work in every pool. The runtime
+origin sits 11 world pixels below the image waterline, matching the
+hero's floating physics position.

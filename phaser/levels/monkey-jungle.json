@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "id": "monkey-jungle",
+  "biome": "meadow",
+  "width": 104,
+  "height": 50,
+  "ridge": [[0,34],[23,34],[24,47],[34,47],[35,34],[48,34],[49,47],[60,47],[61,34],[75,34],[76,47],[87,47],[88,30],[104,30]],
+  "water": [],
+  "bridges": [],
+  "ledges": [[11,32,7],[90,28,8]],
+  "creatures": [["springaroo",9]],
+  "checkpoints": [20,40,67,92],
+  "snacks": [5,44,71,98],
+  "stars": [[14,31],[42,32],[96,27]],
+  "relic": ["springKey",96,27.5],
+  "landmarks": [],
+  "sections": [
+    {"id":"grove","range":[0,23],"challenge":"monkeys","goal":"Keep moving when a monkey crouches to pounce."},
+    {"id":"first-crossing","range":[23,48],"challenge":"swing","goal":"Grab a hanging rope and release near the far bank."},
+    {"id":"second-crossing","range":[48,75],"challenge":"timing","goal":"Tap in the direction of travel as the rope passes low."},
+    {"id":"canopy","range":[75,104],"challenge":"climb","goal":"Climb the last rope and release onto the higher shelf."}
+  ],
+  "recallBelow": 665,
+  "ropes": [
+    {"id":"fern-rope","anchor":[464,352],"length":202,"restAngle":-0.52},
+    {"id":"orchid-rope","anchor":[872,366],"length":196,"restAngle":-0.66},
+    {"id":"canopy-rope","anchor":[1304,381],"length":184,"restAngle":-0.73}
+  ],
+  "monkeys": [
+    {"x":15,"range":[11,21]},
+    {"x":39,"range":[36,46]},
+    {"x":65,"range":[62,73]},
+    {"x":99,"range":[90,103]}
+  ]
+}

@@ -121,3 +121,39 @@ test('land forms bob and jump from the surface while Tidefox can dive',()=>{
   assert.ok(swimmer.y>460);
   assert.equal(swimmer.floating,false);
 });
+
+
+test('Emberkit reaches a higher apex from the same ground jump',()=>{
+  const jump=player=>{
+    stepPlayerMotion(player,{...controls,jump:true,jumpPressed:true},1,world);
+    let apex=player.y;
+    for(let i=0;i<44;i++){
+      stepPlayerMotion(player,{...controls,jump:true},1,world);
+      apex=Math.min(apex,player.y);
+    }
+    return 500-apex;
+  };
+  assert.ok(jump(explorer('emberkit'))>jump(explorer())*1.65);
+});
+
+
+test('Moonwing, Glimmermoth and Cloudwhisp get four flaps without an airborne refill',()=>{
+  for(const form of ['skyling','glimmermoth','cloudwhisp']){
+    const p=explorer(form);
+    p.y=480;p.grounded=false;p.coyote=0;p.jumps=1;
+    for(let flap=0;flap<4;flap++){
+      const result=stepPlayerMotion(p,{...controls,jumpPressed:true},1,world);
+      assert.ok(result.events.includes('flap'),form);
+      for(let i=0;i<8;i++)stepPlayerMotion(p,controls,1,world);
+    }
+    p.form=null;
+    stepPlayerMotion(p,controls,1,world);
+    p.form=form;
+    const exhausted=stepPlayerMotion(p,{...controls,jumpPressed:true},1,world);
+    assert.ok(!exhausted.events.includes('flap'),form);
+    assert.equal(p.flaps,4,form);
+    for(let i=0;i<100&&!p.grounded;i++)stepPlayerMotion(p,controls,1,world);
+    assert.ok(p.grounded,form);
+    assert.equal(p.flaps,0,form);
+  }
+});

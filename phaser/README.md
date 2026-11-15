@@ -80,6 +80,21 @@ movement keys and confirms with A or Jump. Press confirm again to continue
 with the confirmed players. Use the stick or arrow keys to move through the
 level grid and confirm to start. Escape or Start pauses during play.
 
+### Monkey Jungle
+
+Hold Up (player two uses 8) to grab a rope as it reaches you.
+Use Up and Down to climb. Tap the direction of travel as the rope swings
+through the bottom of its arc to gain speed, then Jump to release.
+The final bank is higher, so climb partway up before you swing and let go.
+Monkeys crouch before pouncing and can ride on your head until you jump.
+
+The terrain and rope anchors are authored in
+`levels/monkey-jungle.json`. Export the terrain mask with
+`node phaser/scripts/export-art-guides.mjs` from the repository root.
+Supply the mask and a Wonderwood style reference to the image model, then
+pack the panorama, monkey atlas, and rope with
+`python phaser/scripts/monkey-jungle-art.py PAINTING MONKEY_ATLAS ROPE`.
+
 ## Migration status
 
 This is a **new, real Phaser renderer and game loop**, not the old Canvas
@@ -112,7 +127,7 @@ recall** loop in the game itself (no direct player-state cheating). Pure
 physics tests cover slope snapping, one-way platform collision and swept
 projectile contact, and a browser smoke visits the built offline HTML.
 
-`tests/chapters.py` loads all five chapters in the real browser and saves
+`tests/chapters.py` loads the five original surface chapters and Monkey Jungle in Chromium and saves
 per-chapter screenshots and asserts that each chapter builds both
 atmospheric layers. License notices remain embedded in the standalone HTML.
 
@@ -311,19 +326,18 @@ illustration, encounter delight, or subjective game feel.
 
 ## Action and interaction fidelity
 
-The Phaser version reuses the existing painted `effects.webp` and
-`states.webp` atlases for bubble, honey, gust, spark, petal, splash,
-eight species-specific eating poses, and the explorer's sleep pose.
-Ordinary locomotion remains on the painted character atlases;
-intermediate wingbeats and several distinct action keyframes still need
-dedicated art.
+The painted creature atlases supply the running, aerial, and eating poses.
+The three explorers have dedicated surface swimming sheets. The fainted
+atlas covers all playable forms. Spring blooms, water vents, and wind
+columns have their own fixed-clock sprite sequences.
 
-Mossback, Prismtail, Skyling, Cloudwhisp and Emberkit cast **real**
-fixed-clock projectiles with finite ranges, swept creature contact and
-terrain collision. Honey can leave a temporary sticky puddle. Prismtail
-creates a floating trapped-creature bubble, wind applies eased physical
-knockback, and knockback/hostile dashes respect steep terrain. Hover and
-swimming/double-jump operate through their own movement controls.
+Mossback, Prismtail, Moonwing and Cloudwhisp cast fixed-clock projectiles
+with finite ranges and swept collision. Honey can leave a temporary sticky
+puddle. Prismtail floats trapped creatures in a bubble. Wind applies
+knockback, and knockback and hostile dashes respect steep terrain.
+Moonwing, Glimmermoth and Cloudwhisp can flap four times before landing or
+entering a thermal. Glimmermoth can also hover. Emberkit sprints and jumps
+higher with the ordinary movement controls.
 The creature-target and projectile rules are in `src/power-projectiles.js`,
 `src/creature-motion.js` and `src/gameplay-rules.js`.
 
@@ -337,7 +351,7 @@ terrain. The on-screen help tracks the active transformation.
 `tests/gameplay-quality.test.mjs` guard art mapping, impact, projectiles,
 inclines, bubble lift, swim currents, hovering and target selection.
 The deterministic quality report uses **schema version 2**, including
-impact travel ticks for all five offensive powers and slope speeds for
+impact travel ticks for all four offensive powers and slope speeds for
 both mounts. These metrics are regression limits, not a substitute for
 watching actual gameplay.
 

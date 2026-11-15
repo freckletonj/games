@@ -4,7 +4,7 @@
 export const bindings = [
   {left:['A','LEFT'],right:['D','RIGHT'],up:['UP'],down:['S','DOWN'],jump:['W','SPACE'],
    food:['F'],capture:['G'],transform:['T'],next:['E'],recall:['C'],revive:['R'],pause:['ESC']},
-  {left:['J'],right:['L'],up:[],down:['K'],jump:['I'],
+  {left:['J'],right:['L'],up:['EIGHT'],down:['K'],jump:['I'],
    food:['O'],capture:['P'],transform:['U'],next:['M'],recall:['N'],revive:['Y'],pause:['ESC']}
 ];
 
