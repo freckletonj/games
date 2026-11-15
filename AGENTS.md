@@ -51,7 +51,8 @@ for the explorer, mount, and rider pose plans.
 - Use the largest in-game display size, including camera zoom, to choose
   the source size. Inspect existing assets at that size and prioritize
   visibly soft art and inconsistent poses. Repaint from references at
-  native resolution so the larger texture contains new detail.
+  native resolution so the larger texture contains new detail. Include the
+  legacy canvas backing scale and any per-object stretch in the estimate.
 - Declare the action frames and pivots first. Give the image model the
   exported pose guide and an approved appearance reference. Review every
   true-alpha pose over light and dark backgrounds and play the full clips
@@ -61,13 +62,21 @@ for the explorer, mount, and rider pose plans.
 - Refine panoramas in overlapping crops of one approved composition.
   Use the same crop coordinates for the artwork and material guide and
   supply an approved neighbor as each new crop's reference. Keep native
-  patch detail, check overlaps before stitching, and preserve approved
-  terrain contacts. Where a refinement shifts a ledge, feather a wide
-  enough band of the approved painting around it to remove the duplicate.
+  patch detail and compare shared landmarks before stitching. Register a
+  shifted crop against the approved neighbor before feathering the overlap.
+  Preserve approved terrain contacts. Where a refinement shifts a ledge,
+  feather a wide enough band of the approved painting around it to remove
+  the duplicate.
   Stitch wide panoramas before cutting contiguous runtime strips. The game
   scales the strips together to the original world bounds. Follow the
   [First Forest and Crystal Coast examples](phaser/ART-DIRECTION.md) and
   inspect joins, ledges, and shorelines at gameplay zoom with **V**.
+- Pack moving cutouts for their largest pose. Check the top of walkable
+  cutouts at the authored landing Y and check true alpha during rotations
+  and extensions. Pack tiled textures at backing resolution and scale the
+  sampler so repeat pitch and motion stay in world units. Check the packed
+  art in context, including the transition from static to moving surfaces.
+  See [the Brassworks](phaser/BRASSWORKS-ART.md) for the tread and piston.
 - Check texture dimensions against the renderer's 4096-pixel limit and
   compare the standalone build size before and after. Commit verified
   assets individually with their pose data or registration changes.
@@ -93,4 +102,5 @@ for the explorer, mount, and rider pose plans.
 - Deliver `dist/wonderwood-phaser.html` in chat as a file with a unique
   filename. Keep generated builds out of GitHub. For source changes, use
   authenticated Git when available or the connected GitHub app for bounded
-  changes. Never paste access tokens into chat.
+  changes. Compare uploaded blob hashes with the local files, then build
+  from the fetched branch head. Never paste access tokens into chat.
