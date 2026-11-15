@@ -2,10 +2,8 @@
 """Bake or verify the selected Ancient Sanctuary static painting layers.
 
 Skywell's 3520x2048 guide is the only authority for the three alpha channels.
-The user-selected model output has 1644x957 native pixels; resizing here is
-EXPLICITLY a visual prototype, not a high-resolution refinement pipeline.
-Use stitch-cave-painting.py + extract-painted-layers.py for genuine native
-full-world image-generation refinement.
+The active source is a native-detail composition stitched from overlapping
+refinements of the user-selected Ancient Sanctuary painting.
 
 First run: node phaser/scripts/export-cave-guides.mjs
 Verify checked-in binary art:
@@ -57,15 +55,15 @@ def main():
         print('Skywell Ancient Sanctuary: all 3 committed alpha layers match physics')
         return
 
-    with Image.open(DEST/'skywell-ancient-source.webp') as source:
-        if source.size!=(1644,957):
-            raise ValueError('Expected the selected 1644x957 generated painting')
-        scene=source.convert('RGB').resize((3520,2048),Image.Resampling.LANCZOS)
+    with Image.open(DEST/'skywell-ancient-refined.webp') as source:
+        if source.size!=masks['solid'].size:
+            raise ValueError('The refined painting must match the Skywell world')
+        scene=source.convert('RGB')
     for kind in MATERIALS:
         mask=masks[kind]
         layer=scene.convert('RGBA')
         layer.putalpha(mask)
-        layer.save(DEST/f'painted-{kind}.webp','WEBP',quality=88,method=6)
+        layer.save(DEST/f'painted-{kind}.webp','WEBP',quality=92,method=6)
         print('Wrote',DEST/f'painted-{kind}.webp')
 
 

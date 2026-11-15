@@ -24,5 +24,33 @@
     "solid": "painted-solid.webp"
   },
   "parallax": false,
-  "note": "Image model output is 1644x957 native pixels and has been resampled for 3520x2048 world registration; the game asset is not native 3520x2048 generated detail. All layer RGB is from the same original illustration; all alpha is code-derived."
+  "note": "All three active layers use the same six-crop refinement. The solid and water alpha masks come from authored collision. The air alpha is their complement.",
+  "refinement": {
+    "source": "phaser/assets/generated/skywell-ancient/skywell-ancient-refined.webp",
+    "pixels": [
+      3520,
+      2048
+    ],
+    "nativeCropPixels": [
+      1366,
+      1152
+    ],
+    "cropSize": [
+      1328,
+      1120
+    ],
+    "x": [
+      0,
+      1096,
+      2192
+    ],
+    "y": [
+      0,
+      928
+    ],
+    "overlap": [
+      232,
+      192
+    ]
+  }
 }

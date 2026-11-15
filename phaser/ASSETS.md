@@ -159,12 +159,10 @@ solid and water masks define the alpha channels. Open air is the complement
 of both masks, with no alpha overlap. All three draw in the original world
 coordinates with **no parallax**, preserving accurate geometry alignment.
 
-The accepted *style* is not yet native-resolution final art: its RGB was
-resampled from the 1644 × 957 source, so final detail must later come from
-overlapping world-space image-model refinement. The rejected
-opaque Skywell draft, its source copy, and the obsolete wedge compositor
-were removed from the working tree. Their history remains in Git, rather
-than being loaded or kept as redundant assets.
+All three layers use the same 3520 × 2048 composition stitched from six
+overlapping refinements of the selected 1644 × 957 painting. The refined
+source is `skywell-ancient-refined.webp`. The [cave art workflow](CAVE-ART-PIPELINE.md)
+records the crop coordinates, overlap, and alpha verification.
 
 Regenerate or validate the alpha against freshly exported materials with
 `scripts/bake-selected-skywell.py`. The separate

@@ -35,6 +35,7 @@ test('chosen Ancient Sanctuary painting is a real native-alpha, world-aligned th
   const provenance=JSON.parse(readFileSync(resolve(
     root,'skywell-ancient/art-provenance.json')));
   assert.deepEqual(provenance.sourcePixels,[1644,957]);
+  assert.deepEqual(provenance.refinement.pixels,[3520,2048]);
   assert.deepEqual(provenance.worldPixels,[3520,2048]);
   assert.equal(provenance.geometry,'compileCave(skywellLayout)');
   assert.deepEqual(Object.keys(selected).sort(),[
@@ -55,4 +56,8 @@ test('chosen Ancient Sanctuary painting is a real native-alpha, world-aligned th
   assert.equal(source.toString('ascii',12,16),'VP8 ');
   assert.equal(source.readUInt16LE(26)&0x3fff,1644);
   assert.equal(source.readUInt16LE(28)&0x3fff,957);
+  const refined=readFileSync(resolve(here,'../../',provenance.refinement.source));
+  assert.equal(refined.toString('ascii',12,16),'VP8 ');
+  assert.equal(refined.readUInt16LE(26)&0x3fff,3520);
+  assert.equal(refined.readUInt16LE(28)&0x3fff,2048);
 });

@@ -84,13 +84,11 @@ which would render a second misaligned copy of the physical cave.
 ## Put the approved RGBA images into the actual HTML build
 
 Only assets named in
-`phaser/assets/generated/approved-scene-art.json` are activated. For playable Skywell, the registry now selects the user's **Ancient Sanctuary**
-painting as a **preview-quality composited scene**, with world-locked air,
-water, and solid RGBA images and backgroundScrollFactor=1. The image was
-generated at 1644 × 957 and resampled to 3520 × 2048; this is NOT genuine
-native full-world detail. The vaulted rock study still lacks matching art. After art approval, add a record for the **registered, actual
-playable chapter ID** with `solid` and `water` paths; `background` is
-optional:
+`phaser/assets/generated/approved-scene-art.json` are activated. Playable
+Skywell uses a **3520 × 2048 native-detail composition** with world-locked
+air, water, and solid RGBA images and `backgroundScrollFactor` set to 1.
+The vaulted rock study still needs its own matching art. Register an
+approved chapter with `solid` and `water` paths and an optional `background`.
 
 ```json
 {
@@ -134,6 +132,8 @@ at `phaser/assets/generated/skywell-ancient/`:
 
 - `skywell-ancient-source.webp`: faithful WebP copy of the selected
   1644 × 957 generated image.
+- `skywell-ancient-refined.webp`: the active 3520 × 2048 composition,
+  assembled from six overlapping native-detail paintings.
 - `painted-solid.webp`: the whole-world solid rock, one-way ledge, and
   climb-wall image, with alpha derived only from `compileCave(skywellLayout)`.
 - `painted-water.webp`: the same composition, clipped to code-defined
@@ -147,9 +147,12 @@ The actual game renderer loads and draws all three; there are no vector
 scenery sprites in normal play. The earlier opaque Skywell image and wedge compositor were removed from
 the working tree; their provenance is preserved in Git history.
 
-The selected original is smaller than the world. Its resampling enables
-pixel-aligned inspection at 3520 × 2048, but is not an acceptable replacement
-for the later nine native-detail refinement crops. Run
+For the refinement, align the selected original to the full guide and crop
+both into a 3 × 2 grid of 1328 × 1120 views. Place the cuts at x 0, 1096,
+and 2192 and y 0 and 928. Repaint the six crops, match their broad color to
+the approved source, and protect the material contacts before stitching
+with 232 pixels of horizontal and 192 pixels of vertical overlap. Bake
+all three layers from this one composition. Run
 `python phaser/scripts/bake-selected-skywell.py --verify` after exporting
 guides to confirm that all three alpha channels still match compiled physics.
 Use `--write` if the authored Skywell geometry changes.
