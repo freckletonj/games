@@ -28,14 +28,20 @@ with sync_playwright() as playwright:
         const visible=pixels.filter((value,index)=>index%4===3&&value>32).length;
         return [name,painted,visible];
       });
-      const frames=Object.values(WW_EMBEDDED_ILLUSTRATIONS).map(url=>{
+      const frames=Object.fromEntries(Object.entries(WW_EMBEDDED_ILLUSTRATIONS).map(([name,url])=>{
         const image=new Image();image.src=url;
-        return [image.naturalWidth,image.naturalHeight];
-      });
+        return [name,[image.naturalWidth,image.naturalHeight]];
+      }));
       return {counts,frames};
     }""")
     assert len(result['counts']) == 41,result
-    assert result['frames'] == [[720,540]]*4+[[288,288]],result['frames']
+    assert result['frames'] == {
+        'effects': [720, 540],
+        'flora': [1440, 1080],
+        'landmarks': [1920, 1440],
+        'props': [720, 540],
+        'states': [576, 576],
+    }, result['frames']
     assert all(painted and pixels>50 for name,painted,pixels in result['counts']),result['counts']
 
     # Renderer uses the same real illustrations for gates, campfires, collectibles
