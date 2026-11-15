@@ -127,7 +127,7 @@ def pack(args, recipe, layout, scene):
     # One complete repeating painted chevron becomes the scrolling belt tread.
     tread_box = tuple(round(fraction * extent) for fraction, extent in
                       zip((.287, .109, .374, .385), (*belt.size, *belt.size)))
-    tread = belt.crop(tread_box).resize((32, 11), RESAMPLE)
+    tread = belt.crop(tread_box).resize((64, 22), RESAMPLE)
     tread.convert("RGB").save(args.output / "feed-tread.webp", lossless=True)
 
 
