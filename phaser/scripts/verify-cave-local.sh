@@ -23,7 +23,7 @@ if [[ "${PLAYWRIGHT_FIREFOX:-0}" == 1 ]]; then
 fi
 
 if [[ "${1:-focused}" == full ]]; then
-  for suite in gameplay dynamics creature_bounce water-slope mounts complete_meadow chapters; do
+  for suite in gameplay dynamics coop_pickups creature_bounce water-slope mounts complete_meadow chapters; do
     python -u phaser/scripts/run-playwright-inline.py "phaser/tests/$suite.py"
   done
 fi

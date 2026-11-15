@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {stepPlayerMotion} from '../src/player-motion.js';
 import {triggerBloom,BLOOM_BOOST} from '../src/springboard.js';
+import {takePickup} from '../src/pickups.js';
 
 const world={
   width:2200,height:900,tile:16,
@@ -112,6 +113,7 @@ test('land forms bob and jump from the surface while Tidefox can dive',()=>{
     assert.ok(depths.every(y=>y>408&&y<414));
     const jump=stepPlayerMotion(p,{...controls,jump:true,jumpPressed:true},1,pool);
     assert.equal(jump.action,'jump');
+    assert.ok(jump.events.includes('waterJump'));
     assert.ok(p.vy<-5);
   }
   const swimmer=explorer('tideling');
@@ -133,7 +135,9 @@ test('Emberkit reaches a higher apex from the same ground jump',()=>{
     }
     return 500-apex;
   };
-  assert.ok(jump(explorer('emberkit'))>jump(explorer())*1.65);
+  const human=jump(explorer());
+  assert.ok(human>jump(explorer('springaroo'))*1.1);
+  assert.ok(jump(explorer('emberkit'))>human*1.5);
 });
 
 
@@ -156,4 +160,50 @@ test('Moonwing, Glimmermoth and Cloudwhisp get four flaps without an airborne re
     assert.ok(p.grounded,form);
     assert.equal(p.flaps,0,form);
   }
+});
+
+
+test('dandelion increases takeoff speed and slows the descent',()=>{
+  const regular=explorer(),boosted=explorer();
+  takePickup(boosted,'dandelion');
+  assert.equal(boosted.dandelion,300);
+  const jump={...controls,jump:true,jumpPressed:true};
+  stepPlayerMotion(regular,jump,1,world);
+  const result=stepPlayerMotion(boosted,jump,1,world);
+  assert.deepEqual(result.events,['jump']);
+  assert.ok(boosted.vy<regular.vy-1.3);
+  for(const player of [regular,boosted]){
+    player.y=390;
+    player.vy=1;
+  }
+  for(let tick=0;tick<12;tick++){
+    stepPlayerMotion(regular,controls,1,world);
+    stepPlayerMotion(boosted,controls,1,world);
+  }
+  assert.ok(boosted.y<regular.y-20);
+  assert.ok(boosted.vy<=2.1);
+});
+
+test('ice water preserves grounded momentum after releasing movement',()=>{
+  const regular=explorer(),icy=explorer();
+  takePickup(icy,'iceWater');
+  assert.equal(icy.iceWater,300);
+  regular.vx=icy.vx=2.3;
+  for(let tick=0;tick<20;tick++){
+    stepPlayerMotion(regular,controls,1,world);
+    stepPlayerMotion(icy,controls,1,world);
+  }
+  assert.equal(regular.vx,0);
+  assert.ok(icy.vx>1);
+  assert.ok(icy.x>regular.x+20);
+});
+
+test('the toadstool springs the player clear of their support',()=>{
+  const player=explorer();
+  player.onPlatform='ledge';
+  takePickup(player,'toadstool');
+  assert.equal(player.onPlatform,null);
+  assert.equal(player.grounded,false);
+  stepPlayerMotion(player,controls,1,world);
+  assert.ok(player.y<492);
 });

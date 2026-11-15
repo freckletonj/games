@@ -80,6 +80,18 @@ movement keys and confirms with A or Jump. Press confirm again to continue
 with the confirmed players. Use the stick or arrow keys to move through the
 level grid and confirm to start. Escape or Start pauses during play.
 
+### Co-op and early pickups
+
+The camera pulls back as the explorers spread out. At the zoom limit,
+player two floats after player one in a bubble. Player two can press I or
+gamepad A to pop it once the bubble is close enough to rejoin safely.
+Player one can keep exploring and finish the chapter while the bubble follows.
+
+Mosslight Meadow, Crystal Coast, and Starfall Summit have three playful
+pickups. Dandelions boost jumps and slow falls for five seconds. Ice water
+puts the explorer on slippery ice cubes for five seconds. Bouncy toadstools
+give an immediate spring as you touch them.
+
 ### Monkey Jungle
 
 Hold Up (player two uses 8) to grab a rope as it reaches you.

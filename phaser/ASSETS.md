@@ -51,6 +51,15 @@ slope materials, props and chapter backgrounds from the repo's `src/assets/`.
 The Phaser renderer **does not use the original low-resolution Kenney tree/pine/
 bush PNGs as main scenery**. They clashed with the hand-painted sprites.
 
+## Early-chapter pickups
+
+`phaser/assets/generated/playful-pickups.webp` contains six transparent
+storybook sprites generated with OpenAI image generation and packed into
+144 px square cells. In row order they show the dandelion, ice water,
+toadstool, seed fluff, ice cube, and spores. The follow bubble uses the
+existing painted vent atlas, and the water jump uses the painted splash
+from the effects atlas.
+
 ## Historical ArtByte attribution
 
 Earlier Wonderwood revisions used cropped, scaled and tinted images from
