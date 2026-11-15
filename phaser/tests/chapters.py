@@ -28,13 +28,9 @@ def main():
                     "window.__wonderwoodPhaser.snapshot().stage === -1"
                 )
                 page.keyboard.up("h")
-                page.wait_for_timeout(90)
-                page.keyboard.down("d")
-                page.wait_for_function(
-                    "window.__wonderwoodPhaser.snapshot().choice === " + str(i)
-                )
-                page.keyboard.up("d")
-                page.wait_for_timeout(90)
+            page.locator(".ww-explorers button").first.click()
+            page.locator("#ww-menu-continue").click()
+            page.locator("#ww-level-grid button").nth(i).click()
 
             page.keyboard.down("Space")
             page.wait_for_function(
@@ -58,8 +54,10 @@ def main():
             for index, layer in enumerate(art["layers"]):
                 assert layer["textureKey"] == f"scene-{chapter}-scene-{index}", layer
                 assert layer["origin"] == [right, 0] and layer["scrollFactor"] == 1, layer
-                assert layer["sourcePixels"] == layer["worldPixels"], layer
-                assert layer["worldPixels"][0] <= 4096, layer
+                sourceWidth, sourceHeight = layer["sourcePixels"]
+                worldWidth, worldHeight = layer["worldPixels"]
+                assert worldWidth <= sourceWidth <= 4096, layer
+                assert worldHeight <= sourceHeight <= 4096, layer
                 right += layer["worldPixels"][0]
             assert right == state["worldWidth"], art
             page.keyboard.press("v")
@@ -76,7 +74,7 @@ def main():
                     page.set_viewport_size({"width": width, "height": height})
                     page.wait_for_timeout(110)
                     hud = page.locator("#ww-ui").bounding_box()
-                    canvas = page.locator("canvas").bounding_box()
+                    canvas = page.locator("#game canvas").bounding_box()
                     for axis in ("x", "y", "width", "height"):
                         assert abs(hud[axis] - canvas[axis]) < 3, (
                             label, axis, hud, canvas

@@ -19,7 +19,9 @@ def main():
         page.goto(GAME.as_uri()+"#skywell-ascent",wait_until="load")
         page.wait_for_function(
             "window.__wonderwoodPhaser?.snapshot().stage === -1",timeout=30000)
-        assert page.locator("#ww-menu-chapter").inner_text()=="Skywell Ascent"
+        page.locator(".ww-explorers button").first.click()
+        page.locator("#ww-menu-continue").click()
+        assert page.locator("#ww-level-grid [aria-pressed=true]").inner_text()=="Skywell Ascent"
         page.locator("#ww-menu-play").click()
         page.wait_for_function(
             "window.__wonderwoodPhaser.snapshot().chapter === 'skywell-ascent'",
@@ -100,22 +102,31 @@ def main():
         page.wait_for_function(
             "window.__wonderwoodPhaser.snapshot().players[0].x > "+str(target),
             timeout=20000)
-        # Reach the first authored wall by normal input, then press Jump,
-        # release it, and press again to spring away from the rock face.
-        page.keyboard.down("d")
+        # Jump from the entry pool onto the first shelf, then exercise the
+        # two-press wall jump at the taller, dry face beyond it.
         page.wait_for_function(
             "window.__wonderwoodPhaser.snapshot().players[0].x > 425",
             timeout=30000)
         page.keyboard.down("w")
-        initial=page.evaluate(
-            "window.__wonderwoodPhaser.snapshot().simulationSeconds")
         page.wait_for_function(
-            "window.__wonderwoodPhaser.snapshot().simulationSeconds >= "+str(initial+.12),
+            "window.__wonderwoodPhaser.snapshot().players[0].x > 460",
             timeout=30000)
         page.keyboard.up("w")
         page.wait_for_function(
-            "window.__wonderwoodPhaser.snapshot().simulationSeconds >= "+str(initial+.16),
+            """() => {
+                const p = window.__wonderwoodPhaser.snapshot().players[0];
+                return p.x >= 688 && p.grounded;
+            }""",
             timeout=30000)
+        page.keyboard.down("w")
+        page.wait_for_function(
+            "window.__wonderwoodPhaser.snapshot().players[0].vy < -2",
+            timeout=30000)
+        page.keyboard.up("w")
+        released=page.evaluate("window.__wonderwoodPhaser.snapshot().simulationSeconds")
+        page.wait_for_function(
+            "(t) => window.__wonderwoodPhaser.snapshot().simulationSeconds > t",
+            arg=released+.03,timeout=30000)
         page.keyboard.down("w")
         page.wait_for_function(
             "window.__wonderwoodPhaser.snapshot().players[0].wallJumps > 0",

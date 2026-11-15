@@ -180,7 +180,9 @@ WW.scenery = (() => {
     // the centerline/kaleidoscope artifacts of mirrored 128px terrain swatches.
     // Fine-grained, native-pixel brush detail. The old 320px repeat was
     // nearly a full camera wide, making leaf/rock swatches enormous.
-    const px=64,py=top?16:64; // fine brush detail; cap repeats at exact tile-row pitch
+    const repeatWidth=64,repeatHeight=top?16:64;
+    const texelsPerUnit=3; // The legacy canvas renders three pixels per world unit.
+    const px=repeatWidth*texelsPerUnit,py=repeatHeight*texelsPerUnit;
     const canvas=document.createElement('canvas');
     canvas.width=px;canvas.height=py;
     const g=canvas.getContext('2d',{willReadFrequently:true});
@@ -189,7 +191,7 @@ WW.scenery = (() => {
     const imageData=g.getImageData(0,0,px,py);
     const pixels=imageData.data;
     const sample=new Uint8ClampedArray(pixels);
-    const horizontal=Math.min(32,Math.floor(px/5));
+    const horizontal=texelsPerUnit*Math.min(32,Math.floor(repeatWidth/5));
     for(let y=0;y<py;y++)for(let i=0;i<horizontal;i++){
       const weight=.5-.5*Math.cos(Math.PI*i/horizontal);
       const left=(y*px+i)*4,right=(y*px+px-1-i)*4;
@@ -200,7 +202,7 @@ WW.scenery = (() => {
       }
     }
     sample.set(pixels);
-    const vertical=Math.min(top?4:32,Math.floor(py/5));
+    const vertical=texelsPerUnit*Math.min(top?4:32,Math.floor(repeatHeight/5));
     for(let x=0;x<px;x++)for(let i=0;i<vertical;i++){
       const weight=.5-.5*Math.cos(Math.PI*i/vertical);
       const upper=(i*px+x)*4,lower=((py-1-i)*px+x)*4;
@@ -215,7 +217,9 @@ WW.scenery = (() => {
       g.save();g.globalCompositeOperation='color';g.globalAlpha=.82;
       g.fillStyle=tone;g.fillRect(0,0,px,py);g.restore();
     }
-    return g.createPattern(canvas,'repeat');
+    const pattern=g.createPattern(canvas,'repeat');
+    pattern.setTransform(new DOMMatrix().scale(1/texelsPerUnit));
+    return pattern;
   }
 
   const materialTones = {

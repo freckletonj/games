@@ -203,7 +203,7 @@ test('original and vaulted caves both permit the entire real-input goal route',(
     if(wall){
       const distance=wall.x*16-player.x;
       if(phase==='approach'&&distance<=28&&distance>=9&&
-         player.y>wall.top*16+3&&player.grounded){
+         player.y>wall.top*16+3&&(player.grounded||player.floating)){
         jump=true;jumpPressed=true;phase='prepare';firstJump=frame;
       }else if(phase==='prepare'){
         jump=frame-firstJump!==6;

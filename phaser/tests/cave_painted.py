@@ -21,8 +21,9 @@ def main():
             "window.__wonderwoodPhaser?.snapshot().stage === -1",
             timeout=30000
         )
-        for _ in range(5):
-            page.locator("#ww-menu-next").click()
+        page.locator(".ww-explorers button").first.click()
+        page.locator("#ww-menu-continue").click()
+        page.get_by_role("button", name="Luminous Grotto").click()
         page.locator("#ww-menu-play").click()
         page.wait_for_function(
             "window.__wonderwoodPhaser.snapshot().chapter === 'luminous-grotto'",
@@ -33,6 +34,7 @@ def main():
         layer,=art["layers"]
         assert layer["textureKey"]=="scene-luminous-grotto-scene-0",art
         assert layer["origin"]==[0,0] and layer["scrollFactor"]==1,art
+        assert layer["sourcePixels"]==[3000,1680],art
         assert layer["worldPixels"]==[3200,1792],art
         assert before["worldWidth"]==3200,before
         assert before["players"],before

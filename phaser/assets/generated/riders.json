@@ -1,0 +1,17 @@
+{
+  "name": "riders",
+  "image": "sheet.webp",
+  "frameWidth": 320,
+  "frameHeight": 320,
+  "columns": 4,
+  "origin": {
+    "x": 160.0,
+    "y": 188.75
+  },
+  "worldScale": 0.16,
+  "explorers": [
+    "hero",
+    "princess",
+    "steampunk"
+  ]
+}

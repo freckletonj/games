@@ -4,7 +4,7 @@ import {ACTIONS,poseFor,gesture} from '../src/animation.js';
 import {readFileSync,readdirSync} from 'node:fs';
 
 const base=new URL('../../src/assets/characters/',import.meta.url);
-test('all nine painted characters support every standardized animation action',()=>{
+test('all painted characters support every standardized animation action',()=>{
   const names=readdirSync(base,{withFileTypes:true}).filter(d=>d.isDirectory()).map(d=>d.name);
   assert.ok(names.length>=9);
   for(const name of names){
@@ -12,10 +12,14 @@ test('all nine painted characters support every standardized animation action',(
     assert.ok(manifest.worldScale>0, name);
     assert.ok(manifest.frameWidth>0&&manifest.frameHeight>0,name);
     assert.ok(manifest.origin.x>=0&&manifest.origin.y<=manifest.frameHeight,name);
+    const image=readFileSync(new URL(name+'/'+manifest.image,base));
+    const height=manifest.image.endsWith('.png')?image.readUInt32BE(20):
+      1+image.readUIntLE(27,3);
+    const count=height/manifest.frameHeight*manifest.columns;
     for(const action of ACTIONS){
       for(const t of [0,.1,.3,1.25]){
         const pose=poseFor(manifest,action,t,2,0.8);
-        assert.ok(Number.isInteger(pose.frame) && pose.frame>=0 && pose.frame<8,
+        assert.ok(Number.isInteger(pose.frame) && pose.frame>=0 && pose.frame<count,
           name+' '+action+' '+t);
         assert.ok(pose.sx>.5&&pose.sx<1.5&&pose.sy>.5&&pose.sy<1.5,
           name+' '+action+' '+t);

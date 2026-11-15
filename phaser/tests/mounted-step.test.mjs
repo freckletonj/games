@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {stepMountedMotion} from '../src/mounts.js';
+import {stepMountedMotion,stepWildMount,landsOnMount} from '../src/mounts.js';
 
 const world={
   width:2000,height:960,tile:16,
@@ -75,4 +75,33 @@ test('mounted movement respects slope collision without scene objects',()=>{
   const prevX=m.x;
   for(let i=0;i<12;i++)stepMountedMotion(m,{...idle,right:true},1,steep);
   assert.ok(m.x<140&&m.x>=prevX,'Cannot tunnel through an uphill wall');
+});
+
+test('unridden mounts patrol, graze, rear once per approach and act as springboards',()=>{
+  for(const kind of ['unicorn','pegasus']){
+    const m={...horse(kind),homeX:200,homeY:500,chew:0,rear:0,approached:false};
+    const terrain={...world,inWater:()=>false};
+    assert.equal(stepWildMount(m,null,null,1,0,terrain),'run');
+    assert.ok(m.x>200&&m.face===1);
+    assert.equal(stepWildMount(m,null,null,1,2800,terrain),'eat');
+    const near={x:m.x-35};
+    const x=m.x;
+    assert.equal(stepWildMount(m,near,null,1,3000,terrain),'rear');
+    assert.equal(m.face,-1);
+    assert.equal(m.x,x);
+    assert.equal(stepWildMount(m,near,null,40,3700,terrain),'idle');
+    const player={x:m.x,y:475,vy:3,mount:null};
+    assert.ok(landsOnMount(player,452,m));
+    assert.ok(!landsOnMount(player,473,m));
+    assert.ok(!landsOnMount({...player,mount:m},452,m));
+  }
+});
+
+test('mounted gait faces its actual displacement during a reversal',()=>{
+  const m=horse('unicorn');
+  m.vx=4;
+  const x=m.x;
+  const result=stepMountedMotion(m,{...idle,left:true},1,world);
+  assert.equal(result.action,'run');
+  assert.ok(m.x>x&&m.face===1);
 });

@@ -14,7 +14,8 @@ export function stepMachines(machines,tick){
     switch(machine.kind){
       case 'conveyor':
         machine.beltSpeed=machine.speed;
-        if(machine.tread)machine.tread.tilePositionX=-tick*machine.speed;
+        if(machine.tread)
+          machine.tread.tilePositionX=-tick*machine.speed/machine.tread.tileScaleX;
         break;
       case 'gear':
         machine.beltSpeed=machine.turn*machine.size[1]/2;

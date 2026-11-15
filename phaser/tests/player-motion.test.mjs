@@ -94,3 +94,30 @@ test('Landing emits visual cues but motion function has no Phaser dependency',()
   assert.ok(result.events.includes('land'));
   assert.ok(result.events.includes('hardLand'));
 });
+
+test('land forms bob and jump from the surface while Tidefox can dive',()=>{
+  const pool={...world,
+    waterBodies:[{start:0,end:20,surface:25}],
+    inWater:(_x,y)=>y>=400&&y<=500};
+  for(const form of [null,'springaroo','glimmermoth','flintfist']){
+    const p=explorer(form);
+    p.y=395;p.vy=5;p.grounded=false;
+    const depths=[];
+    for(let frame=0;frame<140;frame++){
+      stepPlayerMotion(p,controls,1,pool);
+      if(frame>=100)depths.push(p.y);
+    }
+    assert.ok(p.floating);
+    assert.ok(Math.max(...depths)-Math.min(...depths)>1);
+    assert.ok(depths.every(y=>y>408&&y<414));
+    const jump=stepPlayerMotion(p,{...controls,jump:true,jumpPressed:true},1,pool);
+    assert.equal(jump.action,'jump');
+    assert.ok(p.vy<-5);
+  }
+  const swimmer=explorer('tideling');
+  swimmer.y=412;swimmer.grounded=false;
+  for(let frame=0;frame<40;frame++)
+    stepPlayerMotion(swimmer,{...controls,down:true},1,pool);
+  assert.ok(swimmer.y>460);
+  assert.equal(swimmer.floating,false);
+});

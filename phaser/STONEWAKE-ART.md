@@ -34,8 +34,18 @@ pivot during the clockwise fall. Repack with:
 
 ```sh
 python phaser/scripts/stonewake-art.py "$art/authoring/first-pass.webp" \
-  --art "$art/authoring" --output "$art"
+  --art "$art/authoring" --output dist/stonewake-art
 ```
+
+## High-resolution scene
+
+The active 2688 × 1176 panorama keeps the 2048 × 896 world coordinates.
+Repaint three 1024 × 896 crops starting at world x 0, 512, and 1024.
+Fit the native returns to 1344 × 1176 and stitch with 672-pixel overlaps.
+Protect the approved floor, shelf, and cave roof using the static terrain
+guide. Inspect both joins, the spire under the settled boulder, the two
+bridge banks, and all three seal states at 2×. The base pack above writes
+its scene to `dist/` so its cutouts can be repacked independently.
 
 ## Rock-creature poses
 

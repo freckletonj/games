@@ -9,11 +9,19 @@ const EATING_FRAMES=Object.freeze({
   prismtail:4,glimmermoth:5,cloudwhisp:6,emberkit:7
 });
 
+const FAINTED_FORMS=[
+  'hero','princess','steampunk','springaroo','tideling','skyling','mossback',
+  'prismtail','glimmermoth','cloudwhisp','emberkit','gravelback','flintfist'
+];
+export const FAINTED_FRAME={width:160,height:96};
+
 export function paintedAction(kind,action){
+  if(action==='sleep'){
+    const frame=FAINTED_FORMS.indexOf(kind);
+    if(frame>=0)return {texture:'fainted',frame,width:frame<3?47:49,originY:91/96};
+  }
   if(action==='eat'&&EATING_FRAMES[kind]!==undefined)
-    return {frame:EATING_FRAMES[kind],width:43,height:39};
-  if(kind==='hero'&&action==='sleep')
-    return {frame:8,width:49,height:41};
+    return {texture:'painted-states',frame:EATING_FRAMES[kind],width:43,height:39,originY:1};
   return null;
 }
 

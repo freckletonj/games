@@ -15,14 +15,20 @@ export function sceneTextures(id,art){
 export function paintScene(scene,art){
   const width=scene.level.width*16,height=scene.level.height*16;
   const strips=art.scene?.length>1;
+  const images=sceneTextures(scene.chapter.id,art).map(({key,depth,scrollFactor})=>
+    scene.add.image(0,0,key).setOrigin(0).setDepth(depth).setScrollFactor(scrollFactor));
+  if(!strips){
+    for(const image of images)image.setDisplaySize(width,height);
+    return images;
+  }
+  const sourceWidth=images.reduce((sum,image)=>sum+image.width,0);
   let left=0;
-  return sceneTextures(scene.chapter.id,art).map(({key,depth,scrollFactor})=>{
-    const image=scene.add.image(left,0,key).setOrigin(0)
-      .setDepth(depth).setScrollFactor(scrollFactor);
-    if(strips)left+=image.width;
-    else image.setDisplaySize(width,height);
-    return image;
-  });
+  for(const image of images){
+    image.x=left*width/sourceWidth;
+    left+=image.width;
+    image.setDisplaySize(left*width/sourceWidth-image.x,height);
+  }
+  return images;
 }
 
 // Thermals are active traversal aids and stay separate from the scene painting.

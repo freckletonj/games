@@ -10,7 +10,7 @@ guide. The draft ledges were cleaned up and painted ledge detail was
 aligned to the compiled one-way spans. The last four scenes are stored
 as contiguous strips cut from one finished composition per chapter.
 
-| Chapter | Generated source | Registered world |
+| Chapter | Initial generated source | Registered world |
 | --- | --- | --- |
 | Mosslight Meadow | 2115 × 744 | 2368 × 832 |
 | Crystal Coast | 2172 × 724 | 4704 × 960 |
@@ -18,22 +18,33 @@ as contiguous strips cut from one finished composition per chapter.
 | Willow Wetlands | 2172 × 724 | 5184 × 992 |
 | Cloud Gardens | 2172 × 724 | 5408 × 1280 |
 
-The registered dimensions describe placement. These are resized preview
-paintings, with scope for a later native-detail art pass.
+The registered dimensions describe placement. First Forest uses a
+3256 × 1144 refinement and Crystal Coast uses a 5145 × 1050 refinement.
+Starfall Summit uses a 5115 × 1221 refinement from five overlapping
+1237 × 1271 paintings. Willow Wetlands uses a 5346 × 1023 refinement
+from four 1536 × 1024 paintings. Cloud Gardens uses a 5577 × 1320
+refinement from six 1177 × 1336 paintings. Each of these wide scenes uses
+three contiguous runtime strips. See the [surface art workflow](ART-DIRECTION.md)
+for crop and registration details.
 
-## Luminous Grotto single-image painting (PR #8)
+## Luminous Grotto panorama
 
-`phaser/assets/generated/luminous-grotto-single.png` is the approved
-**1672 × 941** single-frame cave painting generated using OpenAI image
-generation during the November 12, 2026 Luminous Grotto prototype.
-It was not imported from ArtByte, Kenney, or a third-party image search.
-The 3200 × 1792 static guide can be regenerated from
-`phaser/src/cave-layout.js` as described in
-[CAVE-ART-PIPELINE.md](CAVE-ART-PIPELINE.md). The existing painting predates
-that final guide, so the appearance of some water/rock boundaries is not
-perfectly collision-aligned; this known issue is accepted for the
-initial proof of concept. Actors, items, effects and UI are separate
-existing gameplay assets; they are not part of the cave painting.
+The prototype painting, `phaser/assets/generated/luminous-grotto-single.png`,
+was generated at **1672 × 941**. The game loads the refined **3000 × 1680**
+`phaser/assets/generated/luminous-grotto.webp` in the same 3200 × 1792
+world. The refinement retains the prototype composition and its existing
+small offsets at some water and rock boundaries. Actors, items, effects,
+and UI use separate assets.
+
+Export the world material guide as described in
+[CAVE-ART-PIPELINE.md](CAVE-ART-PIPELINE.md). Align the approved composition
+to the guide and crop both into 1760 × 1008 quadrants at x 0 and 1440 and
+y 0 and 784. Paint at native resolution with the matching neighboring
+overlaps as references. The four returns were 1657–1658 × 949. Fit them
+to 1650 × 945, then stitch with 300 pixels of horizontal and 210 pixels
+of vertical overlap using `scripts/stitch-cave-painting.py`. Use
+`scripts/protect-scene-edges.py` with the approved world painting and
+`--margin 24` before WebP export.
 
 The baseline Wonderwood game uses original generated painterly character sheets,
 slope materials, props and chapter backgrounds from the repo's `src/assets/`.
@@ -148,12 +159,10 @@ solid and water masks define the alpha channels. Open air is the complement
 of both masks, with no alpha overlap. All three draw in the original world
 coordinates with **no parallax**, preserving accurate geometry alignment.
 
-The accepted *style* is not yet native-resolution final art: its RGB was
-resampled from the 1644 × 957 source, so final detail must later come from
-overlapping world-space image-model refinement. The rejected
-opaque Skywell draft, its source copy, and the obsolete wedge compositor
-were removed from the working tree. Their history remains in Git, rather
-than being loaded or kept as redundant assets.
+All three layers use the same 3520 × 2048 composition stitched from six
+overlapping refinements of the selected 1644 × 957 painting. The refined
+source is `skywell-ancient-refined.webp`. The [cave art workflow](CAVE-ART-PIPELINE.md)
+records the crop coordinates, overlap, and alpha verification.
 
 Regenerate or validate the alpha against freshly exported materials with
 `scripts/bake-selected-skywell.py`. The separate

@@ -67,7 +67,7 @@ atlases, backgrounds, sprite sheets, levels, and the CC0 sky art.
 Player 1: A/D or arrows move; W/Space jump/flap/swim; S/Down dive;
 F offer fruit / creature ability; G capture distracted animals; T change form;
 E change fruit; C recall to checkpoint; R revive after a knockout;
-H return to chapter selection.
+H return to character selection.
 
 Player 2 (when enabled): J/L move, I jump, K dive, O food/power, P capture,
 U transform, M fruit, N recall, Y revive.
@@ -75,8 +75,10 @@ U transform, M fruit, N recall, Y revive.
 Connected gamepads: left stick or D-pad to move; A jump/swim/flap;
 B food/power; X capture; Y transform; triggers cycle fruit;
 Back recalls; left shoulder revives; Start opens/closes pause. Second pad controls player 2.
-Keyboard 2 toggles local co-op. On title: left/right selects world,
-A or Space begins. Escape/Start pauses; R returns to chapter selection.
+On the title screen, each player chooses an explorer with the stick or their
+movement keys and confirms with A or Jump. Press confirm again to continue
+with the confirmed players. Use the stick or arrow keys to move through the
+level grid and confirm to start. Escape or Start pauses during play.
 
 ## Migration status
 
@@ -201,15 +203,16 @@ without pretending the remaining four chapters have equivalent coverage.
 - **Capture orb:** fixed, slow 3-unit/frame horizontal motion and a genuine
   gravity-and-ground bouncing arc. It never secretly auto-aims at a fed
   creature. A swept hit test retains reliability on low-FPS devices.
-- **Unicorn and Pegasus:** the original painted 4×2 AVIF atlases and saddle
-  anchors from [PR #6](https://github.com/freckletonj/games/pull/6)
-  are included directly in the standalone build. These are **rideable
-  mounts, not capture forms**. Two favorite treats earn trust; approach
-  and press **T / Y** to ride or dismount. Unicorn gallops faster and
-  leaps higher. Pegasus takes off with Jump, then gains height through
-  repeated **wingbeat taps**; Down descends. The actual player sprite
-  is positioned independently at the saddle. Mounted exploration is
-  optional and never changes the key-form requirement for the light.
+- **Unicorn and Pegasus:** Wild mounts wander, graze, and rear when an
+  explorer approaches. You can bounce off their backs. Two favorite treats
+  earn trust, then **T / Y** nearby mounts or dismounts. The Unicorn gallops
+  and leaps. Pegasus gains height with repeated Jump taps and descends with
+  Down. An independent rider sprite follows the painted saddle.
+- **Gate keys and water:** Any form can pick up a key it can reach. Tidefox
+  swims and dives, and the other forms bob on the surface and can jump out.
+- **Wild powers:** Mossback shoots honey and Prismtail shoots bubbles.
+  Either trap lasts up to three seconds. Tap Jump after the first second
+  to escape early.
 
 Unit tests cover bloom timing, uphill-water collision and orb
 trajectories. Browser tests cover standard gameplay, chapter rendering,

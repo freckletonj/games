@@ -29,6 +29,8 @@ def main():
         page.goto(GAME.as_uri(),wait_until="load")
         page.wait_for_function("window.__wonderwoodPhaser?.snapshot().stage === -1",
             timeout=30000)
+        page.locator(".ww-explorers button").first.click()
+        page.locator("#ww-menu-continue").click()
         hold_until(page,"Space","window.__wonderwoodPhaser.snapshot().stage === 0")
         hold_until(page,"d",
             "window.__wonderwoodPhaser.snapshot().players[0].x > 655",timeout=100000)
@@ -45,6 +47,7 @@ def main():
         hold_until(page,"t",
             "window.__wonderwoodPhaser.snapshot().players[0].mount === 'unicorn'")
         mounted=snapshot(page)
+        assert mounted["players"][0]["texture"]=="riders"
         assert mounted["mounts"][0]["rider"]==0 and mounted["players"][0]["form"] is None
         page.screenshot(path=str(GAME.parent/"phaser-unicorn-mounted.png"))
 
@@ -68,9 +71,9 @@ def main():
         # An accessible Pegasus in Cloud Gardens can be earned normally.
         hold_until(page,"h",
             "window.__wonderwoodPhaser.snapshot().stage === -1")
-        for i in range(1,5):
-            hold_until(page,"d",
-                "window.__wonderwoodPhaser.snapshot().choice === "+str(i))
+        page.locator(".ww-explorers button").first.click()
+        page.locator("#ww-menu-continue").click()
+        page.get_by_role("button", name="Cloud Gardens").click()
         hold_until(page,"Space",
             "window.__wonderwoodPhaser.snapshot().stage === 4")
         assert snapshot(page)["mounts"][0]["kind"]=="pegasus"
@@ -102,6 +105,7 @@ def main():
         flown=snapshot(page)
         assert flown["mounts"][0]["flaps"]>=2,flown
         assert flown["players"][0]["mount"]=="pegasus"
+        assert flown["players"][0]["texture"]=="riders"
         page.screenshot(path=str(GAME.parent/"phaser-pegasus-flight.png"))
         assert not errors,"Browser errors: "+"; ".join(errors)
         browser.close()

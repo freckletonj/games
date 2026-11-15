@@ -117,3 +117,16 @@ composition and three independently moving cutouts.
 
 [The Brassworks](BRASSWORKS-ART.md) documents the follow-up experiment with
 model-assisted alpha extraction and wider background repairs.
+
+## High-resolution scene
+
+The active 2592 × 1056 painting keeps the 1728 × 704 world registration.
+The two 1477 × 1065 native-detail returns used 976 × 704 crops at world
+x 0 and 752. Match broad lighting and preserve the registered staircase,
+pier tops, and cliff rim before stitching. Check the views from the lift,
+ferry, and gondola routes against the same dock edges.
+
+The active lift, ferry, and gondola are true-alpha repaints of the
+original crop silhouettes at 384 × 96, 416 × 96, and 400 × 96. Pack the
+straight landing lip against the top of each frame. The source dimensions
+leave room for detail while the level still sets the world size and pivot.

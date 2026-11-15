@@ -160,3 +160,13 @@ test('head-stomping a creature opens one timed second-jump window',()=>{
   assert.equal(explorer.grounded,false);
   assert.equal(explorer.creatureBounceWindow,14);
 });
+
+test('patrol movement selects a gait and faces the completed step near its target',()=>{
+  const p=animal('mossback');
+  p.homeX=100;p.x=103;
+  const time=(Math.ceil(100/Math.PI/2)*Math.PI*2-100)/.00055;
+  stepCreatureMotion(p,null,1,time,world);
+  assert.ok(p.x<103);
+  assert.equal(p.face,-1);
+  assert.equal(creatureAction(p),'run');
+});

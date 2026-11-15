@@ -1,21 +1,21 @@
 {
   "name": "glimmermoth",
   "image": "sheet.webp",
-  "frameWidth": 128,
-  "frameHeight": 128,
+  "frameWidth": 320,
+  "frameHeight": 320,
   "columns": 4,
   "origin": {
-    "x": 64,
-    "y": 108
+    "x": 160.0,
+    "y": 270.0
   },
-  "worldScale": 0.37,
+  "worldScale": 0.148,
   "animations": {
     "idle": {
       "frames": [
         0,
         1
       ],
-      "fps": 2
+      "fps": 3
     },
     "run": {
       "frames": [
@@ -24,7 +24,16 @@
         4,
         5
       ],
-      "fps": 10
+      "fps": 12
+    },
+    "flap": {
+      "frames": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "fps": 12
     },
     "jump": {
       "frames": [
@@ -34,9 +43,23 @@
     },
     "fall": {
       "frames": [
-        6
+        8
       ],
       "fps": 1
+    },
+    "glide": {
+      "frames": [
+        7,
+        9
+      ],
+      "fps": 4
+    },
+    "land": {
+      "frames": [
+        10,
+        0
+      ],
+      "fps": 10
     },
     "eat": {
       "frames": [
@@ -46,13 +69,16 @@
     },
     "happy": {
       "frames": [
-        1
+        2,
+        3,
+        4,
+        5
       ],
-      "fps": 2
+      "fps": 10
     },
     "hurt": {
       "frames": [
-        7
+        11
       ],
       "fps": 1
     },
@@ -64,7 +90,7 @@
     },
     "alert": {
       "frames": [
-        2
+        9
       ],
       "fps": 1
     }

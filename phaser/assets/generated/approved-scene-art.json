@@ -34,7 +34,7 @@
   },
   "luminous-grotto": {
     "scene": [
-      "phaser/assets/generated/luminous-grotto-single.png"
+      "phaser/assets/generated/luminous-grotto.webp"
     ]
   },
   "skywell-ascent": {

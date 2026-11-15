@@ -6,15 +6,18 @@ import {dirname,resolve} from 'node:path';
 import {compileCave,skywellLayout} from '../src/cave-layout.js';
 import {caveArtManifest} from '../src/cave-art-guide.js';
 
-test('one approved static painting ships as a valid full-level PNG',()=>{
+test('Luminous Grotto ships one registered high-resolution painting',()=>{
   const here=dirname(fileURLToPath(import.meta.url));
-  const image=readFileSync(resolve(here,
-    '../assets/generated/luminous-grotto-single.png'));
-  assert.equal(image.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
-  assert.equal(image.readUInt32BE(16),1672);
-  assert.equal(image.readUInt32BE(20),941);
-  assert.ok(image.length>20000);
+  const catalog=JSON.parse(readFileSync(resolve(here,'../assets/generated/approved-scene-art.json')));
   const manifest=caveArtManifest(compileCave());
+  assert.deepEqual(catalog['luminous-grotto'].scene,[manifest.painting]);
+  const image=readFileSync(resolve(here,'../../',manifest.painting));
+  assert.equal(image.toString('ascii',8,16),'WEBPVP8 ');
+  const width=image.readUInt16LE(26)&0x3fff;
+  const height=image.readUInt16LE(28)&0x3fff;
+  assert.deepEqual([width,height],[3000,1680]);
+  assert.equal(width*manifest.world.height,height*manifest.world.width);
+  assert.ok(image.length>20000);
   assert.equal(manifest.schema,'wonderwood-physics-painted-cave-v2');
   assert.equal(manifest.dynamicExcluded,true);
   assert.equal(Object.hasOwn(manifest,'chunks'),false);
@@ -32,6 +35,7 @@ test('chosen Ancient Sanctuary painting is a real native-alpha, world-aligned th
   const provenance=JSON.parse(readFileSync(resolve(
     root,'skywell-ancient/art-provenance.json')));
   assert.deepEqual(provenance.sourcePixels,[1644,957]);
+  assert.deepEqual(provenance.refinement.pixels,[3520,2048]);
   assert.deepEqual(provenance.worldPixels,[3520,2048]);
   assert.equal(provenance.geometry,'compileCave(skywellLayout)');
   assert.deepEqual(Object.keys(selected).sort(),[
@@ -52,4 +56,8 @@ test('chosen Ancient Sanctuary painting is a real native-alpha, world-aligned th
   assert.equal(source.toString('ascii',12,16),'VP8 ');
   assert.equal(source.readUInt16LE(26)&0x3fff,1644);
   assert.equal(source.readUInt16LE(28)&0x3fff,957);
+  const refined=readFileSync(resolve(here,'../../',provenance.refinement.source));
+  assert.equal(refined.toString('ascii',12,16),'VP8 ');
+  assert.equal(refined.readUInt16LE(26)&0x3fff,3520);
+  assert.equal(refined.readUInt16LE(28)&0x3fff,2048);
 });

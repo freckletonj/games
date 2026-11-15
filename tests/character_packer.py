@@ -1,5 +1,6 @@
 """The painted sprite packer must preserve alpha and a fixed ground anchor."""
 import importlib.util
+import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from PIL import Image, ImageDraw
@@ -33,17 +34,20 @@ with TemporaryDirectory() as tmp:
 # Verify shipped WebP atlases are true RGBA art, rather than painted
 # rectangular backgrounds or frames with baked cast shadows underneath.
 for name in ("mossback", "prismtail", "glimmermoth", "cloudwhisp"):
-    path = root / "src" / "assets" / "characters" / name / "sheet.webp"
-    image = Image.open(path).convert("RGBA")
-    assert image.size == (512, 256), name
-    for row in range(2):
-        for col in range(4):
-            cell = image.crop((col * 128, row * 128,
-                               (col + 1) * 128, (row + 1) * 128))
-            assert cell.getchannel("A").getbbox(), (name, row, col)
-            # The final 16 source pixels are all transparent: no shadow disc
-            # can appear beneath a hovering creature when it animates.
-            ground_shadow = cell.crop((0, 112, 128, 128)).getchannel("A")
+    directory = root / "src" / "assets" / "characters" / name
+    manifest = json.loads((directory / "manifest.json").read_text())
+    image = Image.open(directory / manifest["image"])
+    width, height = manifest["frameWidth"], manifest["frameHeight"]
+    columns, rows = manifest["columns"], 3
+    assert image.size == (columns * width, rows * height), name
+    alpha = image.getchannel("A")
+    for row in range(rows):
+        for col in range(columns):
+            x, y = col * width, row * height
+            cell = alpha.crop((x, y, x + width, y + height))
+            assert cell.getbbox(), (name, row, col)
+            # Keep the bottom eighth clear of baked cast shadows.
+            ground_shadow = cell.crop((0, height * 7 // 8, width, height))
             assert ground_shadow.getextrema()[1] == 0, (name, row, col)
 
-print("PASS: eight painted RGBA frames share one foot anchor")
+print("PASS: eight packed poses share one foot anchor and shipped atlases preserve alpha")

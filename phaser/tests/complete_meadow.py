@@ -80,6 +80,8 @@ def main():
         page.wait_for_function(
             "window.__wonderwoodPhaser?.snapshot().stage === -1", timeout=30000
         )
+        page.locator(".ww-explorers button").first.click()
+        page.locator("#ww-menu-continue").click()
         press(page, "Space", "window.__wonderwoodPhaser.snapshot().stage === 0")
         route = [milestone(page, "start")]
 
@@ -185,7 +187,9 @@ def main():
         resumed = state(page)
         assert resumed["choice"] == 1, resumed
         assert resumed["progress"]["completed"] == ["first-forest"], resumed
-        assert page.locator("#ww-menu-chapter").inner_text() == "Crystal Coast"
+        page.locator(".ww-explorers button").first.click()
+        page.locator("#ww-menu-continue").click()
+        assert page.locator("#ww-level-grid [aria-pressed=true]").inner_text() == "Crystal Coast"
         report = {
             "chapter": "first-forest", "completed": True,
             "relicRecovered": found["relic"],
@@ -201,8 +205,7 @@ def main():
         assert json.loads(
             (GAME.parent / "phaser-meadow-route-metrics.json").read_text()
         ) == report
-        page.locator("#ww-menu-prev").click()
-        assert "COMPLETED" in page.locator("#ww-menu-counter").inner_text()
+        assert "Completed" in page.locator("#ww-level-grid button").first.inner_text()
         assert not errors, errors
         assert not external, external
         browser.close()

@@ -78,3 +78,18 @@ alpha sprites. The panorama was generated at 1915 × 821 and saved at
 **V** over the gears and piston to inspect the actual standing surfaces.
 The tests run the production movement through the conveyor, three gears,
 piston launch, relic and gate. **C** recalls to the most recent camp.
+
+## High-resolution scene
+
+The active panorama is 2534 × 1086 over the same 1792 × 768 world.
+Repaint the registered scene in two 1024 × 768 crops starting at world
+x 0 and 768. Stitch the 1448 × 1086 results across their 362-pixel overlap,
+then protect the original floor, ledge lips, and rim with the static
+terrain guide. The boiler sits across the blend, so check its edges and
+lighting together with the belt, gears, and piston at 2×.
+
+The tread is sampled at 64 × 22 from the selected belt cutout and tiled
+at 32 × 11 world pixels. Its texture offset accounts for that tile scale
+so the visible scroll still follows the belt speed. The piston is packed
+at 180 × 144 to cover its full extension at 2× zoom. Review the piston at
+both extremes and the tread at more than one phase.

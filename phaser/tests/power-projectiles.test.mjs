@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {PROJECTILE_POWERS,HONEY_PUDDLE_TICKS,launchPower,stepPower,
-  powerHitsCreature,applyPowerHit,honeyPuddleCatches}
+  powerHitsCreature,applyPowerHit,honeyPuddleCatches,stepPlayerTrap}
   from '../src/power-projectiles.js';
 
 const animal=(x=125,y=500)=>({
@@ -113,5 +113,16 @@ test('projectiles stop at uphill walls rather than travelling through terrain',(
     }
     assert.equal(stopped,true,kind);
     assert.ok(shot.x<135,kind+' crossed an uphill wall');
+  }
+});
+
+test('honey and bubble traps last one to three seconds',()=>{
+  for(const kind of ['mossback','prismtail']){
+    const trap={kind,ticks:0};
+    assert.equal(stepPlayerTrap(trap,true,59),false);
+    assert.equal(stepPlayerTrap(trap,true,1),true);
+    trap.ticks=0;
+    assert.equal(stepPlayerTrap(trap,false,179),false);
+    assert.equal(stepPlayerTrap(trap,false,1),true);
   }
 });

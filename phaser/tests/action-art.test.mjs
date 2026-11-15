@@ -25,10 +25,13 @@ test('all power effects select an authored frame from the original painted atlas
   assert.equal(enemyTellFrame('springaroo'),null);
 });
 
-test('each species uses its own illustrated feeding pose and hero has real sleep art',()=>{
+test('each species uses its own illustrated feeding pose and each playable form has fainted art',()=>{
   assert.deepEqual(species.map(s=>paintedAction(s,'eat')?.frame),
     [0,1,2,3,4,5,6,7]);
-  assert.equal(paintedAction('hero','sleep')?.frame,8);
+  const forms=['hero','princess','steampunk',...species,'gravelback','flintfist'];
+  const fainted=forms.map(form=>paintedAction(form,'sleep'));
+  assert.ok(fainted.every(art=>art.texture==='fainted'));
+  assert.equal(new Set(fainted.map(art=>art.frame)).size,forms.length);
   for(const s of species)
     assert.equal(paintedAction(s,'run'),null,'Run uses the original moving atlas');
   assert.equal(paintedAction('hero','eat'),null);
