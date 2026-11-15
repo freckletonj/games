@@ -148,7 +148,35 @@ def moonwing(pose):
     return layer
 
 
-CREATURES = {"tideling": tidefox, "skyling": moonwing}
+def emberkit(pose):
+    _, body, head, tail_base, tail_bend, tail_tip, far_hand, near_hand, far_foot, near_foot = pose
+    layer = Image.new("RGBA", (256, 256))
+    draw = ImageDraw.Draw(layer)
+    x, y = body
+    tx, ty = tail_tip
+    draw.line([body, tail_base, tail_bend, tail_tip], fill="#d97a45", width=31, joint="curve")
+    dot(draw, tail_tip, 15, 14, "#eedbbd")
+    draw.line([(x-7,y+16), far_foot], fill="#af694c", width=16)
+    dot(draw, far_foot, 12, 5, "#613d31")
+    draw.line([(x+7,y+15), near_foot], fill="#de8750", width=16)
+    dot(draw, near_foot, 13, 5, "#6c4231")
+    draw.line([body, far_hand], fill="#a86345", width=13)
+    dot(draw, body, 26, 28, "#875b46")
+    draw.polygon([(x+24,y-23),(x-12,y-32),(tx+12,ty+6),
+                  (x-23,y+1),(x+17,y-4)], fill="#347c86")
+    draw.line([(x+12,y-6),near_hand], fill="#c8774b", width=13)
+    dot(draw, near_hand, 8, 7, "#f2ddbd")
+    x, y = head
+    draw.polygon([(x-27,y-10),(x-39,y-31),(x-9,y-18),
+                  (x-10,y-38),(x+12,y-20)], fill="#763f32")
+    dot(draw, head, 27, 22, "#e48a50")
+    dot(draw, (x+17,y+11), 24, 13, "#f5e2c3")
+    dot(draw, (x+12,y-3), 6, 8, "#51392f")
+    dot(draw, (x+40,y+8), 4, 4, "#4a3029")
+    return layer
+
+
+CREATURES = {"tideling": tidefox, "skyling": moonwing, "emberkit": emberkit}
 
 
 def silhouettes(name, plan):
