@@ -8,11 +8,12 @@ from PIL import Image, ImageDraw
 
 PHASER = Path(__file__).resolve().parents[1]
 SKINS = ["hero", "princess", "steampunk"]
+CREATURES = ["tideling"]
 BACKGROUND = "#f4f1e8"
 
 
 def plan_for(name):
-    group = "humans" if name in SKINS else "riders" if name == "riders" else "mounts"
+    group = "humans" if name in SKINS else "mounts" if name in ("unicorn", "pegasus") else name
     return json.loads((PHASER / "assets" / "poses" / f"{group}.json").read_text())
 
 
@@ -100,11 +101,37 @@ def mount(pose, wing):
     return layer
 
 
+def tidefox(pose):
+    _, body, head, tail_base, tail_bend, tail_tip, far_fin, near_fin = pose
+    layer = Image.new("RGBA", (256, 256))
+    draw = ImageDraw.Draw(layer)
+    x, y = body
+    tx, ty = tail_tip
+    draw.line([body, tail_base, tail_bend, tail_tip], fill="#447baf", width=25, joint="curve")
+    draw.polygon([(tx-9,ty-21),(tx+22,ty-18),(tx+27,ty+11),(tx+1,ty+16)], fill="#37638e")
+    draw.line([body, far_fin], fill="#29608a", width=15)
+    dot(draw, far_fin, 13, 6, "#29608a")
+    dot(draw, body, 35, 24, "#4c9bc6")
+    dot(draw, (x+8,y+10), 28, 14, "#d0e5e5")
+    draw.line([(x+2,y-3), near_fin], fill="#417dad", width=16)
+    dot(draw, near_fin, 14, 7, "#417dad")
+    x, y = head
+    draw.polygon([(x-31,y-23),(x-8,y-13),(x-10,y+5)], fill="#2f6797")
+    draw.polygon([(x-18,y-31),(x+3,y-16),(x-5,y-4)], fill="#d2aa69")
+    dot(draw, head, 25, 20, "#468db7")
+    dot(draw, (x+15,y+11), 26, 12, "#ede5df")
+    dot(draw, (x+10,y-3), 5, 6, "#203654")
+    dot(draw, (x+39,y+8), 4, 4, "#203654")
+    return layer
+
+
 def silhouettes(name, plan):
     if name == "riders":
         return [(pose[0], human(pose,i,True)) for i in range(3) for pose in plan["poses"]]
     if name in SKINS:
         return [(pose[0], human(pose,SKINS.index(name),False)) for pose in plan["poses"]]
+    if name == "tideling":
+        return [(pose[0], tidefox(pose)) for pose in plan["poses"]]
     return [(pose[0], mount(pose, plan["wings"][i] if name == "pegasus" else None))
             for i,pose in enumerate(plan["poses"])]
 
@@ -185,7 +212,7 @@ def pack_sheet(plan, layers, painted):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("name",choices=[*SKINS,"unicorn","pegasus","riders"])
+    parser.add_argument("name",choices=[*SKINS,*CREATURES,"unicorn","pegasus","riders"])
     parser.add_argument("output",type=Path)
     parser.add_argument("--painted-sheet",type=Path)
     parser.add_argument("--manifest", type=Path)
