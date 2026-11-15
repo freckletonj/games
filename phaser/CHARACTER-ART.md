@@ -1,7 +1,7 @@
 # Character animation
 
 The pose plans in `assets/poses/` define the shared explorer gait, mount
-gaits and wing positions, seated rider poses, and Tidefox motion. Export
+gaits and wing positions, seated rider poses, and creature motion. Export
 guides from the repo root with Pillow installed.
 
 ```sh
@@ -12,6 +12,7 @@ python phaser/scripts/character-pose-art.py unicorn unicorn-guide.png
 python phaser/scripts/character-pose-art.py pegasus pegasus-guide.png
 python phaser/scripts/character-pose-art.py riders riders-guide.png
 python phaser/scripts/character-pose-art.py tideling tideling-guide.png
+python phaser/scripts/character-pose-art.py skyling skyling-guide.png
 ```
 
 Give the image model the guide and a painted appearance reference. Ask for
@@ -41,6 +42,9 @@ foot origin as the old 160 × 160 cells. Set the alpha range for each
 painting after checking it over light and dark backgrounds. Tidefox's
 plan specifies 320 × 320 cells directly. Review its bound, breach,
 descent, and underwater swim clips on both sides.
+Moonwing's plan also uses 320 × 320 cells. Its flight clips call distinct
+takeoff, glide, upstroke, middle, and downstroke frames. Review the
+wingbeat through its full sweep with the body held to the guide's pivot.
 
 Preview the packed poses and composite a rider over each painted saddle.
 The mount manifest holds a seat and a rider-pose index per frame. Adjust

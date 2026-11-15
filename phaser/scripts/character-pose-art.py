@@ -8,7 +8,6 @@ from PIL import Image, ImageDraw
 
 PHASER = Path(__file__).resolve().parents[1]
 SKINS = ["hero", "princess", "steampunk"]
-CREATURES = ["tideling"]
 BACKGROUND = "#f4f1e8"
 
 
@@ -125,13 +124,40 @@ def tidefox(pose):
     return layer
 
 
+def moonwing(pose):
+    _, body, head, tail, far_foot, near_foot, wing = pose
+    layer = Image.new("RGBA", (256, 256))
+    draw = ImageDraw.Draw(layer)
+    draw.line([body, tail], fill="#6c60a1", width=23)
+    x, y = body
+    for foot, color in ((far_foot, "#9f7766"), (near_foot, "#c18d64")):
+        draw.line([(x,y+13), foot], fill=color, width=8)
+        dot(draw, foot, 10, 4, color)
+    dot(draw, body, 39, 27, "#a896c7")
+    dot(draw, (x+15,y+7), 29, 22, "#e4d7cb")
+    draw.polygon([tuple(point) for point in wing], fill="#7869ad", outline="#efdbaf", width=4)
+    wx, wy = wing[0]
+    draw.arc((wx-25,wy+3,wx-7,wy+20), 65, 290, fill="#f7e2b0", width=4)
+    x, y = head
+    draw.polygon([(x-27,y-13),(x-26,y-32),(x-9,y-20),(x+9,y-18),
+                  (x+27,y-33),(x+24,y-7)], fill="#8d79be")
+    dot(draw, head, 30, 23, "#a491ca")
+    dot(draw, (x+13,y+4), 20, 18, "#f4dfcf")
+    dot(draw, (x+16,y), 7, 8, "#372c55")
+    draw.polygon([(x+30,y+2),(x+42,y+9),(x+28,y+15)], fill="#c49770")
+    return layer
+
+
+CREATURES = {"tideling": tidefox, "skyling": moonwing}
+
+
 def silhouettes(name, plan):
     if name == "riders":
         return [(pose[0], human(pose,i,True)) for i in range(3) for pose in plan["poses"]]
     if name in SKINS:
         return [(pose[0], human(pose,SKINS.index(name),False)) for pose in plan["poses"]]
-    if name == "tideling":
-        return [(pose[0], tidefox(pose)) for pose in plan["poses"]]
+    if name in CREATURES:
+        return [(pose[0], CREATURES[name](pose)) for pose in plan["poses"]]
     return [(pose[0], mount(pose, plan["wings"][i] if name == "pegasus" else None))
             for i,pose in enumerate(plan["poses"])]
 

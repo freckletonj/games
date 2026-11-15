@@ -1,14 +1,14 @@
 {
   "name": "skyling",
   "image": "sheet.webp",
-  "frameWidth": 128,
-  "frameHeight": 128,
+  "frameWidth": 320,
+  "frameHeight": 320,
   "columns": 4,
   "origin": {
-    "x": 64,
-    "y": 112
+    "x": 160.0,
+    "y": 280.0
   },
-  "worldScale": 0.38,
+  "worldScale": 0.152,
   "animations": {
     "idle": {
       "frames": [
@@ -34,9 +34,31 @@
     },
     "fall": {
       "frames": [
-        6
+        7
       ],
       "fps": 1
+    },
+    "glide": {
+      "frames": [
+        7
+      ],
+      "fps": 1
+    },
+    "flap": {
+      "frames": [
+        8,
+        9,
+        10,
+        9
+      ],
+      "fps": 10
+    },
+    "land": {
+      "frames": [
+        3,
+        0
+      ],
+      "fps": 12
     },
     "eat": {
       "frames": [
@@ -52,7 +74,7 @@
     },
     "hurt": {
       "frames": [
-        7
+        11
       ],
       "fps": 1
     },
@@ -64,7 +86,7 @@
     },
     "alert": {
       "frames": [
-        2
+        1
       ],
       "fps": 1
     }
