@@ -46,6 +46,7 @@ const EXPLORER_IDS=Object.keys(EXPLORERS);
 const LEVEL_COLUMNS=3;
 const STILL={left:false,right:false,jump:false,down:false};
 const FRUITS=['berry','nectar','star'];
+const FLORA_ATLAS_SCALE=2;
 const FAVORITES={springaroo:'berry',tideling:'nectar',skyling:'star',mossback:'berry',
   prismtail:'berry',glimmermoth:'star',cloudwhisp:'nectar',emberkit:'berry',gravelback:'berry',flintfist:'berry'};
 const FORM_HINTS={
@@ -85,8 +86,10 @@ class Wonderwood extends Phaser.Scene {
       frameWidth:FAINTED_FRAME.width,frameHeight:FAINTED_FRAME.height
     });
     for(const [name,url] of Object.entries(backgrounds))this.load.image('back-'+name,url);
-    for(const [name,url] of Object.entries(sheets))
-      this.load.spritesheet(name,url,{frameWidth:180,frameHeight:270});
+    for(const [name,url] of Object.entries(sheets)){
+      const scale=name==='flora'?FLORA_ATLAS_SCALE:1;
+      this.load.spritesheet(name,url,{frameWidth:180*scale,frameHeight:270*scale});
+    }
     for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
     this.load.image('painted-states',paintedStates);
     this.load.spritesheet('seal-fragments',sealAtlas,{
@@ -272,7 +275,8 @@ class Wonderwood extends Phaser.Scene {
     const canvas=document.createElement('canvas');
     canvas.width=52;canvas.height=55;
     const ctx=canvas.getContext('2d',{willReadFrequently:true});
-    ctx.drawImage(source,76,143,43,45,4,4,43,45);
+    const scale=FLORA_ATLAS_SCALE;
+    ctx.drawImage(source,76*scale,143*scale,43*scale,45*scale,4,4,43,45);
     const image=ctx.getImageData(0,0,52,55),pixels=image.data;
     for(let y=0;y<55;y++)for(let x=0;x<52;x++){
       const radius=Math.hypot((x-25.5)/(y<24?19.5:17.5),
@@ -877,7 +881,7 @@ class Wonderwood extends Phaser.Scene {
     const texture=food==='berry'?'painted-berry':'flora';
     const sprite=food==='berry'?
       this.add.image(p.x,p.y-18,texture).setDisplaySize(19,20):
-      this.add.image(p.x,p.y-18,texture,p.food).setScale(.071);
+      this.add.image(p.x,p.y-18,texture,p.food).setScale(.071/FLORA_ATLAS_SCALE);
     sprite.setOrigin(.5,1).setDepth(18);
     const lure={x,y,food,visual:sprite,landed:false,life:24*60,
       startX:p.x+p.face*9,startY:p.y-21,face:p.face,age:0};
