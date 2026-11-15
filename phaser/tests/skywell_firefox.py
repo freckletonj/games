@@ -26,7 +26,7 @@ def main():
             "window.__wonderwoodPhaser?.snapshot().stage === -1",
             timeout=90000
         )
-        assert page.locator("canvas").count() == 1
+        assert page.locator("#game canvas").count() == 1
         assert page.locator(".ww-menu-title").inner_text() == "Wonderwood"
         page.locator(".ww-explorers button").first.click()
         page.locator("#ww-menu-continue").click()

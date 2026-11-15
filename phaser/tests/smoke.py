@@ -29,16 +29,16 @@ def main():
         page.wait_for_function(
             "window.__wonderwoodPhaser?.snapshot().stage === -1", timeout=30000
         )
-        assert page.locator("canvas").count() == 1, "A Phaser canvas must render"
+        assert page.locator("#game canvas").count() == 1, "A Phaser canvas must render"
         assert page.locator("#ww-menu").is_visible()
         assert page.locator(".ww-menu-title").inner_text() == "Wonderwood"
         assert page.locator("#ww-character-select").is_visible()
         assert page.locator("#ww-menu-continue").is_disabled()
-        page.keyboard.down("Right")
+        page.keyboard.down("ArrowRight")
         page.wait_for_function("""
             document.querySelector(".ww-explorers [data-current=true]").textContent === "Princess"
         """)
-        page.keyboard.up("Right")
+        page.keyboard.up("ArrowRight")
         page.locator(".ww-explorers button").nth(5).click()
         page.keyboard.down("Space")
         page.wait_for_function("""
@@ -51,9 +51,9 @@ def main():
         page.wait_for_function("window.__wonderwoodPhaser.snapshot().menu === 'levels'")
         page.keyboard.up("Space")
         assert page.locator("#ww-level-grid button").count() == 10
-        page.keyboard.down("Down")
+        page.keyboard.down("ArrowDown")
         page.wait_for_function("window.__wonderwoodPhaser.snapshot().choice === 3")
-        page.keyboard.up("Down")
+        page.keyboard.up("ArrowDown")
         page.locator("#ww-level-grid button").first.click()
 
         page.set_viewport_size({"width": 640, "height": 360})
