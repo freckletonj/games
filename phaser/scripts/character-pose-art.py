@@ -228,9 +228,38 @@ def prismtail(pose):
     return layer
 
 
+def glimmermoth(pose):
+    _, body, head, fore_tip, hind_tip = pose
+    layer = Image.new("RGBA", (256, 256))
+    draw = ImageDraw.Draw(layer)
+    x, y = body
+    fx, fy = fore_tip
+    hx, hy = hind_tip
+    draw.polygon([body,(fx+33,fy-14),(fx+12,fy-18),(fx-9,fy),(fx+10,fy+24)], fill="#897db4")
+    draw.polygon([body,(hx-10,hy-13),(hx-17,hy+3),(hx+4,hy+22),(hx+37,hy+14)],
+                 fill="#a9c7d2", outline="#f2c7dc", width=3)
+    draw.line([body,head], fill="#9c81ac", width=19)
+    dot(draw, (x-13,y+13), 27, 14, "#8b739e")
+    for dx in (-10,4,19):
+        draw.line([(x+dx,y+7),(x+dx-7,y+34)], fill="#8d739e", width=4)
+    draw.polygon([body,(fx+38,fy+5),(fx+18,fy-9),(fx-15,fy-6),
+                  (fx-21,fy+12),(fx+1,fy+29),(fx+37,fy+33)], fill="#bca3cc",
+                 outline="#edcadb", width=3)
+    draw.line([(x+2,y),(fx+3,fy+10)], fill="#b3d5d8", width=3)
+    x, y = head
+    draw.line([(x-4,y),(x-8,y-24),(x+4,y-41)], fill="#906f9f", width=4)
+    draw.line([(x+1,y),(x+12,y-21),(x+26,y-28)], fill="#906f9f", width=4)
+    dot(draw, (x+5,y-42), 9, 4, "#c18eac")
+    dot(draw, (x+26,y-29), 9, 4, "#c18eac")
+    dot(draw, head, 21, 19, "#dfb4ba")
+    dot(draw, (x+8,y+2), 14, 12, "#eacaa4")
+    dot(draw, (x+9,y+1), 5, 5, "#493957")
+    return layer
+
+
 CREATURES = {
     "tideling": tidefox, "skyling": moonwing, "emberkit": emberkit,
-    "mossback": mossback, "prismtail": prismtail,
+    "mossback": mossback, "prismtail": prismtail, "glimmermoth": glimmermoth,
 }
 
 
