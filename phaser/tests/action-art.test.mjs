@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {ventBubblePose} from '../src/traversal-art.js';
 import {BLOOM_COOLDOWN,bloomFrame} from '../src/springboard.js';
 import {EFFECT_FRAMES,paintedAction,powerFrame,setpieceFrame,enemyTellFrame,
   paintedFootOrigin,PROP_FEET,SETPIECE_FEET,ILLUSTRATION_FRAME_HEIGHT}
@@ -18,7 +19,6 @@ test('all power effects select an authored frame from the original painted atlas
   assert.equal(powerFrame('mossback'),EFFECT_FRAMES.honey);
   assert.equal(powerFrame('skyling'),EFFECT_FRAMES.gust);
   assert.equal(powerFrame('tideling'),EFFECT_FRAMES.splash);
-  assert.equal(setpieceFrame('bubbleVent'),EFFECT_FRAMES.bubble);
   assert.equal(enemyTellFrame('prismtail'),EFFECT_FRAMES.bubble);
   assert.equal(enemyTellFrame('emberkit'),EFFECT_FRAMES.spark);
   assert.equal(enemyTellFrame('springaroo'),null);
@@ -63,4 +63,13 @@ test('the three explorer float rows share a waterline and distinct four-frame cl
     assert.deepEqual(art.clip.frames,[0,1,2,3]);
   }
   assert.equal(paintedAction('tideling','float'),null);
+});
+
+
+test('vent bubbles rise on staggered phases, pop at the top, and fade back in',()=>{
+  assert.deepEqual(ventBubblePose(0,0),{rise:0,frame:0,alpha:0});
+  assert.ok(ventBubblePose(0,2).rise>ventBubblePose(0,1).rise);
+  const pop=ventBubblePose(.95/.62,0);
+  assert.equal(pop.rise,1);
+  assert.equal(pop.frame,6);
 });

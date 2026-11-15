@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import './bootstrap.js';
 import {campaign,compileChapter} from './campaign.js';
-import {characters,mounts,riders,bounceBloom,captureOrb,fainted,floaters,backgrounds,sheets,silhouettes} from './assets.js';
+import {characters,mounts,riders,bounceBloom,captureOrb,fainted,floaters,backgrounds,sheets,silhouettes,ventBubbles} from './assets.js';
 import {EFFECT_FRAMES,FAINTED_FRAME,FLOAT_FRAME,paintedAction,powerFrame,setpieceFrame,enemyTellFrame,
   paintedFootOrigin} from './action-art.js';
 import {MOUNTS,LOCATIONS,seatFor,stepMountedMotion,stepWildMount,landsOnMount} from './mounts.js';
@@ -9,6 +9,7 @@ import {captureBurst,drawCaptureBurst} from './capture-effects.js';
 import {bindings,readActions} from './input.js';
 import {platformTopAt,orbStep,orbHitsAnimal} from './physics.js';
 import {triggerBloom,bloomFrame,BLOOM_COOLDOWN,BLOOM_ART} from './springboard.js';
+import {makeVentBubbles,animateVentBubbles,VENT_BUBBLE_FRAME} from './traversal-art.js';
 import {stepPlayerMotion} from './player-motion.js';
 import {TICK_MS,simulationTicks,queueInputEdges,withoutInputEdges} from './fixed-clock.js';
 import {poseFor,gesture} from './animation.js';
@@ -82,6 +83,7 @@ class Wonderwood extends Phaser.Scene {
       frameWidth:riders.manifest.frameWidth,frameHeight:riders.manifest.frameHeight
     });
     this.load.image('capture-orb',captureOrb);
+    this.load.spritesheet('vent-bubbles',ventBubbles,{frameWidth:VENT_BUBBLE_FRAME,frameHeight:VENT_BUBBLE_FRAME});
     this.load.spritesheet('bounce-bloom',bounceBloom,{frameWidth:BLOOM_ART.width,frameHeight:BLOOM_ART.height});
     this.load.spritesheet('fainted',fainted,{
       frameWidth:FAINTED_FRAME.width,frameHeight:FAINTED_FRAME.height
@@ -630,22 +632,17 @@ class Wonderwood extends Phaser.Scene {
     }
     for(const part of this.level.setpieces||[]){
       const x=part.x*TILE,y=(part.y||0)*TILE;
+      if(part.kind==='bubbleVent'){
+        const pool=this.level.waterBodies.find(b=>part.x>=b.start&&part.x<=b.end);
+        this.setpieces.push({kind:part.kind,x,y,...makeVentBubbles(this,x,y,pool.surface*TILE)});
+        continue;
+      }
       const base=part.kind==='bounceBloom'?this.groundAt(x):y;
       const art=part.kind==='bounceBloom'?
         this.add.image(x,base,'bounce-bloom',0)
           .setOrigin(.5,BLOOM_ART.rootY/BLOOM_ART.height).setScale(.16).setDepth(4):
         this.add.image(x,base,'effects',setpieceFrame(part.kind))
           .setOrigin(.5,paintedFootOrigin(part.kind)).setScale(.12).setAlpha(.82).setDepth(4);
-      if(part.kind==='bubbleVent'){
-        // A small illustrated bubble plume exposes the actual lift column.
-        // It is scenery only: the semantic vent volume supplies the force.
-        this.tweens.add({targets:art,y:base-11,alpha:.46,
-          scale:.15,duration:1050,yoyo:true,repeat:-1});
-        const plume=this.add.image(x-4,base-25,'effects',EFFECT_FRAMES.bubble)
-          .setScale(.075).setAlpha(.4).setDepth(4);
-        this.tweens.add({targets:plume,y:base-103,alpha:0,
-          scale:.11,duration:1800,repeat:-1,ease:'Sine.easeOut'});
-      }
       this.setpieces.push({kind:part.kind,x,y:base,time:0,visual:art});
     }
   }
@@ -1508,6 +1505,7 @@ class Wonderwood extends Phaser.Scene {
         }
       }
       for(const piece of this.setpieces){
+        if(piece.kind==='bubbleVent')animateVentBubbles(piece,tickTime/1000);
         if(piece.kind!=='bounceBloom')continue;
         piece.time=Math.max(0,piece.time-step/60);
         piece.visual.setFrame(bloomFrame(tickTime/1000+piece.x*.01,piece.time));
