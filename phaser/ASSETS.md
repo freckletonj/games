@@ -21,19 +21,24 @@ as contiguous strips cut from one finished composition per chapter.
 The registered dimensions describe placement. These are resized preview
 paintings, with scope for a later native-detail art pass.
 
-## Luminous Grotto single-image painting (PR #8)
+## Luminous Grotto panorama
 
-`phaser/assets/generated/luminous-grotto-single.png` is the approved
-**1672 × 941** single-frame cave painting generated using OpenAI image
-generation during the November 12, 2026 Luminous Grotto prototype.
-It was not imported from ArtByte, Kenney, or a third-party image search.
-The 3200 × 1792 static guide can be regenerated from
-`phaser/src/cave-layout.js` as described in
-[CAVE-ART-PIPELINE.md](CAVE-ART-PIPELINE.md). The existing painting predates
-that final guide, so the appearance of some water/rock boundaries is not
-perfectly collision-aligned; this known issue is accepted for the
-initial proof of concept. Actors, items, effects and UI are separate
-existing gameplay assets; they are not part of the cave painting.
+The prototype painting, `phaser/assets/generated/luminous-grotto-single.png`,
+was generated at **1672 × 941**. The game loads the refined **3000 × 1680**
+`phaser/assets/generated/luminous-grotto.webp` in the same 3200 × 1792
+world. The refinement retains the prototype composition and its existing
+small offsets at some water and rock boundaries. Actors, items, effects,
+and UI use separate assets.
+
+Export the world material guide as described in
+[CAVE-ART-PIPELINE.md](CAVE-ART-PIPELINE.md). Align the approved composition
+to the guide and crop both into 1760 × 1008 quadrants at x 0 and 1440 and
+y 0 and 784. Paint at native resolution with the matching neighboring
+overlaps as references. The four returns were 1657–1658 × 949. Fit them
+to 1650 × 945, then stitch with 300 pixels of horizontal and 210 pixels
+of vertical overlap using `scripts/stitch-cave-painting.py`. Use
+`scripts/protect-scene-edges.py` with the approved world painting and
+`--margin 24` before WebP export.
 
 The baseline Wonderwood game uses original generated painterly character sheets,
 slope materials, props and chapter backgrounds from the repo's `src/assets/`.
