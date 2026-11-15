@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {ventBubblePose} from '../src/traversal-art.js';
 import {BLOOM_COOLDOWN,bloomFrame} from '../src/springboard.js';
-import {EFFECT_FRAMES,paintedAction,powerFrame,setpieceFrame,enemyTellFrame,
+import {EFFECT_FRAMES,paintedAction,powerFrame,enemyTellFrame,
   paintedFootOrigin,PROP_FEET,SETPIECE_FEET,ILLUSTRATION_FRAME_HEIGHT}
   from '../src/action-art.js';
 

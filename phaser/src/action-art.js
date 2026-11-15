@@ -45,16 +45,11 @@ export const PROP_FEET=Object.freeze({
   snack:229,checkpoint:243,exit:246
 });
 export const SETPIECE_FEET=Object.freeze({
-  windRing:155,
   honeyPuddle:241
 });
 export function paintedFootOrigin(kind){
   return (PROP_FEET[kind]??SETPIECE_FEET[kind]??ILLUSTRATION_FRAME_HEIGHT)/
     ILLUSTRATION_FRAME_HEIGHT;
-}
-
-export function setpieceFrame(kind){
-  return {windRing:EFFECT_FRAMES.gust}[kind];
 }
 
 export function powerFrame(kind){

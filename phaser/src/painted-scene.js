@@ -31,19 +31,6 @@ export function paintScene(scene,art){
   return images;
 }
 
-// Thermals are active traversal aids and stay separate from the scene painting.
-export function paintThermals(scene){
-  const winds=scene.add.graphics().setDepth(-21);
-  for(const column of scene.level.thermalVolumes){
-    const x=column.x*16,y=column.y*16,w=column.width*16,h=column.height*16;
-    winds.fillStyle(0xdbfafa,.09);
-    winds.fillRoundedRect(x,y,w,h,24);
-    winds.lineStyle(1,0xcffafa,.29);
-    for(let offset=12;offset<w;offset+=20)
-      winds.lineBetween(x+offset,y+h-8,x+offset+8,y+10);
-  }
-}
-
 export function makeGeometryOverlay(scene){
   const level=scene.level;
   const g=scene.add.graphics().setDepth(100).setVisible(false);

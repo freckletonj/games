@@ -1,15 +1,16 @@
 import Phaser from 'phaser';
 import './bootstrap.js';
 import {campaign,compileChapter} from './campaign.js';
-import {characters,mounts,riders,bounceBloom,captureOrb,fainted,floaters,backgrounds,sheets,silhouettes,ventBubbles} from './assets.js';
-import {EFFECT_FRAMES,FAINTED_FRAME,FLOAT_FRAME,paintedAction,powerFrame,setpieceFrame,enemyTellFrame,
+import {characters,mounts,riders,bounceBloom,captureOrb,fainted,floaters,backgrounds,sheets,silhouettes,ventBubbles,windColumn} from './assets.js';
+import {EFFECT_FRAMES,FAINTED_FRAME,FLOAT_FRAME,paintedAction,powerFrame,enemyTellFrame,
   paintedFootOrigin} from './action-art.js';
 import {MOUNTS,LOCATIONS,seatFor,stepMountedMotion,stepWildMount,landsOnMount} from './mounts.js';
 import {captureBurst,drawCaptureBurst} from './capture-effects.js';
 import {bindings,readActions} from './input.js';
 import {platformTopAt,orbStep,orbHitsAnimal} from './physics.js';
 import {triggerBloom,bloomFrame,BLOOM_COOLDOWN,BLOOM_ART} from './springboard.js';
-import {makeVentBubbles,animateVentBubbles,VENT_BUBBLE_FRAME} from './traversal-art.js';
+import {makeVentBubbles,animateVentBubbles,VENT_BUBBLE_FRAME,
+  makeThermals,makeWindSprite,animateWind,WIND_FRAME} from './traversal-art.js';
 import {stepPlayerMotion} from './player-motion.js';
 import {TICK_MS,simulationTicks,queueInputEdges,withoutInputEdges} from './fixed-clock.js';
 import {poseFor,gesture} from './animation.js';
@@ -22,7 +23,7 @@ import {launchPower,stepPower,powerHitsCreature,applyPowerHit,
 import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat,
   stompCreature} from './creature-motion.js';
 import {caveContainsWater} from './cave-layout.js';
-import {makeGeometryOverlay,paintScene,paintThermals,sceneTextures} from './painted-scene.js';
+import {makeGeometryOverlay,paintScene,sceneTextures} from './painted-scene.js';
 import {deckTopAt,platformPosition,stepPlatforms} from './moving-platforms.js';
 import {machinePlatforms,stepMachines} from './machines.js';
 import {createPuzzleObjects,pushPuzzleObject,blockPuzzleX,puzzleTop,punchWall,
@@ -83,6 +84,7 @@ class Wonderwood extends Phaser.Scene {
       frameWidth:riders.manifest.frameWidth,frameHeight:riders.manifest.frameHeight
     });
     this.load.image('capture-orb',captureOrb);
+    this.load.spritesheet('wind-column',windColumn,{frameWidth:WIND_FRAME.width,frameHeight:WIND_FRAME.height});
     this.load.spritesheet('vent-bubbles',ventBubbles,{frameWidth:VENT_BUBBLE_FRAME,frameHeight:VENT_BUBBLE_FRAME});
     this.load.spritesheet('bounce-bloom',bounceBloom,{frameWidth:BLOOM_ART.width,frameHeight:BLOOM_ART.height});
     this.load.spritesheet('fainted',fainted,{
@@ -483,7 +485,7 @@ class Wonderwood extends Phaser.Scene {
         .setOrigin(.5,1).setDisplaySize(...object.size).setDepth(-19);
     }
     if(this.walkableMachines.length||this.puzzleObjects.length)this.deckOverlay=this.add.graphics().setDepth(101);
-    paintThermals(this);
+    this.windColumns=makeThermals(this,this.level.thermalVolumes,TILE);
     this.spawnObjects();
     this.spawnMounts();
     this.confirmedExplorers.forEach((explorer,id)=>{
@@ -641,8 +643,7 @@ class Wonderwood extends Phaser.Scene {
       const art=part.kind==='bounceBloom'?
         this.add.image(x,base,'bounce-bloom',0)
           .setOrigin(.5,BLOOM_ART.rootY/BLOOM_ART.height).setScale(.16).setDepth(4):
-        this.add.image(x,base,'effects',setpieceFrame(part.kind))
-          .setOrigin(.5,paintedFootOrigin(part.kind)).setScale(.12).setAlpha(.82).setDepth(4);
+        makeWindSprite(this,x,y-4,32,44,4);
       this.setpieces.push({kind:part.kind,x,y:base,time:0,visual:art});
     }
   }
@@ -1504,11 +1505,15 @@ class Wonderwood extends Phaser.Scene {
           }
         }
       }
+      const seconds=tickTime/1000;
+      for(const wind of this.windColumns)animateWind(wind,seconds);
       for(const piece of this.setpieces){
-        if(piece.kind==='bubbleVent')animateVentBubbles(piece,tickTime/1000);
-        if(piece.kind!=='bounceBloom')continue;
-        piece.time=Math.max(0,piece.time-step/60);
-        piece.visual.setFrame(bloomFrame(tickTime/1000+piece.x*.01,piece.time));
+        if(piece.kind==='bubbleVent')animateVentBubbles(piece,seconds);
+        else if(piece.kind==='windRing')animateWind(piece.visual,seconds);
+        else if(piece.kind==='bounceBloom'){
+          piece.time=Math.max(0,piece.time-step/60);
+          piece.visual.setFrame(bloomFrame(seconds+piece.x*.01,piece.time));
+        }
       }
       this.updateCaptureBursts();
       stepPlatforms(this.movingPlatforms,tickTime/1000);

@@ -29,3 +29,25 @@ export function animateVentBubbles(piece,time){
       .setFrame(frame).setAlpha(alpha*.85);
   }
 }
+
+export const WIND_FRAME={width:192,height:576};
+
+export function makeWindSprite(scene,x,y,width,height,depth){
+  return scene.add.image(x,y,'wind-column',0).setDisplaySize(width,height)
+    .setDepth(depth);
+}
+
+export function makeThermals(scene,volumes,tile){
+  return volumes.flatMap(({x,y,width,height})=>{
+    const w=width*tile,h=height*tile;
+    const count=Math.max(1,Math.ceil(w/58));
+    return Array.from({length:count},(_,index)=>makeWindSprite(scene,
+      x*tile+(index+.5)*w/count,y*tile+h/2,w/count*1.1,h,-21));
+  });
+}
+
+export function animateWind(visual,time){
+  const phase=time+visual.x*.016;
+  visual.setFrame(Math.floor(phase*7)%4)
+    .setAlpha(.68+.16*Math.sin(phase*4));
+}
