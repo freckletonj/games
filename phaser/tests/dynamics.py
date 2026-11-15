@@ -81,11 +81,13 @@ def main():
             "window.__wonderwoodPhaser.snapshot().players[0].bloomBoosts >= 1",
             timeout=12000)
         boosted=state(page)["players"][0]
-        page.keyboard.up("Space")
-        # Check the actual boost impulse, not frame-dependent displacement.
-        # Headless WebGL may advance one or several ticks before observation.
         assert boosted["bloomWindow"]==0 and boosted["bloomBoosts"]==1,boosted
-        assert boosted["vy"] < -9, (bounced,boosted)
+        # Check the height gained beyond an ordinary bloom bounce. Sampling
+        # velocity here can miss the impulse by several simulation ticks.
+        page.wait_for_function(
+            "y => window.__wonderwoodPhaser.snapshot().players[0].y < y-80",
+            arg=bounced["y"],timeout=12000)
+        page.keyboard.up("Space")
         page.screenshot(path=str(GAME.parent/"phaser-bloom-boost.png"))
         assert not errors,errors
         browser.close()
