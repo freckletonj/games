@@ -18,11 +18,11 @@ function render(art,width=338,height=80,imageWidths=[]){
   return paintScene(scene,art);
 }
 
-test('a whole-scene painting is registered at one world pixel per display unit',()=>{
-  const layers=render({scene:['image']});
+test('a high-resolution whole-scene painting fills its original world bounds',()=>{
+  const layers=render({scene:['image']},148,52,[3256]);
   assert.deepEqual(layers.map(({key,x,y,origin,size,scrollFactor})=>
     ({key,x,y,origin,size,scrollFactor})),[{
-    key:'scene-test-chapter-scene-0',x:0,y:0,origin:0,size:[5408,1280],scrollFactor:1
+    key:'scene-test-chapter-scene-0',x:0,y:0,origin:0,size:[2368,832],scrollFactor:1
   }]);
 });
 

@@ -54,8 +54,10 @@ def main():
             for index, layer in enumerate(art["layers"]):
                 assert layer["textureKey"] == f"scene-{chapter}-scene-{index}", layer
                 assert layer["origin"] == [right, 0] and layer["scrollFactor"] == 1, layer
-                assert layer["sourcePixels"] == layer["worldPixels"], layer
-                assert layer["worldPixels"][0] <= 4096, layer
+                sourceWidth, sourceHeight = layer["sourcePixels"]
+                worldWidth, worldHeight = layer["worldPixels"]
+                assert worldWidth <= sourceWidth <= 4096, layer
+                assert worldHeight <= sourceHeight <= 4096, layer
                 right += layer["worldPixels"][0]
             assert right == state["worldWidth"], art
             page.keyboard.press("v")
