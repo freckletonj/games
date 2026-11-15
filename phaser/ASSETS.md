@@ -10,7 +10,7 @@ guide. The draft ledges were cleaned up and painted ledge detail was
 aligned to the compiled one-way spans. The last four scenes are stored
 as contiguous strips cut from one finished composition per chapter.
 
-| Chapter | Generated source | Registered world |
+| Chapter | Initial generated source | Registered world |
 | --- | --- | --- |
 | Mosslight Meadow | 2115 × 744 | 2368 × 832 |
 | Crystal Coast | 2172 × 724 | 4704 × 960 |
@@ -18,8 +18,10 @@ as contiguous strips cut from one finished composition per chapter.
 | Willow Wetlands | 2172 × 724 | 5184 × 992 |
 | Cloud Gardens | 2172 × 724 | 5408 × 1280 |
 
-The registered dimensions describe placement. These are resized preview
-paintings, with scope for a later native-detail art pass.
+The registered dimensions describe placement. First Forest uses a
+3256 × 1144 refinement and Crystal Coast uses a 5145 × 1050 refinement.
+The latter is stored as three contiguous 1050-pixel-tall strips. See the
+[surface art workflow](ART-DIRECTION.md) for crop and registration details.
 
 ## Luminous Grotto panorama
 

@@ -33,6 +33,7 @@ test('surface paintings cover each world with registered WebP textures',()=>{
   for(const chapter of chapters.filter(chapter=>surfaceDesigns[chapter.id])){
     const level=compileChapter(chapter,compiler);
     let totalWidth=0;
+    let stripHeight;
     const files=registry[chapter.id].scene;
     for(const file of files){
       const image=readFileSync(new URL(file,root));
@@ -40,16 +41,12 @@ test('surface paintings cover each world with registered WebP textures',()=>{
       const width=image.readUInt16LE(26)&0x3fff;
       const height=image.readUInt16LE(28)&0x3fff;
       assert.ok(width>0&&width<=4096,file);
-      if(files.length===1){
-        assert.ok(height>=level.height*16&&height<=4096,file);
-        assert.equal(width*level.height,height*level.width,file);
-        totalWidth=level.width*16;
-        continue;
-      }
-      assert.equal(height,level.height*16,file);
+      assert.ok(height>=level.height*16&&height<=4096,file);
+      stripHeight??=height;
+      assert.equal(height,stripHeight,file);
       totalWidth+=width;
     }
-    assert.equal(totalWidth,level.width*16,chapter.id);
+    assert.equal(totalWidth*level.height,stripHeight*level.width,chapter.id);
   }
 });
 

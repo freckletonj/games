@@ -62,8 +62,12 @@ for the explorer, mount, and rider pose plans.
   Use the same crop coordinates for the artwork and material guide and
   supply an approved neighbor as each new crop's reference. Keep native
   patch detail, check overlaps before stitching, and preserve approved
-  terrain contacts. Follow the [First Forest example](phaser/ART-DIRECTION.md)
-  and inspect joins, ledges, and shorelines at gameplay zoom with **V**.
+  terrain contacts. Where a refinement shifts a ledge, feather a wide
+  enough band of the approved painting around it to remove the duplicate.
+  Stitch wide panoramas before cutting contiguous runtime strips. The game
+  scales the strips together to the original world bounds. Follow the
+  [First Forest and Crystal Coast examples](phaser/ART-DIRECTION.md) and
+  inspect joins, ledges, and shorelines at gameplay zoom with **V**.
 - Check texture dimensions against the renderer's 4096-pixel limit and
   compare the standalone build size before and after. Commit verified
   assets individually with their pose data or registration changes.

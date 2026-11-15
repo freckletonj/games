@@ -43,10 +43,11 @@ chapter directory as the image model's input. It contains only materials.
    A single panorama may use more source pixels than the world. Keep the
    same aspect ratio and a maximum texture edge of 4096 pixels. The
    renderer fits it to the existing world size.
-   The `scene` array lists strips from left to right. For worlds wider than
-   4096 pixels, cut the finished painting into contiguous native-sized
-   strips, currently 2048 pixels wide except the last strip. This fits
-   common WebGL limits and keeps the art continuous. Skywell uses the same
+   The `scene` array lists strips from left to right. For paintings wider
+   than 4096 pixels, cut the finished painting into contiguous strips.
+   Record the seams against world coordinates. The renderer maps each
+   strip's share of the source width to the same share of the world and
+   scales all strips to the world height. Skywell uses the same
    registry and renderer with separate background, water, and solid layers.
 4. Run `npm run check --prefix phaser`, open the standalone HTML, and use
    **V** to compare the art with collision at gameplay zoom. Check
@@ -88,3 +89,19 @@ The script feathers the approved painting around material boundaries
 while keeping the refined bark, foliage, and rock interiors. Review the
 protected result at 2× gameplay zoom and check that each ledge still has
 one readable edge before replacing the registered texture.
+
+## Crystal Coast refinement
+
+Crystal Coast keeps its 4704 × 960 world and uses a 5145 × 1050 painting.
+Crop the registered painting and guide into 1368 × 960 regions at x 0,
+1112, 2224, and 3336. The four native returns were 1497 × 1051. Fit them
+to 1497 × 1050 and use the approved crop's broad values and colors to
+match lighting through each overlap. Protect terrain edges with a 28-world-pixel
+margin before stitching. At x 0, 1216, 2432, and 3648 the 281-pixel overlaps
+measured 11.88, 8.51, and 9.63 mean absolute RGB error in their highest channels.
+
+At full scale the first stitched proof showed faint duplicate ledges.
+Composite the approved painting around ledges out to 44 world pixels,
+feathering to the refined art at 78. Check the shoreline, ledge, and strip
+seams at 2×. Cut the final painting at source x 2240 and 4480, which match
+world x 2048 and 4096, and export each strip as WebP.
