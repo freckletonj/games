@@ -78,3 +78,12 @@ alpha sprites. The panorama was generated at 1915 × 821 and saved at
 **V** over the gears and piston to inspect the actual standing surfaces.
 The tests run the production movement through the conveyor, three gears,
 piston launch, relic and gate. **C** recalls to the most recent camp.
+
+## High-resolution scene
+
+The active panorama is 2534 × 1086 over the same 1792 × 768 world.
+Repaint the registered scene in two 1024 × 768 crops starting at world
+x 0 and 768. Stitch the 1448 × 1086 results across their 362-pixel overlap,
+then protect the original floor, ledge lips, and rim with the static
+terrain guide. The boiler sits across the blend, so check its edges and
+lighting together with the belt, gears, and piston at 2×.
