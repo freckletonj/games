@@ -15,6 +15,10 @@ python phaser/scripts/character-pose-art.py tideling tideling-guide.png
 python phaser/scripts/character-pose-art.py skyling skyling-guide.png
 ```
 
+Run the same command with `mossback`, `prismtail`, `emberkit`,
+`glimmermoth`, or `cloudwhisp` to export those creature plans. Each plan
+declares its own action frames and 320 × 320 runtime cells.
+
 Give the image model the guide and a painted appearance reference. Ask for
 a four-column, three-row sheet with one right-facing figure per cell, the
 same contacts as the guide, and transparent space around each cutout.

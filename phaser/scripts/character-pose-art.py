@@ -257,9 +257,34 @@ def glimmermoth(pose):
     return layer
 
 
+def cloudwhisp(pose):
+    _, body, face, crest, upper_bend, upper_tip, lower_bend, lower_tip = pose
+    layer = Image.new("RGBA", (256, 256))
+    draw = ImageDraw.Draw(layer)
+    x, y = body
+    for start, bend, tip, color in (((x,y-12),upper_bend,upper_tip,"#aaa4d6"),
+                                     ((x,y+16),lower_bend,lower_tip,"#888abc")):
+        tx, ty = tip
+        draw.line([start,bend,tip,(tx+1,ty-8),(tx+9,ty-12)], fill=color, width=16, joint="curve")
+    dot(draw, (x-20,y-3), 36, 26, "#a8acd7")
+    dot(draw, (x-10,y+21), 32, 21, "#999ccc")
+    dot(draw, (x+24,y+15), 32, 24, "#a8abd3")
+    dot(draw, body, 44, 31, "#bcc4df")
+    cx, cy = crest
+    draw.line([face,crest,(cx-12,cy-4),(cx-20,cy+2)], fill="#d9c7de", width=21, joint="curve")
+    dot(draw, (cx-19,cy+3), 10, 10, "#d9c7de")
+    x, y = face
+    dot(draw, face, 30, 27, "#ead5d9")
+    dot(draw, (x+7,y+3), 4, 6, "#605367")
+    dot(draw, (x+20,y+5), 3, 4, "#605367")
+    draw.arc((x+10,y+7,x+20,y+15), 5, 170, fill="#7f6474", width=2)
+    return layer
+
+
 CREATURES = {
     "tideling": tidefox, "skyling": moonwing, "emberkit": emberkit,
     "mossback": mossback, "prismtail": prismtail, "glimmermoth": glimmermoth,
+    "cloudwhisp": cloudwhisp,
 }
 
 
