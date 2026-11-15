@@ -60,7 +60,6 @@ export function powerFrame(kind){
     mossback:EFFECT_FRAMES.honey,
     prismtail:EFFECT_FRAMES.bubble,
     glimmermoth:EFFECT_FRAMES.petal,
-    cloudwhisp:EFFECT_FRAMES.gust,
-    emberkit:EFFECT_FRAMES.spark
+    cloudwhisp:EFFECT_FRAMES.gust
   }[kind]??EFFECT_FRAMES.spark;
 }

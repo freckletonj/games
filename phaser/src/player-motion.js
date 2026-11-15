@@ -48,9 +48,8 @@ export function stepPlayerMotion(p,actions,step,world){
     const wallContact=(world.climbWalls||[]).find(w=>
       Math.abs(p.x-w.x*world.tile)<=21&&
       p.y>w.top*world.tile+3&&p.y-27<w.bottom*world.tile);
-    // Emberkit gets a modest sprint, not a game-breaking traversal power.
     const desired=direction*(world.pushSpeed??(swimmer?2.15:
-      p.form==='springaroo'?2.65:p.form==='emberkit'?2.6:2.3));
+      p.form==='springaroo'?2.65:p.form==='emberkit'?3.15:2.3));
     const traction=p.grounded ? .22 : .14;
     p.vx+=(desired-p.vx)*Math.min(1,traction*step);
     if(!direction&&Math.abs(p.vx)<.06)p.vx=0;
@@ -90,7 +89,7 @@ export function stepPlayerMotion(p,actions,step,world){
       }else if(tryBloomBoost(p,actions.jumpPressed)){
         events.push('bloomBoost');
       }else if(p.jumpBuffer>0&&p.coyote>0){
-        p.vy=-5.4;p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumps=1;
+        p.vy=p.form==='emberkit'?-7.15:-5.4;p.grounded=false;p.coyote=0;p.jumpBuffer=0;p.jumps=1;
       }else if(actions.jumpPressed&&p.form==='springaroo'&&p.jumps===1){
         p.vy=-6.6;p.jumps=2;p.jumpBuffer=0;
         events.push('doubleJump');

@@ -318,12 +318,12 @@ Ordinary locomotion remains on the painted character atlases;
 intermediate wingbeats and several distinct action keyframes still need
 dedicated art.
 
-Mossback, Prismtail, Skyling, Cloudwhisp and Emberkit cast **real**
+Mossback, Prismtail, Skyling and Cloudwhisp cast **real**
 fixed-clock projectiles with finite ranges, swept creature contact and
 terrain collision. Honey can leave a temporary sticky puddle. Prismtail
 creates a floating trapped-creature bubble, wind applies eased physical
 knockback, and knockback/hostile dashes respect steep terrain. Hover and
-swimming/double-jump operate through their own movement controls.
+swimming, double-jump, and Emberkit’s sprint and high jump operate through their own movement controls.
 The creature-target and projectile rules are in `src/power-projectiles.js`,
 `src/creature-motion.js` and `src/gameplay-rules.js`.
 
@@ -337,7 +337,7 @@ terrain. The on-screen help tracks the active transformation.
 `tests/gameplay-quality.test.mjs` guard art mapping, impact, projectiles,
 inclines, bubble lift, swim currents, hovering and target selection.
 The deterministic quality report uses **schema version 2**, including
-impact travel ticks for all five offensive powers and slope speeds for
+impact travel ticks for all four offensive powers and slope speeds for
 both mounts. These metrics are regression limits, not a substitute for
 watching actual gameplay.
 

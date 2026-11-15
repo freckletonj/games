@@ -41,7 +41,7 @@ const VIEW_W=480;
 const VIEW_H=270;
 const SKY={meadow:0xa4d9c2,coast:0xa8dbe0,summit:0x98a4ce};
 const FORMS={springaroo:'Double jump',tideling:'Swim and dive',skyling:'Four wingbeats',
-  mossback:'Honey',prismtail:'Bubbles',glimmermoth:'Hover',cloudwhisp:'Gust',emberkit:'Spark',
+  mossback:'Honey',prismtail:'Bubbles',glimmermoth:'Hover',cloudwhisp:'Gust',emberkit:'Sprint and high jump',
   gravelback:'Push boulders',flintfist:'Stone punch'};
 const EXPLORERS={hero:'Original',princess:'Princess',steampunk:'Steampunk'};
 const EXPLORER_IDS=Object.keys(EXPLORERS);
@@ -59,7 +59,7 @@ const FORM_HINTS={
   prismtail:'F / B to float creatures in bubbles',
   glimmermoth:'F / B for a long feather-hover',
   cloudwhisp:'F / B to blow creatures back',
-  emberkit:'Run faster · F / B for a gentle spark',
+  emberkit:'Run fast · Jump to leap higher',
   gravelback:'Walk into a boulder to push it',
   flintfist:'F / B · punch cracked stone'
 };
@@ -898,7 +898,7 @@ class Wonderwood extends Phaser.Scene {
 
   castPower(p){
     if(!p.form||p.powers>0)return;
-    if(p.form==='springaroo'||p.form==='tideling'||p.form==='gravelback')return;
+    if(['springaroo','tideling','gravelback','emberkit'].includes(p.form))return;
     p.powers=.8;
     gesture(p,'alert',.28);
     if(p.form==='flintfist'){

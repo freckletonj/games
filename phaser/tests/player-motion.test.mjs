@@ -121,3 +121,17 @@ test('land forms bob and jump from the surface while Tidefox can dive',()=>{
   assert.ok(swimmer.y>460);
   assert.equal(swimmer.floating,false);
 });
+
+
+test('Emberkit reaches a higher apex from the same ground jump',()=>{
+  const jump=player=>{
+    stepPlayerMotion(player,{...controls,jump:true,jumpPressed:true},1,world);
+    let apex=player.y;
+    for(let i=0;i<44;i++){
+      stepPlayerMotion(player,{...controls,jump:true},1,world);
+      apex=Math.min(apex,player.y);
+    }
+    return 500-apex;
+  };
+  assert.ok(jump(explorer('emberkit'))>jump(explorer())*1.65);
+});

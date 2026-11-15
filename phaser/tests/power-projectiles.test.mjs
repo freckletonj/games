@@ -10,9 +10,9 @@ const animal=(x=125,y=500)=>({
 });
 const groundAt=()=>500;
 
-test('five useful forms launch actual world-space projectiles, not instant hits',()=>{
+test('four useful forms launch actual world-space projectiles, not instant hits',()=>{
   assert.deepEqual(Object.keys(PROJECTILE_POWERS).sort(),
-    ['mossback','prismtail','skyling','cloudwhisp','emberkit'].sort());
+    ['mossback','prismtail','skyling','cloudwhisp'].sort());
   for(const form of Object.keys(PROJECTILE_POWERS)){
     const shot=launchPower(form,100,490,1,0);
     assert.equal(shot.owner,0);
@@ -24,6 +24,7 @@ test('five useful forms launch actual world-space projectiles, not instant hits'
   }
   assert.equal(launchPower('springaroo',100,490,1,0),null);
   assert.equal(launchPower('tideling',100,490,1,0),null);
+  assert.equal(launchPower('emberkit',100,490,1,0),null);
 });
 
 test('all projectiles have bounded reach, including a shot that misses',()=>{
@@ -47,7 +48,7 @@ test('swept collision hits a moving target in the projectile path, not behind it
   assert.equal(powerHitsCreature(shot,fromX,fromY,animal(100,450)),false);
 });
 
-test('bubble, honey, wind and spark have distinct semantic effects',()=>{
+test('bubble, honey and wind have distinct semantic effects',()=>{
   for(const form of Object.keys(PROJECTILE_POWERS)){
     const target=animal();
     const shot=launchPower(form,100,490,1,0);
@@ -59,7 +60,7 @@ test('bubble, honey, wind and spark have distinct semantic effects',()=>{
     assert.equal(target.knockVX>0,form==='skyling'||form==='cloudwhisp',form);
     assert.equal(effect,form==='prismtail'?'bubble':
       form==='mossback'?'honey':
-      ['skyling','cloudwhisp'].includes(form)?'gust':'spark',form);
+      'gust',form);
   }
 });
 
@@ -82,7 +83,7 @@ test('simulated projectile trajectory is independent of rendering chunk size',()
   }
 });
 
-test('all five offensive forms hit an ordinary nearby creature through actual flight',()=>{
+test('all four offensive forms hit an ordinary nearby creature through actual flight',()=>{
   for(const form of Object.keys(PROJECTILE_POWERS)){
     const shot=launchPower(form,100,500,1,0);
     const target=animal(175,500);
