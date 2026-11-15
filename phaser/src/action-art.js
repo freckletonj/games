@@ -1,12 +1,8 @@
 // Illustrated action vocabulary from src/platform/illustrations.js. Keep the
-// Phaser remake aligned with the existing 4x2 effects and 3x3 state atlases.
+// Phaser remake aligned with the existing 4x2 effects atlas.
 export const EFFECT_FRAMES=Object.freeze({
   honey:0,honeyPuddle:1,bubble:2,bubbleTrap:3,
   gust:4,petal:5,splash:6,spark:7
-});
-const EATING_FRAMES=Object.freeze({
-  springaroo:0,tideling:1,skyling:2,mossback:3,
-  prismtail:4,glimmermoth:5,cloudwhisp:6,emberkit:7
 });
 
 const FAINTED_FORMS=[
@@ -20,8 +16,6 @@ export function paintedAction(kind,action){
     const frame=FAINTED_FORMS.indexOf(kind);
     if(frame>=0)return {texture:'fainted',frame,width:frame<3?47:49,originY:91/96};
   }
-  if(action==='eat'&&EATING_FRAMES[kind]!==undefined)
-    return {texture:'painted-states',frame:EATING_FRAMES[kind],width:43,height:39,originY:1};
   return null;
 }
 

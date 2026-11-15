@@ -46,7 +46,6 @@ def main():
                 "Menu confirm must not trigger a jump when gameplay begins", state
             )
             assert state["animalCount"] > 0, state
-            assert state["paintedStateFrames"] == 9, state
             assert state["platformCount"] > 0, state
             art = state["sceneArt"]
             assert not art["geometryOverlay"], art

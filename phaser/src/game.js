@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import './bootstrap.js';
 import {campaign,compileChapter} from './campaign.js';
-import {characters,mounts,riders,captureOrb,fainted,backgrounds,sheets,silhouettes,paintedStates} from './assets.js';
+import {characters,mounts,riders,captureOrb,fainted,backgrounds,sheets,silhouettes} from './assets.js';
 import {EFFECT_FRAMES,FAINTED_FRAME,paintedAction,powerFrame,setpieceFrame,enemyTellFrame,
   paintedFootOrigin} from './action-art.js';
 import {MOUNTS,LOCATIONS,seatFor,stepMountedMotion,stepWildMount,landsOnMount} from './mounts.js';
@@ -91,7 +91,6 @@ class Wonderwood extends Phaser.Scene {
       this.load.spritesheet(name,url,{frameWidth:180*scale,frameHeight:270*scale});
     }
     for(const [name,url] of Object.entries(silhouettes))this.load.image('kenney-'+name,url);
-    this.load.image('painted-states',paintedStates);
     this.load.spritesheet('seal-fragments',sealAtlas,{
       frameWidth:sealPlan.size[0]*2,frameHeight:sealPlan.size[1]*2
     });
@@ -127,15 +126,6 @@ class Wonderwood extends Phaser.Scene {
     this.stage=-1;
     this.makeBerryTexture();
     this.makeKeyTexture();
-    // Source illustration is a 3x3 sheet. Register real cropped frames
-    // rather than enlarging a complete atlas into the character position.
-    const statesTexture=this.textures.get('painted-states');
-    this.stateFrameWidth=statesTexture.source[0].width/3;
-    this.stateFrameHeight=statesTexture.source[0].height/3;
-    for(let frame=0;frame<9;frame++)
-      statesTexture.add(frame,0,(frame%3)*this.stateFrameWidth,
-        Math.floor(frame/3)*this.stateFrameHeight,
-        this.stateFrameWidth,this.stateFrameHeight);
     // Revive has the same binding as the legacy game. H returns to the menu.
     this.input.keyboard.on('keydown-H',()=>{if(this.stage>=0)this.showMenu();});
     this.input.keyboard.on('keydown-V',()=>{
@@ -155,7 +145,6 @@ class Wonderwood extends Phaser.Scene {
         climbWallCount:this.level?.climbWalls?.length||0,
         worldWidth:this.worldW||0,
         cameraZoom:this.cameras.main.zoom,
-        paintedStateFrames:this.textures.get('painted-states').frameTotal-1,
         sceneArt:this.stage>=0?{
           geometryOverlay:this.geometryOverlay.visible,
           layers:this.sceneArt.map(layer=>({
@@ -1146,7 +1135,7 @@ class Wonderwood extends Phaser.Scene {
         lure.visual.destroy();
         this.lures.splice(this.lures.indexOf(lure),1);
         this.sparkle(animal.x,animal.y,0xffd4ee);
-        gesture(animal,animal.trust>=100?'happy':'eat',.5);
+        gesture(animal,'eat',.5);
         this.flash(animal.trust>=100?
           FORMsName(animal.kind)+' is friendly — throw a capture orb!':
           FORMsName(animal.kind)+' enjoyed the treat',1300);

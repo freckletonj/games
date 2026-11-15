@@ -54,7 +54,7 @@ def main():
         page.wait_for_function(
             """window.__wonderwoodPhaser.snapshot().animals
                .some(a => a.kind === 'springaroo' &&
-                    a.texture === 'painted-states' && a.frame === 0)""",
+                    a.action === 'eat' && a.texture === 'actor-springaroo' && a.frame === 1)""",
             timeout=5000,
         )
         press_until(

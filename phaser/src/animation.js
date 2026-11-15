@@ -74,7 +74,12 @@ export function poseFor(manifest, action, elapsed, motion=0, phase=0) {
       const pulse=Math.sin(clamp(elapsed/.56,0,1)*Math.PI);
       sx=1+.12*pulse;sy=1+.12*pulse;dy=-5*pulse;break;
     }
-    case 'eat':sy=.94+.035*breath;rotation=.045*breath;break;
+    case 'eat': {
+      const bite=Math.sin(Math.PI*clamp(elapsed/.5,0,1));
+      const chew=Math.sin(elapsed*Math.PI*16)**2;
+      rotation=bite*(.12+.035*chew);sy=1-bite*(.044+.037*chew);
+      break;
+    }
     case 'happy':sy=1+.055*breath;dy=-2.2*Math.abs(breath);break;
     case 'alert':sx=1.06;sy=.98;rotation=.045*breath;break;
     case 'punch': {
