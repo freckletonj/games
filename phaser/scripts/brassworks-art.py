@@ -121,7 +121,7 @@ def pack(args, recipe, layout, scene):
     for name, sprite, size in (
         ("gear", gear, (248, 248)),
         ("feed-belt", belt, (600, 76)),
-        ("launch-piston", piston, (180, 88)),
+        ("launch-piston", piston, (180, 144)),
     ):
         sprite.resize(size, RESAMPLE).save(args.output / f"{name}.webp", lossless=True)
     # One complete repeating painted chevron becomes the scrolling belt tread.
