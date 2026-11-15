@@ -201,7 +201,37 @@ def mossback(pose):
     return layer
 
 
-CREATURES = {"tideling": tidefox, "skyling": moonwing, "emberkit": emberkit, "mossback": mossback}
+def prismtail(pose):
+    _, body, head, tail, far_rear, far_front, near_rear, near_front = pose
+    layer = Image.new("RGBA", (256, 256))
+    draw = ImageDraw.Draw(layer)
+    x, y = body
+    tx, ty = tail
+    draw.line([body, tail], fill="#c68cb1", width=17)
+    for offset, color in ((12,"#a092ca"),(4,"#89bbb9"),(-5,"#f0bd7a"),(-14,"#e996a4")):
+        draw.polygon([(tx+26,ty+17),(tx-16,ty+13+offset),(tx-37,ty+4+offset),
+                      (tx-43,ty-12+offset),(tx-16,ty-20+offset),(tx+12,ty-12+offset)],
+                     fill=color)
+    for foot, dx, color in ((far_rear,-29,"#ae7a75"), (far_front,24,"#ae7a75"),
+                            (near_rear,-25,"#d28d7a"), (near_front,32,"#d28d7a")):
+        draw.line([(x+dx,y+10),foot], fill=color, width=16)
+        dot(draw, foot, 11, 5, color)
+    dot(draw, body, 42, 24, "#df9b88")
+    draw.line([(x+20,y),head], fill="#df9b88", width=24)
+    x, y = head
+    draw.polygon([(x-19,y-5),(x-48,y-39),(x-20,y-33),(x+1,y-13)], fill="#bb7883")
+    draw.polygon([(x-1,y-9),(x-25,y-43),(x+4,y-35),(x+14,y-12)], fill="#d79292")
+    dot(draw, head, 23, 20, "#e4a28d")
+    dot(draw, (x+15,y+8), 19, 10, "#f4d6bb")
+    dot(draw, (x+12,y-3), 5, 6, "#694553")
+    dot(draw, (x+33,y+7), 3, 3, "#694553")
+    return layer
+
+
+CREATURES = {
+    "tideling": tidefox, "skyling": moonwing, "emberkit": emberkit,
+    "mossback": mossback, "prismtail": prismtail,
+}
 
 
 def silhouettes(name, plan):
