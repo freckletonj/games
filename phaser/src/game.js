@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 17525)
-Total output lines: 1621
-
 import Phaser from 'phaser';
 import './bootstrap.js';
 import {campaign,compileChapter} from './campaign.js';
@@ -535,7 +532,522 @@ class Wonderwood extends Phaser.Scene {
   animate(entity,name,action,delta){
     const manifest=characters[name].manifest;
     const visibleAction=entity.gestureTime>0?entity.gesture:action;
-    const art=pain…5525 tokens truncated…x=>this.groundAt(x),this.worldW);
+    const art=paintedAction(name,visibleAction);
+    const textureName=art?.texture??'actor-'+name;
+    if(entity.textureName!==textureName){
+      entity.textureName=textureName;
+      entity.visual.setTexture(textureName);
+      entity.visual.setOrigin(art?.5:manifest.origin.x/manifest.frameWidth,
+        art?art.originY:manifest.origin.y/manifest.frameHeight);
+      entity.action='';
+    }
+    if(entity.action!==visibleAction){
+      entity.action=visibleAction;
+      entity.animationTime=0;
+    }else entity.animationTime+=delta;
+    const pose=poseFor(manifest,visibleAction,entity.animationTime,
+      entity.vx??(entity.face||1),entity.homeX??entity.id??0);
+    const face=entity.face||1;
+    entity.visual.setFrame(art?art.frame:pose.frame);
+    entity.visual.setPosition(entity.x+pose.dx*face,entity.y+pose.dy);
+    entity.visual.setFlipX(face<0);
+    const frame=entity.visual.frame;
+    const sx=art?art.width/frame.cutWidth:manifest.worldScale;
+    const sy=art?.height?art.height/frame.cutHeight:sx;
+    entity.visual.setScale(sx*pose.sx,sy*pose.sy);
+    entity.visual.setRotation(face*pose.rotation);
+    if(entity.visual.shadow){
+      const floor=entity.perch?.y??this.groundAt(entity.x);
+      const ledge=entity.id!==undefined&&!entity.grounded?
+        platformTopAt(entity.x,entity.y,floor,this.level.platformSegments,TILE):null;
+      const shadowY=entity.grounded?entity.y:ledge??floor;
+      const elevation=Math.max(0,shadowY-entity.y);
+      const weight=Math.max(.33,1-elevation/155);
+      entity.visual.shadow.setPosition(entity.x,shadowY+3)
+        .setScale(weight).setAlpha(.28*weight);
+    }
+    entity.gestureTime=Math.max(0,(entity.gestureTime||0)-delta);
+  }
+
+  spawnObjects(){
+    const relicKind=this.chapter.key;
+    for(const object of this.level.objects){
+      // Put the first friendly Springaroo within teaching range of spawn.
+      // Later creatures retain the semantic layout's intended placements.
+      const x=(object.x+.5)*TILE;
+      if(FORMS[object.kind]){
+        const flying=['skyling','glimmermoth','cloudwhisp'].includes(object.kind);
+        const perch=object.perch?{
+          left:object.perch.x*TILE,right:(object.perch.x+object.perch.length)*TILE,
+          y:object.perch.y*TILE
+        }:null;
+        const y=perch?perch.y:flying?(object.y+.5)*TILE:this.groundAt(x);
+        const isFirst=this.chapter.id==='first-forest'&&
+        object.kind==='springaroo'&&object.x===10;
+      const halo=isFirst?this.add.ellipse(x,y-17,53,36,0xfff4bd,.08)
+        .setStrokeStyle(1.2,0xe5ffca,.57).setDepth(10):null;
+      if(halo)this.tweens.add({targets:halo,alpha:{from:.14,to:.58},
+        scale:{from:.82,to:1.08},duration:1300,yoyo:true,repeat:-1});
+      this.animals.push({kind:object.kind,x,y,homeX:x,homeY:y,
+          face:1,trust:0,distraction:0,respawn:0,bubble:0,
+          stun:0,attack:0,windup:0,dash:0,attackFace:1,shotWait:1,shotWindup:0,
+          captured:false,flying,perch,bubbleRise:0,lureTarget:null,knockVX:0,
+          bubbleVisual:null,honeyVisual:null,action:'',animationTime:0,halo,
+          visual:this.actor(object.kind,x,y).setDepth(12),
+          warning:this.add.graphics().setDepth(24),
+          warningArt:enemyTellFrame(object.kind)===null?null:
+            this.add.image(x,y-15,'effects',enemyTellFrame(object.kind))
+              .setScale(.1).setAlpha(0).setDepth(24)});
+      } else if(['starShard','snack','checkpoint','exit',relicKind].includes(object.kind)){
+        const rooted=['snack','checkpoint','exit'].includes(object.kind);
+        const y=rooted?this.groundAt(x):(object.y+.5)*TILE;
+        const frame=object.kind==='starShard'?6:object.kind==='snack'?5:
+          object.kind==='checkpoint'?2:object.kind==='exit'?0:7;
+        const important=object.kind===relicKind||object.kind==='exit'||
+          object.kind==='checkpoint';
+        const halo=important?this.add.ellipse(x,y-19,
+          object.kind===relicKind?36:28,object.kind===relicKind?42:33,
+          object.kind===relicKind?0xfff6cb:0xbaf4de,.11)
+          .setStrokeStyle(1.1,object.kind===relicKind?0xffefbc:0xc9f8e4,.45)
+          .setDepth(8):null;
+        if(halo)this.tweens.add({targets:halo,alpha:{from:.17,to:.48},
+          scale:{from:.91,to:1.11},duration:1200+(object.x%5)*120,
+          ease:'Sine.easeInOut',yoyo:true,repeat:-1});
+        const icon=object.kind===relicKind?
+          this.add.image(x,y-13,'gate-key').setDisplaySize(42,42).setDepth(10):
+          this.add.image(x,y,'props',frame)
+            .setOrigin(.5,paintedFootOrigin(object.kind)).setScale(.16).setDepth(10);
+        if(object.kind==='exit'&&this.shared.relic)icon.setFrame(1);
+        // A little authored motion makes collectibles readable in the
+        // painterly scenery without adding a row of HUD markers.
+        if(object.kind==='starShard'||object.kind===relicKind)
+          this.tweens.add({targets:icon,y:icon.y-5,rotation:{from:-.045,to:.045},
+            duration:940+(object.x%7)*85,yoyo:true,repeat:-1,
+            ease:'Sine.easeInOut'});
+        if(object.kind==='snack')this.tweens.add({targets:icon,
+          scale:{from:.155,to:.168},duration:1350+(object.x%4)*180,
+          yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
+        this.items.push({kind:object.kind,x,y,visual:icon,halo,used:false});
+      }
+    }
+    for(const part of this.level.setpieces||[]){
+      const x=part.x*TILE,y=(part.y||0)*TILE;
+      const base=part.kind==='bounceBloom'?this.groundAt(x):y;
+      const art=this.add.image(x,base,'effects',setpieceFrame(part.kind))
+        .setOrigin(.5,paintedFootOrigin(part.kind))
+        .setScale(.12).setAlpha(.82).setDepth(4);
+      if(part.kind==='bubbleVent'){
+        // A small illustrated bubble plume exposes the actual lift column.
+        // It is scenery only: the semantic vent volume supplies the force.
+        this.tweens.add({targets:art,y:base-11,alpha:.46,
+          scale:.15,duration:1050,yoyo:true,repeat:-1});
+        const plume=this.add.image(x-4,base-25,'effects',EFFECT_FRAMES.bubble)
+          .setScale(.075).setAlpha(.4).setDepth(4);
+        this.tweens.add({targets:plume,y:base-103,alpha:0,
+          scale:.11,duration:1800,repeat:-1,ease:'Sine.easeOut'});
+      }
+      this.setpieces.push({kind:part.kind,x,y:base,time:0,visual:art});
+    }
+  }
+
+  spawnMounts(){
+    for(const [kind,cell,ledgeHeight] of LOCATIONS[this.chapter.id]||[]){
+      const {manifest}=mounts[kind];
+      const x=(cell+.5)*TILE;
+      const y=ledgeHeight!==undefined?ledgeHeight*TILE:this.groundAt(x);
+      const visual=this.add.sprite(x,y,'mount-'+kind,0)
+        .setOrigin(manifest.origin.x/manifest.frameWidth,
+          manifest.origin.y/manifest.frameHeight)
+        .setScale(manifest.worldScale).setDepth(24);
+      const shadow=this.add.ellipse(x,y+2,48,8,0x18383c,.22).setDepth(8);
+      const aura=this.add.ellipse(x,y-23,67,49,0xfff4cc,.10)
+        .setStrokeStyle(1.2,0xf2dfb6,.34).setDepth(10);
+      this.tweens.add({targets:aura,alpha:{from:.10,to:.33},
+        scale:{from:.94,to:1.08},duration:1700+(cell%5)*180,
+        ease:'Sine.easeInOut',yoyo:true,repeat:-1});
+      this.mounts.push({kind,x,y,homeX:x,homeY:y,perched:ledgeHeight!==undefined,
+        vx:0,vy:0,face:1,grounded:true,trust:0,rider:null,chew:0,
+        flapWait:0,flaps:0,rear:0,approached:false,action:'',animationTime:0,
+        visual,shadow,aura});
+    }
+  }
+
+  animateMount(m,action,delta){
+    const manifest=mounts[m.kind].manifest;
+    if(m.action!==action){m.action=action;m.animationTime=0;}
+    else m.animationTime+=delta;
+    const clip=manifest.animations[action==='rear'?'jump':action];
+    const index=Math.floor(m.animationTime*clip.fps);
+    const frame=clip.frames[action==='jump'||action==='rear'?
+      Math.min(index,clip.frames.length-1):index%clip.frames.length];
+    const lift=action==='rear'?Math.sin(Math.PI*Math.min(1,m.animationTime/.66)):0;
+    m.visual.setFrame(frame).setPosition(m.x,m.y-6*lift).setFlipX(m.face<0)
+      .setRotation(-m.face*.14*lift);
+    const support=m.perched?m.homeY:this.supportAt(m.x,m.y);
+    m.shadow.setPosition(m.x,support+3);
+    const elevation=Math.max(0,support-m.y);
+    m.shadow.setScale(Math.max(.38,1-elevation/190));
+    m.aura.setPosition(m.x,m.y-24);
+    m.aura.setStrokeStyle(1.2,m.trust>=100?0xc1ffce:0xf2dfb6,
+      m.trust>=100?.78:.34);
+    return frame;
+  }
+
+  wingbeatTrail(x,y){
+    // The original painted effects atlas provides a softer wind cue than
+    // adding more bright procedural dots around the flying character.
+    const wind=this.add.image(x,y+5,'effects',4).setOrigin(.5)
+      .setScale(.085).setAlpha(.42).setDepth(16);
+    this.tweens.add({targets:wind,y:y+21,scale:.16,alpha:0,
+      duration:390,ease:'Sine.easeOut',onComplete:()=>wind.destroy()});
+  }
+
+  board(p,m){
+    if(m.trust<100||m.rider!==null||p.mount)return false;
+    this.changeForm(p,null);
+    p.bubble=false;p.creatureBounceWindow=0;
+    m.rider=p.id;p.mount=m;m.perched=false;m.rear=0;m.vx=0;
+    p.visual.shadow?.setVisible(false);
+    p.gestureTime=0;
+    p.invincible=.45;
+    this.flash(m.kind==='pegasus'?'Pegasus — take to the sky!':
+      'Unicorn — gallop!',1300);
+    this.sparkle(m.x,m.y-35,0xfff6cb);
+    return true;
+  }
+
+  dismount(p){
+    const m=p.mount;
+    if(!m)return;
+    m.rider=null;p.mount=null;
+    p.x=clamp(m.x+m.face*28,10,this.worldW-10);
+    p.y=m.y-24;
+    p.vx=m.vx*.7;p.vy=m.vy;m.vx=0;
+    p.grounded=false;p.invincible=Math.max(p.invincible,.65);
+    p.visual.shadow?.setVisible(true);
+    this.flash('Back on your own feet',900);
+  }
+
+  moveMountedPlayer(p,actions,step){
+    const m=p.mount;
+    const {action,launch}=stepMountedMotion(m,actions,step,{
+      width:this.worldW,height:this.worldH,tile:TILE,
+      groundAt:x=>this.groundAt(x),
+      platformSegments:this.level.platformSegments,
+      ceilingAt:this.level.cave?x=>this.level.cave.ceilingAt(x):null
+    });
+    if(launch)m.action='';
+    if(launch==='takeoff')this.sparkle(m.x,m.y-35,0xffecce);
+    else if(launch==='wingbeat'){
+      this.sparkle(m.x,m.y-39,0xd9efff);
+      this.wingbeatTrail(m.x,m.y);
+    }
+    const frame=this.animateMount(m,action,step/60);
+    const mountArt=mounts[m.kind].manifest;
+    // Preserve the gameplay position while the art follows the painted saddle.
+    const seat=seatFor(m.kind,m.grounded?action:'jump');
+    p.x=m.x+seat.x*m.face;
+    p.y=m.y+seat.y;
+    const [seatX,seatY]=mountArt.seats[frame];
+    p.vx=m.vx;p.vy=m.vy;p.face=m.face;p.grounded=m.grounded;
+    const riderArt=riders.manifest;
+    const riderFrame=riderArt.explorers.indexOf(p.explorer)*riderArt.columns+mountArt.riderFrames[frame];
+    p.textureName='riders';
+    p.action='ride';
+    p.visual.setTexture('riders',riderFrame)
+      .setOrigin(riderArt.origin.x/riderArt.frameWidth,riderArt.origin.y/riderArt.frameHeight)
+      .setPosition(m.x+seatX*mountArt.worldScale*m.face,m.y+seatY*mountArt.worldScale)
+      .setFlipX(p.face<0).setScale(riderArt.worldScale).setRotation(0);
+    if(p.id===1&&this.players.length===2&&
+       (Math.abs(p.x-this.players[0].x)>210||Math.abs(p.y-this.players[0].y)>145)){
+      this.dismount(p);
+      p.bubble=true;
+    }
+  }
+
+  updateMounts(step,time){
+    const world={width:this.worldW,tile:TILE,platformSegments:this.level.platformSegments,
+      groundAt:x=>this.groundAt(x),inWater:(x,y)=>this.inWater(x,y)};
+    for(const m of this.mounts){
+      if(m.rider!==null)continue;
+      const near=this.players.filter(p=>!p.sleep&&!p.bubble&&
+        Math.abs(p.x-m.x)<80&&Math.abs(p.y-m.y)<48)
+        .sort((a,b)=>Math.abs(a.x-m.x)-Math.abs(b.x-m.x))[0];
+      const food=m.trust<100?this.lures.find(f=>f.landed&&Math.abs(f.x-m.x)<155&&
+        Math.abs(f.y-m.y)<48):null;
+      const action=stepWildMount(m,near,food,step,time,world);
+      if(m.grounded&&food&&Math.abs(food.x-m.x)<18&&Math.abs(food.y-m.y)<24){
+        m.trust=feedTrust(m.trust,MOUNTS[m.kind].favorite,food.food);
+        m.chew=.45;
+        food.visual.destroy();
+        this.lures.splice(this.lures.indexOf(food),1);
+        this.sparkle(m.x,m.y-32,0xf8e9ba);
+        this.flash(m.trust===100?
+          m.kind+' trusts you! Press T / Y nearby to ride':
+          m.kind+' enjoyed the treat',1750);
+      }
+      this.animateMount(m,action,step/60);
+    }
+  }
+
+  makePlayer(id,explorer){
+    const spawn=this.level.objects.find(o=>o.kind==='p1');
+    const x=(spawn.x+.5)*TILE+(id?14:0), y=this.groundAt(x);
+    const visual=this.actor(explorer,x,y).setDepth(30+id);
+    if(id===1)visual.setTint(0xcacaff);
+    const player={id,explorer,x,y,vx:0,vy:0,face:1,grounded:true,coyote:5,
+      jumpBuffer:0,jumps:0,flaps:0,flapWait:0,health:3,sleep:false,invincible:0,
+      creatureBounceWindow:0,creatureBounceBoosts:0,
+      form:null,caught:null,food:0,powers:0,punchTicks:0,hover:0,breach:0,bubble:false,
+      mount:null,trap:null,trapGrace:0,trapVisual:null,
+      bloomWindow:0,bloomBoosts:0,recalls:0,
+      checkpoint:{x,y},action:'',animationTime:0,visual};
+    this.players.push(player);
+    return player;
+  }
+
+  makeHud(){
+    // DOM UI is independent of Phaser's zoomed scrolling world camera.
+    const ui=document.getElementById('ww-ui');
+    ui.hidden=false;
+    const status=document.getElementById('ww-objective');
+    this.healthBars=[...document.querySelectorAll('#ww-health progress')];
+    const notice=document.getElementById('ww-notice');
+    const help=document.getElementById('ww-help');
+    const pause=document.getElementById('ww-pause');
+    pause.hidden=true;
+    this.hud={setText:value=>{status.textContent=value;}};
+    this.notice={setText:value=>{notice.textContent=value;}};
+    this.help={setText:value=>{help.textContent=value;}};
+    this.pausedOverlay={setVisible:visible=>{pause.hidden=!visible;}};
+    this.noticeUntil=0;
+  }
+
+  flash(message,duration=1800){
+    if(!this.notice)return;
+    this.notice.setText(message);
+    this.noticeUntil=this.time.now+duration;
+  }
+
+  sparkle(x,y,color=0xffedb3){
+    // Three restrained, painted glints instead of generic circular confetti.
+    const frame=color===0xc5f5ff?EFFECT_FRAMES.splash:
+      color===0xffc7e1?EFFECT_FRAMES.petal:EFFECT_FRAMES.spark;
+    for(let i=0;i<3;i++){
+      const direction=i-1;
+      const art=this.add.image(x+direction*5,y-12,'effects',frame)
+        .setScale(.047+Math.abs(direction)*.006).setAlpha(.7)
+        .setDepth(40).setTint(color);
+      this.tweens.add({targets:art,x:x+direction*19,
+        y:y-23-Math.abs(direction)*3,alpha:0,scale:.024,
+        duration:390+i*75,ease:'Sine.easeOut',
+        onComplete:()=>art.destroy()});
+    }
+  }
+
+  supportAt(x,feetY){
+    const surface=this.groundAt(x);
+    const ledge=this.level.platformSegments
+      .filter(platform=>platform.kind==='platform'&&
+        x>=platform.x*TILE&&x<=(platform.x+platform.length)*TILE)
+      .map(platform=>platform.y*TILE)
+      .filter(y=>y<=surface&&Math.abs(y-feetY)<50)
+      .sort((a,b)=>Math.abs(a-feetY)-Math.abs(b-feetY))[0];
+    return ledge??surface;
+  }
+
+  playerPerch(p){
+    return this.animals.find(a=>a.perch&&p.grounded&&p.y===a.perch.y&&
+      p.x>=a.perch.left-4&&p.x<=a.perch.right+4)?.perch;
+  }
+
+  throwFood(p){
+    const food=FRUITS[p.food];
+    if(this.shared.foods[food]===0){
+      this.flash('Find a picnic basket to refill '+food+' treats',1400);
+      return;
+    }
+    this.shared.foods[food]--;
+    // A long, visible throw that still respects real supporting geometry.
+    const perch=this.playerPerch(p);
+    const aim=p.x+p.face*96+p.vx*5;
+    const x=perch?clamp(aim,perch.left+12,perch.right-15):clamp(aim,16,this.worldW-16);
+    const y=perch?.y??this.supportAt(x,p.y);
+    gesture(p,'feed',.27);
+    const texture=food==='berry'?'painted-berry':'flora';
+    const sprite=food==='berry'?
+      this.add.image(p.x,p.y-18,texture).setDisplaySize(19,20):
+      this.add.image(p.x,p.y-18,texture,p.food).setScale(.071);
+    sprite.setOrigin(.5,1).setDepth(18);
+    const lure={x,y,food,visual:sprite,landed:false,life:24*60,
+      startX:p.x+p.face*9,startY:p.y-21,face:p.face,age:0};
+    this.lures.push(lure);
+    sprite.setPosition(lure.startX,lure.startY);
+    this.flash('A '+food+' treat is on its way',800);
+  }
+
+  powerEffect(kind,x,y,face=1){
+    const gust=kind==='cloudwhisp'||kind==='skyling';
+    const frame=powerFrame(kind);
+    const art=this.add.image(x,y-17,'effects',frame)
+      .setScale(gust?.12:.095).setAlpha(.86).setDepth(39);
+    art.setFlipX(face<0);
+    this.tweens.add({targets:art,x:x+(gust?face*28:face*5),
+      y:y-(gust?22:28),scale:gust?.16:.12,alpha:0,
+      duration:gust?450:530,ease:'Sine.easeOut',
+      onComplete:()=>art.destroy()});
+  }
+
+  castPower(p){
+    if(!p.form||p.powers>0)return;
+    if(p.form==='springaroo'||p.form==='tideling'||p.form==='gravelback')return;
+    p.powers=.8;
+    gesture(p,'alert',.28);
+    if(p.form==='flintfist'){
+      gesture(p,'punch',.34);
+      p.punchTicks=5;
+      return;
+    }
+    if(p.form==='glimmermoth'){
+      p.hover=HOVER_SECONDS;
+      this.powerEffect(p.form,p.x,p.y,p.face);
+      return;
+    }
+    this.shootPower(p.form,p,p.id);
+  }
+
+  shootPower(kind,source,owner){
+    const shot=launchPower(kind,source.x,source.y,source.face,owner);
+    const visual=this.add.image(shot.x,shot.y,'effects',powerFrame(kind))
+      .setScale(kind==='prismtail'?.11:.09).setAlpha(.9)
+      .setDepth(33).setFlipX(source.face<0);
+    this.powerShots.push({...shot,visual});
+  }
+
+  aimCreaturePower(animal,lure,step){
+    const kind=animal.kind;
+    if(kind!=='mossback'&&kind!=='prismtail')return;
+    animal.shotWait=Math.max(0,animal.shotWait-step/60);
+    if(lure||animal.distraction>0||animal.stun>0||animal.bubbleRise>0){
+      if(animal.shotWindup>0)animal.gestureTime=0;
+      animal.shotWindup=0;
+      return;
+    }
+    if(animal.shotWindup>0){
+      animal.shotWindup=Math.max(0,animal.shotWindup-step/60);
+      if(animal.shotWindup===0){
+        this.shootPower(kind,animal,null);
+        animal.shotWait=3;
+      }
+      return;
+    }
+    if(animal.windup>0||animal.dash>0||animal.shotWait>0)return;
+    const target=this.players.find(p=>!p.sleep&&!p.bubble&&!p.trap&&
+      Math.abs(p.x-animal.x)>=(kind==='prismtail'?52:20)&&
+      Math.abs(p.x-animal.x)<(kind==='prismtail'?112:86)&&Math.abs(p.y-animal.y)<28);
+    if(target){
+      animal.face=target.x>animal.x?1:-1;
+      animal.shotWindup=.48;
+      gesture(animal,'alert',.48);
+    }
+  }
+
+  trapPlayer(p,kind){
+    if(p.mount)this.dismount(p);
+    p.trap={kind,ticks:0};p.vx=0;p.vy=0;p.launchSpeed=0;p.gestureTime=0;
+    p.jumpBuffer=0;p.creatureBounceWindow=0;p.bloomWindow=0;
+    const bubble=kind==='prismtail';
+    p.trapVisual=this.add.image(p.x,p.y,'effects',
+      bubble?EFFECT_FRAMES.bubbleTrap:EFFECT_FRAMES.honeyPuddle)
+      .setOrigin(.5,bubble?.5:paintedFootOrigin('honeyPuddle'))
+      .setScale(bubble?.24:.13).setAlpha(.86).setDepth(bubble?37:21);
+    this.flash(bubble?'Caught in a bubble! Tap Jump to break free.':
+      'Stuck in honey! Tap Jump to break free.',1800);
+  }
+
+  clearTrap(p){
+    p.trapVisual?.destroy();p.trapVisual=null;p.trap=null;
+  }
+
+  makeSealVisual(wall){
+    const [width,height]=wall.size;
+    let frame=0;
+    wall.fragments=wall.fracture.map(band=>band.pieces.map(points=>{
+      const xs=points.map(([x])=>x),ys=points.map(([,y])=>y);
+      const cx=(Math.min(...xs)+Math.max(...xs))/2;
+      const cy=(Math.min(...ys)+Math.max(...ys))/2;
+      return this.add.image(wall.x-width/2+cx,wall.bottom-height+cy,
+        'seal-fragments',frame++)
+        .setOrigin(cx/width,cy/height).setDisplaySize(width,height).setDepth(-19);
+    }));
+  }
+
+  strikeWall(p){
+    const hit=punchWall(this.puzzleObjects,p);
+    this.sparkle(p.x+p.face*24,p.y-18,0xffd398);
+    if(!hit)return;
+    const {wall,band}=hit;
+    const {kick,fall,crumble}=sealPlan.debris;
+    for(const [i,fragment] of wall.fragments[band].entries()){
+      const side=i?1:-1;
+      const x=fragment.x,y=fragment.y;
+      const landing=wall.bottom-9;
+      fragment.setDepth(19);
+      this.sparkle(x,y,0xe5ad7d);
+      this.tweens.chain({targets:fragment,tweens:[
+        {x:x+side*(kick.spread+band*3)+p.face*9,y:y-kick.rise,angle:side*kick.turn,
+          duration:kick.ms,ease:'Quad.easeOut'},
+        {x:x+side*(fall.spread+band*3)+p.face*12,y:landing,angle:side*fall.turn,alpha:.78,
+          duration:fall.ms+Math.max(0,landing-y)*2,ease:'Quad.easeIn',
+          onComplete:()=>this.sparkle(fragment.x,landing+10,0xc79982)},
+        {scale:fragment.scale*crumble.scale,alpha:0,duration:crumble.ms,ease:'Quad.easeOut'}
+      ],onComplete:()=>fragment.destroy()});
+    }
+    if(wall.state==='broken')this.flash('The cave is open!',1400);
+  }
+
+  addHoneyPuddle(x){
+    const visual=this.add.image(x,this.groundAt(x),'effects',
+      EFFECT_FRAMES.honeyPuddle)
+      .setOrigin(.5,paintedFootOrigin('honeyPuddle')).setScale(.125)
+      .setAlpha(.82).setDepth(13);
+    this.honeyPuddles.push({x,life:HONEY_PUDDLE_TICKS,visual});
+  }
+
+  powerImpact(shot,animal){
+    const effect=applyPowerHit(shot,animal);
+    if(effect==='bubble'){
+      animal.bubbleVisual?.destroy();
+      animal.bubbleVisual=this.add.image(animal.x,animal.y-18,
+        'effects',EFFECT_FRAMES.bubbleTrap)
+        .setScale(.19).setAlpha(.83).setDepth(25);
+    }
+    if(effect==='honey'){
+      animal.honeyVisual?.destroy();
+      animal.honeyVisual=this.add.image(animal.x,animal.y,
+        'effects',EFFECT_FRAMES.honeyPuddle)
+        .setOrigin(.5,paintedFootOrigin('honeyPuddle'))
+        .setScale(.125).setAlpha(.9).setDepth(13);
+    }
+    this.powerEffect(shot.kind,animal.x,animal.y,
+      Math.sign(shot.vx));
+    gesture(animal,'stunned',.4);
+  }
+
+  updatePowers(step){
+    for(const puddle of [...this.honeyPuddles]){
+      puddle.life-=step;
+      for(const animal of this.animals){
+        if(honeyPuddleCatches(puddle,animal,x=>this.groundAt(x)))
+          animal.stun=Math.max(animal.stun,.55);
+      }
+      if(puddle.life<=0){
+        puddle.visual.destroy();
+        this.honeyPuddles.splice(this.honeyPuddles.indexOf(puddle),1);
+      }
+    }
+    for(const shot of [...this.powerShots]){
+      const result=stepPower(shot,step,x=>this.groundAt(x),this.worldW);
       shot.visual.setPosition(shot.x,shot.y);
       // Terrain takes precedence at a wall: a creature behind solid rock
       // cannot be stunned by a projectile whose trajectory is blocked.
