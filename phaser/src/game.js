@@ -1,14 +1,14 @@
 import Phaser from 'phaser';
 import './bootstrap.js';
 import {campaign,compileChapter} from './campaign.js';
-import {characters,mounts,riders,captureOrb,fainted,backgrounds,sheets,silhouettes} from './assets.js';
+import {characters,mounts,riders,bounceBloom,captureOrb,fainted,backgrounds,sheets,silhouettes} from './assets.js';
 import {EFFECT_FRAMES,FAINTED_FRAME,paintedAction,powerFrame,setpieceFrame,enemyTellFrame,
   paintedFootOrigin} from './action-art.js';
 import {MOUNTS,LOCATIONS,seatFor,stepMountedMotion,stepWildMount,landsOnMount} from './mounts.js';
 import {captureBurst,drawCaptureBurst} from './capture-effects.js';
 import {bindings,readActions} from './input.js';
 import {platformTopAt,orbStep,orbHitsAnimal} from './physics.js';
-import {triggerBloom} from './springboard.js';
+import {triggerBloom,bloomFrame,BLOOM_COOLDOWN,BLOOM_ART} from './springboard.js';
 import {stepPlayerMotion} from './player-motion.js';
 import {TICK_MS,simulationTicks,queueInputEdges,withoutInputEdges} from './fixed-clock.js';
 import {poseFor,gesture} from './animation.js';
@@ -82,6 +82,7 @@ class Wonderwood extends Phaser.Scene {
       frameWidth:riders.manifest.frameWidth,frameHeight:riders.manifest.frameHeight
     });
     this.load.image('capture-orb',captureOrb);
+    this.load.spritesheet('bounce-bloom',bounceBloom,{frameWidth:BLOOM_ART.width,frameHeight:BLOOM_ART.height});
     this.load.spritesheet('fainted',fainted,{
       frameWidth:FAINTED_FRAME.width,frameHeight:FAINTED_FRAME.height
     });
@@ -626,9 +627,11 @@ class Wonderwood extends Phaser.Scene {
     for(const part of this.level.setpieces||[]){
       const x=part.x*TILE,y=(part.y||0)*TILE;
       const base=part.kind==='bounceBloom'?this.groundAt(x):y;
-      const art=this.add.image(x,base,'effects',setpieceFrame(part.kind))
-        .setOrigin(.5,paintedFootOrigin(part.kind))
-        .setScale(.12).setAlpha(.82).setDepth(4);
+      const art=part.kind==='bounceBloom'?
+        this.add.image(x,base,'bounce-bloom',0)
+          .setOrigin(.5,BLOOM_ART.rootY/BLOOM_ART.height).setScale(.16).setDepth(4):
+        this.add.image(x,base,'effects',setpieceFrame(part.kind))
+          .setOrigin(.5,paintedFootOrigin(part.kind)).setScale(.12).setAlpha(.82).setDepth(4);
       if(part.kind==='bubbleVent'){
         // A small illustrated bubble plume exposes the actual lift column.
         // It is scenery only: the semantic vent volume supplies the force.
@@ -1440,7 +1443,6 @@ class Wonderwood extends Phaser.Scene {
       }
     }
     for(const piece of this.setpieces){
-      piece.time=Math.max(0,piece.time-step/60);
       if(piece.kind==='bubbleVent'){
         if(ventContains(p,piece,this.inWater(p.x,p.y-8)))
           applyVentLift(p,step);
@@ -1449,12 +1451,9 @@ class Wonderwood extends Phaser.Scene {
       if(Math.abs(piece.x-p.x)>13||Math.abs(piece.y-p.y)>23)continue;
       if(piece.kind==='bounceBloom'&&piece.time===0&&p.vy>=0){
         triggerBloom(p,p.jumpBuffer>0);
-        piece.time=1.1;
+        piece.time=BLOOM_COOLDOWN;
+        piece.visual.setFrame(4);
         this.sparkle(piece.x,piece.y,0xffc7e1);
-        this.tweens.add({targets:piece.visual,
-          scaleX:{from:.14,to:.21},scaleY:{from:.09,to:.17},
-          duration:130,yoyo:true,repeat:1,
-          onComplete:()=>piece.visual.setScale(.12)});
         this.flash(p.bloomWindow>0?
           'Spring bloom! Tap jump again for a super bounce!':
           'Perfectly timed springboard boost!',1350);
@@ -1503,6 +1502,11 @@ class Wonderwood extends Phaser.Scene {
             item.used=false;item.visual.setVisible(true);
           }
         }
+      }
+      for(const piece of this.setpieces){
+        if(piece.kind!=='bounceBloom')continue;
+        piece.time=Math.max(0,piece.time-step/60);
+        piece.visual.setFrame(bloomFrame(tickTime/1000+piece.x*.01,piece.time));
       }
       this.updateCaptureBursts();
       stepPlatforms(this.movingPlatforms,tickTime/1000);

@@ -22,3 +22,12 @@ export function tryBloomBoost(p,jumpPressed){
   p.bloomBoosts=(p.bloomBoosts||0)+1;
   return true;
 }
+
+export const BLOOM_COOLDOWN=1.1;
+export const BLOOM_ART={width:256,height:224,rootY:208};
+
+export function bloomFrame(time,cooldown){
+  const sinceLaunch=BLOOM_COOLDOWN-cooldown;
+  return sinceLaunch<.4?4+Math.min(3,Math.floor(sinceLaunch*10)):
+    Math.floor(time*3)%4;
+}

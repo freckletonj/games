@@ -33,7 +33,7 @@ export const PROP_FEET=Object.freeze({
   snack:229,checkpoint:243,exit:246
 });
 export const SETPIECE_FEET=Object.freeze({
-  bounceBloom:162,bubbleVent:211,windRing:155,
+  bubbleVent:211,windRing:155,
   honeyPuddle:241
 });
 export function paintedFootOrigin(kind){
@@ -42,8 +42,7 @@ export function paintedFootOrigin(kind){
 }
 
 export function setpieceFrame(kind){
-  return {bounceBloom:EFFECT_FRAMES.petal,
-    windRing:EFFECT_FRAMES.gust,
+  return {windRing:EFFECT_FRAMES.gust,
     bubbleVent:EFFECT_FRAMES.bubble}[kind];
 }
 
