@@ -1,14 +1,14 @@
 {
   "name": "steampunk",
   "image": "sheet.webp",
-  "frameWidth": 160,
-  "frameHeight": 160,
+  "frameWidth": 320,
+  "frameHeight": 320,
   "columns": 4,
   "origin": {
-    "x": 80.0,
-    "y": 138.125
+    "x": 160.0,
+    "y": 276.25
   },
-  "worldScale": 0.32,
+  "worldScale": 0.16,
   "animations": {
     "idle": {
       "frames": [
