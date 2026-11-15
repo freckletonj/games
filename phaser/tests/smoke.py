@@ -50,7 +50,7 @@ def main():
         page.keyboard.down("Space")
         page.wait_for_function("window.__wonderwoodPhaser.snapshot().menu === 'levels'")
         page.keyboard.up("Space")
-        assert page.locator("#ww-level-grid button").count() == 10
+        assert page.locator("#ww-level-grid button").count() == 11
         page.keyboard.down("ArrowDown")
         page.wait_for_function("window.__wonderwoodPhaser.snapshot().choice === 3")
         page.keyboard.up("ArrowDown")
