@@ -28,8 +28,8 @@ row shows four different seated poses with a shared hip pivot. The near
 leg and boot are visible along the mount's flank.
 
 The princess uses a dedicated 1280 × 960 painting with the shared human
-poses. Her plum traveling coat, gold crown, and blonde braid carry across
-the locomotion and rider art. The locomotion atlas retains the shared
+poses. Her sapphire coat, gold embroidery, crimson cape, crown, and blonde braid
+carry across the locomotion, rider, and fainted art. The locomotion atlas retains the shared
 world-space foot origin and animation clips.
 
 Pack the model's painted alpha sheet and derive the runtime manifest from
