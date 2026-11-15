@@ -52,3 +52,15 @@ test('the bloom plays rooted squash and release frames before resuming its idle 
   assert.deepEqual([0,.15,.25,.35].map(t=>bloomFrame(0,BLOOM_COOLDOWN-t)),[4,5,6,7]);
   assert.equal(bloomFrame(1,0),3);
 });
+
+
+test('the three explorer float rows share a waterline and distinct four-frame clips',()=>{
+  const floaters=['hero','princess','steampunk'].map(kind=>paintedAction(kind,'float'));
+  assert.deepEqual(floaters.map(art=>art.frame),[0,4,8]);
+  for(const art of floaters){
+    assert.equal(art.texture,'floaters');
+    assert.equal(art.originY,190/256);
+    assert.deepEqual(art.clip.frames,[0,1,2,3]);
+  }
+  assert.equal(paintedAction('tideling','float'),null);
+});

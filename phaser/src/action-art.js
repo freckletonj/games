@@ -1,5 +1,7 @@
 // Illustrated action vocabulary from src/platform/illustrations.js. Keep the
 // Phaser remake aligned with the existing 4x2 effects atlas.
+import floatPlan from '../assets/poses/floaters.json' with {type:'json'};
+
 export const EFFECT_FRAMES=Object.freeze({
   honey:0,honeyPuddle:1,bubble:2,bubbleTrap:3,
   gust:4,petal:5,splash:6,spark:7
@@ -11,7 +13,17 @@ const FAINTED_FORMS=[
 ];
 export const FAINTED_FRAME={width:160,height:96};
 
+export const FLOAT_FRAME={width:floatPlan.frame[0],height:floatPlan.frame[1]};
+
 export function paintedAction(kind,action){
+  if(action==='float'){
+    const row=floatPlan.explorers.indexOf(kind);
+    if(row>=0)return {
+      texture:'floaters',frame:row*floatPlan.columns,
+      clip:floatPlan.animations.float,width:FLOAT_FRAME.width*floatPlan.worldScale,
+      originY:floatPlan.origin[1]/floatPlan.cell
+    };
+  }
   if(action==='sleep'){
     const frame=FAINTED_FORMS.indexOf(kind);
     if(frame>=0)return {texture:'fainted',frame,width:frame<3?47:49,originY:91/96};

@@ -7,6 +7,7 @@ import steampunk from '../../src/assets/characters/steampunk/sheet.webp';
 import steampunkManifest from '../../src/assets/characters/steampunk/manifest.json';
 import riderSheet from '../assets/generated/riders.webp';
 import riderManifest from '../assets/generated/riders.json';
+import floaters from '../assets/generated/floaters.webp';
 import fainted from '../assets/generated/fainted.webp';
 import bounceBloom from '../assets/generated/bounce-bloom.webp';
 import captureOrb from '../assets/generated/capture-orb.webp';
@@ -69,7 +70,7 @@ export const mounts = {
   pegasus:{url:pegasus,manifest:pegasusManifest}
 };
 export const riders={url:riderSheet,manifest:riderManifest};
-export {bounceBloom,captureOrb,fainted};
+export {bounceBloom,captureOrb,fainted,floaters};
 export const backgrounds = {meadow,coast,summit};
 export const sheets = {flora,props,effects};
 export const silhouettes = {

@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import './bootstrap.js';
 import {campaign,compileChapter} from './campaign.js';
-import {characters,mounts,riders,bounceBloom,captureOrb,fainted,backgrounds,sheets,silhouettes} from './assets.js';
-import {EFFECT_FRAMES,FAINTED_FRAME,paintedAction,powerFrame,setpieceFrame,enemyTellFrame,
+import {characters,mounts,riders,bounceBloom,captureOrb,fainted,floaters,backgrounds,sheets,silhouettes} from './assets.js';
+import {EFFECT_FRAMES,FAINTED_FRAME,FLOAT_FRAME,paintedAction,powerFrame,setpieceFrame,enemyTellFrame,
   paintedFootOrigin} from './action-art.js';
 import {MOUNTS,LOCATIONS,seatFor,stepMountedMotion,stepWildMount,landsOnMount} from './mounts.js';
 import {captureBurst,drawCaptureBurst} from './capture-effects.js';
@@ -86,6 +86,7 @@ class Wonderwood extends Phaser.Scene {
     this.load.spritesheet('fainted',fainted,{
       frameWidth:FAINTED_FRAME.width,frameHeight:FAINTED_FRAME.height
     });
+    this.load.spritesheet('floaters',floaters,{frameWidth:FLOAT_FRAME.width,frameHeight:FLOAT_FRAME.height});
     for(const [name,url] of Object.entries(backgrounds))this.load.image('back-'+name,url);
     for(const [name,url] of Object.entries(sheets)){
       const scale=name==='flora'?FLORA_ATLAS_SCALE:1;
@@ -525,7 +526,7 @@ class Wonderwood extends Phaser.Scene {
 
   animate(entity,name,action,delta){
     const manifest=characters[name].manifest;
-    const visibleAction=entity.gestureTime>0?entity.gesture:action;
+    const visibleAction=action!=='float'&&entity.gestureTime>0?entity.gesture:action;
     const art=paintedAction(name,visibleAction);
     const textureName=art?.texture??'actor-'+name;
     if(entity.textureName!==textureName){
@@ -542,7 +543,10 @@ class Wonderwood extends Phaser.Scene {
     const pose=poseFor(manifest,visibleAction,entity.animationTime,
       entity.vx??(entity.face||1),entity.homeX??entity.id??0);
     const face=entity.face||1;
-    entity.visual.setFrame(art?art.frame:pose.frame);
+    const clip=art?.clip;
+    const frameNumber=clip?art.frame+clip.frames[Math.floor(entity.animationTime*clip.fps)%clip.frames.length]:
+      art?.frame??pose.frame;
+    entity.visual.setFrame(frameNumber);
     entity.visual.setPosition(entity.x+pose.dx*face,entity.y+pose.dy);
     entity.visual.setFlipX(face<0);
     const frame=entity.visual.frame;

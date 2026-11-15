@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops, ImageDraw
 
 PHASER = Path(__file__).resolve().parents[1]
 SKINS = ["hero", "princess", "steampunk"]
@@ -97,6 +97,17 @@ def mount(pose, wing):
         draw.polygon([tuple(p) for p in wing], fill="#e4edf0", outline="#778da9", width=2)
     sx,sy = seat
     draw.arc((sx-21,sy-1,sx+21,sy+22), 5, 175, fill="#a48057", width=5)
+    return layer
+
+
+def water_float(pose, skin, waterline):
+    layer = human(pose, skin, False)
+    opacity = layer.getchannel("A")
+    fade = Image.new("L", layer.size)
+    draw = ImageDraw.Draw(fade)
+    for y in range(layer.height):
+        draw.line((0,y,layer.width,y), fill=max(0,min(255, round((waterline+32-y)*255/34))))
+    layer.putalpha(ImageChops.multiply(opacity, fade))
     return layer
 
 
@@ -289,6 +300,9 @@ CREATURES = {
 
 
 def silhouettes(name, plan):
+    if name == "floaters":
+        return [(pose[0], water_float(pose,i,plan["waterline"]))
+                for i in range(len(plan["explorers"])) for pose in plan["poses"]]
     if name == "riders":
         return [(pose[0], human(pose,i,True)) for i in range(3) for pose in plan["poses"]]
     if name in SKINS:
@@ -309,6 +323,8 @@ def draw_guide(plan, layers):
         draw.line((16,plan["origin"][1],240,plan["origin"][1]), fill="#d5d4c9", width=2)
         draw.text((10,9),f"{i+1:02d}  {label}",fill="#535c5b")
         panel.paste(layer, (0,0), layer)
+        if "waterline" in plan:
+            draw.line((16,plan["waterline"],240,plan["waterline"]), fill="#8bc3cc", width=2)
         sheet.paste(panel, (i%columns*cell,i//columns*cell))
     return sheet
 
@@ -328,9 +344,9 @@ def manifest_for(name, plan):
     manifest = {"name":name,"image":"sheet.webp","frameWidth":width,"frameHeight":height,
                 "columns":plan["columns"],"origin":{"x":left+x*scale,"y":top+y*scale},
                 "worldScale":plan["worldScale"]}
-    if name == "riders":
+    if "explorers" in plan:
         manifest["explorers"] = plan["explorers"]
-    else:
+    if "animations" in plan:
         manifest["animations"] = dict(plan["animations"])
     if name in ("pegasus","unicorn"):
         manifest["seats"] = [[round((pose[5][0]-x)*scale,3),round((pose[5][1]-y)*scale,3)]
@@ -376,7 +392,7 @@ def pack_sheet(plan, layers, painted, alpha_range):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("name",choices=[*SKINS,*CREATURES,"unicorn","pegasus","riders"])
+    parser.add_argument("name",choices=[*SKINS,*CREATURES,"unicorn","pegasus","riders","floaters"])
     parser.add_argument("output",type=Path)
     parser.add_argument("--painted-sheet",type=Path)
     parser.add_argument("--manifest", type=Path)
