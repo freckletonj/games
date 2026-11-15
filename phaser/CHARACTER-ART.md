@@ -27,9 +27,10 @@ original explorer, princess, and steampunk explorer in that order. Each
 row shows four different seated poses with a shared hip pivot. The near
 leg and boot are visible along the mount's flank.
 
-The princess's standing and moving frames use artwork from her painted
-rider row. Her head, braid, coat, arms and boots were cut out and posed
-using the same landmarks as the other explorers.
+The princess uses a dedicated 1280 × 960 painting with the shared human
+poses. Her plum traveling coat, gold crown, and blonde braid carry across
+the locomotion and rider art. The locomotion atlas retains the shared
+world-space foot origin and animation clips.
 
 Pack the model's painted alpha sheet and derive the runtime manifest from
 the same plan. Repeat for each explorer and mount. For `riders`, write
