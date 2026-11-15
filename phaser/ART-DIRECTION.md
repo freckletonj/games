@@ -40,6 +40,9 @@ chapter directory as the image model's input. It contains only materials.
    composition and stitch before exporting game textures.
 3. Store the finished WebP under `phaser/assets/generated/surface-scenes/`
    and register it in `phaser/assets/generated/approved-scene-art.json`.
+   A single panorama may use more source pixels than the world. Keep the
+   same aspect ratio and a maximum texture edge of 4096 pixels. The
+   renderer fits it to the existing world size.
    The `scene` array lists strips from left to right. For worlds wider than
    4096 pixels, cut the finished painting into contiguous native-sized
    strips, currently 2048 pixels wide except the last strip. This fits
@@ -56,3 +59,32 @@ extraction and overlap-aware painting refinement.
 
 For a painted scene with moving objects, see the
 [Clockwork Orchard workflow](DYNAMIC-SCENE-ART.md).
+
+## First Forest refinement
+
+First Forest uses a 3256 × 1144 painting in a 2368 × 832 world. Crop the
+approved composition and material guide into three 912 × 832 regions at
+world x-coordinates 0, 728, and 1456. Request high-resolution detail
+refinement from the matching art and guide crop. Include the already
+refined overlap on the left where available and preserve its composition
+and lighting. Each of the three native returns was 1313 × 1198.
+
+Downsample each accepted return to 1254 × 1144. Stitch at x-coordinates
+0, 1001, and 2002, with 253 pixels of horizontal overlap. Use
+`scripts/stitch-cave-painting.py` with its existing plan format and
+`--max-seam-error 24`. The First Forest joins measured 18.74 and
+14.22 in mean absolute RGB error for their most different channels.
+
+Preserve the painted contacts with the registered source and the exact
+material guide before encoding the panorama as WebP.
+
+```sh
+python phaser/scripts/protect-scene-edges.py \
+  dist/art-guides/first-forest/world-physical-rock.png \
+  approved-first-forest.webp stitched-first-forest.png protected-first-forest.png
+```
+
+The script feathers the approved painting around material boundaries
+while keeping the refined bark, foliage, and rock interiors. Review the
+protected result at 2× gameplay zoom and check that each ledge still has
+one readable edge before replacing the registered texture.
