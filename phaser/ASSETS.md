@@ -20,8 +20,10 @@ as contiguous strips cut from one finished composition per chapter.
 
 The registered dimensions describe placement. First Forest uses a
 3256 × 1144 refinement and Crystal Coast uses a 5145 × 1050 refinement.
-The latter is stored as three contiguous 1050-pixel-tall strips. See the
-[surface art workflow](ART-DIRECTION.md) for crop and registration details.
+Starfall Summit uses a 5115 × 1221 refinement from five overlapping
+1237 × 1271 paintings. Crystal Coast and Starfall Summit each use three
+contiguous runtime strips. See the [surface art workflow](ART-DIRECTION.md)
+for crop and registration details.
 
 ## Luminous Grotto panorama
 
