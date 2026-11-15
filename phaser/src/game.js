@@ -12,7 +12,7 @@ import {triggerBloom,bloomFrame,BLOOM_COOLDOWN,BLOOM_ART} from './springboard.js
 import {makeVentBubbles,animateVentBubbles,VENT_BUBBLE_FRAME,
   makeThermals,makeWindSprite,animateWind,WIND_FRAME} from './traversal-art.js';
 import {stepPlayerMotion} from './player-motion.js';
-import {createRopes,stepRopes} from './rope-swing.js';
+import {createRopes,ropePoint,stepRopes} from './rope-swing.js';
 import {createMonkeys,stepMonkeys,monkeyFrame} from './monkey-motion.js';
 import {TICK_MS,simulationTicks,queueInputEdges,withoutInputEdges} from './fixed-clock.js';
 import {poseFor,gesture} from './animation.js';
@@ -230,6 +230,7 @@ class Wonderwood extends Phaser.Scene {
     this.animals=[];
     this.mounts=[];
     this.ropes=[];
+    this.ropeLines=null;
     this.monkeys=[];
     this.items=[];
     this.orbs=[];
@@ -499,11 +500,13 @@ class Wonderwood extends Phaser.Scene {
     this.spawnObjects();
     this.spawnMounts();
     this.ropes=createRopes(this.level.ropes??[]);
+    if(this.ropes.length)this.ropeLines=this.add.graphics().setDepth(15);
     for(const rope of this.ropes){
       rope.visual=this.add.image(...rope.anchor,'jungle-rope')
         .setOrigin(.5,0).setDisplaySize(8,rope.length).setDepth(16)
         .setRotation(-rope.angle);
     }
+    this.drawRopes();
     this.monkeys=createMonkeys(this.level.monkeys??[],TILE,x=>this.groundAt(x));
     for(const monkey of this.monkeys)
       monkey.visual=this.add.image(monkey.x,monkey.y,'jungle-monkey',0)
@@ -523,6 +526,17 @@ class Wonderwood extends Phaser.Scene {
     // The menu already explains the chapter objective. Avoid covering the
     // first moments of play with a long sentence across the entire sky.
     this.flash(this.chapter.name,1600);
+  }
+
+  drawRopes(){
+    if(!this.ropeLines)return;
+    this.ropeLines.clear();
+    for(const rope of this.ropes){
+      const tip=ropePoint(rope);
+      this.ropeLines.lineStyle(4.8,0x573c28).lineBetween(...rope.anchor,...tip);
+      this.ropeLines.lineStyle(2.8,0xad7a44).lineBetween(...rope.anchor,...tip);
+      rope.visual.setRotation(-rope.angle);
+    }
   }
 
   groundAt(x){
@@ -1554,7 +1568,7 @@ class Wonderwood extends Phaser.Scene {
         this.sparkle(object.x,object.platform[1],0xffe9ad);
       const floor=x=>this.groundAt(x);
       stepRopes(this.ropes,this.players,floor,step);
-      for(const rope of this.ropes)rope.visual.setRotation(-rope.angle);
+      this.drawRopes();
       for(const p of this.players)this.movePlayer(p,tickActions[p.id],step);
       stepMonkeys(this.monkeys,this.players,tickActions,floor,this.level.recallBelow,step);
       for(const monkey of this.monkeys)
