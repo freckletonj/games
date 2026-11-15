@@ -22,8 +22,9 @@ The registered dimensions describe placement. First Forest uses a
 3256 × 1144 refinement and Crystal Coast uses a 5145 × 1050 refinement.
 Starfall Summit uses a 5115 × 1221 refinement from five overlapping
 1237 × 1271 paintings. Willow Wetlands uses a 5346 × 1023 refinement
-from four 1536 × 1024 paintings. Each of these wide scenes uses three
-contiguous runtime strips. See the [surface art workflow](ART-DIRECTION.md)
+from four 1536 × 1024 paintings. Cloud Gardens uses a 5577 × 1320
+refinement from six 1177 × 1336 paintings. Each of these wide scenes uses
+three contiguous runtime strips. See the [surface art workflow](ART-DIRECTION.md)
 for crop and registration details.
 
 ## Luminous Grotto panorama
