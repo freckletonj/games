@@ -176,7 +176,32 @@ def emberkit(pose):
     return layer
 
 
-CREATURES = {"tideling": tidefox, "skyling": moonwing, "emberkit": emberkit}
+def mossback(pose):
+    _, shell, head, far_rear, far_front, near_rear, near_front = pose
+    layer = Image.new("RGBA", (256, 256))
+    draw = ImageDraw.Draw(layer)
+    x, y = shell
+    for foot, dx, color in ((far_rear,-36,"#52695c"), (far_front,31,"#52695c"),
+                            (near_rear,-37,"#6c8b74"), (near_front,35,"#6c8b74")):
+        draw.line([(x+dx,y+19),foot], fill=color, width=23)
+        dot(draw, foot, 15, 6, color)
+    dot(draw, (x,y+10), 71, 36, "#53695e")
+    draw.line([(x+41,y+10),head], fill="#7e9572", width=29)
+    dot(draw, (x-5,y-16), 73, 49, "#7a7767")
+    draw.arc((x-72,y-63,x+53,y+32), 170, 349, fill="#879a4a", width=16)
+    for dx, dy, rx, ry in ((-52,-28,20,14),(-23,-45,30,16),(18,-44,26,17),
+                           (45,-23,22,13),(-18,-20,23,13),(-42,5,19,11),(25,8,22,12)):
+        dot(draw, (x+dx,y+dy),rx,ry,"#8c9e55")
+    for dx, dy in ((-39,-19),(-23,-61),(25,-52)):
+        dot(draw, (x+dx,y+dy),7,6,"#d89a9b")
+    x, y = head
+    dot(draw, head, 29, 23, "#829c77")
+    dot(draw, (x+8,y+9), 24, 12, "#c5bc8f")
+    dot(draw, (x+10,y-3), 5, 6, "#33433a")
+    return layer
+
+
+CREATURES = {"tideling": tidefox, "skyling": moonwing, "emberkit": emberkit, "mossback": mossback}
 
 
 def silhouettes(name, plan):

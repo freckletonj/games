@@ -1,14 +1,14 @@
 {
   "name": "mossback",
   "image": "sheet.webp",
-  "frameWidth": 128,
-  "frameHeight": 128,
+  "frameWidth": 320,
+  "frameHeight": 320,
   "columns": 4,
   "origin": {
-    "x": 64,
-    "y": 108
+    "x": 160.0,
+    "y": 270.0
   },
-  "worldScale": 0.35,
+  "worldScale": 0.14,
   "animations": {
     "idle": {
       "frames": [
@@ -24,7 +24,7 @@
         4,
         5
       ],
-      "fps": 10
+      "fps": 8
     },
     "jump": {
       "frames": [
@@ -34,9 +34,16 @@
     },
     "fall": {
       "frames": [
-        6
+        7
       ],
       "fps": 1
+    },
+    "land": {
+      "frames": [
+        8,
+        0
+      ],
+      "fps": 11
     },
     "eat": {
       "frames": [
@@ -52,19 +59,20 @@
     },
     "hurt": {
       "frames": [
-        7
+        10,
+        11
       ],
-      "fps": 1
+      "fps": 8
     },
     "sleep": {
       "frames": [
-        0
+        11
       ],
       "fps": 1
     },
     "alert": {
       "frames": [
-        2
+        9
       ],
       "fps": 1
     }
