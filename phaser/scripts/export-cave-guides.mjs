@@ -1,5 +1,7 @@
 import {mkdir,writeFile} from 'node:fs/promises';
 import {compileCave,skywellLayout,vaultLayout} from '../src/cave-layout.js';
+import cavernLayout from '../levels/cavern-ascent.json' with {type:'json'};
+import sealPlan from '../levels/stonewake-seal.json' with {type:'json'};
 import {caveArtManifest,caveMaskSvg} from '../src/cave-art-guide.js';
 import {materialGuidePng} from './material-png.mjs';
 
@@ -70,3 +72,48 @@ await writeFile(new URL('plan.json',cropOutput),JSON.stringify({
 },null,2)+'\n');
 console.log('Exported organic Skywell vault authoring study, full-scene RGBA masks, '+
   patches.length+' coherent high-resolution crop guides. Not yet a playable painting.');
+
+ 
+// Export the new vertical chapter as an authoring study before registration.
+// The static image guide remains free of moving objects; the context guide
+// shows their exact authored extents for a separate cutout/repair pass.
+const cavern=compileCave(cavernLayout);
+const cavernOutput=new URL('cavern-ascent/',output);
+await mkdir(cavernOutput,{recursive:true});
+for(const [name,options] of [
+  ['world-physical-rock.png',{}],
+  ['world-static-solid.png',{layer:'static-solid'}],
+  ['world-static-water.png',{layer:'static-water'}]
+])await writeFile(new URL(name,cavernOutput),materialGuidePng(cavern,options));
+await writeFile(new URL('world-physical-rock.svg',cavernOutput),caveMaskSvg(cavern));
+await writeFile(new URL('manifest.json',cavernOutput),
+  JSON.stringify(caveArtManifest(cavern),null,2)+'\n');
+
+const movers=[...cavernLayout.machines,...cavernLayout.puzzleObjects].map(object=>({
+  ...object,size:object.size??sealPlan.size
+}));
+const contextPalette={
+  air:[24,45,64,255],rock:[128,92,119,255],water:[35,136,175,255],
+  shelf:[246,196,118,255],wall:[255,157,99,255]
+};
+for(const object of movers){
+  const rgb=Number.parseInt(object.color.slice(1),16);
+  contextPalette[object.id]=[rgb>>16,(rgb>>8)&255,rgb&255,255];
+}
+const context={...cavern,materialColumn(x){
+  const base=cavern.materialColumn(x);
+  const nearby=movers.filter(object=>
+    Math.abs(x-object.home[0])<=object.size[0]/2);
+  return y=>{
+    const object=nearby.findLast(object=>{
+      const [cx,cy]=object.home,[width,height]=object.size;
+      return object.kind==='gear'?
+        ((x-cx)/(width/2))**2+((y-cy)/(height/2))**2<=1:
+        y>=cy-height&&y<cy;
+    });
+    return object?.id??base(y);
+  };
+}};
+await writeFile(new URL('painted-scene-context.png',cavernOutput),
+  materialGuidePng(context,{palette:contextPalette}));
+console.log('Exported the 1280 x 3200 cavern geometry and movable-object context.');
