@@ -43,7 +43,7 @@ test('the tall cave compiles into one geometry-led art guide',()=>{
   assert.equal(level.width*16,1280);
   assert.equal(level.height*16,3200);
   assert.equal(level.platformSegments.length,21);
-  assert.equal(level.rockPolygons.length,9);
+  assert.equal(level.rockPolygons.length,13);
   assert.equal(caveArtManifest(level).painting,null);
   assert.equal(caveArtManifest(level).geometrySource,
     'phaser/levels/cavern-ascent.json');
@@ -128,4 +128,18 @@ test('the spinning boulders can be crossed with timed jumps',()=>{
   }
   assert.ok(player.x<360&&player.y===1760&&player.grounded);
   for(const machine of layout.machines)assert.ok(ridden.has(machine.id),machine.id);
+});
+
+test('the standing bridge cannot be flown over from its pushing ledge',()=>{
+  const spec=layout.puzzleObjects.find(object=>object.id==='stone-bridge');
+  const {player,objects,step}=simulate(905,1984,'skyling',[spec]);
+  let furthest=player.x;
+  for(let frame=0;frame<220;frame++){
+    const pressed=frame===0||!player.grounded&&player.flapWait===0&&
+      player.flaps<4&&player.vy>=-1;
+    step({right:true,jump:true,jumpPressed:pressed});
+    furthest=Math.max(furthest,player.x);
+  }
+  assert.equal(objects[0].state,'ready');
+  assert.ok(furthest<spec.home[0], 'the bridge must block the flight path');
 });
