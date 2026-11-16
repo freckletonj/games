@@ -43,12 +43,14 @@ export function caveMaskSvg(level){
 }
 
 export function caveArtManifest(level){
-  const study=level.cave.layout.id==='skywell-vault-study';
+  const cavern=level.cave.layout.id==='cavern-ascent';
+  const study=level.cave.layout.id==='skywell-vault-study'||cavern;
   const skywell=level.cave.layout.id==='skywell-ascent'||study;
   return {
     schema:'wonderwood-physics-painted-cave-v2',
     world:{width:level.width*TILE,height:level.height*TILE},
     guide:'world-physical-rock.png',
+    ...(cavern?{contextGuide:'painted-scene-context.png'}:{}),
     // One full-scene conditioning guide and two matching pixel-accurate
     // alpha masks. The model must paint the whole interactive environment
     // together, not independently invent platform-shaped texture patches.
@@ -78,8 +80,9 @@ export function caveArtManifest(level){
       width:level.width*TILE,height:level.height*TILE
     },
     dynamicExcluded:true,
-    geometrySource:'phaser/src/cave-layout.js',
-    prompt:study?
+    geometrySource:cavern?'phaser/levels/cavern-ascent.json':'phaser/src/cave-layout.js',
+    prompt:cavern?
+      'Paint a coherent, richly detailed side-view vertical cavern using the complete supplied material guide. Preserve every rock boundary, hollow, shelf and opening exactly. The second context guide marks moving stones and seals for placement only: leave those areas clear in the static scene because the objects will be rendered separately. Luminous crystals, layered stone and a gradual change from warm depths to cool heights. No characters, items, UI, lettering or invented walkable surfaces.':study?
       'Paint a coherent side-view magical cave using the ENTIRE supplied filled physics reference. Natural ceiling-connected rock arches, irregular massive formations, realistic water chambers, and stone landing ledges must follow each exact colored boundary. No isolated wedges or generic vector platforms. All rock, wall, and ledge structure belongs to ONE scene. Static world only; no characters, collectible items, UI, labels, or invented surfaces. First establish one global composition, then refine crops at their actual world resolution with shared references.':skywell?
       'Paint one exquisite, high-resolution 2D side-view vertical moonlit skywell cavern. The color-filled reference is authoritative: rock is solid, blue is navigable air, cyan is filled water, amber is a climbable physical wall and gold indicates landing shelves. Preserve every boundary and especially all wall-jump shafts. Detailed crystalline limestone, bioluminescence and atmospheric shafts of light. Static background only; NO characters, creatures, items, key, gate, UI, writing or invented platforms. Use the maximum available output resolution.':
       'Hand-painted 2D side-view magical water cavern. Follow the supplied smooth rock silhouettes, filled pools and ledges precisely. Detailed mossy limestone, luminous crystals, sunlit openings and waterfalls. Static scenery only; no characters, animals, collectible objects, text or UI. Use maximum native resolution.'
