@@ -3,8 +3,8 @@
 The 1280 × 3200 chapter is authored in [levels/cavern-ascent.json](levels/cavern-ascent.json).
 Moonwing takes players from the entrance to Gravelback's low ledge. Two
 Flintfist seals follow, with a bridge room and four spinning boulders between
-them. The upper path turns back around a rock foundation, then emerges into an
-updraft and opens onto the summit. Side shelves hide Stardrops. Camps on both
+them. After the gallery, the west path bends right around a rock overhang
+and doubles back to camp. The upper seal leads into an updraft and the summit. Side shelves hide Stardrops. Camps on both
 sides of the boulder gallery provide a place to recall after a fall. Gaps
 between the boulders drop to a lower route. The west recovery shelf leads
 back to the near bridge bank.

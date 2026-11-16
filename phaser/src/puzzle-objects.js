@@ -183,6 +183,7 @@ export function cavernHint(objects,player,animals,hasKey){
   }
   if(y>1760)return moonwing('Climb the right wall to the boulder gallery.');
   if(y>1600&&x>=368)return 'Jump left across the boulders. A missed jump drops you to the chamber below.';
+  if(y>1456&&y<=1600)return moonwing('Fly around the right tip of the rock, then turn left to camp.');
   if(y>1120)return moonwing('Climb the west wall and circle the left side of the next overhang.');
   if(y===1120&&x<upperSeal.home[0]&&upperSeal.state==='ready')return punch();
   if(y>432)return moonwing('Find the updraft. Ride it up, then fly toward the right lip.');

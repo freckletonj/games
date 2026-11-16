@@ -43,7 +43,7 @@ test('the tall cave compiles into one geometry-led art guide',()=>{
   assert.equal(level.width*16,1280);
   assert.equal(level.height*16,3200);
   assert.equal(level.platformSegments.length,25);
-  assert.equal(level.rockPolygons.length,14);
+  assert.equal(level.rockPolygons.length,21);
   assert.equal(caveArtManifest(level).painting,null);
   assert.equal(caveArtManifest(level).geometrySource,
     'phaser/levels/cavern-ascent.json');
@@ -54,7 +54,7 @@ test('selected vertical steps are reachable by real flight inputs',()=>{
   for(const [x,y,target] of [
     [160,3040,2880],[520,2880,2720],[760,2560,2400],
     [840,2400,2240],[1232,2080,1920],[232,1760,1600],
-    [225,1600,1456],[270,1456,1264],[680,1120,960]
+    [270,1456,1264],[680,1120,960]
   ]){
     const {player,step}=simulate(x,y,'skyling');
     let reached=false;
@@ -96,6 +96,20 @@ test('Moonwing can round the overhangs and traverse the summit chimney',()=>{
     }
     assert.ok(reached,'flight from '+y+' to '+target);
   }
+});
+
+test('Moonwing rounds the west overhang and turns back to the camp',()=>{
+  const {player,step}=simulate(225,1600,'skyling');
+  const tip=level.rockPolygons.find(rock=>rock.id==='west-switchback-overhang').right;
+  let roundedTip=false;
+  for(let tick=0;tick<140;tick++){
+    const pressed=tick===0||!player.grounded&&player.flapWait===0&&
+      player.flaps<4&&player.vy>=-1;
+    step({jump:true,jumpPressed:pressed,right:tick<24,left:tick>=52&&tick<76});
+    if(player.x>tip+10)roundedTip=true;
+    if(roundedTip&&player.grounded&&player.y===1456&&player.x<tip)break;
+  }
+  assert.ok(roundedTip&&player.grounded&&player.y===1456&&player.x<tip);
 });
 
 test('the pushed boulder and fallen bridge support actual crossings',()=>{

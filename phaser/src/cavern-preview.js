@@ -69,6 +69,16 @@ export function paintCavernPreview(scene){
       });
       paintRock(ctx,[[0,edge],[width,edge],...contour.reverse()]);
     }
+    for(const span of level.puzzleObjects.filter(object=>object.banks)){
+      const [center,y]=span.platform,half=span.size[1]/2;
+      ctx.fillStyle='#c99b66';
+      for(const id of span.banks){
+        const bank=level.platformSegments.find(segment=>segment.id===id);
+        const left=Math.max(bank.x*TILE,center-half);
+        const right=Math.min((bank.x+bank.length)*TILE,center+half);
+        ctx.fillRect(left,y,right-left,7);
+      }
+    }
     texture.refresh();
   }
   return [scene.add.image(0,0,key).setOrigin(0).setDepth(-28)];
@@ -89,11 +99,20 @@ export function makeCavernPreviewProps(textures,level){
       ctx.clip();
     }
     paintRock(ctx,[[0,0],[width,0],[width,height],[0,height]]);
-    ctx.fillStyle=prop.kind==='gear'?'#73bac4':'#c28f74';
-    polygon(ctx,[[width*.18,height*.39],[width*.48,height*.23],
-      [width*.72,height*.49],[width*.4,height*.65]]);
-    ctx.globalAlpha=.66;
-    ctx.fill();
+    if(prop.banks){
+      // The left edge of the upright texture becomes the walking surface.
+      ctx.fillStyle='#a97752';
+      ctx.fillRect(0,0,9,height);
+      ctx.fillStyle='#edc38b';
+      ctx.fillRect(0,0,3,height);
+      for(let y=12;y<height;y+=24)ctx.fillRect(3,y,6,2);
+    }else{
+      ctx.fillStyle=prop.kind==='gear'?'#73bac4':'#c28f74';
+      polygon(ctx,[[width*.18,height*.39],[width*.48,height*.23],
+        [width*.72,height*.49],[width*.4,height*.65]]);
+      ctx.globalAlpha=.66;
+      ctx.fill();
+    }
     ctx.restore();
     texture.refresh();
   }
