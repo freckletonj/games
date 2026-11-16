@@ -185,6 +185,18 @@ export function compileCave(layout=caveLayout){
   const climbWalls=walls.map(w=>({...w,
     bottom:Math.min(w.bottom,contourY(floor,w.x))}));
   const platformSegments=shelves.map(p=>({...p,kind:'platform',style:'ledge'}));
+  const puzzleObjects=(layout.puzzleObjects??[]).map(object=>{
+    if(!object.banks)return object;
+    const [near,far]=object.banks.map(id=>shelves.find(shelf=>shelf.id===id));
+    if(!near||!far||near.y!==far.y||near.x+near.length>=far.x)
+      throw Error('Bridge needs two separate banks at the same height: '+object.id);
+    const gapStart=(near.x+near.length)*tile,gapEnd=far.x*tile;
+    const center=(gapStart+gapEnd)/2,halfSpan=object.size[1]/2;
+    if(center-halfSpan>=gapStart||center+halfSpan<=gapEnd||
+      center-halfSpan<near.x*tile||center+halfSpan>(far.x+far.length)*tile)
+      throw Error('Fallen bridge must overlap both banks: '+object.id);
+    return {...object,platform:[center,near.y*tile]};
+  });
   // One classifier powers the material PNG, water queries and physics grid.
   // Moving a polygon changes both visible rock and physical collision.
   // Compile vertical material queries once per pixel column when exporting
@@ -214,7 +226,7 @@ export function compileCave(layout=caveLayout){
     }));
   return {
     width,height,biome:'coast',surface,ceiling:roof,waterBodies,grid,
-    platformSegments,climbWalls,rockPolygons:polygons,materialAt,materialColumn,
+    platformSegments,climbWalls,rockPolygons:polygons,materialAt,materialColumn,puzzleObjects,
     thermalVolumes:[],setpieces:[],vistas:[],dressing:[],landmarks:[],
     sections:[],goalRoute:(layout.id==='skywell-ascent'?[
       {x:7,kind:'start'},...walls.map(w=>({x:w.x,kind:'wallJump'})),

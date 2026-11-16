@@ -692,10 +692,7 @@
         320
       ],
       "pushAbove": 1984,
-      "platform": [
-        1090,
-        2080
-      ],
+      "banks": ["bridge-near-bank", "bridge-far-bank"],
       "color": "#746c69"
     },
     {

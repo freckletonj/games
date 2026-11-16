@@ -77,7 +77,7 @@ test('the pushed boulder and fallen bridge support actual crossings',()=>{
     ['first-boulder',220,2880,'gravelback',450],
     ['stone-bridge',905,1984,'flintfist',1210]
   ]){
-    const spec=layout.puzzleObjects.find(object=>object.id===id);
+    const spec=level.puzzleObjects.find(object=>object.id===id);
     const {player,objects,step}=simulate(x,y,form,[spec]);
     let crossed=false,rode=false;
     for(let frame=0;frame<1000;frame++){
@@ -93,6 +93,29 @@ test('the pushed boulder and fallen bridge support actual crossings',()=>{
     assert.ok(rode,id+' must support the player');
     assert.ok(crossed,id+' must allow a crossing');
   }
+});
+
+test('the stone span joins both banks with no jump or drop',()=>{
+  const bridge=level.puzzleObjects.find(object=>object.id==='stone-bridge');
+  const [near,far]=bridge.banks.map(id=>level.platformSegments.find(s=>s.id===id));
+  const y=near.y*16;
+  const {objects,decks}=simulate(905,1984,'flintfist',[bridge]);
+  const prop=objects[0];
+  prop.state='tipping';prop.startAngle=0;
+  for(let tick=0;tick<53;tick++)stepPuzzleObjects(objects,decks);
+  assert.equal(prop.angle,Math.PI/2);
+  assert.equal(prop.bottom-bridge.size[0]/2,y);
+  const {player,step,decks:routeDecks}=simulate(near.x*16+32,y,null);
+  routeDecks.push(decks[0]);
+  let onBridge=false;
+  for(let tick=0;tick<250&&player.x<far.x*16+32;tick++){
+    step({right:true});
+    assert.equal(player.y,y);
+    assert.ok(player.grounded);
+    onBridge||=player.onPlatform===bridge.id;
+  }
+  assert.ok(onBridge);
+  assert.ok(player.x>=far.x*16+32);
 });
 
 test('each seal blocks flight until Flintfist punches through it',()=>{
@@ -131,7 +154,7 @@ test('the spinning boulders can be crossed with timed jumps',()=>{
 });
 
 test('the standing bridge cannot be flown over from its pushing ledge',()=>{
-  const spec=layout.puzzleObjects.find(object=>object.id==='stone-bridge');
+  const spec=level.puzzleObjects.find(object=>object.id==='stone-bridge');
   const {player,objects,step}=simulate(905,1984,'skyling',[spec]);
   let furthest=player.x;
   for(let frame=0;frame<220;frame++){

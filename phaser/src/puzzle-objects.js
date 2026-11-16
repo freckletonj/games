@@ -96,6 +96,10 @@ export function stepPuzzleObjects(objects,decks){
       object.angle=object.startAngle+(Math.PI/2-object.startAngle)*progress**2;
       const pivot=object.platform[0]-object.size[1]/2;
       object.x=object.home[0]+(pivot-object.home[0])*progress**2;
+      if(object.banks){
+        const pivotY=object.platform[1]+object.size[0]/2;
+        object.bottom=object.home[1]+(pivotY-object.home[1])*progress**2;
+      }
       if(progress<1)continue;
     }else continue;
 
