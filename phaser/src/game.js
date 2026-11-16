@@ -674,7 +674,8 @@ class Wonderwood extends Phaser.Scene {
               .setScale(.1).setAlpha(0).setDepth(24)});
       } else if(['starShard','snack','checkpoint','exit',relicKind].includes(object.kind)){
         const rooted=['snack','checkpoint','exit'].includes(object.kind);
-        const y=rooted?this.groundAt(x):(object.y+.5)*TILE;
+        const y=rooted?(object.perch?object.perch.y*TILE:this.groundAt(x)):
+          (object.y+.5)*TILE;
         const frame=object.kind==='starShard'?6:object.kind==='snack'?5:
           object.kind==='checkpoint'?2:object.kind==='exit'?0:7;
         const important=object.kind===relicKind||object.kind==='exit'||
