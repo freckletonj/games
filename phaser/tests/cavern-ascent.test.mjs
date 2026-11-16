@@ -21,7 +21,7 @@ function simulate(x,y,form,objectSpecs=[],withMachines=false){
     breach:0,bloomWindow:0};
   const world={width:level.width*16,height:level.height*16,tile:16,
     groundAt:level.cave.groundAt,ceilingAt:level.cave.ceilingAt,
-    inWater:()=>false,waterBodies:[],thermalVolumes:[],
+    inWater:()=>false,waterBodies:[],thermalVolumes:level.thermalVolumes,
     platformSegments:level.platformSegments,rockPolygons:level.rockPolygons,
     movingPlatforms:decks,
     blockHorizontal:(from,to,feet)=>blockPuzzleX(objects,from,to,feet)};
@@ -42,8 +42,8 @@ function simulate(x,y,form,objectSpecs=[],withMachines=false){
 test('the tall cave compiles into one geometry-led art guide',()=>{
   assert.equal(level.width*16,1280);
   assert.equal(level.height*16,3200);
-  assert.equal(level.platformSegments.length,21);
-  assert.equal(level.rockPolygons.length,13);
+  assert.equal(level.platformSegments.length,24);
+  assert.equal(level.rockPolygons.length,17);
   assert.equal(caveArtManifest(level).painting,null);
   assert.equal(caveArtManifest(level).geometrySource,
     'phaser/levels/cavern-ascent.json');
@@ -54,8 +54,7 @@ test('selected vertical steps are reachable by real flight inputs',()=>{
   for(const [x,y,target] of [
     [160,3040,2880],[520,2880,2720],[760,2560,2400],
     [840,2400,2240],[1232,2080,1920],[232,1760,1600],
-    [280,1600,1440],[400,1440,1280],[640,1120,960],
-    [880,640,480],[976,480,320]
+    [225,1600,1456],[270,1456,1264],[680,1120,960]
   ]){
     const {player,step}=simulate(x,y,'skyling');
     let reached=false;
@@ -64,6 +63,29 @@ test('selected vertical steps are reachable by real flight inputs',()=>{
         player.flaps<4&&player.vy>=-1;
       step({jump:true,jumpPressed:pressed});
       if(player.grounded&&Math.abs(player.y-target)<1){
+        reached=true;
+        break;
+      }
+    }
+    assert.ok(reached,'flight from '+y+' to '+target);
+  }
+});
+
+test('Moonwing can round the upper seal foundation and traverse the summit chimney',()=>{
+  for(const [x,y,direction,moveTicks,delay,target,left,right] of [
+    [315,1264,1,66,20,1120,430,545],
+    [580,800,-1,24,0,592,384,528],
+    [485,592,1,117,0,432,576,784],
+    [768,432,1,66,0,272,912,1200]
+  ]){
+    const {player,step}=simulate(x,y,'skyling');
+    let reached=false;
+    for(let tick=0;tick<240;tick++){
+      const pressed=tick===0||!player.grounded&&player.flapWait===0&&
+        player.flaps<4&&player.vy>=-1;
+      const move=tick>=delay&&tick<delay+moveTicks;
+      step({jump:true,jumpPressed:pressed,left:move&&direction<0,right:move&&direction>0});
+      if(player.grounded&&Math.abs(player.y-target)<1&&player.x>=left&&player.x<=right){
         reached=true;
         break;
       }
@@ -144,7 +166,7 @@ test('the spinning boulders can be crossed with timed jumps',()=>{
   const {player,step}=simulate(850,1760,null,[],true);
   const ridden=new Set();
   for(let frame=0;frame<500;frame++){
-    const jump=frame%25===0;
+    const jump=frame%24===0;
     step({left:true,jump,jumpPressed:jump});
     if(player.onPlatform)ridden.add(player.onPlatform);
     if(player.x<360&&player.y===1760&&player.grounded)break;

@@ -227,7 +227,7 @@ export function compileCave(layout=caveLayout){
   return {
     width,height,biome:'coast',surface,ceiling:roof,waterBodies,grid,
     platformSegments,climbWalls,rockPolygons:polygons,materialAt,materialColumn,puzzleObjects,
-    thermalVolumes:[],setpieces:[],vistas:[],dressing:[],landmarks:[],
+    thermalVolumes:layout.thermalVolumes??[],setpieces:[],vistas:[],dressing:[],landmarks:[],
     sections:[],goalRoute:(layout.id==='skywell-ascent'?[
       {x:7,kind:'start'},...walls.map(w=>({x:w.x,kind:'wallJump'})),
       {x:182,kind:'objective'},{x:212,kind:'exit'}]:[]),
