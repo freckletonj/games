@@ -26,7 +26,7 @@ export function deckTopAt(platform,x,position=platform.position){
   const offset=x-center;
   if(platform.kind==='gear'){
     const radius=platform.size[1]/2;
-    if(Math.abs(offset)>Math.min(platform.treadWidth/2,radius))return null;
+    if(Math.abs(offset)>radius)return null;
     return top+radius-Math.sqrt(radius**2-offset**2);
   }
   return Math.abs(offset)<=platform.size[0]/2?top:null;

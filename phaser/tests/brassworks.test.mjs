@@ -48,7 +48,8 @@ test('the belt carries an idle explorer and gears expose a curved, rotating trea
   const gear=machines[1],x=gear.home[0];
   assert.equal(deckTopAt(gear,x),gear.home[1]-62);
   assert.ok(deckTopAt(gear,x+40)>deckTopAt(gear,x));
-  assert.equal(deckTopAt(gear,x+52),null);
+  for(const edge of [x-62,x+62])assert.equal(deckTopAt(gear,edge),gear.home[1]);
+  for(const outside of [x-62.01,x+62.01])assert.equal(deckTopAt(gear,outside),null);
   assert.ok(gear.beltSpeed>0);
   assert.ok(machines[2].beltSpeed<0);
 });

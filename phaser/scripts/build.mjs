@@ -79,6 +79,8 @@ const menuStyles = `
 #ww-menu-description{min-height:2.6em;margin:8px 0;color:#cce7db;font-size:13px}
 .ww-menu-actions{display:flex;align-items:center;gap:10px;margin-top:10px}
 #ww-menu .ww-menu-primary{padding:7px 15px;background:#ffe2a1;color:#142c37;border-color:#fce0a3}
+.ww-assist{display:block;margin-top:10px;color:#eae7db;font:14px system-ui}
+.ww-assist input{accent-color:#c8eafe}
 .ww-menu-controls{margin:8px 0 0;color:#c0d6d7;font-size:11px}
 @media(max-width:480px){.ww-party{grid-template-columns:1fr;gap:7px}}
 @media(max-height:420px){
@@ -96,6 +98,7 @@ const menuMarkup = `
     <section id="ww-character-select" aria-labelledby="ww-character-heading">
       <h2 id="ww-character-heading">Choose your explorer</h2>
       <div id="ww-party" class="ww-party"></div>
+      <label class="ww-assist"><input type="checkbox" id="ww-assist"> Player 2 cloud assist · RB / R1</label>
       <div class="ww-menu-actions"><button class="ww-menu-primary" id="ww-menu-continue" disabled>Continue</button></div>
       <p class="ww-menu-controls">Stick + A · P1 ← / → + Space · P2 J / L + I</p>
     </section>
@@ -135,13 +138,19 @@ const html = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">' +
   '#ww-notice{position:absolute;top:63px;left:50%;transform:translateX(-50%);width:max-content;max-width:80%;padding:9px 17px;border-radius:13px;border:1px solid #fff0c739;text-align:center;font:italic 17px/1.4 Georgia,serif;color:#fff8d9;background:#13273cc9;box-shadow:0 4px 21px #09182749}' +
   '#ww-help{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);max-width:85%;width:max-content;padding:8px 15px;border-radius:999px;text-align:center;font-size:13px;line-height:1.35;color:#fff9e7;background:#152e3ecc;box-shadow:0 2px 12px #07142544}' +
   '#ww-notice:empty,#ww-help:empty{display:none}' +
-  '#ww-pause{position:absolute;inset:0;display:grid;place-items:center;text-align:center;background:#071527bb;color:#fff5d9;font:40px Georgia,serif}' +
+  '#ww-pause{position:absolute;inset:0;overflow:auto;display:grid;place-items:safe center;background:#071527df;color:#fff5d9;padding:10px;pointer-events:auto}' +
+  '#ww-pause h2{margin:0 0 .4em;text-align:center;font:normal clamp(20px,4vh,34px) Georgia,serif}' +
+  '#ww-pause-controls{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}' +
+  '#ww-pause-controls table{border-collapse:collapse;background:#162e40;border:1px solid #bbdbd863;border-radius:8px;font-size:clamp(10px,2.2vh,15px)}' +
+  '#ww-pause-controls caption{font-weight:bold;color:#d5efe8;margin-bottom:4px}' +
+  '#ww-pause-controls th,#ww-pause-controls td{padding:.26em .6em;text-align:left;border-bottom:1px solid #b3d6d123}' +
+  '#ww-pause-controls th{font-weight:normal;color:#e3eced}#ww-pause-controls td{font-weight:bold}' +
   '#ww-startup{position:fixed;inset:0;z-index:20;display:grid;place-items:center;'+
   'background:#0c1b2b;color:#f3ebd5;font:18px system-ui;text-align:center;padding:28px}' +
   '[hidden]{display:none!important}' + menuStyles + '</style>' +
   '</head><body>' + startup + '<div id="game"></div>' + menuMarkup +
   '<div id="ww-ui" hidden><div id="ww-status"><div id="ww-health"><label>P1 <progress max="3" value="3" aria-label="Player 1 health"></progress></label><label hidden>P2 <progress max="3" value="3" aria-label="Player 2 health"></progress></label></div><div id="ww-objective"></div></div><div id="ww-notice"></div><div id="ww-help"></div>' +
-  '<div id="ww-pause" hidden>PAUSED / START / ESC to resume</div></div>' +
+  '<div id="ww-pause" hidden><section><h2>Paused</h2><div id="ww-pause-controls"></div></section></div></div>' +
   '<div id="credits">Kenney CC0 · Phaser MIT · Art provenance in source</div>' +
   bootErrors + '<script>'+javascript+'</script></body></html>';
 await mkdir(resolve(root,'dist'),{recursive:true});

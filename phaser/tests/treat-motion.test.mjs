@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {advanceTreatFlight,TREAT_FLIGHT_TICKS,TREAT_ARC_HEIGHT}
+import {advanceTreatFlight,treatLanding,TREAT_FLIGHT_TICKS,TREAT_ARC_HEIGHT}
   from '../src/treat-motion.js';
 
 function treat(){
@@ -48,4 +48,26 @@ test('multiple simulation steps and individual steps yield the same landing',()=
   assert.equal(after.x,a.x);
   assert.equal(after.y,a.y);
   assert.equal(a.landed,b.landed);
+});
+
+
+test('fruit lands on the first platform it actually crosses while falling',()=>{
+  const floor=()=>500;
+  const ledges=[
+    {kind:'platform',x:8,length:2,y:29},
+    {kind:'platform',x:9,length:2,y:27}
+  ];
+  const cast=treat();
+  const findLanding=(from,to)=>treatLanding(from,to,ledges,[],floor,16);
+  while(!cast.landed)advanceTreatFlight(cast,1,findLanding);
+  assert.equal(cast.y,27*16);
+  assert.ok(cast.x>=9*16&&cast.x<=11*16);
+  assert.equal(findLanding({x:145,y:442},{x:150,y:428}),null);
+  assert.equal(findLanding({x:180,y:426},{x:183,y:440}),null);
+});
+
+test('a berry can land on a moving deck in the same frame it crosses its top',()=>{
+  const deck={id:'lift',kind:'vertical',size:[84,12],position:[160,432],previous:[158,435]};
+  const hit=treatLanding({x:160,y:430},{x:162,y:435},[],[deck],()=>500,16);
+  assert.deepEqual(hit,{x:162,y:432,deck});
 });
