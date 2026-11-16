@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parents[2]
 GAME = ROOT / "dist/wonderwood-phaser.html"
 CHAPTERS = [
     "first-forest", "crystal-coast", "starfall-summit",
-    "willow-wetlands", "cloud-gardens", "monkey-jungle"
+    "willow-wetlands", "cloud-gardens", "monkey-jungle", "cavern-ascent"
 ]
 
 
@@ -32,6 +32,8 @@ def main():
             page.locator("#ww-menu-continue").click()
             if chapter == "monkey-jungle":
                 page.get_by_role("button", name="Monkey Jungle").click()
+            elif chapter == "cavern-ascent":
+                page.get_by_role("button", name="Cavern Ascent").click()
             else:
                 page.locator("#ww-level-grid button").nth(i).click()
 
@@ -53,9 +55,16 @@ def main():
             assert state["platformCount"] > 0, state
             art = state["sceneArt"]
             assert not art["geometryOverlay"], art
+            if chapter == "cavern-ascent":
+                assert len(state["movingPlatforms"]) == 4, state
+                assert len(state["puzzleObjects"]) == 4, state
+                assert art["layers"][0]["worldPixels"] == [1280, 3200], art
             right = 0
             for index, layer in enumerate(art["layers"]):
-                assert layer["textureKey"] == f"scene-{chapter}-scene-{index}", layer
+                expected = {f"scene-{chapter}-scene-{index}"}
+                if chapter == "cavern-ascent":
+                    expected.update(("scene-cavern-ascent-preview", "scene-cavern-ascent-solid"))
+                assert layer["textureKey"] in expected, layer
                 assert layer["origin"] == [right, 0] and layer["scrollFactor"] == 1, layer
                 sourceWidth, sourceHeight = layer["sourcePixels"]
                 worldWidth, worldHeight = layer["worldPixels"]

@@ -50,7 +50,8 @@ export function caveArtManifest(level){
     schema:'wonderwood-physics-painted-cave-v2',
     world:{width:level.width*TILE,height:level.height*TILE},
     guide:'world-physical-rock.png',
-    ...(cavern?{contextGuide:'painted-scene-context.png'}:{}),
+    ...(cavern?{contextGuide:'painted-scene-context.png',
+      fallenBridgeGuide:'fallen-bridge-context.png'}:{}),
     // One full-scene conditioning guide and two matching pixel-accurate
     // alpha masks. The model must paint the whole interactive environment
     // together, not independently invent platform-shaped texture patches.
