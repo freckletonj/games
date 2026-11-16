@@ -37,7 +37,7 @@ import {makeGeometryOverlay,paintScene,sceneTextures} from './painted-scene.js';
 import {deckTopAt,platformPosition,stepPlatforms} from './moving-platforms.js';
 import {machinePlatforms,stepMachines} from './machines.js';
 import {createPuzzleObjects,pushPuzzleObject,blockPuzzleX,puzzleTop,punchWall,
-  stepPuzzleObjects,puzzleHint} from './puzzle-objects.js';
+  stepPuzzleObjects,puzzleHint,cavernHint,cavernPuzzlesComplete} from './puzzle-objects.js';
 import sealAtlas from '../assets/generated/stonewake-hollow/seal-fragments.webp';
 import sealPlan from '../levels/stonewake-seal.json' with {type:'json'};
 import {bodyHitsRock,rockContains,sweepRockBody} from './cave-solids.js';
@@ -498,8 +498,9 @@ class Wonderwood extends Phaser.Scene {
     this.shared={relic:!this.level.objects.some(o=>o.kind===this.chapter.key),shards:0,collected:new Set(),checkpoint:null,
       picnics:0,foods:{berry:14,nectar:6,star:6}};
     this.cameras.main.setBackgroundColor(this.level.cave?0x0b1c2c:SKY[this.level.biome]);
+    this.isCavern=this.chapter.id==='cavern-ascent';
     const sceneArt=APPROVED_SCENE_ART[this.chapter.id];
-    if(this.chapter.id==='cavern-ascent'&&!sceneArt){
+    if(this.isCavern&&!sceneArt){
       this.sceneArt=paintCavernPreview(this);
       makeCavernPreviewProps(this.textures,this.level);
     }else this.sceneArt=paintScene(this,sceneArt);
@@ -1405,7 +1406,7 @@ class Wonderwood extends Phaser.Scene {
         drawFriendship(animal.friendship,animal.x,animal.y,0,0);
         orb.owner.caught=animal.kind;
         this.changeForm(orb.owner,null);
-        if(animal.perch&&!this.puzzleObjects.some(o=>o.kind==='tipping-log'&&o.state==='settled')){
+        if(animal.perch&&!this.isCavern&&!this.puzzleObjects.some(o=>o.kind==='tipping-log'&&o.state==='settled')){
           orb.owner.checkpoint={x:animal.perch.left+22,y:animal.perch.y};
         }
         this.burstAt(orb.x,orb.y);
@@ -1816,6 +1817,7 @@ class Wonderwood extends Phaser.Scene {
         item.visual.setFrame(3);
         if(item.halo)item.halo.setStrokeStyle(1.4,0x9de9bb,.68);
       }else if(item.kind===this.chapter.key){
+        if(this.isCavern&&!cavernPuzzlesComplete(this.puzzleObjects))continue;
         item.used=true;item.visual.destroy();item.halo?.destroy();
         this.shared.relic=true;
         this.items.find(exit=>exit.kind==='exit')?.visual.setFrame(1);
@@ -2014,6 +2016,7 @@ class Wonderwood extends Phaser.Scene {
       lead.x<1410?'Hold ↑ to grab a rope · P2 uses 8':'Find the key on the canopy shelf.';
     const leadHint=lead.clouded?'P1 · Steer with the stick or direction keys · Jump to break free':
       lead.sleep?'R / LB · revive at camp':
+      this.isCavern?cavernHint(this.puzzleObjects,lead,this.animals,this.shared.relic):
       this.puzzleObjects.length?puzzleHint(this.puzzleObjects,lead,this.animals):
       this.chapter.id==='brassworks'?machineHint:
       this.chapter.id==='clockwork-orchard'?orchardHint:

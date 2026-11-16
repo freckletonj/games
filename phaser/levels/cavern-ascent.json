@@ -732,6 +732,11 @@
       }
     },
     {
+      "kind": "checkpoint",
+      "x": 76,
+      "perch": { "x": 51, "y": 110, "length": 29 }
+    },
+    {
       "kind": "skyling",
       "x": 78,
       "y": 129,

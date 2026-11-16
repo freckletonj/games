@@ -7,7 +7,7 @@ import {caveArtManifest,caveMaskSvg} from '../src/cave-art-guide.js';
 import {stepPlayerMotion} from '../src/player-motion.js';
 import {machinePlatforms,stepMachines} from '../src/machines.js';
 import {createPuzzleObjects,pushPuzzleObject,blockPuzzleX,punchWall,
-  stepPuzzleObjects} from '../src/puzzle-objects.js';
+  stepPuzzleObjects,cavernPuzzlesComplete} from '../src/puzzle-objects.js';
 
 const level=compileCave(layout);
 
@@ -71,10 +71,14 @@ test('selected vertical steps are reachable by real flight inputs',()=>{
   }
 });
 
-test('Moonwing can round the upper seal foundation and traverse the summit chimney',()=>{
+test('Moonwing can round the overhangs and traverse the summit chimney',()=>{
   for(const [x,y,direction,moveTicks,delay,target,left,right] of [
+    [448,2720,1,87,0,2560,548,644],
+    [607,2240,1,42,0,2080,655,765],
+    [650,2080,1,57,0,1984,775,890],
     [315,1264,1,66,20,1120,430,545],
-    [580,800,-1,24,0,592,384,528],
+    [655,960,1,42,0,800,635,825],
+    [650,800,-1,54,0,592,388,527],
     [485,592,1,117,0,432,576,784],
     [768,432,1,66,0,272,912,1200]
   ]){
@@ -187,4 +191,23 @@ test('the standing bridge cannot be flown over from its pushing ledge',()=>{
   }
   assert.equal(objects[0].state,'ready');
   assert.ok(furthest<spec.home[0], 'the bridge must block the flight path');
+});
+
+test('the summit light requires both seals and both rock crossings',()=>{
+  const {objects}=simulate(220,2880,'gravelback',level.puzzleObjects);
+  for(const object of objects){
+    assert.ok(!cavernPuzzlesComplete(objects));
+    object.state=object.kind==='breakable-wall'?'broken':'settled';
+  }
+  assert.ok(cavernPuzzlesComplete(objects));
+});
+
+test('the low roof keeps Moonwing from skipping the first boulder on its ledge',()=>{
+  const {player,step}=simulate(250,2880,'skyling',[level.puzzleObjects[0]]);
+  for(let tick=0;tick<160;tick++){
+    const pressed=tick===0||!player.grounded&&player.flapWait===0&&
+      player.flaps<4&&player.vy>=-1;
+    step({right:true,jump:true,jumpPressed:pressed});
+    assert.ok(player.x<296,'Moonwing should stay on the near side');
+  }
 });
