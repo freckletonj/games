@@ -4,6 +4,7 @@ import orchard from '../levels/clockwork-orchard.json' with {type:'json'};
 import sealPlan from '../levels/stonewake-seal.json' with {type:'json'};
 import stonewake from '../levels/stonewake-hollow.json' with {type:'json'};
 import jungle from '../levels/monkey-jungle.json' with {type:'json'};
+import cavern from '../levels/cavern-ascent.json' with {type:'json'};
 import brassworks from '../levels/brassworks.json' with {type:'json'};
 import {grottoChapter} from './cave-chapter.js';
 import {skywellChapter} from './skywell-chapter.js';
@@ -37,18 +38,30 @@ const jungleChapter={
   key:'springKey',goals:[{kind:'springKey',name:'Canopy Light',form:null}],
   signs:[],events:[]
 };
+const cavernChapter={
+  id:cavern.id,biome:'coast',name:'Cavern Ascent',difficulty:'Climb',
+  tagline:'Fly through the wind chimney, topple a stone bridge, and cross the spinning boulder gallery.',
+  key:'springKey',goals:[{kind:'springKey',name:'Summit Light',form:null}],
+  signs:[],events:[]
+};
 const caves={
   [grottoChapter.id]:caveLayout,
-  [skywellChapter.id]:skywellLayout
+  [skywellChapter.id]:skywellLayout,
+  [cavern.id]:cavern
 };
 
 export function campaign(surfaceChapters){
-  return [...surfaceChapters,grottoChapter,skywellChapter,orchardChapter,brassworksChapter,stonewakeChapter,jungleChapter];
+  return [...surfaceChapters,grottoChapter,skywellChapter,orchardChapter,brassworksChapter,stonewakeChapter,jungleChapter,cavernChapter];
 }
 
 export function compileChapter(chapter,compiler){
   const cave=caves[chapter.id];
-  if(cave)return compileCave(cave);
+  if(cave){
+    const level=compileCave(cave);
+    level.puzzleObjects=withSealFractures(level.puzzleObjects);
+    level.machines=cave.machines??[];
+    return level;
+  }
   const design=surfaceDesigns[chapter.id];
   if(chapter.id===meadow.id)validateEncounters(design);
   const level=compiler.compile(design,chapter);
@@ -58,9 +71,7 @@ export function compileChapter(chapter,compiler){
     const rocks=level.rockPolygons.filter(rock=>x>=rock.left&&x<=rock.right);
     return y=>rockContains(rocks,x,y)?'rock':base(y);
   };
-  level.puzzleObjects=(design.puzzleObjects??[]).map(object=>
-    object.kind==='breakable-wall'?
-      {...object,size:sealPlan.size,fracture:sealPlan.bands}:object);
+  level.puzzleObjects=withSealFractures(design.puzzleObjects??[]);
   level.movingPlatforms=design.movingPlatforms??[];
   level.machines=design.machines??[];
   level.sceneFeatures=design.sceneFeatures??[];
@@ -69,4 +80,9 @@ export function compileChapter(chapter,compiler){
   level.monkeys=design.monkeys??[];
   level.recallBelow=design.recallBelow??Infinity;
   return level;
+}
+
+function withSealFractures(objects){
+  return objects.map(object=>object.kind==='breakable-wall'?
+    {...object,size:sealPlan.size,fracture:sealPlan.bands}:object);
 }
