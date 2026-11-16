@@ -5,7 +5,9 @@ Moonwing takes players from the entrance to Gravelback's low ledge. Two
 Flintfist seals follow, with a bridge room and four spinning boulders between
 them. The upper path turns back around a rock foundation, then emerges into an
 updraft and opens onto the summit. Side shelves hide Stardrops. Camps on both
-sides of the boulder gallery provide a place to recall after a fall.
+sides of the boulder gallery provide a place to recall after a fall. Gaps
+between the boulders drop to a lower route. The west recovery shelf leads
+back to the near bridge bank.
 
 ## Artwork
 
@@ -22,7 +24,7 @@ mask at gameplay zoom. Keep the stone bridge and boulders as independent
 alpha textures. The upright stone texture is 50 × 320 world units, with its
 pivot at the center of the foot. At rest its left edge faces up and is the
 walkable surface. The boulder wheels rotate around their centers and have
-108 × 108 world-unit collision shapes. The pushable stone uses a 72 × 67
+84 × 84 world-unit collision shapes. The pushable stone uses a 72 × 67
 bottom-centered sprite. Both seals use the existing Stonewake fragment atlas.
 
 Once the aligned artwork is ready, add the painting and alpha textures under

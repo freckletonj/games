@@ -173,6 +173,7 @@ export function cavernHint(objects,player,animals,hasKey){
   }
   if(y>2560)return moonwing('Climb around the left edge of the rock overhang.');
   if(y===2560&&x<lowerSeal.home[0]&&lowerSeal.state==='ready')return punch();
+  if(y===2016&&x>=368&&x<=592)return 'Jump right to the bridge bank, or recall to camp.';
   if(y>2120)return moonwing('At camp, fly around the left end of the long stone ceiling.');
   if(y>=1984&&x<1184){
     if(bridge.state==='tipping')return 'Wait for the span to settle onto the far bank.';
@@ -181,7 +182,7 @@ export function cavernHint(objects,player,animals,hasKey){
     return form==='flintfist'?'Walk into the standing bridge until it tips.':flintfist();
   }
   if(y>1760)return moonwing('Climb the right wall to the boulder gallery.');
-  if(y>1600&&x>=368)return 'Head left. Jump from the tops of the spinning boulders.';
+  if(y>1600&&x>=368)return 'Jump left across the boulders. A missed jump drops you to the chamber below.';
   if(y>1120)return moonwing('Climb the west wall and circle the left side of the next overhang.');
   if(y===1120&&x<upperSeal.home[0]&&upperSeal.state==='ready')return punch();
   if(y>432)return moonwing('Find the updraft. Ride it up, then fly toward the right lip.');

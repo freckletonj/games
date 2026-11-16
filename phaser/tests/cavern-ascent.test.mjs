@@ -42,8 +42,8 @@ function simulate(x,y,form,objectSpecs=[],withMachines=false){
 test('the tall cave compiles into one geometry-led art guide',()=>{
   assert.equal(level.width*16,1280);
   assert.equal(level.height*16,3200);
-  assert.equal(level.platformSegments.length,24);
-  assert.equal(level.rockPolygons.length,17);
+  assert.equal(level.platformSegments.length,25);
+  assert.equal(level.rockPolygons.length,14);
   assert.equal(caveArtManifest(level).painting,null);
   assert.equal(caveArtManifest(level).geometrySource,
     'phaser/levels/cavern-ascent.json');
@@ -177,6 +177,31 @@ test('the spinning boulders can be crossed with timed jumps',()=>{
   }
   assert.ok(player.x<360&&player.y===1760&&player.grounded);
   for(const machine of layout.machines)assert.ok(ridden.has(machine.id),machine.id);
+});
+
+test('a missed boulder jump drops to a lower landing with a way back',()=>{
+  const wheels=layout.machines;
+  for(let i=1;i<wheels.length;i++){
+    const x=(wheels[i-1].home[0]+wheels[i].home[0])/2;
+    const {player,step}=simulate(x,1760,null,[],true);
+    player.grounded=false;
+    for(let tick=0;tick<140&&!player.grounded;tick++)step();
+    assert.ok(player.grounded,'the gap between wheels '+i+' and '+(i+1));
+    assert.ok(player.y>=1984,'a miss must fall at least 224 world units');
+  }
+
+  const recovery=layout.shelves.find(shelf=>shelf.id==='wheel-recovery-shelf');
+  const {player,step}=simulate(496,1760,null,[],true);
+  player.grounded=false;
+  for(let tick=0;tick<140&&!player.grounded;tick++)step();
+  assert.equal(player.y,recovery.y*layout.tile);
+  for(let tick=0;tick<180;tick++){
+    const jump=player.grounded&&player.y===recovery.y*layout.tile&&player.x>=570;
+    step({right:true,jump:true,jumpPressed:jump});
+    if(player.x>=665&&player.y===2080&&player.grounded)break;
+  }
+  assert.ok(player.x>=665&&player.y===2080&&player.grounded,
+    'an explorer can jump back to the near bridge bank');
 });
 
 test('the standing bridge cannot be flown over from its pushing ledge',()=>{
