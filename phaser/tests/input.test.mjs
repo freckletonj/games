@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {bindings,readActions} from '../src/input.js';
+import {bindings,controlGuide,readActions} from '../src/input.js';
 
 function keyboard(layout,active) {
   return Object.fromEntries(Object.entries(layout).map(([action,keys]) =>
@@ -35,4 +35,16 @@ test('revive keys and left shoulder map independently from gamepad pause',()=>{
   assert.equal(pressed.revivePressed,true);
   assert.equal(pressed.pausePressed,false);
   assert.equal(readActions(keyboard(bindings[0],[]),pad,pressed).revivePressed,false);
+});
+
+
+test('cloud assist uses the right bumper or P2 keyboard B independently of food',()=>{
+  const pad={buttons:Array.from({length:16},(_,i)=>({pressed:i===5}))};
+  const assist=readActions(keyboard(bindings[1],[]),pad);
+  assert.equal(assist.cloudPressed,true);
+  assert.equal(assist.foodPressed,false);
+  assert.equal(readActions(keyboard(bindings[1],[]),pad,assist).cloudPressed,false);
+  assert.equal(readActions(keyboard(bindings[1],['B']),null).cloudPressed,true);
+  assert.deepEqual(controlGuide(1,true,true).find(([action])=>action.includes('homing')),
+    ['Send homing cloud','RB / R1']);
 });

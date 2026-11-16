@@ -26,9 +26,9 @@
   ],
   "machines": [
     {"id":"feed-belt","kind":"conveyor","home":[270,560],"size":[300,38],"speed":1.35,"color":"#587f78"},
-    {"id":"gear-one","kind":"gear","home":[515,589],"size":[124,124],"turn":0.007,"treadWidth":102,"color":"#b7834d"},
-    {"id":"gear-two","kind":"gear","home":[641,570],"size":[124,124],"turn":-0.007,"treadWidth":102,"color":"#a57449"},
-    {"id":"gear-three","kind":"gear","home":[769,549],"size":[124,124],"turn":0.007,"treadWidth":102,"color":"#c79553"},
+    {"id":"gear-one","kind":"gear","home":[515,589],"size":[124,124],"turn":0.007,"color":"#b7834d"},
+    {"id":"gear-two","kind":"gear","home":[641,570],"size":[124,124],"turn":-0.007,"color":"#a57449"},
+    {"id":"gear-three","kind":"gear","home":[769,549],"size":[124,124],"turn":0.007,"color":"#c79553"},
     {"id":"launch-piston","kind":"piston","home":[1065,469],"size":[90,44],"period":156,"fireTick":105,"boost":7.4,"rise":10.7,"color":"#9b6552"}
   ]
 }

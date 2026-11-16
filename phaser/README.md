@@ -78,7 +78,13 @@ Back recalls; left shoulder revives; Start opens/closes pause. Second pad contro
 On the title screen, each player chooses an explorer with the stick or their
 movement keys and confirms with A or Jump. Press confirm again to continue
 with the confirmed players. Use the stick or arrow keys to move through the
-level grid and confirm to start. Escape or Start pauses during play.
+level grid and confirm to start. Escape or Start opens the pause screen
+with the controls for each player. Press a button to make a newly connected
+gamepad visible to the browser. Keyboard controls appear for players who
+have used their keys or have no assigned gamepad.
+
+During play, Wonderwood requests a screen wake lock in browsers that support
+it. A TV's own automatic power-off timer may still apply.
 
 ### Co-op and early pickups
 
@@ -86,6 +92,17 @@ The camera pulls back as the explorers spread out. At the zoom limit,
 player two floats after player one in a bubble. Player two can press I or
 gamepad A to pop it once the bubble is close enough to rejoin safely.
 Player one can keep exploring and finish the chapter while the bubble follows.
+
+Choose **Player 2 cloud assist** on the character screen, or toggle it with
+RB/R1 or the B key. With both slots joined, Player 2 stays on a cloud within
+the camera view. Steer with the stick/D-pad or J/L/I/K. O or B/Circle drops
+unlimited berries, P or X/Square throws a capture orb, and U or Y/Triangle
+changes form.
+
+RB/R1 or the B key sends a homing cloud toward the nearest reachable player
+or creature within range. It floats them for five seconds. Player 1 can
+steer the cloud or jump out early. Cloud shots recharge for 30 seconds after
+catching Player 1.
 
 Mosslight Meadow, Crystal Coast, and Starfall Summit have three playful
 pickups. Dandelions boost jumps and slow falls for five seconds. Ice water

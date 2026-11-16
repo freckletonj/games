@@ -1,6 +1,6 @@
 const clamp=(value,low,high)=>Math.max(low,Math.min(high,value));
 const headY=player=>player.y-(player.form?25:34);
-const active=player=>!player.sleep&&!player.bubble&&!player.rope;
+const active=player=>!player.sleep&&!player.bubble&&!player.rope&&!player.assist&&!player.clouded;
 
 export function createMonkeys(specs,tile,groundAt){
   return specs.map(({x,range},index)=>{
@@ -13,6 +13,7 @@ export function createMonkeys(specs,tile,groundAt){
 
 export function stepMonkeys(monkeys,players,actions,groundAt,recallBelow,step){
   for(const monkey of monkeys){
+    if(monkey.clouded)continue;
     const [left,right]=monkey.range;
     monkey.time+=step;
     monkey.wait=Math.max(0,monkey.wait-step);
