@@ -98,7 +98,8 @@ test('Cavern Ascent registers its painted scene and every walkable prop',()=>{
   const art=registry[id];
   assert.equal(art.scene.length,1);
   const painting=readFileSync(new URL(art.scene[0],root));
-  assert.equal(painting.toString('hex',0,8),'89504e470d0a1a0a');
+  assert.equal(painting.toString('ascii',0,4),'RIFF');
+  assert.equal(painting.toString('ascii',8,12),'WEBP');
   const ids=[...level.machines,...level.puzzleObjects.filter(object=>object.kind!=='breakable-wall')]
     .map(object=>object.id);
   assert.deepEqual(Object.keys(art.platforms).sort(),ids.sort());
