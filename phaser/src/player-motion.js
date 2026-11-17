@@ -2,7 +2,7 @@ import {deckTopAt,movingLanding} from './moving-platforms.js';
 import {landingY,platformTopAt,safeHorizontalX} from './physics.js';
 import {tryBloomBoost} from './springboard.js';
 import {stepRopePlayer} from './rope-swing.js';
-import {rockEdges,rockSupportAt,sweepRockEdges} from './rock-edges.js';
+import {rockEdges,rockSupportAt,sweepRockEdges,sweepContourX} from './rock-edges.js';
 import {DANDELION_BOOST} from './pickups.js';
 
 const FLAPPING_FORMS=new Set(['skyling','glimmermoth','cloudwhisp']);
@@ -16,12 +16,15 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export function stepPlayerMotion(p,actions,step,world){
   const events=[];
   const decks=world.movingPlatforms??[];
+  const terrainX=(from,to,feet,swimming=false)=>world.floorSegments?
+    sweepContourX(world.floorSegments,from,to,feet,swimming?7:11):
+    safeHorizontalX(from,to,feet,world.groundAt,swimming);
   const support=p.grounded?decks.find(deck=>deck.id===p.onPlatform):null;
   if(support){
     const [x,y]=support.position;
     const [previousX,previousY]=support.previous;
     const carriedX=clamp(p.x+x-previousX+(support.beltSpeed??0),10,world.width-10);
-    p.x=safeHorizontalX(p.x,carriedX,y,world.groundAt);
+    p.x=terrainX(p.x,carriedX,y);
     p.y=deckTopAt(support,p.x)??p.y+y-previousY;
     if(support.fire){
       p.launchSpeed=support.boost;p.vy=-support.rise;
@@ -141,8 +144,7 @@ export function stepPlayerMotion(p,actions,step,world){
     const slope=onTerrain?(world.groundAt(p.x+2)-world.groundAt(p.x-2))/4:0;
     const surfaceVx=p.vx/Math.hypot(1,slope);
     const nextX=clamp(p.x+(surfaceVx+(p.launchSpeed??0))*step,10,world.width-10);
-    let safeX=safeHorizontalX(p.x,nextX,p.y,
-      x=>world.groundAt(x),swimmer);
+    let safeX=terrainX(p.x,nextX,p.y,swimmer);
     // Authored climbing faces are real solid obstacles. Jump over a wall's
     // top, or use a second jump while adjacent to spring off its face.
     for(const wall of world.climbWalls||[]){
