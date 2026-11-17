@@ -73,5 +73,10 @@ export function sweepRockEdges(edges,x,y,toX,toY){
       normal=[edge.nx,edge.ny];
     }
   }
-  return {x:x+dx*earliest,y:y+dy*earliest,blocked:normal!==null,normal};
+  // A tiny contact skin keeps the next tick from treating a wall-side
+  // touch as penetration into the adjacent underside at a shared vertex.
+  const distance=Math.hypot(dx,dy);
+  const fraction=normal?Math.max(0,earliest-.02/distance):1;
+  return {x:x+dx*fraction,y:y+dy*fraction,
+    blocked:normal!==null,normal};
 }
