@@ -302,3 +302,14 @@ test('capture orbs bounce off walkable cave ledges, not the bottom heightfield',
   assert.equal(bounced.bounces,1);
   assert.ok(bounced.vy<0,'orb should rebound instead of dropping through');
 });
+
+test('walking uphill on exposed cave rock does not glue the player to its slope',()=>{
+  const {player,step}=simulate(480,1460,null);
+  player.grounded=false;player.coyote=0;
+  for(let tick=0;tick<140&&!player.grounded;tick++)step();
+  assert.ok(player.grounded&&player.y<1650,'player must land on the gallery roof');
+  const startX=player.x,startY=player.y;
+  for(let tick=0;tick<65;tick++)step({right:true});
+  assert.ok(player.x>startX+90,'player should walk up the rock contour');
+  assert.ok(player.y<startY-15,'walking uphill should follow the rock surface');
+});
