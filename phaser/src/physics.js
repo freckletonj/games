@@ -35,7 +35,7 @@ export function safeHorizontalX(fromX,toX,footY,groundAt,swimming=false){
   return x;
 }
 
-export function orbStep(orb,groundY,step=1){
+export function orbStep(orb,groundY,step=1,findLanding=null){
   // Slow, predictable ballistic arc with a visible physical ground bounce.
   const x=orb.x+orb.vx*step;
   let y=orb.y+orb.vy*step;
@@ -43,8 +43,10 @@ export function orbStep(orb,groundY,step=1){
   let vx=orb.vx;
   let bounces=orb.bounces||0;
   const floor=groundY-8;
-  if(y>=floor&&vy>0){
-    y=floor;
+  const hit=vy>0&&findLanding?.(
+    {x:orb.x,y:orb.y+8},{x,y:y+8});
+  if(hit||(findLanding===null&&y>=floor&&vy>0)){
+    y=hit?hit.y-8:floor;
     // A substantial rebound clears ordinary inclines instead of skimming
     // along the floor. Damping still makes successive hops shorter.
     vy=-Math.max(3.1,Math.min(4.3,vy*.8));
