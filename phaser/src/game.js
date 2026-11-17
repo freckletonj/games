@@ -32,7 +32,6 @@ import {launchPower,stepPower,powerHitsCreature,applyPowerHit,
 import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat,
   stompCreature} from './creature-motion.js';
 import {caveContainsWater} from './cave-layout.js';
-import {makeCavernPreviewProps,paintCavernPreview} from './cavern-preview.js';
 import {makeGeometryOverlay,paintScene,sceneTextures} from './painted-scene.js';
 import {deckTopAt,platformPosition,stepPlatforms} from './moving-platforms.js';
 import {machinePlatforms,stepMachines} from './machines.js';
@@ -499,11 +498,7 @@ class Wonderwood extends Phaser.Scene {
       picnics:0,foods:{berry:14,nectar:6,star:6}};
     this.cameras.main.setBackgroundColor(this.level.cave?0x0b1c2c:SKY[this.level.biome]);
     this.isCavern=this.chapter.id==='cavern-ascent';
-    const sceneArt=APPROVED_SCENE_ART[this.chapter.id];
-    if(this.isCavern&&!sceneArt){
-      this.sceneArt=paintCavernPreview(this);
-      makeCavernPreviewProps(this.textures,this.level);
-    }else this.sceneArt=paintScene(this,sceneArt);
+    this.sceneArt=paintScene(this,APPROVED_SCENE_ART[this.chapter.id]);
     this.geometryOverlay=makeGeometryOverlay(this);
     this.movingPlatforms=(this.level.movingPlatforms??[]).map(platform=>{
       const position=platformPosition(platform,0);
