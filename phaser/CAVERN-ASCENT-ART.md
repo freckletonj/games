@@ -47,6 +47,17 @@ Use **V** in the game to compare the registered painting against the
 actual collision geometry. Keep the original `temp/` model artwork
 as regenerable inputs, not as runtime dependencies.
 
+## Collision geometry
+
+Collision is derived from the declarative level rather than from the painting.
+`rockPolygons` compile into oriented line segments; the authored floor and
+ceiling contours become connected half-tile polylines. Grounded characters
+follow the supporting edge at its exact interpolated height. Moving characters
+use swept rectangle/segment intersections for walls and overhangs, while
+platforms and the fallen stone bridge retain their one-way landing rules.
+This avoids per-pixel stepping, repeated push-ups, and binary-search
+repositioning on cave slopes.
+
 ## Verification
 
 `npm test --prefix phaser` includes fixed-tick checks for flight around both
