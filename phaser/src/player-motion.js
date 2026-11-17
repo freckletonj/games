@@ -160,18 +160,19 @@ export function stepPlayerMotion(p,actions,step,world){
     const onLedge=platformTopAt(p.x,p.y-2,p.y+2,
       world.platformSegments,world.tile)!==null;
     const supportEdge=p.grounded&&!support&&!onLedge&&p.vy>=0?
-      rockSupportAt(edges,p.x,p.y,1.5,1.5):null;
+      rockSupportAt(edges,p.x,p.y,9,9):null;
     const nextEdge=supportEdge?
-      rockSupportAt(edges,safeX,p.y,9,9):null;
+      rockSupportAt(edges,safeX,supportEdge.y,9,9):null;
     let rockWalk=false;
     if(nextEdge){
-      const contact=sweepRockEdges(edges,p.x,p.y,safeX,nextEdge.y);
+      // The supporting edges define the walking path, not obstacles to
+      // that very path. Sweep walls and undersides along the slope instead.
+      const obstacles=edges.filter(edge=>edge.ny>=-.5);
+      const contact=sweepRockEdges(obstacles,p.x,supportEdge.y,safeX,nextEdge.y);
       safeX=contact.x;
-      if(!contact.blocked){
-        p.y=nextEdge.y;
-        p.vy=0;
-        rockWalk=true;
-      }
+      p.y=contact.blocked?supportEdge.y:nextEdge.y;
+      p.vy=0;
+      rockWalk=!contact.blocked;
     }else if(edges.length){
       safeX=sweepRockEdges(edges,p.x,p.y,safeX,p.y).x;
     }
