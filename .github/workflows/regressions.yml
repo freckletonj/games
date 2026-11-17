@@ -102,8 +102,6 @@ jobs:
         run: npm test --prefix phaser
       - name: Build playable Phaser campaign
         run: npm run build --prefix phaser
-      - name: Exercise new chapter in Chromium
-        run: python phaser/tests/chapters.py
       - name: Compare source painting with authored cave geometry
         run: |
           python - <<'PY'
@@ -130,3 +128,5 @@ jobs:
       - name: Inspect source artwork
         run: |
           python -c 'from PIL import Image; from io import BytesIO; import base64; from pathlib import Path; [(lambda im,name: (print("ASSET_SIZE="+name+":"+str(im.size)), (lambda b: (im.thumbnail((260,650)), im.convert("RGB").save(b,format="JPEG",quality=60), print("ASSET_PREVIEW="+name+":"+base64.b64encode(b.getvalue()).decode())))(BytesIO())))(Image.open("temp/"+name+".png"),name) for name in ("cave","bridge","boulders")]'
+      - name: Exercise new chapter in Chromium
+        run: python phaser/tests/chapters.py
