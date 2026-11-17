@@ -2,7 +2,7 @@ import {deckTopAt,movingLanding} from './moving-platforms.js';
 import {landingY,platformTopAt,safeHorizontalX} from './physics.js';
 import {tryBloomBoost} from './springboard.js';
 import {stepRopePlayer} from './rope-swing.js';
-import {sweepRockBody} from './cave-solids.js';
+import {bodyHitsRock,sweepRockBody} from './cave-solids.js';
 import {DANDELION_BOOST} from './pickups.js';
 
 const FLAPPING_FORMS=new Set(['skyling','glimmermoth','cloudwhisp']);
@@ -154,8 +154,26 @@ export function stepPlayerMotion(p,actions,step,world){
       if(p.x>=wallX+12&&safeX<wallX+12)
         safeX=wallX+12;
     }
-    if(world.rockPolygons?.length)
-      safeX=sweepRockBody(world.rockPolygons,p.x,p.y,safeX,'x').value;
+    let steppedRock=false;
+    if(world.rockPolygons?.length){
+      let contact=sweepRockBody(world.rockPolygons,p.x,p.y,safeX,'x');
+      if(contact.blocked&&p.grounded&&!support){
+        // Polygon tops are part of the cave's walkable terrain. When a rock
+        // rises gently beneath the feet, step onto it instead of treating
+        // its slope as a vertical wall (but keep true overhangs solid).
+        for(let rise=1;rise<=9;rise++){
+          const raisedY=p.y-rise;
+          if(bodyHitsRock(world.rockPolygons,p.x,raisedY))continue;
+          const lifted=sweepRockBody(world.rockPolygons,p.x,raisedY,safeX,'x');
+          if(lifted.blocked)continue;
+          p.y=raisedY;
+          contact=lifted;
+          steppedRock=true;
+          break;
+        }
+      }
+      safeX=contact.value;
+    }
     if(world.blockHorizontal) safeX=world.blockHorizontal(p.x,safeX,p.y);
     if(Math.abs(safeX-nextX)>.2)p.vx=0;
     const dx=safeX-p.x;
@@ -163,7 +181,8 @@ export function stepPlayerMotion(p,actions,step,world){
     p.x=safeX;
     const priorY=p.y,wasGrounded=p.grounded,impactSpeed=p.vy;
     const vertical=world.rockPolygons?.length?
-      sweepRockBody(world.rockPolygons,p.x,p.y,p.y+p.vy*step,'y'):
+      sweepRockBody(world.rockPolygons,p.x,p.y,
+        p.y+Math.max(p.vy*step,steppedRock?9:0),'y'):
       {value:p.y+p.vy*step,blocked:false};
     const rockLanding=vertical.blocked&&p.vy>0;
     p.y=vertical.value;
