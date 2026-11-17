@@ -313,3 +313,19 @@ test('walking uphill on exposed cave rock does not glue the player to its slope'
   assert.ok(player.x>startX+90,'player should walk up the rock contour');
   assert.ok(player.y<startY-15,'walking uphill should follow the rock surface');
 });
+
+test('walking uphill on cave rock keeps stable subpixel contact',()=>{
+  // These two opposite slopes on the amber-pocket canopy previously made
+  // feet oscillate up one whole pixel, then fall under gravity the next tick.
+  for(const [x,y,direction] of [[30,2218.9,1],[194,2241.9,-1]]){
+    const {player,step}=simulate(x,y,null);
+    for(let tick=0;tick<35;tick++){
+      const previousY=player.y;
+      step({left:direction<0,right:direction>0});
+      assert.ok(player.grounded,'walking on the rock must keep contact');
+      assert.ok(player.y<=previousY+.05,
+        'rock slope jitter at tick '+tick+': '+previousY+' -> '+player.y);
+    }
+    assert.ok(Math.abs(player.x-x)>65,'walking must continue up the slope');
+  }
+});
