@@ -1006,14 +1006,9 @@ class Wonderwood extends Phaser.Scene {
     }
     if(!p.assist)this.shared.foods[food]--;
     const perch=this.playerPerch(p);
-    const deck=this.walkableMachines.find(deck=>deck.id===p.onPlatform);
-    const platform=p.grounded&&p.y<this.groundAt(p.x)-1?
-      this.level.platformSegments.find(s=>s.kind==='platform'&&p.y===s.y*TILE&&
-        p.x>=s.x*TILE-4&&p.x<=(s.x+s.length)*TILE+4):null;
-    const bounds=perch?[perch.left+12,perch.right-15]:deck?
-      [deck.position[0]-deck.size[0]/2+4,deck.position[0]+deck.size[0]/2-4]:
-      platform?[platform.x*TILE+4,(platform.x+platform.length)*TILE-4]:[16,this.worldW-16];
-    const x=p.assist?p.x:clamp(p.x+p.face*96+p.vx*5,...bounds);
+    // A throw must be allowed to leave its launch ledge. Clamping to that
+    // ledge makes a berry land at the player's feet near either edge.
+    const x=p.assist?p.x:clamp(p.x+p.face*96+p.vx*5,16,this.worldW-16);
     const y=this.groundAt(x);
     gesture(p,'feed',.27);
     const texture=food==='berry'?'painted-berry':'flora';
@@ -1022,7 +1017,8 @@ class Wonderwood extends Phaser.Scene {
       this.add.image(p.x,p.y-18,texture,p.food).setScale(.071/FLORA_ATLAS_SCALE);
     sprite.setOrigin(.5,1).setDepth(18);
     const lure={x,y,food,visual:sprite,landed:false,life:24*60,
-      startX:p.assist?p.x:clamp(p.x+p.face*9,...bounds),startY:p.y-(p.assist?0:21),
+      startX:p.assist?p.x:clamp(p.x+p.face*9,16,this.worldW-16),
+      startY:p.y-(p.assist?0:21),
       face:p.face,age:0,drop:Boolean(p.assist),perch};
     this.lures.push(lure);
     sprite.setPosition(lure.startX,lure.startY);
@@ -1254,7 +1250,8 @@ class Wonderwood extends Phaser.Scene {
           y:lure.perch.y/TILE
         }]:this.level.platformSegments;
         const pose=advanceTreatFlight(lure,step,(from,to)=>treatLanding(from,to,
-          segments,this.walkableMachines,x=>this.groundAt(x),TILE));
+          segments,this.walkableMachines,x=>this.groundAt(x),TILE,
+          this.level.rockPolygons));
         lure.visual.setPosition(pose.x,pose.y).setRotation(pose.rotation);
         if(pose.landed)this.sparkle(lure.x,lure.y,0xf3dfb8);
       }else{
@@ -1380,8 +1377,16 @@ class Wonderwood extends Phaser.Scene {
     for(const orb of [...this.orbs]){
       const fromX=orb.x,fromY=orb.y,oldBounces=orb.bounces;
       const x=orb.x+orb.vx*step;
-      const floor=orb.perch&&x>=orb.perch.left&&x<=orb.perch.right?orb.perch.y:this.groundAt(x);
-      const next=orbStep(orb,floor,step);
+      const floor=orb.perch&&x>=orb.perch.left&&x<=orb.perch.right?
+        orb.perch.y:this.groundAt(x);
+      const segments=orb.perch?[...this.level.platformSegments,{
+        kind:'platform',x:orb.perch.left/TILE,
+        length:(orb.perch.right-orb.perch.left)/TILE,y:orb.perch.y/TILE
+      }]:this.level.platformSegments;
+      const landing=this.level.cave?(from,to)=>treatLanding(from,to,
+        segments,this.walkableMachines,px=>this.groundAt(px),TILE,
+        this.level.rockPolygons):null;
+      const next=orbStep(orb,floor,step,landing);
       Object.assign(orb,next);
       orb.visual.setPosition(orb.x,orb.y)
         .setRotation((150-orb.life)*.09*Math.sign(orb.vx));
