@@ -44,7 +44,7 @@ export function caveMaskSvg(level){
 
 export function caveArtManifest(level){
   const cavern=level.cave.layout.id==='cavern-ascent';
-  const study=level.cave.layout.id==='skywell-vault-study'||cavern;
+  const study=level.cave.layout.id==='skywell-vault-study';
   const skywell=level.cave.layout.id==='skywell-ascent'||study;
   return {
     schema:'wonderwood-physics-painted-cave-v2',
@@ -62,12 +62,16 @@ export function caveArtManifest(level){
         collisionFromCode:true},
       backdrop:{mask:null,parallaxAllowed:true,collisionFromCode:false}
     },
-    painting:study?null:skywell?'phaser/assets/generated/skywell-ancient/painted-solid.webp':
+    painting:cavern?'phaser/assets/generated/cavern-ascent/scene.webp':
+      study?null:skywell?'phaser/assets/generated/skywell-ancient/painted-solid.webp':
       'phaser/assets/generated/luminous-grotto.webp',
-    paintingStatus:study?'awaiting-coherent-high-resolution-art':
+    paintingStatus:cavern?'approved-scaled-composition':
+      study?'awaiting-coherent-high-resolution-art':
       skywell?'user-selected-layered-preview':'approved-refinement',
     illustratedPreview:null,
-    modelSource:study?null:skywell?
+    modelSource:cavern?
+      '793x1983 generated composition packed to 1280x3200 world resolution without inventing extra detail':
+      study?null:skywell?
       '1644x957 Ancient Sanctuary painting, enlarged to 3520x2048 for alignment; not native full-resolution detail':
       '3000x1680 detail refinement from four overlapping native paints of luminous-grotto-single.png',
     wallMaterial:'#ff9d63',
