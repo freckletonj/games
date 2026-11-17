@@ -1019,7 +1019,9 @@ class Wonderwood extends Phaser.Scene {
     const lure={x,y,food,visual:sprite,landed:false,life:24*60,
       startX:p.assist?p.x:clamp(p.x+p.face*9,16,this.worldW-16),
       startY:p.y-(p.assist?0:21),
-      face:p.face,age:0,drop:Boolean(p.assist),perch};
+      face:p.face,age:0,drop:Boolean(p.assist),perch,
+      ballistic:this.isCavern&&!p.assist,
+      velocityX:p.face*2.6+p.vx*.15,velocityY:-3};
     this.lures.push(lure);
     sprite.setPosition(lure.startX,lure.startY);
     if(!p.assist)this.flash('A '+food+' treat is on its way',800);
