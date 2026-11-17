@@ -1772,6 +1772,7 @@ class Wonderwood extends Phaser.Scene {
       platformSegments:this.level.platformSegments,
       climbWalls:this.level.climbWalls,
       movingPlatforms:this.walkableMachines,
+      floorSegments:this.level.floorSegments,
       rockPolygons:this.level.rockPolygons,
       ropes:this.ropes,
       pushSpeed,
