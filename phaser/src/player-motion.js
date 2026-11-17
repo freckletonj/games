@@ -157,7 +157,7 @@ export function stepPlayerMotion(p,actions,step,world){
     const edges=world.rockPolygons?.length?rockEdges(world.rockPolygons):[];
     // Walk the authored rock's top edges directly. A slope changes the
     // player's foot height analytically, without repeated upward probes.
-    const onLedge=platformTopAt(p.x,p.y-2,p.y+2,
+    const onLedge=platformTopAt(p.x,p.y-.5,p.y+.5,
       world.platformSegments,world.tile)!==null;
     const supportEdge=p.grounded&&!support&&!onLedge&&p.vy>=0?
       rockSupportAt(edges,p.x,p.y,9,9):null;
@@ -167,7 +167,9 @@ export function stepPlayerMotion(p,actions,step,world){
     if(nextEdge){
       // The supporting edges define the walking path, not obstacles to
       // that very path. Sweep walls and undersides along the slope instead.
-      const obstacles=edges.filter(edge=>edge.ny>=-.5);
+      const footY=Math.min(supportEdge.y,nextEdge.y);
+      const obstacles=edges.filter(edge=>edge.ny>=-.5&&
+        Math.min(edge.a[1],edge.b[1])<footY-.02);
       const contact=sweepRockEdges(obstacles,p.x,supportEdge.y,safeX,nextEdge.y);
       safeX=contact.x;
       p.y=contact.blocked?supportEdge.y:nextEdge.y;
