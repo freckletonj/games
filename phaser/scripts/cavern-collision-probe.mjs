@@ -25,3 +25,13 @@ for(const [x,y] of [[88,3040],[500,3040],[1030,3040],[200,2880],[560,2880],[620,
  for(let i=0;i<60;i++)stepPlayerMotion(p,{left:false,right:true},1,world);
  console.log('CAVE_PATH '+JSON.stringify({x,y,from,to:p.x,dy:p.y-y,ground:p.grounded,initialHit:bodyHitsRock(level.rockPolygons,x,y)}));
 }
+
+const contacts=[];
+for(const shelf of layout.shelves){
+ const y=shelf.y*16;
+ const xs=[];
+ for(let x=shelf.x*16+12;x<(shelf.x+shelf.length)*16-12;x+=2)
+   if(bodyHitsRock(level.rockPolygons,x,y))xs.push(Math.round(x));
+ if(xs.length)contacts.push({shelf:shelf.id,y,left:xs[0],right:xs.at(-1),count:xs.length});
+}
+console.log('CAVE_LEDGE_CONTACTS '+JSON.stringify(contacts));
