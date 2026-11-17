@@ -161,7 +161,7 @@ export function stepPlayerMotion(p,actions,step,world){
         // Polygon tops are part of the cave's walkable terrain. When a rock
         // rises gently beneath the feet, step onto it instead of treating
         // its slope as a vertical wall (but keep true overhangs solid).
-        for(let rise=1;rise<=9;rise++){
+        for(let rise=.25;rise<=9;rise+=.25){
           const raisedY=p.y-rise;
           if(bodyHitsRock(world.rockPolygons,p.x,raisedY))continue;
           const lifted=sweepRockBody(world.rockPolygons,p.x,raisedY,safeX,'x');
@@ -228,6 +228,23 @@ export function stepPlayerMotion(p,actions,step,world){
     }
     if(p.y>ground+3){
       p.y=ground;p.vy=Math.min(p.vy,0);p.grounded=true;p.onPlatform=null;
+    }
+    // When walking on an irregular rock top, resolve grounded contact at
+    // subpixel precision. Integer step-ups and coarse downward sweeps used to
+    // alternate between climbing and falling on successive frames.
+    if(wasGrounded&&p.vy>=0&&!support&&!onDeck&&landing===null&&
+      world.rockPolygons?.length){
+      const clear=priorY-9,solid=priorY+9;
+      if(!bodyHitsRock(world.rockPolygons,p.x,clear)&&
+        bodyHitsRock(world.rockPolygons,p.x,solid)){
+        let top=clear,bottom=solid;
+        for(let i=0;i<12;i++){
+          const mid=(top+bottom)/2;
+          if(bodyHitsRock(world.rockPolygons,p.x,mid))bottom=mid;
+          else top=mid;
+        }
+        p.y=top;p.vy=0;p.grounded=true;p.jumps=0;p.flaps=0;
+      }
     }
     if(p.grounded)p.launchSpeed=0;
     if(p.y>world.height-10)events.push('recall');
