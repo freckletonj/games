@@ -61,10 +61,7 @@ def main():
                 assert art["layers"][0]["worldPixels"] == [1280, 3200], art
             right = 0
             for index, layer in enumerate(art["layers"]):
-                expected = {f"scene-{chapter}-scene-{index}"}
-                if chapter == "cavern-ascent":
-                    expected.update(("scene-cavern-ascent-preview", "scene-cavern-ascent-solid"))
-                assert layer["textureKey"] in expected, layer
+                assert layer["textureKey"] == f"scene-{chapter}-scene-{index}", layer
                 assert layer["origin"] == [right, 0] and layer["scrollFactor"] == 1, layer
                 sourceWidth, sourceHeight = layer["sourcePixels"]
                 worldWidth, worldHeight = layer["worldPixels"]
