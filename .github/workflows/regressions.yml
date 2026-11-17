@@ -104,6 +104,18 @@ jobs:
         run: npm run build --prefix phaser
       - name: Verify chapter selection and painting in Chromium
         run: python phaser/tests/chapters.py
+      - name: Inspect cavern runtime screenshot
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          from io import BytesIO
+          import base64
+          im=Image.open("dist/phaser-chapter-cavern-ascent.png").convert("RGB")
+          im.thumbnail((720,405))
+          output=BytesIO()
+          im.save(output,format="JPEG",quality=70)
+          print("CAVERN_SCREEN="+base64.b64encode(output.getvalue()).decode())
+          PY
       - name: Upload playable Phaser and Cavern Ascent preview
         if: always()
         uses: actions/upload-artifact@v4
