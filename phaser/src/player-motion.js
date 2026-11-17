@@ -182,7 +182,7 @@ export function stepPlayerMotion(p,actions,step,world){
     const priorY=p.y,wasGrounded=p.grounded,impactSpeed=p.vy;
     const vertical=world.rockPolygons?.length?
       sweepRockBody(world.rockPolygons,p.x,p.y,
-        p.y+Math.max(p.vy*step,steppedRock?9:0),'y'):
+        p.y+(steppedRock?Math.max(p.vy*step,9):p.vy*step),'y'):
       {value:p.y+p.vy*step,blocked:false};
     const rockLanding=vertical.blocked&&p.vy>0;
     p.y=vertical.value;
