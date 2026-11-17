@@ -5,6 +5,9 @@ import sealPlan from '../levels/stonewake-seal.json' with {type:'json'};
 import {compileCave} from '../src/cave-layout.js';
 import {caveArtManifest,caveMaskSvg} from '../src/cave-art-guide.js';
 import {stepPlayerMotion} from '../src/player-motion.js';
+import {bodyHitsRock} from '../src/cave-solids.js';
+import {advanceTreatFlight,treatLanding} from '../src/treat-motion.js';
+import {orbStep} from '../src/physics.js';
 import {machinePlatforms,stepMachines} from '../src/machines.js';
 import {createPuzzleObjects,pushPuzzleObject,blockPuzzleX,punchWall,
   stepPuzzleObjects,cavernPuzzlesComplete} from '../src/puzzle-objects.js';
@@ -250,4 +253,52 @@ test('the low roof keeps Moonwing from skipping the first boulder on its ledge',
     step({right:true,jump:true,jumpPressed:pressed});
     assert.ok(player.x<296,'Moonwing should stay on the near side');
   }
+});
+
+test('all cavern ledge interiors are free of static rock collision',()=>{
+  for(const shelf of layout.shelves){
+    const y=shelf.y*16;
+    for(let x=shelf.x*16+12;x<(shelf.x+shelf.length)*16-12;x+=2){
+      assert.ok(!bodyHitsRock(level.rockPolygons,x,y),
+        shelf.id+' is obstructed at '+x+','+y);
+    }
+  }
+});
+
+test('walking along the mid-cavern ledge does not snag on its rock support',()=>{
+  const {player,step}=simulate(768,2240,null);
+  for(let tick=0;tick<60;tick++)step({left:true});
+  assert.ok(player.x<660,'player should walk left past the lower seal cap');
+  assert.equal(player.y,2240);
+  assert.ok(player.grounded);
+});
+
+test('cavern berries continue across a gap and land on the far ledge',()=>{
+  const target=1205;
+  const food={startX:1105,startY:2060,x:target,y:3040,face:1,age:0,
+    ballistic:true,velocityX:2.6,velocityY:-3,landed:false};
+  const landing=(from,to)=>treatLanding(from,to,level.platformSegments,[],
+    level.cave.groundAt,16,level.rockPolygons);
+  for(let tick=0;tick<140&&!food.landed;tick++)
+    advanceTreatFlight(food,1,landing);
+  assert.ok(food.landed,'treat must physically land');
+  assert.ok(food.x>1184,'treat must clear the intervening gap');
+  assert.equal(food.y,2080,'treat must stop on the far bank, not the cave floor');
+});
+
+test('berries stop at irregular rock instead of passing into the wall',()=>{
+  const hit=treatLanding({x:704,y:2230},{x:704,y:2270},
+    [],[],level.cave.groundAt,16,level.rockPolygons);
+  assert.ok(hit,'the rock cap must catch the thrown berry');
+  assert.ok(hit.y>=2230&&hit.y<=2244,'the berry must stop at the rock surface');
+});
+
+test('capture orbs bounce off walkable cave ledges, not the bottom heightfield',()=>{
+  const orb={x:200,y:2870,vx:2,vy:3,bounces:0,life:120};
+  const landing=(from,to)=>treatLanding(from,to,level.platformSegments,[],
+    level.cave.groundAt,16,level.rockPolygons);
+  const bounced=orbStep(orb,level.cave.groundAt(202),1,landing);
+  assert.equal(bounced.y,2872);
+  assert.equal(bounced.bounces,1);
+  assert.ok(bounced.vy<0,'orb should rebound instead of dropping through');
 });
