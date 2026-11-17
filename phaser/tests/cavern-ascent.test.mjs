@@ -44,7 +44,8 @@ test('the tall cave compiles into one geometry-led art guide',()=>{
   assert.equal(level.height*16,3200);
   assert.equal(level.platformSegments.length,25);
   assert.equal(level.rockPolygons.length,21);
-  assert.equal(caveArtManifest(level).painting,null);
+  assert.equal(caveArtManifest(level).painting,
+    'phaser/assets/generated/cavern-ascent/scene.webp');
   assert.equal(caveArtManifest(level).geometrySource,
     'phaser/levels/cavern-ascent.json');
   assert.ok(caveMaskSvg(level).includes('viewBox="0 0 1280 3200"'));
