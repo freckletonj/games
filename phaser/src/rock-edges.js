@@ -30,7 +30,7 @@ export function rockSupportAt(edges,x,feet,maxUp=9,maxDown=9){
     const slope=(by-ay)/(bx-ax);
     const y=Math.min(ay+(left-ax)*slope,ay+(right-ax)*slope);
     if(y<feet-maxUp||y>feet+maxDown)continue;
-    if(!support||Math.abs(y-feet)<Math.abs(support.y-feet))
+    if(!support||y<support.y)
       support={y,edge};
   }
   return support;
