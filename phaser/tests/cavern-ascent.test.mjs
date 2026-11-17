@@ -26,6 +26,7 @@ function simulate(x,y,form,objectSpecs=[],withMachines=false){
     groundAt:level.cave.groundAt,ceilingAt:level.cave.ceilingAt,
     inWater:()=>false,waterBodies:[],thermalVolumes:level.thermalVolumes,
     platformSegments:level.platformSegments,rockPolygons:level.rockPolygons,
+    floorSegments:level.floorSegments,
     movingPlatforms:decks,
     blockHorizontal:(from,to,feet)=>blockPuzzleX(objects,from,to,feet)};
   let tick=0;
