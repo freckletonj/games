@@ -104,6 +104,29 @@ jobs:
         run: npm run build --prefix phaser
       - name: Exercise new chapter in Chromium
         run: python phaser/tests/chapters.py
+      - name: Compare source painting with authored cave geometry
+        run: |
+          python - <<'PY'
+          from PIL import Image, ImageDraw
+          import json, io, base64
+          with open("phaser/levels/cavern-ascent.json") as source:
+              layout=json.load(source)
+          im=Image.open("temp/cave.png").convert("RGB").resize((1280,3200),Image.Resampling.LANCZOS)
+          draw=ImageDraw.Draw(im,"RGBA")
+          for rock in layout["rockPolygons"]:
+              xy=[(x*16,y*16) for x,y in rock["points"]]
+              draw.line(xy+[xy[0]],fill=(240,55,180,225),width=10)
+          for ledge in layout["shelves"]:
+              x,y,length=ledge["x"],ledge["y"],ledge["length"]
+              draw.line([(x*16,y*16),((x+length)*16,y*16)],fill=(30,255,255,255),width=13)
+          for obj in layout["machines"]:
+              x,y=obj["home"]
+              draw.ellipse((x-13,y-13,x+13,y+13),fill=(50,255,80,255))
+          im.thumbnail((300,750))
+          stream=io.BytesIO()
+          im.save(stream,format="JPEG",quality=65)
+          print("ASSET_GEOMETRY="+base64.b64encode(stream.getvalue()).decode())
+          PY
       - name: Inspect source artwork
         run: |
           python -c 'from PIL import Image; from io import BytesIO; import base64; from pathlib import Path; [(lambda im,name: (print("ASSET_SIZE="+name+":"+str(im.size)), (lambda b: (im.thumbnail((260,650)), im.convert("RGB").save(b,format="JPEG",quality=60), print("ASSET_PREVIEW="+name+":"+base64.b64encode(b.getvalue()).decode())))(BytesIO())))(Image.open("temp/"+name+".png"),name) for name in ("cave","bridge","boulders")]'
