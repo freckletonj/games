@@ -22,20 +22,30 @@ for the positions of the upright bridge, seals, and boulders.
 `fallen-bridge-context.png` places the bridge at rest with its deck flush
 with the tops of both named banks.
 
-The refreshed composition study needs final alignment against the static
-mask at gameplay zoom. Keep the stone bridge and boulders as independent
-alpha textures. The upright stone texture is 50 × 320 world units, with its
-pivot at the center of the foot. At rest its left edge faces up and is the
-walkable surface. The boulder wheels rotate around their centers and have
-84 × 84 world-unit collision shapes. The pushable stone uses a 72 × 67
-bottom-centered sprite. Both seals use the existing Stonewake fragment atlas.
+The approved scene is packed from `temp/cave.png` with:
 
-Once the aligned artwork is ready, add the painting and alpha textures under
-`phaser/assets/generated/cavern-ascent/`, and add a `cavern-ascent` entry in
-`approved-scene-art.json` with the painting in `scene` and each movable
-texture in `platforms`, keyed by the corresponding object or machine ID.
-The chapter uses geometry preview art before the approved art entry is installed.
-Use **V** in the running game to compare the scene and its collision.
+```sh
+python phaser/scripts/pack-cavern-scene.py
+```
+
+The source composition is 793 × 1983 pixels, at the correct 2:5 world
+aspect. The packer resamples it to the authored 1280 × 3200 world extent
+and writes `phaser/assets/generated/cavern-ascent/scene.webp`; resampling
+does not add native image detail. The scene and each movable object are
+registered in `phaser/assets/generated/approved-scene-art.json`, so
+the standalone build embeds the artwork without depending on `temp/`
+at runtime.
+
+The stone bridge and boulders remain independent RGBA textures. The
+upright stone bridge is 50 × 320 world units, with its pivot at the
+center of the foot. At rest its left edge faces up and is the walkable
+surface. The four wheels share a spinning-boulder texture and use
+84 × 84 collision extents. The pushable stone uses a bottom-centered
+72 × 67 sprite. Both seals reuse the existing Stonewake fragments.
+
+Use **V** in the game to compare the registered painting against the
+actual collision geometry. Keep the original `temp/` model artwork
+as regenerable inputs, not as runtime dependencies.
 
 ## Verification
 
