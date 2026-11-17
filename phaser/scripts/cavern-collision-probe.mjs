@@ -22,6 +22,6 @@ for(const [x,y] of [[88,3040],[500,3040],[1030,3040],[200,2880],[560,2880],[620,
  const p={x,y,vx:0,vy:0,face:1,grounded:true,form:null,
  coyote:5,jumpBuffer:0,jumps:0,flaps:0,flapWait:0,powers:0,hover:0,breach:0,bloomWindow:0};
  const from=p.x;
- for(let i=0;i<60;i++)stepPlayerMotion(p,{right:true},1,world);
+ for(let i=0;i<60;i++)stepPlayerMotion(p,{left:false,right:true},1,world);
  console.log('CAVE_PATH '+JSON.stringify({x,y,from,to:p.x,dy:p.y-y,ground:p.grounded,initialHit:bodyHitsRock(level.rockPolygons,x,y)}));
 }
