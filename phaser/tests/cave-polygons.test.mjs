@@ -4,6 +4,7 @@ import {compileRockPolygons,bodyHitsRock,sweepRockBody} from '../src/cave-solids
 import {compileCave,skywellLayout,vaultLayout,caveContainsWater}
   from '../src/cave-layout.js';
 import {stepPlayerMotion} from '../src/player-motion.js';
+import {rockEdges,rockSupportAt,sweepRockEdges} from '../src/rock-edges.js';
 
 const testRock=compileRockPolygons([{
   id:'bridge',points:[[8,30],[18,30],[20,33],[20,40],[8,40]]
@@ -97,4 +98,39 @@ test('Skyling reaches the high vaulted shelf while the ordinary player cannot',(
     'the ordinary explorer cannot clear this optional upper shelf');
   assert.equal(attempts('skyling'),true,
     'the transformed Skyling can use earned flaps to reach it');
+});
+
+test('rock polygons compile to deterministic oriented collision segments',()=>{
+  const edges=rockEdges(testRock);
+  assert.equal(edges.length,testRock[0].points.length);
+  assert.equal(rockEdges(testRock),edges,'reuse compiled edges between ticks');
+  assert.ok(edges.some(e=>e.ny===-1),'upper rock edge faces outwards');
+  assert.ok(edges.some(e=>e.ny===1),'underside faces outwards');
+});
+
+test('swept segment collision catches walls, floors and overhang undersides',()=>{
+  const edges=rockEdges(testRock);
+  const wall=sweepRockEdges(edges,6*16,36*16,10*16,36*16);
+  assert.equal(wall.blocked,true);
+  assert.equal(wall.x,8*16-10);
+  const floor=sweepRockEdges(edges,12*16,28*16,12*16,36*16);
+  assert.equal(floor.blocked,true);
+  assert.equal(floor.y,30*16);
+  const underside=sweepRockEdges(edges,12*16,45*16,12*16,36*16);
+  assert.equal(underside.blocked,true);
+  assert.equal(underside.y,40*16+27);
+  assert.equal(sweepRockEdges(edges,12*16,28*16,12*16,27*16).blocked,false);
+});
+
+test('a rock slope has continuous support heights without per-pixel stepping',()=>{
+  const slope=compileRockPolygons([{
+    id:'ramp',points:[[4,8],[10,4],[10,15],[4,15]]
+  }],32,20);
+  const edges=rockEdges(slope);
+  const a=rockSupportAt(edges,100,100,100,100);
+  const b=rockSupportAt(edges,101,100,100,100);
+  assert.ok(a&&b);
+  assert.ok(Math.abs((b.y-a.y)+2/3)<1e-9);
+  assert.equal(sweepRockEdges(edges,55,115,190,115).blocked,true,
+    'the vector sweep still blocks a real rock wall');
 });
