@@ -79,5 +79,18 @@
     "scene": [
       "phaser/assets/generated/monkey-jungle/scene.webp"
     ]
+  },
+  "cavern-ascent": {
+    "scene": [
+      "phaser/assets/generated/cavern-ascent/scene.png"
+    ],
+    "platforms": {
+      "first-boulder": "phaser/assets/generated/cavern-ascent/first-boulder.png",
+      "stone-bridge": "phaser/assets/generated/cavern-ascent/stone-bridge.png",
+      "spinning-boulder-1": "phaser/assets/generated/cavern-ascent/spinning-boulder.png",
+      "spinning-boulder-2": "phaser/assets/generated/cavern-ascent/spinning-boulder.png",
+      "spinning-boulder-3": "phaser/assets/generated/cavern-ascent/spinning-boulder.png",
+      "spinning-boulder-4": "phaser/assets/generated/cavern-ascent/spinning-boulder.png"
+    }
   }
 }
