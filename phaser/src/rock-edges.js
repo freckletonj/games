@@ -1,9 +1,12 @@
 // Continuous player collision against edges derived from authored cave polygons.
 // Body: 20px wide, 27px high; (x,y) is the center of the feet.
 const HALF_WIDTH=10, HEIGHT=27, EPSILON=1e-7;
+const edgeCache=new WeakMap();
 
 export function rockEdges(polygons){
-  return polygons.flatMap(rock=>{
+  const cached=edgeCache.get(polygons);
+  if(cached)return cached;
+  const edges=polygons.flatMap(rock=>{
     const winding=Math.sign(rock.points.reduce((sum,a,i)=>{
       const b=rock.points[(i+1)%rock.points.length];
       return sum+a[0]*b[1]-b[0]*a[1];
@@ -15,6 +18,8 @@ export function rockEdges(polygons){
       return {a,b,nx:winding*dy/length,ny:-winding*dx/length};
     });
   });
+  edgeCache.set(polygons,edges);
+  return edges;
 }
 
 // Height of a walkable upward-facing edge under the player's 20px footprint.
