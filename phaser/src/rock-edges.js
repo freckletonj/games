@@ -80,3 +80,37 @@ export function sweepRockEdges(edges,x,y,toX,toY){
   return {x:x+dx*fraction,y:y+dy*fraction,
     blocked:normal!==null,normal};
 }
+
+
+// A sampled Hermite contour becomes a connected, world-space polyline.
+// All collision and painted-material queries interpolate those same edges.
+export function contourAt(points,x){
+  const spacing=points[1][0]-points[0][0];
+  const position=Math.max(0,Math.min(points.length-1,
+    (x-points[0][0])/spacing));
+  const index=Math.min(points.length-2,Math.floor(position));
+  const t=position-index;
+  return points[index][1]+(points[index+1][1]-points[index][1])*t;
+}
+
+// Find the first exact intersection with a rising terrain segment instead
+// of sampling every 4px while walking/swimming toward an uphill bank.
+export function sweepContourX(points,fromX,toX,feet,allowance=11){
+  if(toX===fromX)return fromX;
+  const direction=Math.sign(toX-fromX);
+  const first=Math.min(fromX,toX),last=Math.max(fromX,toX);
+  for(let i=direction>0?0:points.length-2;
+    i>=0&&i<points.length-1;i+=direction){
+    const a=points[i],b=points[i+1];
+    const left=Math.max(first,a[0]),right=Math.min(last,b[0]);
+    if(right<left)continue;
+    const enter=direction>0?left:right,exit=direction>0?right:left;
+    const slope=(b[1]-a[1])/(b[0]-a[0]);
+    const y=a[1]+(enter-a[0])*slope;
+    const next=y+(exit-enter)*slope;
+    if(feet>y+allowance)return enter;
+    if(feet>next+allowance)
+      return enter+(feet-allowance-y)/slope;
+  }
+  return toX;
+}
