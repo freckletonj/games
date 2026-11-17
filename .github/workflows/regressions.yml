@@ -81,3 +81,29 @@ jobs:
             dist/art-guides/*.svg
             dist/performance-report.json
           if-no-files-found: ignore
+
+  phaser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Phaser build and browser test dependencies
+        run: |
+          npm install --prefix phaser --no-audit --no-fund
+          python -m pip install playwright pillow
+          python -m playwright install --with-deps chromium
+      - name: Validate Cavern Ascent gameplay
+        run: npm test --prefix phaser
+      - name: Build playable Phaser campaign
+        run: npm run build --prefix phaser
+      - name: Exercise new chapter in Chromium
+        run: python phaser/tests/chapters.py
+      - name: Inspect source artwork
+        run: |
+          python -c 'from PIL import Image; from io import BytesIO; import base64; from pathlib import Path; [(lambda im,name: (print("ASSET_SIZE="+name+":"+str(im.size)), (lambda b: (im.thumbnail((260,650)), im.convert("RGB").save(b,format="JPEG",quality=60), print("ASSET_PREVIEW="+name+":"+base64.b64encode(b.getvalue()).decode())))(BytesIO())))(Image.open("temp/"+name+".png"),name) for name in ("cave","bridge","boulders")]'
