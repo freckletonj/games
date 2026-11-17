@@ -82,7 +82,7 @@
   },
   "cavern-ascent": {
     "scene": [
-      "phaser/assets/generated/cavern-ascent/scene.png"
+      "phaser/assets/generated/cavern-ascent/scene.webp"
     ],
     "platforms": {
       "first-boulder": "phaser/assets/generated/cavern-ascent/first-boulder.png",
