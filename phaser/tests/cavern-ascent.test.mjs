@@ -329,3 +329,22 @@ test('walking uphill on cave rock keeps stable subpixel contact',()=>{
     assert.ok(Math.abs(player.x-x)>65,'walking must continue up the slope');
   }
 });
+
+test('vector rock walking stays grounded and jitter-free along real cave slopes',()=>{
+  for(const [x,y,direction] of [
+    [30,2218.9,1],[194,2241.9,-1],[926,332.4,1]
+  ]){
+    const {player,step}=simulate(x,y,null);
+    let reversals=0,previousDelta=0;
+    for(let tick=0;tick<35;tick++){
+      const previousY=player.y;
+      step({left:direction<0,right:direction>0});
+      const dy=player.y-previousY;
+      if(dy>0.05&&previousDelta<-.05)reversals++;
+      previousDelta=dy;
+      assert.ok(player.grounded,'rock slope contact lost at tick '+tick);
+    }
+    assert.equal(reversals,0,'foot position must not bounce along a vector slope');
+    assert.ok(Math.abs(player.x-x)>65,'player must traverse the slope');
+  }
+});
