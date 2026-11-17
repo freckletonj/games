@@ -1,4 +1,5 @@
 import {compileRockPolygons,rockContains} from './cave-solids.js';
+import {contourAt} from './rock-edges.js';
 // Luminous Grotto: a single, smoothly-authored 3200 x 1792 world.
 // These coordinates are 16-pixel cells, taken from the approved HTML trial.
 // One source controls the painting guide, movement and debug overlay.
@@ -178,8 +179,14 @@ export function compileCave(layout=caveLayout){
       throw Error('Invalid climb wall');
   }
   const polygons=compileRockPolygons(rockPolygons,width,height,tile);
-  const groundAt=x=>contourY(floor,Math.max(0,Math.min(width,x/tile)))*tile;
-  const ceilingAt=x=>contourY(ceiling,Math.max(0,Math.min(width,x/tile)))*tile;
+  // Sample the authored smooth curves into half-tile vector segments once.
+  // Art masks, movement and collision then use the same piecewise lines.
+  const floorSegments=Array.from({length:width*2+1},(_,i)=>
+    [i*tile/2,contourY(floor,i/2)*tile]);
+  const ceilingSegments=Array.from({length:width*2+1},(_,i)=>
+    [i*tile/2,contourY(ceiling,i/2)*tile]);
+  const groundAt=x=>contourAt(floorSegments,x);
+  const ceilingAt=x=>contourAt(ceilingSegments,x);
   const waterBodies=pools.map(p=>({id:p.id,start:p.from,end:p.to,
     surface:p.surface,bottom:Math.max(...surface.slice(p.from,p.to+1))}));
   const climbWalls=walls.map(w=>({...w,
@@ -226,7 +233,8 @@ export function compileCave(layout=caveLayout){
     }));
   return {
     width,height,biome:'coast',surface,ceiling:roof,waterBodies,grid,
-    platformSegments,climbWalls,rockPolygons:polygons,materialAt,materialColumn,puzzleObjects,
+    platformSegments,climbWalls,rockPolygons:polygons,floorSegments,ceilingSegments,
+    materialAt,materialColumn,puzzleObjects,
     thermalVolumes:layout.thermalVolumes??[],setpieces:[],vistas:[],dressing:[],landmarks:[],
     sections:[],goalRoute:(layout.id==='skywell-ascent'?[
       {x:7,kind:'start'},...walls.map(w=>({x:w.x,kind:'wallJump'})),
