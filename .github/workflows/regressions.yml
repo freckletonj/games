@@ -98,6 +98,8 @@ jobs:
           npm install --prefix phaser --no-audit --no-fund
           python -m pip install playwright pillow
           python -m playwright install --with-deps chromium
+      - name: Probe cavern contact and walking
+        run: node phaser/scripts/cavern-collision-probe.mjs
       - name: Test Phaser gameplay and cave geometry
         run: npm test --prefix phaser
       - name: Build standalone Phaser game
