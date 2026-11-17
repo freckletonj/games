@@ -4,7 +4,8 @@ import {compileRockPolygons,bodyHitsRock,sweepRockBody} from '../src/cave-solids
 import {compileCave,skywellLayout,vaultLayout,caveContainsWater}
   from '../src/cave-layout.js';
 import {stepPlayerMotion} from '../src/player-motion.js';
-import {rockEdges,rockSupportAt,sweepRockEdges} from '../src/rock-edges.js';
+import {rockEdges,rockSupportAt,sweepRockEdges,contourAt,sweepContourX}
+  from '../src/rock-edges.js';
 
 const testRock=compileRockPolygons([{
   id:'bridge',points:[[8,30],[18,30],[20,33],[20,40],[8,40]]
@@ -133,4 +134,23 @@ test('a rock slope has continuous support heights without per-pixel stepping',()
   assert.ok(Math.abs((b.y-a.y)+2/3)<1e-9);
   assert.equal(sweepRockEdges(edges,55,115,190,115).blocked,true,
     'the vector sweep still blocks a real rock wall');
+});
+
+test('authored cave heightfields become shared floor and ceiling line segments',()=>{
+  const level=compileCave(skywellLayout);
+  assert.equal(level.floorSegments.length,skywellLayout.width*2+1);
+  assert.equal(level.ceilingSegments.length,skywellLayout.width*2+1);
+  for(const x of [0,19.25*16,52.5*16,93.375*16,200*16]){
+    assert.equal(level.cave.groundAt(x),contourAt(level.floorSegments,x));
+    assert.equal(level.cave.ceilingAt(x),contourAt(level.ceilingSegments,x));
+  }
+});
+
+test('an uphill floor is crossed at the exact vector intersection',()=>{
+  const slope=[[0,100],[100,80]];
+  assert.ok(Math.abs(sweepContourX(slope,0,100,99,5)-30)<1e-9);
+  assert.equal(sweepContourX(slope,100,0,85,5),0,
+    'downhill travel must remain unobstructed');
+  assert.equal(sweepContourX(slope,0,100,105,5),0,
+    'already-embedded feet cannot advance into more rock');
 });
