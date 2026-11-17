@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1780 3335" width="1320" height="2473" role="img" aria-labelledby="title desc">
+  <title id="title">Cavern Ascent layout</title>
+  <desc id="desc">The cave rises from the lower-left entrance to the upper-right summit. The stone bridge is shown upright in gold and fallen in dashed cyan, joining the two marked banks. Gaps between the spinning boulders drop to a lower landing.</desc>
+  <rect width="1780" height="3335" fill="#101725"/>
+  <g font-family="system-ui, sans-serif">
+    <text x="36" y="46" fill="#edf3fa" font-size="33" font-weight="600">Cavern Ascent</text>
+    <text x="36" y="78" fill="#a4b4cb" font-size="20">Authored collision and puzzle positions · 1280 × 3200</text>
+  </g>
+  <g transform="translate(36 106)">
+    <rect width="1280" height="3200" fill="#17263b"/>
+    <g fill="#264b60" stroke="#65a9c7" stroke-width="3" stroke-dasharray="8 8">
+      <rect x="592" y="352" width="160" height="432"/>
+    </g>
+    <g fill="#91a3b9" stroke="none">
+      <rect x="80" y="2880" width="272" height="20"/>
+      <rect x="432" y="2880" width="176" height="20"/>
+      <rect x="432" y="2720" width="256" height="20"/>
+      <rect x="544" y="2560" width="256" height="20"/>
+      <rect x="736" y="2400" width="256" height="20"/>
+      <rect x="592" y="2240" width="352" height="20"/>
+      <rect x="640" y="2080" width="304" height="20"/>
+      <rect x="768" y="1984" width="160" height="20"/>
+      <rect x="1184" y="2080" width="96" height="20"/>
+      <rect x="1024" y="1920" width="256" height="20"/>
+      <rect x="816" y="1760" width="464" height="20"/>
+      <rect x="128" y="1760" width="240" height="20"/>
+      <rect x="128" y="1600" width="208" height="20"/>
+      <rect x="64" y="1456" width="240" height="20"/>
+      <rect x="144" y="1264" width="192" height="20"/>
+      <rect x="416" y="1120" width="304" height="20"/>
+      <rect x="640" y="960" width="256" height="20"/>
+      <rect x="528" y="800" width="320" height="20"/>
+      <rect x="384" y="592" width="144" height="20"/>
+      <rect x="576" y="432" width="208" height="20"/>
+      <rect x="912" y="272" width="288" height="20"/>
+      <rect x="16" y="2448" width="160" height="20"/>
+      <rect x="176" y="2336" width="144" height="20"/>
+      <rect x="224" y="1040" width="128" height="20"/>
+      <rect x="368" y="2016" width="224" height="20"/>
+    </g>
+    <g fill="#465770" stroke="#788ba4" stroke-width="2">
+      <polygon points="0,0 1280,0 1280,80 1272,80.41 1264,80.84 1256,81.28 1248,81.74 1240,82.22 1232,82.71 1224,83.2 1216,83.71 1208,84.23 1200,84.75 1192,85.28 1184,85.81 1176,86.34 1168,86.87 1160,87.41 1152,87.94 1144,88.46 1136,88.98 1128,89.5 1120,90 1112,90.49 1104,90.98 1096,91.45 1088,91.9 1080,92.34 1072,92.77 1064,93.17 1056,93.55 1048,93.91 1040,94.25 1032,94.56 1024,94.85 1016,95.11 1008,95.33 1000,95.53 992,95.7 984,95.83 976,95.92 968,95.98 960,96 952,95.97 944,95.87 936,95.7 928,95.48 920,95.2 912,94.88 904,94.5 896,94.08 888,93.62 880,93.13 872,92.6 864,92.04 856,91.46 848,90.86 840,90.23 832,89.6 824,88.96 816,88.31 808,87.65 800,87 792,86.35 784,85.72 776,85.09 768,84.48 760,83.89 752,83.33 744,82.79 736,82.28 728,81.81 720,81.38 712,80.98 704,80.64 696,80.35 688,80.1 680,79.92 672,79.8 664,79.74 656,79.75 648,79.84 640,80 632,80.25 624,80.59 616,81.03 608,81.54 600,82.14 592,82.81 584,83.55 576,84.35 568,85.21 560,86.13 552,87.09 544,88.09 536,89.13 528,90.2 520,91.3 512,92.42 504,93.55 496,94.7 488,95.85 480,97 472,98.15 464,99.28 456,100.4 448,101.5 440,102.58 432,103.62 424,104.63 416,105.59 408,106.51 400,107.38 392,108.18 384,108.93 376,109.61 368,110.21 360,110.73 352,111.18 344,111.53 336,111.79 328,111.95 320,112 312,111.96 304,111.84 296,111.65 288,111.39 280,111.06 272,110.67 264,110.21 256,109.7 248,109.12 240,108.5 232,107.83 224,107.1 216,106.34 208,105.53 200,104.69 192,103.81 184,102.9 176,101.96 168,100.99 160,100 152,98.99 144,97.96 136,96.92 128,95.87 120,94.81 112,93.75 104,92.68 96,91.62 88,90.55 80,89.5 72,88.46 64,87.42 56,86.41 48,85.41 40,84.44 32,83.49 24,82.57 16,81.68 8,80.82 0,80"/>
+      <polygon points="0,3040 8,3040 16,3040 24,3040 32,3040 40,3040 48,3040 56,3040 64,3040 72,3040 80,3040 88,3040 96,3040 104,3040 112,3040 120,3040 128,3040 136,3040 144,3040 152,3040 160,3040 168,3040 176,3040 184,3040 192,3040 200,3040 208,3040 216,3040 224,3040 232,3040 240,3040 248,3040 256,3040 264,3040 272,3040 280,3040 288,3040 296,3040 304,3040 312,3040 320,3040 328,3040 336,3040 344,3040 352,3040 360,3040 368,3040 376,3040 384,3040 392,3040 400,3040 408,3040 416,3040 424,3040 432,3040 440,3040 448,3040 456,3040 464,3040 472,3040 480,3040 488,3040 496,3040 504,3040 512,3040 520,3040 528,3040 536,3040 544,3040 552,3040 560,3040 568,3040 576,3040 584,3040 592,3040 600,3040 608,3040 616,3040 624,3040 632,3040 640,3040 648,3040 656,3040 664,3040 672,3040 680,3040 688,3040 696,3040 704,3040 712,3040 720,3040 728,3040 736,3040 744,3040 752,3040 760,3040 768,3040 776,3040 784,3040 792,3040 800,3040 808,3040 816,3040 824,3040 832,3040 840,3040 848,3040 856,3040 864,3040 872,3040 880,3040 888,3040 896,3040 904,3040 912,3040 920,3040 928,3040 936,3040 944,3040 952,3040 960,3040 968,3040 976,3040 984,3040 992,3040 1000,3040 1008,3040 1016,3040 1024,3040 1032,3040 1040,3040 1048,3040 1056,3040 1064,3040 1072,3040 1080,3040 1088,3040 1096,3040 1104,3040 1112,3040 1120,3040 1128,3040 1136,3040 1144,3040 1152,3040 1160,3040 1168,3040 1176,3040 1184,3040 1192,3040 1200,3040 1208,3040 1216,3040 1224,3040 1232,3040 1240,3040 1248,3040 1256,3040 1264,3040 1272,3040 1280,3040 1280,3200 0,3200"/>
+      <polygon points="288,1600 384,1568 464,1584 576,1536 720,1552 848,1504 1056,1472 1152,1504 1280,1472 1280,1696 1120,1696 992,1680 912,1696 784,1696 672,1689.6 496,1696 432,1688 352,1696 288,1696"/>
+      <polygon points="672,2242 696,2238.4 736,2242 764,2288 744,2336 733,2426 675,2426 673.6,2368 640,2320"/>
+      <polygon points="480,2562 864,2562 912,2592 864,2624 784,2640 720,2680 608,2684 480,2684"/>
+      <polygon points="563,802 621,802 656,848 628,896 621,986 563,986 550.4,912 528,864"/>
+      <polygon points="352,1122 752,1122 816,1152 784,1180.8 720,1176 640,1208 576,1200 512,1244 416,1236.8 352,1216"/>
+      <polygon points="640,2144 1184,2144 1208,2160 1184,2204 1040,2196 928,2203.2 848,2193.6 768,2204 688,2198.4 640,2189.6"/>
+      <polygon points="968.8,2108.8 983.2,2108.8 983.2,2204 968.8,2204"/>
+      <polygon points="1048.8,2108.8 1063.2,2108.8 1063.2,2204 1048.8,2204"/>
+      <polygon points="1128.8,2108.8 1143.2,2108.8 1143.2,2204 1128.8,2204"/>
+      <polygon points="0,2752 96,2768 176,2736 352,2752 416,2776 432,2800 336,2808 224,2800 128,2811.2 0,2824"/>
+      <polygon points="0,2224 96,2208 192,2240 224,2272 160,2288 80,2272 0,2304"/>
+      <polygon points="896,784 944,736 960,640 928,576 960,496 912,416 912,336 976,320 1040,368 1040,464 992,560 1040,640 1024,720 976,816"/>
+      <polygon points="272,608 336,592 400,612 448,640 448,672 352,688 288,672 240,640"/>
+      <polygon points="320,2040 368,2018 592,2018 576,2080 496,2128 368,2096"/>
+      <polygon points="0,1680 64,1712 128,1762 368,1762 352,1796 304,1811.2 224,1808 160,1840 96,1852 0,1872"/>
+      <polygon points="0,1424 64,1458 256,1458 256,1504 236,1528 160,1536 96,1552 0,1584"/>
+      <polygon points="1184,2082 1280,2082 1280,2168 1232,2160 1192,2128"/>
+      <polygon points="848,2082 944,2082 936,2128 880,2156 816,2148"/>
+      <polygon points="0,2832 48,2856 80,2882 128,2882 112,2928 72,2952 32,2992 20,3040 0,3040"/>
+      <polygon points="0,1280 48,1232 112,1248 144,1266 192,1266 168,1312 112,1336 88,1392 0,1408"/>
+      <polygon points="1072,352 1088,274 1200,274 1280,240 1280,464 1184,432 1136,384"/>
+    </g>
+    <g fill="#743e57" stroke="#e89db3" stroke-width="4">
+      <rect x="675" y="2426" width="58" height="134"/>
+      <rect x="563" y="986" width="58" height="134"/>
+    </g>
+    <g fill="#856040" stroke="#ffd18b" stroke-width="4">
+      <rect x="260" y="2813" width="72" height="67"/>
+      <rect x="930" y="1760" width="50" height="320"/>
+    </g>
+    <g fill="#ffd18b">
+      <rect x="904" y="2080" width="40" height="10"/>
+      <rect x="1184" y="2080" width="40" height="10"/>
+    </g>
+    <rect x="904" y="2080" width="320" height="50" fill="#39576b" fill-opacity=".45" stroke="#91e7f2" stroke-width="4" stroke-dasharray="10 6">
+      <title>Fallen stone bridge · 40 world units of overlap at each bank</title>
+    </rect>
+    <g fill="#2b596c" stroke="#91e7f2" stroke-width="4">
+      <circle cx="442" cy="1810" r="42"/>
+      <circle cx="550" cy="1790" r="42"/>
+      <circle cx="658" cy="1803" r="42"/>
+      <circle cx="766" cy="1786" r="42"/>
+    </g>
+    <g fill="none" stroke="#91e7f2" stroke-width="3" stroke-linecap="round">
+      <path d="M496 1835v88m-8-12l8 12 8-12" stroke-dasharray="5 7"/>
+      <path d="M604 1835v88m-8-12l8 12 8-12" stroke-dasharray="5 7"/>
+      <path d="M712 1835v88m-8-12l8 12 8-12" stroke-dasharray="5 7"/>
+    </g>
+    <g fill="#94e2b6">
+      <circle cx="136" cy="3028" r="8"/>
+      <circle cx="488" cy="2868" r="8"/>
+      <circle cx="808" cy="2228" r="8"/>
+      <circle cx="1224" cy="1748" r="8"/>
+      <circle cx="200" cy="1748" r="8"/>
+      <circle cx="200" cy="1444" r="8"/>
+      <circle cx="664" cy="788" r="8"/>
+    </g>
+    <circle cx="88" cy="3024" r="10" fill="#edf3fa"/>
+    <path d="M1048 252l9 12-9 12-9-12z" fill="#ffe7a6"/>
+    <path d="M1109 272v-26a19 19 0 0 1 38 0v26" fill="none" stroke="#ffe7a6" stroke-width="4"/>
+    <g font-family="system-ui, sans-serif">
+    <g>
+      <path d="M1128 250 L1305 228 H1332" fill="none" stroke="#c4d3e9" stroke-opacity=".6" stroke-width="2"/><circle cx="1128" cy="250" r="4" fill="#c4d3e9"/>
+      <text x="1344" y="235" fill="#c4d3e9" font-size="23">Summit gate</text>
+    </g>
+    <g>
+      <path d="M738 510 L1305 514 H1332" fill="none" stroke="#c4d3e9" stroke-opacity=".6" stroke-width="2"/><circle cx="738" cy="510" r="4" fill="#c4d3e9"/>
+      <text x="1344" y="521" fill="#c4d3e9" font-size="23">Wind chimney</text>
+    </g>
+    <g>
+      <path d="M623 1060 L1305 1023 H1332" fill="none" stroke="#c4d3e9" stroke-opacity=".6" stroke-width="2"/><circle cx="623" cy="1060" r="4" fill="#c4d3e9"/>
+      <text x="1344" y="1030" fill="#c4d3e9" font-size="23">Upper Flintfist seal</text>
+    </g>
+    <g>
+      <path d="M267 1458 L1305 1401 H1332" fill="none" stroke="#c4d3e9" stroke-opacity=".6" stroke-width="2"/><circle cx="267" cy="1458" r="4" fill="#c4d3e9"/>
+      <text x="1344" y="1408" fill="#c4d3e9" font-size="23">West switchback<tspan x="1344" dy="29" fill="#a4b4cb" font-size="18">Fly right around the tip, then left.</tspan></text>
+    </g>
+    <g>
+      <path d="M787 1754 L1305 1713 H1332" fill="none" stroke="#c4d3e9" stroke-opacity=".6" stroke-width="2"/><circle cx="787" cy="1754" r="4" fill="#c4d3e9"/>
+      <text x="1344" y="1720" fill="#c4d3e9" font-size="23">Spinning boulder gallery<tspan x="1344" dy="29" fill="#a4b4cb" font-size="18">Four separate jumps over open gaps.</tspan></text>
+    </g>
+    <g>
+      <path d="M981 1840 L1305 1829 H1332" fill="none" stroke="#ffd18b" stroke-opacity=".6" stroke-width="2"/><circle cx="981" cy="1840" r="4" fill="#ffd18b"/>
+      <text x="1344" y="1836" fill="#ffd18b" font-size="23">Upright stone bridge</text>
+    </g>
+    <g>
+      <path d="M1224 2090 L1305 2038 H1332" fill="none" stroke="#91e7f2" stroke-opacity=".6" stroke-width="2"/><circle cx="1224" cy="2090" r="4" fill="#91e7f2"/>
+      <text x="1344" y="2045" fill="#91e7f2" font-size="23">Fallen bridge deck<tspan x="1344" dy="29" fill="#a4b4cb" font-size="18">Gold pads mark the bank overlaps.</tspan></text>
+    </g>
+    <g>
+      <path d="M571 2022 L1305 2193 H1332" fill="none" stroke="#c4d3e9" stroke-opacity=".6" stroke-width="2"/><circle cx="571" cy="2022" r="4" fill="#c4d3e9"/>
+      <text x="1344" y="2200" fill="#c4d3e9" font-size="23">Recovery shelf<tspan x="1344" dy="29" fill="#a4b4cb" font-size="18">Jump right to rejoin the bridge bank.</tspan></text>
+    </g>
+    <g>
+      <path d="M734 2470 L1305 2473 H1332" fill="none" stroke="#c4d3e9" stroke-opacity=".6" stroke-width="2"/><circle cx="734" cy="2470" r="4" fill="#c4d3e9"/>
+      <text x="1344" y="2480" fill="#c4d3e9" font-size="23">Lower Flintfist seal</text>
+    </g>
+    <g>
+      <path d="M333 2845 L1305 2933 H1332" fill="none" stroke="#c4d3e9" stroke-opacity=".6" stroke-width="2"/><circle cx="333" cy="2845" r="4" fill="#c4d3e9"/>
+      <text x="1344" y="2940" fill="#c4d3e9" font-size="23">Entrance and push boulder</text>
+    </g>
+    </g>
+  </g>
+</svg>

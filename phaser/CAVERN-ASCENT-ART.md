@@ -9,6 +9,9 @@ sides of the boulder gallery provide a place to recall after a fall. Gaps
 between the boulders drop to a lower route. The west recovery shelf leads
 back to the near bridge bank.
 
+The [layout SVG](levels/cavern-ascent-guide.svg) shows both bridge poses
+and the recovery shelf below the boulder gallery.
+
 ## Artwork
 
 Run `node phaser/scripts/export-cave-guides.mjs` from the repository root.
