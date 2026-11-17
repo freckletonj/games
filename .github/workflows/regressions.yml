@@ -128,5 +128,17 @@ jobs:
       - name: Inspect source artwork
         run: |
           python -c 'from PIL import Image; from io import BytesIO; import base64; from pathlib import Path; [(lambda im,name: (print("ASSET_SIZE="+name+":"+str(im.size)), (lambda b: (im.thumbnail((260,650)), im.convert("RGB").save(b,format="JPEG",quality=60), print("ASSET_PREVIEW="+name+":"+base64.b64encode(b.getvalue()).decode())))(BytesIO())))(Image.open("temp/"+name+".png"),name) for name in ("cave","bridge","boulders")]'
+      - name: Package cavern scene for verification
+        run: |
+          python phaser/scripts/pack-cavern-scene.py
+          python - <<'PY'
+          from pathlib import Path
+          import base64
+          scene=Path("phaser/assets/generated/cavern-ascent/scene.webp")
+          encoded=base64.b64encode(scene.read_bytes()).decode()
+          print("CAVERN_PACKED_BYTES="+str(scene.stat().st_size))
+          for part in range(0,len(encoded),24000):
+              print("CAVERN_BLOB_PART="+str(part//24000)+":"+encoded[part:part+24000])
+          PY
       - name: Exercise new chapter in Chromium
         run: python phaser/tests/chapters.py
