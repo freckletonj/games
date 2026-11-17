@@ -93,52 +93,23 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install Phaser build and browser test dependencies
+      - name: Install Phaser and browser test dependencies
         run: |
           npm install --prefix phaser --no-audit --no-fund
           python -m pip install playwright pillow
           python -m playwright install --with-deps chromium
-      - name: Validate Cavern Ascent gameplay
+      - name: Test Phaser gameplay and cave geometry
         run: npm test --prefix phaser
-      - name: Build playable Phaser campaign
+      - name: Build standalone Phaser game
         run: npm run build --prefix phaser
-      - name: Compare source painting with authored cave geometry
-        run: |
-          python - <<'PY'
-          from PIL import Image, ImageDraw
-          import json, io, base64
-          with open("phaser/levels/cavern-ascent.json") as source:
-              layout=json.load(source)
-          im=Image.open("temp/cave.png").convert("RGB").resize((1280,3200),Image.Resampling.LANCZOS)
-          draw=ImageDraw.Draw(im,"RGBA")
-          for rock in layout["rockPolygons"]:
-              xy=[(x*16,y*16) for x,y in rock["points"]]
-              draw.line(xy+[xy[0]],fill=(240,55,180,225),width=10)
-          for ledge in layout["shelves"]:
-              x,y,length=ledge["x"],ledge["y"],ledge["length"]
-              draw.line([(x*16,y*16),((x+length)*16,y*16)],fill=(30,255,255,255),width=13)
-          for obj in layout["machines"]:
-              x,y=obj["home"]
-              draw.ellipse((x-13,y-13,x+13,y+13),fill=(50,255,80,255))
-          im.thumbnail((300,750))
-          stream=io.BytesIO()
-          im.save(stream,format="JPEG",quality=65)
-          print("ASSET_GEOMETRY="+base64.b64encode(stream.getvalue()).decode())
-          PY
-      - name: Inspect source artwork
-        run: |
-          python -c 'from PIL import Image; from io import BytesIO; import base64; from pathlib import Path; [(lambda im,name: (print("ASSET_SIZE="+name+":"+str(im.size)), (lambda b: (im.thumbnail((260,650)), im.convert("RGB").save(b,format="JPEG",quality=60), print("ASSET_PREVIEW="+name+":"+base64.b64encode(b.getvalue()).decode())))(BytesIO())))(Image.open("temp/"+name+".png"),name) for name in ("cave","bridge","boulders")]'
-      - name: Package cavern scene for verification
-        run: |
-          python phaser/scripts/pack-cavern-scene.py
-          python - <<'PY'
-          from pathlib import Path
-          import base64
-          scene=Path("phaser/assets/generated/cavern-ascent/scene.webp")
-          encoded=base64.b64encode(scene.read_bytes()).decode()
-          print("CAVERN_PACKED_BYTES="+str(scene.stat().st_size))
-          for part in range(0,len(encoded),24000):
-              print("CAVERN_BLOB_PART="+str(part//24000)+":"+encoded[part:part+24000])
-          PY
-      - name: Exercise new chapter in Chromium
+      - name: Verify chapter selection and painting in Chromium
         run: python phaser/tests/chapters.py
+      - name: Upload playable Phaser and Cavern Ascent preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cavern-ascent-phaser-preview
+          path: |
+            dist/wonderwood-phaser.html
+            dist/phaser-chapter-cavern-ascent.png
+          if-no-files-found: ignore
