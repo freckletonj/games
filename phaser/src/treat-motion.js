@@ -41,6 +41,24 @@ export function treatLanding(from,to,segments,decks,groundAt,tile,rocks=[]){
 }
 
 export function advanceTreatFlight(lure,step=1,findLanding){
+  if(lure.ballistic){
+    // In a tall cave the nearest ground can be thousands of pixels below a
+    // ledge. A real throw must travel through the air and fall until it hits
+    // authored geometry, not interpolate straight to the bottom heightfield.
+    const from={x:lure.flightX??lure.startX,y:lure.flightY??lure.startY};
+    const nextX=from.x+lure.velocityX*step;
+    const to={x:Math.max(Math.min(lure.startX,lure.x),
+      Math.min(Math.max(lure.startX,lure.x),nextX)),
+      y:from.y+lure.velocityY*step+.09*step*step};
+    lure.age=(lure.age||0)+step;
+    lure.velocityY+=.18*step;
+    const hit=findLanding?.(from,to);
+    if(hit)Object.assign(lure,hit);
+    lure.landed=Boolean(hit);
+    lure.flightX=to.x;lure.flightY=to.y;
+    return {x:hit?lure.x:to.x,y:hit?lure.y:to.y,
+      rotation:hit?0:lure.face*.14*lure.age,landed:lure.landed};
+  }
   const poseAt=fraction=>({
     x:lure.startX+(lure.x-lure.startX)*fraction,
     y:lure.startY+(lure.y-lure.startY)*(lure.drop?fraction**2:fraction)-
