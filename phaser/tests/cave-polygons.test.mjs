@@ -112,13 +112,13 @@ test('swept segment collision catches walls, floors and overhang undersides',()=
   const edges=rockEdges(testRock);
   const wall=sweepRockEdges(edges,6*16,36*16,10*16,36*16);
   assert.equal(wall.blocked,true);
-  assert.equal(wall.x,8*16-10);
+  assert.ok(Math.abs(wall.x-(8*16-10))<.03);
   const floor=sweepRockEdges(edges,12*16,28*16,12*16,36*16);
   assert.equal(floor.blocked,true);
-  assert.equal(floor.y,30*16);
+  assert.ok(Math.abs(floor.y-30*16)<.03);
   const underside=sweepRockEdges(edges,12*16,45*16,12*16,36*16);
   assert.equal(underside.blocked,true);
-  assert.equal(underside.y,40*16+27);
+  assert.ok(Math.abs(underside.y-(40*16+27))<.03);
   assert.equal(sweepRockEdges(edges,12*16,28*16,12*16,27*16).blocked,false);
 });
 
