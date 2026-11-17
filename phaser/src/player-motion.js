@@ -2,7 +2,7 @@ import {deckTopAt,movingLanding} from './moving-platforms.js';
 import {landingY,platformTopAt,safeHorizontalX} from './physics.js';
 import {tryBloomBoost} from './springboard.js';
 import {stepRopePlayer} from './rope-swing.js';
-import {bodyHitsRock,sweepRockBody} from './cave-solids.js';
+import {rockEdges,rockSupportAt,sweepRockEdges} from './rock-edges.js';
 import {DANDELION_BOOST} from './pickups.js';
 
 const FLAPPING_FORMS=new Set(['skyling','glimmermoth','cloudwhisp']);
@@ -154,25 +154,26 @@ export function stepPlayerMotion(p,actions,step,world){
       if(p.x>=wallX+12&&safeX<wallX+12)
         safeX=wallX+12;
     }
-    let steppedRock=false;
-    if(world.rockPolygons?.length){
-      let contact=sweepRockBody(world.rockPolygons,p.x,p.y,safeX,'x');
-      if(contact.blocked&&p.grounded&&!support){
-        // Polygon tops are part of the cave's walkable terrain. When a rock
-        // rises gently beneath the feet, step onto it instead of treating
-        // its slope as a vertical wall (but keep true overhangs solid).
-        for(let rise=.25;rise<=9;rise+=.25){
-          const raisedY=p.y-rise;
-          if(bodyHitsRock(world.rockPolygons,p.x,raisedY))continue;
-          const lifted=sweepRockBody(world.rockPolygons,p.x,raisedY,safeX,'x');
-          if(lifted.blocked)continue;
-          p.y=raisedY;
-          contact=lifted;
-          steppedRock=true;
-          break;
-        }
+    const edges=world.rockPolygons?.length?rockEdges(world.rockPolygons):[];
+    // Walk the authored rock's top edges directly. A slope changes the
+    // player's foot height analytically, without repeated upward probes.
+    const onLedge=platformTopAt(p.x,p.y-2,p.y+2,
+      world.platformSegments,world.tile)!==null;
+    const supportEdge=p.grounded&&!support&&!onLedge&&p.vy>=0?
+      rockSupportAt(edges,p.x,p.y,1.5,1.5):null;
+    const nextEdge=supportEdge?
+      rockSupportAt(edges,safeX,p.y,9,9):null;
+    let rockWalk=false;
+    if(nextEdge){
+      const contact=sweepRockEdges(edges,p.x,p.y,safeX,nextEdge.y);
+      safeX=contact.x;
+      if(!contact.blocked){
+        p.y=nextEdge.y;
+        p.vy=0;
+        rockWalk=true;
       }
-      safeX=contact.value;
+    }else if(edges.length){
+      safeX=sweepRockEdges(edges,p.x,p.y,safeX,p.y).x;
     }
     if(world.blockHorizontal) safeX=world.blockHorizontal(p.x,safeX,p.y);
     if(Math.abs(safeX-nextX)>.2)p.vx=0;
@@ -180,12 +181,12 @@ export function stepPlayerMotion(p,actions,step,world){
     if(dx||direction)p.face=Math.sign(dx||direction);
     p.x=safeX;
     const priorY=p.y,wasGrounded=p.grounded,impactSpeed=p.vy;
-    const vertical=world.rockPolygons?.length?
-      sweepRockBody(world.rockPolygons,p.x,p.y,
-        p.y+(steppedRock?Math.max(p.vy*step,9):p.vy*step),'y'):
-      {value:p.y+p.vy*step,blocked:false};
-    const rockLanding=vertical.blocked&&p.vy>0;
-    p.y=vertical.value;
+    const vertical=edges.length&&!rockWalk?
+      sweepRockEdges(edges,p.x,p.y,p.x,p.y+p.vy*step):
+      {y:rockWalk?p.y:p.y+p.vy*step,blocked:false,normal:null};
+    const rockLanding=vertical.blocked&&impactSpeed>0&&
+      vertical.normal[1]<0;
+    p.y=vertical.y;
     if(vertical.blocked)p.vy=0;
     let landing=landingY(priorY,p.y,p.vy,p.grounded,
       p.x,world.groundAt(p.x),world.platformSegments,world.tile);
@@ -212,7 +213,7 @@ export function stepPlayerMotion(p,actions,step,world){
         events.push('land');
         if(impactSpeed>3.8)events.push('hardLand');
       }
-    }else if(rockLanding){
+    }else if(rockLanding||rockWalk){
       p.grounded=true;p.coyote=5;p.jumps=0;p.flaps=0;
       if(impactSpeed>1.3)events.push('land');
     }else p.grounded=false;
@@ -228,23 +229,6 @@ export function stepPlayerMotion(p,actions,step,world){
     }
     if(p.y>ground+3){
       p.y=ground;p.vy=Math.min(p.vy,0);p.grounded=true;p.onPlatform=null;
-    }
-    // When walking on an irregular rock top, resolve grounded contact at
-    // subpixel precision. Integer step-ups and coarse downward sweeps used to
-    // alternate between climbing and falling on successive frames.
-    if(wasGrounded&&p.vy>=0&&!support&&!onDeck&&landing===null&&
-      world.rockPolygons?.length){
-      const clear=priorY-9,solid=priorY+9;
-      if(!bodyHitsRock(world.rockPolygons,p.x,clear)&&
-        bodyHitsRock(world.rockPolygons,p.x,solid)){
-        let top=clear,bottom=solid;
-        for(let i=0;i<12;i++){
-          const mid=(top+bottom)/2;
-          if(bodyHitsRock(world.rockPolygons,p.x,mid))bottom=mid;
-          else top=mid;
-        }
-        p.y=top;p.vy=0;p.grounded=true;p.jumps=0;p.flaps=0;
-      }
     }
     if(p.grounded)p.launchSpeed=0;
     if(p.y>world.height-10)events.push('recall');
