@@ -47,12 +47,15 @@ function advance(step,ticks,actions=()=>({})){
 test('ordinary water-jump can board the low raft, which carries its rider to the high dock',()=>{
   const {player,templeWorld,step}=simulation(explorer(53*16,groundAt(53*16)));
   let boarded=false;
+  const trace=[];
   for(let i=0;i<180;i++){
     const jump=i>10&&i%44===12;
     step({jump,jumpPressed:jump});
+    if(i%12===0)trace.push([i,Math.round(player.y),player.onPlatform,
+      player.floating,Math.round(templeWorld.decks[0].position[1])]);
     if(player.onPlatform==='courtyard-raft'){boarded=true;break;}
   }
-  assert.ok(boarded,'The raft must be boardable without attaching or teleporting the player');
+  assert.ok(boarded,'Raft boarding trace '+JSON.stringify(trace));
   while(templeWorld.state.tick<420)step();
   assert.equal(templeWorld.state.surfaces.courtyard,42);
   assert.equal(player.onPlatform,'courtyard-raft');
@@ -76,7 +79,9 @@ test('jump-spamming through the courtyard without its raft cannot reach the dock
     step({right:true,jump,jumpPressed:jump});
     farthest=Math.max(farthest,player.x);
   }
-  assert.ok(farthest<59*16,'The raft must supply elevation missing from a water jump');
+  assert.ok(farthest<59*16,'No-raft route '+JSON.stringify({
+    farthest,position:[player.x,player.y],ground:groundAt(player.x),
+    surface:templeWorld.state.surfaces.courtyard}));
 });
 
 test('crate is blocked by the weir when low, clears it when floating, then latches the floor socket',()=>{
@@ -165,12 +170,14 @@ test('two intentional jumps bridge A → downstream raft → bridge B',()=>{
   const player=explorer(191*16,40*16);
   player.onPlatform='wheel-bridge-a';
   const {step}=simulation(player,templeWorld);
-  let aboard=false;
+  let aboard=false,firstTrace=[];
   for(let i=0;i<120;i++){
     step({right:true,jump:i===0,jumpPressed:i===0});
+    if(i%10===0)firstTrace.push([i,player.x,player.y,player.onPlatform,
+      player.grounded,player.floating]);
     if(player.onPlatform==='tail-raft'){aboard=true;break;}
   }
-  assert.ok(aboard,'The first jump must land on the buoyant middle raft');
+  assert.ok(aboard,'Bridge A to raft '+JSON.stringify(firstTrace));
   for(let i=0;i<50&&player.x<200.5*16;i++)step({right:true});
   assert.equal(player.onPlatform,'tail-raft');
   let second=false;
@@ -193,7 +200,9 @@ test('without the middle raft, bridge A cannot be jumped directly to bridge B',(
     const jump=i%36===0;
     step({right:true,jump,jumpPressed:jump});
   }
-  assert.ok(player.x<204*16,'No straight-line walking/jumping bypass over the last pool');
+  assert.ok(player.x<204*16,'No-raft final '+JSON.stringify({
+    x:player.x,y:player.y,platform:player.onPlatform,
+    ground:groundAt(player.x),water:templeWorld.state.surfaces['wheel-tail']}));
 });
 
 test('Tidefox current changes with valves and stays deterministic',()=>{
