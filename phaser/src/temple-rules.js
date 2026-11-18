@@ -10,7 +10,7 @@ export function createTempleState(spec){
       .map(controller=>[controller.id,controller.initial])),
     plates:Object.fromEntries(spec.pressurePlates.map(plate=>[plate.id,false])),
     gates:Object.fromEntries(spec.gates.map(gate=>[gate.id,false])),
-    wheelActive:false};
+    wheelActive:false,wheelAngle:0};
 }
 
 export function setTempleValve(spec,state,valveId,mode){
@@ -89,5 +89,6 @@ export function stepTemple(spec,state,{cratePositions={}}={}){
   const gates=Object.fromEntries(spec.gates.map(gate=>
     [gate.id,gate.opensWhen===wheel.id?wheelActive:
       Boolean(plates[gate.opensWhen])]));
-  return {...interim,plates,gates,wheelActive};
+  const wheelAngle=(state.wheelAngle+(wheelActive?0.028:0))%(2*Math.PI);
+  return {...interim,plates,gates,wheelActive,wheelAngle};
 }
