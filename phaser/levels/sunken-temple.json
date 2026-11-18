@@ -278,10 +278,10 @@
       "controller": "sluice-valve",
       "modes": [
         "drain",
-        "hold",
-        "fill"
+        "fill",
+        "hold"
       ],
-      "reach": 36
+      "reach": 48
     },
     {
       "id": "cascade-handle",
@@ -292,10 +292,10 @@
       "controller": "head-flood",
       "modes": [
         "drain",
-        "hold",
-        "fill"
+        "fill",
+        "hold"
       ],
-      "reach": 36
+      "reach": 48
     }
   ],
   "buoyantObjects": [
@@ -377,7 +377,7 @@
         101,
         44
       ],
-      "radius": 20,
+      "radius": 28,
       "requires": "timber-crate",
       "opens": "sluice-gate"
     }
