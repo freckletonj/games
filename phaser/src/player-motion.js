@@ -19,7 +19,8 @@ export function stepPlayerMotion(p,actions,step,world){
   const terrainX=(from,to,feet,swimming=false)=>world.floorSegments?
     sweepContourX(world.floorSegments,from,to,feet,swimming?7:11):
     safeHorizontalX(from,to,feet,world.groundAt,swimming);
-  const support=p.grounded?decks.find(deck=>deck.id===p.onPlatform):null;
+  const support=p.grounded?decks.find(deck=>
+    deck.id===p.onPlatform&&deck.enabled!==false):null;
   if(support){
     const [x,y]=support.position;
     const [previousX,previousY]=support.previous;
