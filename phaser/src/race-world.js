@@ -52,7 +52,9 @@ export function stepRaceWorld(spec,world,players,{paused=false,failed=false,reca
   // The rescue zone is beyond the visible left edge, not the abstract
   // progress anchor. Let a rider recover from a momentary camera straggle.
   if(!paused)world.offscreenTicks=offscreen?world.offscreenTicks+1:0;
-  const leftBehind=world.offscreenTicks>=40;
+  const incapacitated=players.some(p=>!p.assist&&
+    (p.sleep||p.bubble||p.clouded||!p.mount));
+  const leftBehind=incapacitated||world.offscreenTicks>=40;
   // No ground shortcut through the storm canyon. Falling below the
   // authored cloudline restarts both humans at their Pegasus sanctuary.
   const voidArea=spec.flightVoid;
