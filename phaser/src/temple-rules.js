@@ -66,6 +66,12 @@ export function stepTemple(spec,state,{cratePositions={}}={}){
       const rate=controller.ratePerTick;
       next=clamp(next+(mode==='fill'?-rate:mode==='drain'?rate:0),
         volume.maxSurface,volume.minSurface);
+      // Snap exact endpoints: repeated fractional additions otherwise leave
+      // surfaces at e.g. 45.00000000000057 even after a completed fill.
+      if(mode==='fill'&&Math.abs(next-volume.maxSurface)<1e-8)
+        next=volume.maxSurface;
+      if(mode==='drain'&&Math.abs(next-volume.minSurface)<1e-8)
+        next=volume.minSurface;
     }
     surfaces[volume.id]=next;
   }
