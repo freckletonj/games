@@ -1,6 +1,6 @@
 # Level concept: The Mirror Palace
 
-**Status:** implementation candidate. The unregistered [Mirror Palace level spec](../mirror-palace.json), [fixed-tick optical/phase rules](../../src/palace-rules.js), [schema validation](../../src/future-chapter-validation.js), and [unit tests](../../tests/future-chapters.test.mjs) now exist. Production collision integration, complete input-driven routes, approved art, and campaign registration remain outstanding.
+**Status (Nov 17, 2026): geometry-route proven, not release-ready.** The unregistered [level spec](../mirror-palace.json), [fixed-tick optics](../../src/palace-rules.js), [production phase/door collision](../../src/palace-world.js), [validator](../../src/future-chapter-validation.js), and [movement tests](../../tests/palace-world.test.mjs) exist. Production-rule **solo and two-explorer** simulations now physically reach the Palace Light and exit, with a negative test for locked doors. Full in-browser input, approved optical painting and campaign registration remain outstanding.
 
 ## Player fantasy
 
@@ -52,17 +52,30 @@ Use [AGENTS.md](../../../AGENTS.md), [STATIC-ART-CONTRACT.md](../../STATIC-ART-C
 5. Beam paths, projected light and cast shadows are runtime effects derived from the beam solver. An image model may add rich material texture and atmosphere, but cannot bake a fixed beam across a platform that is sometimes dark or create a persistent painted platform where none exists.
 6. Register only approved images matching compiled world coordinates. Verify V overlay for every meaningful platform state at gameplay zoom.
 
+## Progress / outstanding acceptance gates
+
+- [x] Compile and validate the authored sources, mirror detents, shutters, moving eclipse occluder, targets, phase platforms and three target-activated physical doors.
+- [x] Trace deterministic rays against **compiled rock**, not generated imagery; connect target state to physically solid/ghost decks and latched gates with occupied-player safety.
+- [x] Demonstrate **solo and two-player production-rule movement** from spawn through all optical doors to physical Light/exit contact, plus locked-gate bypass, rock obstruction, shutter and deterministic replay checks.
+- [x] Export static material maps and four real optical/phase context frames with correct shutter, gate and beam state via CI.
+- [ ] Complete **actual Phaser scene / keyboard / gamepad** start-to-finish routes, mirror/shutter prompts, occupied-platform transitions, negative routes, checkpoint recall and co-op follower/assist behavior.
+- [ ] Render the solver's beams, occlusion, mirrors, lit/shadow/ghost silhouettes and transitions using clear non-color-only feedback, without letting art define collision.
+- [ ] Generate and approve native-resolution geometry-conditioned panorama, true-alpha mirror/prism/shutter/platform art at declared pivots, and repaired background.
+- [ ] Verify V overlay and all solid/ghost states at real gameplay zoom; prove offline Chromium and Firefox completion before campaign/art registration.
+
+Original acceptance items below cover the **full game and art**, not just the proven solver and geometry-route subset.
+
 ## TODO / acceptance checklist
 
 - [ ] Block out the three-act palace with safe ledges, clear sight lines, turning radii, hidden collectibles, checkpoints and a reachable light/gate.
-- [ ] Add declarative light-source, mirror, shutter, target, occluder and phase-platform specifications with schema validation, stable IDs and link checks.
-- [ ] Implement deterministic bounded beam tracing and target activation independent of rendering and frame refresh rate.
+- [x] Add declarative light-source, mirror, shutter, target, occluder and phase-platform specifications with schema validation, stable IDs and link checks. *(Candidate spec and standalone validation; release registration pending.)*
+- [x] Implement deterministic bounded beam tracing and target activation independent of rendering and frame refresh rate.
 - [ ] Implement discrete mirror/shutter controls compatible with keyboard, gamepad and the existing interaction model.
 - [ ] Implement dynamic phase-platform collision, supported-rider carry, activation previews and safe deactivation grace; prevent trapping players inside appearing solids.
 - [ ] Build a readable visual language for illumination, shadow, ghost geometry, active geometry, and beam direction, including non-color-only cues.
 - [ ] Test every critical state sequence, mirror reset, obstruction, near-edge contact, and identical-tick replay in the production rules.
 - [ ] Verify a complete solo route and 2-player route; ensure puzzle locks cannot softlock progress and physical contact always collects the light.
-- [ ] Export a full material atlas and machine-readable light/platform state previews conditioned on compiled collision, not a hand-painted guess.
+- [x] Export a full material atlas and machine-readable light/platform state previews conditioned on compiled collision, not a hand-painted guess.
 - [ ] Produce a cohesive native-detail panoramic painting; extract and register mirrors, prism, shutters and phase variants with correct pivots and restored background.
 - [ ] Review V overlay, shadow alignment, legibility and transitions at gameplay zoom, especially when platforms disappear under or appear near riders.
 - [ ] Run the usual Node tests, full browser interaction tests, offline build, and Chromium/Firefox playthroughs with the state transitions exercised.
