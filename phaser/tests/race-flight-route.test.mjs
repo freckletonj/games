@@ -44,7 +44,7 @@ function flightRoute(humanCount){
     for(const player of players){
       const mount=player.mount;
       const flying=mount.x>209*16;
-      const goalHeight=mount.x>334*16?relicY+34:785;
+      const goalHeight=mount.x>334*16?relicY+34:850;
       // Cruise safely between the high/low hazards, then ascend to the
       // real Light. A grounded Pegasus never crosses the void corridor.
       const jumpPressed=flying&&(mount.grounded||
