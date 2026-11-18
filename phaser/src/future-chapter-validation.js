@@ -67,6 +67,14 @@ export function validateFutureChapter(spec){
     for(const o of spec.occluders)
       if(!Number.isInteger(o.periodTicks)||o.periodTicks<=0)fail('invalid occluder');
     for(const t of spec.beamTargets)needs('lightSources',t.source);
+    for(const gate of spec.beamGates??[]){
+      needs('beamTargets',gate.target);
+      const [x,y]=gate.at,[width,height]=gate.size;
+      if(!(width>0&&height>0&&x*16-width/2>=0&&
+           x*16+width/2<=spec.width*16&&y>=0&&
+           y*16+height<=spec.height*16))
+        fail('invalid optical gate geometry '+gate.id);
+    }
     for(const p of spec.phasePlatforms){
       needs('beamTargets',p.target);
       if(!['lit','shadow'].includes(p.rule)||!(p.previewTicks>0))
