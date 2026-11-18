@@ -248,7 +248,7 @@ test('without the middle raft, bridge A cannot be jumped directly to bridge B',(
     const jump=i%55<25;
     step({right:true,jump,jumpPressed:i%55===0});
   }
-  assert.ok(player.x<203*16,'No-raft final +JSON.stringify({
+  assert.ok(player.x<203*16,'No-raft final '+JSON.stringify({
     x:player.x,y:player.y,platform:player.onPlatform,
     ground:groundAt(player.x),water:templeWorld.state.surfaces['wheel-tail']}));
 });
