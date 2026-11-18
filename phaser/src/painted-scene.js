@@ -47,7 +47,7 @@ export function makeGeometryOverlay(scene){
     g.fillRect(x,floor,8,h-floor);
     const water=level.waterBodies.find(p=>
       cx>=p.start*16&&cx<p.end*16);
-    if(water&&water.surface*16<floor){
+    if(!level.templeSpec&&water&&water.surface*16<floor){
       g.fillStyle(0x25b6d2,.31);
       g.fillRect(x,water.surface*16,8,floor-water.surface*16);
     }
@@ -63,7 +63,7 @@ export function makeGeometryOverlay(scene){
     }
     g.strokePath();
   }
-  for(const pool of level.waterBodies){
+  for(const pool of level.templeSpec?[]:level.waterBodies){
     g.lineStyle(2,0x5bf5e8,.95);
     g.lineBetween(pool.start*16,pool.surface*16,
       pool.end*16,pool.surface*16);
