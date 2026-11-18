@@ -208,3 +208,55 @@ test('skipping the waterwheel leaves a physical gate across the finishing route'
   assert.equal(templeWorld.state.gates['wheel-gate'],false);
   assert.ok(player.x<=212*16-18,'A closed wheel gate must stop the explorer');
 });
+
+test('two active explorers share valves/crates but both traverse the complete route',()=>{
+  const players=[explorer(72,groundAt(72)),
+    {...explorer(86,groundAt(86)),id:1}];
+  const templeWorld=createTempleWorld(temple);
+  const world={width:level.width*16,height:level.height*16,tile:16,
+    groundAt,inWater:(x,y)=>templeInWater(templeWorld,groundAt,x,y),
+    currentAt:(x,y)=>templeCurrent(templeWorld,temple,x,y),
+    waterBodies:templeWorld.waterBodies,thermalVolumes:[],
+    platformSegments:level.platformSegments,movingPlatforms:templeWorld.decks,
+    blockHorizontal:(from,to,feet)=>templeBlockHorizontal(
+      temple,templeWorld,from,to,feet)};
+  const pressed=new Set();
+  let light=false,gateOpen=false,wheelOn=false,completed=false;
+  const relic=level.objects.find(item=>item.kind==='springKey');
+  const exit=level.objects.find(item=>item.kind==='exit');
+  for(let tick=0;tick<3000;tick++){
+    const actions=players.map(p=>{
+      const valve=temple.valves.find(v=>!pressed.has(v.id)&&
+        Math.hypot(p.x-v.at[0]*16,p.y-v.at[1]*16)<v.reach-5);
+      if(valve)pressed.add(valve.id);
+      const jump=(p.x>=1578&&p.x<1650&&tick%45===0)||
+        (!light&&p.x>3420&&p.x<3490&&tick%45===0);
+      return {...controls,right:true,upPressed:Boolean(valve),
+        jump,jumpPressed:jump};
+    });
+    stepTempleWorld(temple,templeWorld,players,actions);
+    for(const p of players)stepPlayerMotion(p,actions[p.id],1,world);
+    gateOpen||=templeWorld.state.gates['sluice-gate'];
+    wheelOn||=templeWorld.state.wheelActive;
+    light||=players.some(p=>Math.abs(p.x-(relic.x+.5)*16)<19&&
+      Math.abs(p.y-((relic.y+.5)*16-12))<26);
+    completed=light&&players.every(p=>Math.abs(p.x-(exit.x+.5)*16)<28&&
+      Math.abs(p.y-((exit.y+.5)*16-12))<26);
+    if(completed)break;
+  }
+  assert.ok(gateOpen&&wheelOn);
+  assert.ok(light);
+  assert.ok(completed,'Both explorers reach the physical exit after the light');
+  assert.deepEqual([...pressed],['sluice-handle','cascade-handle']);
+});
+
+test('co-op simultaneous input changes each valve only one detent per tick',()=>{
+  const valve=temple.valves[0];
+  const x=valve.at[0]*16,y=valve.at[1]*16;
+  const players=[explorer(x,y),{...explorer(x+12,y),id:1}];
+  const world=createTempleWorld(temple);
+  stepTempleWorld(temple,world,players,[
+    {upPressed:true},{upPressed:true}
+  ]);
+  assert.equal(world.state.modes['sluice-valve'],'fill');
+});
