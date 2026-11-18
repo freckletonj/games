@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import race from '../levels/skybound-stampede.json' with {type:'json'};
 import {stepMountedMotion,MOUNTS} from '../src/mounts.js';
-import {createRaceWorld,stepRaceWorld,raceRiderLeftBehind} from '../src/race-world.js';
+import {createRaceWorld,stepRaceWorld,raceRiderLeftBehind,
+  raceCameraFrame} from '../src/race-world.js';
 
 const world={width:race.width*16,height:race.height*16,tile:16,
   groundAt:()=>880,platformSegments:[],inWater:()=>false};
@@ -141,4 +142,30 @@ test('moving hazards use reproducible world-space poses independent of sprites',
     if(i%20===0)repeated.push(replay.hazards.map(h=>[h.id,h.x,h.y,h.rotation]));
   }
   assert.deepEqual(snapshots,repeated);
+});
+
+test('camera framing is continuous at corral, sanctuary and finish stops',()=>{
+  const first=rider(0,'unicorn',232),second=rider(1,'unicorn',408);
+  const players=[first,second],state=createRaceWorld(race);
+  const initial=raceCameraFrame(race,state.state,players);
+  assert.ok(initial.x>first.x&&initial.x<second.x);
+  assert.ok(initial.zoom>=1.48&&initial.zoom<=2);
+  stepRaceWorld(race,state,players);
+  const started=raceCameraFrame(race,state.state,players);
+  assert.equal(started.x,initial.x);
+  state.state={...state.state,anchor:2944};
+  const beforeStop=raceCameraFrame(race,state.state,players);
+  state.state={...state.state,phase:'waitingForPegasi'};
+  const atSanctuary=raceCameraFrame(race,state.state,players);
+  assert.ok(Math.abs(beforeStop.x-atSanctuary.x)<.01);
+  first.mount=rider(0,'pegasus',2984).mount;
+  second.mount=rider(1,'pegasus',3176).mount;
+  state.state={...state.state,phase:'flightScroll',anchor:2944};
+  const flying=raceCameraFrame(race,state.state,players);
+  assert.equal(flying.x,atSanctuary.x);
+  state.state={...state.state,phase:'flightScroll',anchor:5504};
+  const beforeFinish=raceCameraFrame(race,state.state,players);
+  state.state={...state.state,phase:'finished'};
+  const atFinish=raceCameraFrame(race,state.state,players);
+  assert.equal(beforeFinish.x,atFinish.x);
 });
