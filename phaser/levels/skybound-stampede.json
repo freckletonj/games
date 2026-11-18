@@ -220,7 +220,7 @@
         360
       ],
       "challenge": "wingbeats-gusts-and-air-hazards",
-      "goal": "Fly the canyon and touch the Escape Light on the finish garden",
+      "goal": "Fly between upper and lower storm clouds, dodge falling boulders and rock shelves, then collect the Escape Light",
       "recovery": 184
     }
   ],
@@ -498,6 +498,102 @@
         "phaseTicks": 60
       },
       "warningDistance": 270
+    },
+    {
+      "id": "first-hanging-rock",
+      "stage": "flightScroll",
+      "kind": "storm-shelf",
+      "home": [
+        231,
+        39
+      ],
+      "size": [
+        100,
+        120
+      ],
+      "warningDistance": 245
+    },
+    {
+      "id": "falling-boulder-one",
+      "stage": "flightScroll",
+      "kind": "falling-boulder",
+      "home": [
+        252,
+        38
+      ],
+      "size": [
+        48,
+        62
+      ],
+      "motion": {
+        "axis": "fall",
+        "amplitude": 205,
+        "periodTicks": 168,
+        "phaseTicks": 112
+      },
+      "warningDistance": 250
+    },
+    {
+      "id": "thunder-gate",
+      "stage": "flightScroll",
+      "kind": "storm-gate",
+      "home": [
+        283,
+        46
+      ],
+      "size": [
+        60,
+        160
+      ],
+      "warningDistance": 270
+    },
+    {
+      "id": "falling-boulder-two",
+      "stage": "flightScroll",
+      "kind": "falling-boulder",
+      "home": [
+        302,
+        40
+      ],
+      "size": [
+        54,
+        72
+      ],
+      "motion": {
+        "axis": "fall",
+        "amplitude": 235,
+        "periodTicks": 143,
+        "phaseTicks": 36
+      },
+      "warningDistance": 280
+    },
+    {
+      "id": "low-rock-shelf",
+      "stage": "flightScroll",
+      "kind": "storm-shelf",
+      "home": [
+        317,
+        59
+      ],
+      "size": [
+        96,
+        100
+      ],
+      "warningDistance": 270
+    },
+    {
+      "id": "last-hanging-rock",
+      "stage": "flightScroll",
+      "kind": "storm-shelf",
+      "home": [
+        334,
+        34
+      ],
+      "size": [
+        56,
+        86
+      ],
+      "warningDistance": 210
     }
   ],
   "flightVolumes": [
@@ -551,7 +647,8 @@
   "flightVoid": {
     "from": 213,
     "to": 340,
-    "fallY": 66
+    "fallY": 61,
+    "ceilingY": 24
   },
   "routeChoices": [
     {
