@@ -15,6 +15,11 @@ export function createTempleWorld(spec){
       return {...object,kind:'raft',position:[position.x,position.y],
         previous:[position.x,position.y]};
     });
+  for(const platform of spec.linkedPlatforms){
+    const position=platform.home.map(cell=>cell*TILE);
+    decks.push({...platform,kind:'puzzle-bridge',position,previous:position,
+      enabled:false});
+  }
   const waterBodies=spec.waterVolumes.map(volume=>({
     id:volume.id,start:volume.from,end:volume.to,
     surface:state.surfaces[volume.id]
@@ -37,9 +42,12 @@ export function restoreTempleWorld(spec,world,snapshot){
   for(const volume of world.waterBodies)
     volume.surface=world.state.surfaces[volume.id];
   for(const deck of world.decks){
-    const {x,y}=buoyantPosition(spec,world.state,deck.id);
-    deck.position=[x,y];
-    deck.previous=[x,y];
+    const position=deck.volume?
+      buoyantPosition(spec,world.state,deck.id):
+      {x:deck.home[0]*TILE,y:deck.home[1]*TILE};
+    deck.position=[position.x,position.y];
+    deck.previous=deck.position;
+    if(deck.enabledWhen)deck.enabled=world.state.wheelActive;
   }
   return world;
 }
@@ -104,8 +112,11 @@ export function stepTempleWorld(spec,world,players,actions){
   for(const volume of world.waterBodies)volume.surface=state.surfaces[volume.id];
   for(const deck of world.decks){
     deck.previous=deck.position;
-    const {x,y}=buoyantPosition(spec,state,deck.id);
-    deck.position=[x,y];
+    if(deck.volume){
+      const {x,y}=buoyantPosition(spec,state,deck.id);
+      deck.position=[x,y];
+    }
+    if(deck.enabledWhen)deck.enabled=state.wheelActive;
   }
   for(const crate of world.crates){
     crate.y=buoyantPosition(spec,state,crate.id).y;
