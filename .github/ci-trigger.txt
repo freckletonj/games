@@ -1,4 +1,4 @@
 # Explicit CI trigger for Wonderwood regressions.
 # Only changes to this file (or a manual workflow_dispatch) launch the workflow.
 # Update the request line when an on-demand test run is needed.
-Request: Verify landable downstream raft and retaining lips, 2026-11-18 15:50 PST
+Request: Fixed assertion and isolated valve-platform movement, 2026-11-18 15:55 PST
