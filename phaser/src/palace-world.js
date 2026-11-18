@@ -3,14 +3,18 @@ import {createPalaceState,setMirrorDetent,setPalaceShutter,
 
 const TILE=16;
 
-export function createPalaceWorld(spec){
+export function createPalaceWorld(spec,level=null){
   const state=createPalaceState(spec);
   const decks=spec.phasePlatforms.map(platform=>{
     const position=platform.home.map(cell=>cell*TILE);
     return {...platform,kind:'phase',position,previous:position,
       enabled:state.platforms[platform.id].solid};
   });
-  return {state,decks};
+  const solidAt=level?(x,y)=>{
+    const material=level.materialColumn(x)(y);
+    return material==='rock'||material==='wall'||material==='shelf';
+  }:null;
+  return {state,decks,solidAt};
 }
 
 export function stepPalaceWorld(spec,world,players,actions){
@@ -52,7 +56,8 @@ export function stepPalaceWorld(spec,world,players,actions){
         Math.abs(player.x-x)<=platform.size[0]/2+9&&
         player.y>y&&player.y-27<y+platform.size[1]));
   }).map(platform=>platform.id);
-  state=stepPalace(spec,state,{occupiedPlatformIds:occupied});
+  state=stepPalace(spec,state,{occupiedPlatformIds:occupied,
+    solidAt:world.solidAt});
   world.state=state;
   for(const deck of world.decks)
     deck.enabled=state.platforms[deck.id].solid;
