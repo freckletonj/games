@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import palace from '../levels/mirror-palace.json' with {type:'json'};
 import {stepPlayerMotion} from '../src/player-motion.js';
-import {surfaceGroundAt} from '../src/surface-geometry.js';
+import {surfaceGroundAt,surfaceMaterialColumn} from '../src/surface-geometry.js';
 import {createPalaceWorld,stepPalaceWorld,restorePalaceWorld} from '../src/palace-world.js';
 import {tracePalaceBeams,setMirrorDetent,
   createPalaceState} from '../src/palace-rules.js';
@@ -14,6 +14,7 @@ const scope={};scope.window=scope;vm.createContext(scope);
 vm.runInContext(readFileSync(new URL('../../src/platform/world-compiler.js',
   import.meta.url),'utf8'),scope);
 const level=scope.WW.worldCompiler.compile(palace);
+level.materialColumn=x=>surfaceMaterialColumn(level,x);
 const groundAt=x=>surfaceGroundAt(level,x);
 const explorer=(id,x,y)=>({id,x,y,vx:0,vy:0,face:1,grounded:true,coyote:5,
   jumpBuffer:0,jumps:0,flaps:0,flapWait:0,powers:0,hover:0,
