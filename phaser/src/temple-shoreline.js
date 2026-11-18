@@ -30,3 +30,19 @@ export function templeShoreBounds(basin,groundAt){
     y
   };
 }
+
+
+// A basin's widest wet span need not occur at its highest tide: some
+// authored banks have plateaus. Build one mask that covers every tide phase.
+export function templeWaterMaskBounds(volume,groundAt){
+  let left=Infinity,right=-Infinity;
+  for(let surface=volume.maxSurface;surface<=volume.minSurface+.001;surface+=.25){
+    const shore=templeShoreBounds({
+      start:volume.from,end:volume.to,surface
+    },groundAt);
+    left=Math.min(left,shore.left);
+    right=Math.max(right,shore.right);
+  }
+  // A little subpixel tolerance prevents mask seams at fractional heights.
+  return {left:left-4,right:right+4,y:volume.maxSurface*TILE};
+}
