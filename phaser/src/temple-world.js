@@ -1,5 +1,5 @@
 import {createTempleState,setTempleValve,stepTemple,
-  buoyantPosition,templeCurrentAt} from './temple-rules.js';
+  buoyantPosition,templeCurrentAt,releaseTempleWheel} from './temple-rules.js';
 import {templeShoreBounds} from './temple-shoreline.js';
 
 const TILE=16;
@@ -28,7 +28,7 @@ export function createTempleWorld(spec){
   return {state,crates,decks,waterBodies};
 }
 
-// Checkpoints preserve the tide phase, valve modes and pushed crate X.
+// Checkpoints preserve latches, release, tide phase and pushed crate positions.
 // Restore in place: the scene and player collision systems retain references
 // to the exact water bodies and deck objects.
 export function snapshotTempleWorld(world){
@@ -87,6 +87,13 @@ export function templeGateBlock(spec,world,fromX,toX,feet){
 // fixed-tick crate push advances it; it cannot be walked through.
 export function templeBlockHorizontal(spec,world,fromX,toX,feet){
   toX=templeGateBlock(spec,world,fromX,toX,feet);
+  for(const wall of spec.obstacles??[]){
+    const top=wall.top*TILE,bottom=wall.bottom*TILE;
+    if(feet<=top||feet-27>=bottom)continue;
+    const left=wall.left*TILE-10,right=wall.right*TILE+10;
+    if(fromX<=left&&toX>left)toX=left;
+    if(fromX>=right&&toX<right)toX=right;
+  }
   for(const crate of world.crates){
     if(feet<=crate.y||feet-27>=crate.y+crate.size[1])continue;
     const left=crate.x-crate.size[0]/2-10;
@@ -116,6 +123,14 @@ export function stepTempleWorld(spec,world,players,actions){
       break;
     }
   }
+  for(const player of players){
+    if(player.assist||player.sleep||player.bubble||player.clouded||
+       player.mount||!actions[player.id]?.upPressed)continue;
+    const release=spec.releases.find(control=>
+      Math.hypot(player.x-control.at[0]*TILE,
+        player.y-control.at[1]*TILE)<=control.reach);
+    if(release)state=releaseTempleWheel(spec,state,release.id);
+  }
   // The water advances once per simulation tick; the decks' previous
   // positions remain available to production rider-carry collision.
   state=stepTemple(spec,state,{cratePositions:Object.fromEntries(
@@ -138,9 +153,18 @@ export function stepTempleWorld(spec,world,players,actions){
          player.mount||Math.abs(player.y-crate.y)>32)continue;
       const edge=crate.x-move*(crate.size[0]/2+12);
       if(Math.abs(player.x-edge)>22)continue;
-      crate.x=clamp(crate.x+move*1.8,
-        volume.from*TILE+crate.size[0]/2,
-        volume.to*TILE-crate.size[0]/2);
+      const half=crate.size[0]/2;
+      let target=clamp(crate.x+move*1.8,
+        volume.from*TILE+half,volume.to*TILE-half);
+      for(const wall of spec.obstacles??[]){
+        if(crate.y+crate.size[1]<=wall.top*TILE||
+           crate.y>=wall.bottom*TILE)continue;
+        if(move>0&&crate.x+half<=wall.left*TILE)
+          target=Math.min(target,wall.left*TILE-half);
+        if(move<0&&crate.x-half>=wall.right*TILE)
+          target=Math.max(target,wall.right*TILE+half);
+      }
+      crate.x=target;
       break; // One physical crate displacement per tick, even with two pushers.
     }
   }
