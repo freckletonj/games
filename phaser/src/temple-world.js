@@ -80,17 +80,20 @@ export function templeBlockHorizontal(spec,world,fromX,toX,feet){
 
 export function stepTempleWorld(spec,world,players,actions){
   let state=world.state;
+  const operated=new Set();
   // Up / D-pad Up turns a nearby valve one detent. No simultaneous
   // input is required: the chosen mode persists until changed.
   for(const player of players){
     if(player.assist||player.sleep||player.bubble||player.clouded||
        player.mount||!actions[player.id]?.upPressed)continue;
     for(const valve of spec.valves){
+      if(operated.has(valve.id))continue;
       const [cx,cy]=valve.at;
       if(Math.hypot(player.x-cx*TILE,player.y-cy*TILE)>valve.reach)continue;
       const current=state.modes[valve.controller];
       const next=valve.modes[(valve.modes.indexOf(current)+1)%valve.modes.length];
       state=setTempleValve(spec,state,valve.id,next);
+      operated.add(valve.id);
       break;
     }
   }
