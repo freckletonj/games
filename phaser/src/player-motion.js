@@ -73,6 +73,9 @@ export function stepPlayerMotion(p,actions,step,world){
     const icy=p.iceWater>0&&p.grounded&&!inWater&&world.pushSpeed==null;
     const traction=icy?(direction?.055:.025):p.grounded?.22:.14;
     p.vx+=(desired-p.vx)*Math.min(1,traction*step);
+    // A chapter may provide a deterministic water current. Its force is
+    // applied on the same simulation tick as steering and collision.
+    if(inWater&&world.currentAt)p.vx+=world.currentAt(p.x,p.y-8)*step;
     if(!direction&&Math.abs(p.vx)<.06)p.vx=0;
     if(swimmer){
       p.vy+=((actions.jump?-.23:actions.down?.24:.046)-p.vy*.035)*step;
