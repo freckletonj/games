@@ -58,8 +58,6 @@ test('a solo player can turn the valve and push a real colliding crate onto its 
   const {player,templeWorld,step}=simulation(
     explorer(valve.at[0]*16,valve.at[1]*16));
   step({upPressed:true});
-  assert.equal(templeWorld.state.modes['sluice-valve'],'hold');
-  step({upPressed:true});
   assert.equal(templeWorld.state.modes['sluice-valve'],'fill');
   for(let i=0;i<410;i++)step();
   assert.equal(templeWorld.state.surfaces.sluice,45);
@@ -155,4 +153,58 @@ test('checkpoint restoration replays tides, rider carry and crate positions exac
   assert.equal(templeWorld.waterBodies[0],volume);
   assert.equal(templeWorld.state.tick,140);
   assert.deepEqual(capture(),first);
+});
+
+test('a single active explorer can physically reach the Temple Light and exit',()=>{
+  const start=72,player=explorer(start,groundAt(start));
+  const {templeWorld,step}=simulation(player);
+  const pressed=new Set();
+  const relic=level.objects.find(object=>object.kind==='springKey');
+  const exit=level.objects.find(object=>object.kind==='exit');
+  const itemX=item=>(item.x+.5)*16;
+  const itemY=item=>(item.y+.5)*16-12;
+  let light=false,exited=false;
+  let reachedSluice=false,reachedWheel=false;
+  for(let tick=0;tick<2600;tick++){
+    const valve=temple.valves.find(valve=>!pressed.has(valve.id)&&
+      Math.hypot(player.x-valve.at[0]*16,
+        player.y-valve.at[1]*16)<valve.reach-5);
+    if(valve)pressed.add(valve.id);
+    const crateJump=player.x>=1578&&player.x<1650&&tick%45===0;
+    const relicJump=!light&&player.x>3420&&player.x<3490&&
+      (tick%45===0||player.grounded&&!player.floating);
+    const jumpPressed=crateJump||relicJump;
+    step({right:true,upPressed:Boolean(valve),
+      jumpPressed,jump:jumpPressed});
+    reachedSluice||=templeWorld.state.gates['sluice-gate'];
+    reachedWheel||=templeWorld.state.wheelActive;
+    if(Math.abs(player.x-itemX(relic))<19&&
+       Math.abs(player.y-itemY(relic))<26)light=true;
+    if(light&&Math.abs(player.x-itemX(exit))<28&&
+       Math.abs(player.y-itemY(exit))<26){exited=true;break}
+  }
+  assert.ok(reachedSluice,'Crate must open the sluice on the actual route');
+  assert.ok(reachedWheel,'The final waterwheel must turn on the actual route');
+  assert.ok(templeWorld.state.gates['wheel-gate']);
+  assert.ok(light,'Explorer must touch the elevated Temple Light physically');
+  assert.ok(exited,'Explorer must reach the exit after collecting the light');
+  assert.deepEqual([...pressed],['sluice-handle','cascade-handle']);
+});
+
+test('skipping the waterwheel leaves a physical gate across the finishing route',()=>{
+  const player=explorer(72,groundAt(72));
+  const {templeWorld,step}=simulation(player);
+  let sluicePressed=false;
+  for(let tick=0;tick<2700;tick++){
+    const valve=temple.valves[0];
+    const upPressed=!sluicePressed&&Math.hypot(player.x-valve.at[0]*16,
+      player.y-valve.at[1]*16)<valve.reach-5;
+    if(upPressed)sluicePressed=true;
+    const jump=player.x>=1578&&player.x<1650&&tick%45===0;
+    step({right:true,upPressed,jumpPressed:jump,jump});
+  }
+  assert.ok(templeWorld.state.gates['sluice-gate']);
+  assert.equal(templeWorld.state.wheelActive,false);
+  assert.equal(templeWorld.state.gates['wheel-gate'],false);
+  assert.ok(player.x<=212*16-18,'A closed wheel gate must stop the explorer');
 });
