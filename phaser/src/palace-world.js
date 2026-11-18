@@ -14,7 +14,7 @@ export function createPalaceWorld(spec,level=null){
     const material=level.materialColumn(x)(y);
     return material==='rock'||material==='wall'||material==='shelf';
   }:null;
-  return {state,decks,solidAt};
+  return {state,decks,solidAt,orbHits:[]};
 }
 
 export function stepPalaceWorld(spec,world,players,actions){
@@ -22,8 +22,27 @@ export function stepPalaceWorld(spec,world,players,actions){
   const operated=new Set();
   const controls=[...spec.mirrors.map(m=>({...m,kind:'mirror'})),
     ...spec.shutters.map(s=>({...s,kind:'shutter'}))];
-  // A persistent mirror detent or shutter does not require a second
-  // explorer to hold a switch while the first crosses.
+  // Projectile contact and Up use the same finite detents. Hits are
+  // consumed once, so an orb cannot turn a switch repeatedly.
+  const activate=control=>{
+    operated.add(control.id);
+    if(control.kind==='mirror'){
+      const detents=control.angles;
+      const current=state.mirrors[control.id];
+      state=setMirrorDetent(spec,state,control.id,
+        detents[(detents.indexOf(current)+1)%detents.length]);
+    }else{
+      const positions=control.states;
+      const current=state.shutters[control.id];
+      state=setPalaceShutter(spec,state,control.id,
+        positions[(positions.indexOf(current)+1)%positions.length]);
+    }
+  };
+  for(const id of world.orbHits.splice(0)){
+    const control=controls.find(item=>item.id===id);
+    if(control&&!operated.has(id))activate(control);
+  }
+  // Keep Up as an accessibility alternative to throwing an orb.
   for(const player of players){
     if(player.assist||player.sleep||player.bubble||player.clouded||
        !actions[player.id]?.upPressed)continue;
@@ -34,19 +53,7 @@ export function stepPalaceWorld(spec,world,players,actions){
       .filter(control=>control.distance<=control.reach&&
         !operated.has(control.id))
       .sort((a,b)=>a.distance-b.distance)[0];
-    if(!candidate)continue;
-    operated.add(candidate.id);
-    if(candidate.kind==='mirror'){
-      const detents=candidate.angles;
-      const current=state.mirrors[candidate.id];
-      const next=detents[(detents.indexOf(current)+1)%detents.length];
-      state=setMirrorDetent(spec,state,candidate.id,next);
-    }else{
-      const positions=candidate.states;
-      const current=state.shutters[candidate.id];
-      const next=positions[(positions.indexOf(current)+1)%positions.length];
-      state=setPalaceShutter(spec,state,candidate.id,next);
-    }
+    if(candidate)activate(candidate);
   }
   const occupied=spec.phasePlatforms.filter(platform=>{
     const [x,y]=platform.home.map(n=>n*TILE);
