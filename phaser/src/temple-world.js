@@ -41,6 +41,21 @@ export function templeGateBlock(spec,world,fromX,toX,feet){
   return toX;
 }
 
+// A moving crate is solid at its authored top/body silhouette. A player
+// leaning against it is held at the physical edge while the separate
+// fixed-tick crate push advances it; it cannot be walked through.
+export function templeBlockHorizontal(spec,world,fromX,toX,feet){
+  toX=templeGateBlock(spec,world,fromX,toX,feet);
+  for(const crate of world.crates){
+    if(feet<=crate.y||feet-27>=crate.y+crate.size[1])continue;
+    const left=crate.x-crate.size[0]/2-10;
+    const right=crate.x+crate.size[0]/2+10;
+    if(fromX<=left&&toX>left)toX=left;
+    if(fromX>=right&&toX<right)toX=right;
+  }
+  return toX;
+}
+
 export function stepTempleWorld(spec,world,players,actions){
   let state=world.state;
   // Up / D-pad Up turns a nearby valve one detent. No simultaneous
