@@ -100,6 +100,24 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Test Phaser gameplay and cave geometry
         run: npm test --prefix phaser
+      - name: Export and inspect Sunken Temple's deterministic art guides
+        run: |
+          node phaser/scripts/export-future-chapter-guides.mjs sunken-temple
+          node --input-type=module -e '
+            import assert from "node:assert/strict";
+            import {readFileSync} from "node:fs";
+            const directory="dist/future-chapter-guides/sunken-temple/";
+            const manifest=JSON.parse(readFileSync(directory+"manifest.json","utf8"));
+            assert.equal(manifest.frames.length,4);
+            for(const frame of manifest.frames){
+              const image=readFileSync(directory+frame.file);
+              assert.equal(image.subarray(1,4).toString(),"PNG");
+              assert.equal(image.readUInt32BE(16),manifest.width);
+              assert.equal(image.readUInt32BE(20),manifest.height);
+            }
+            assert.equal(manifest.frames.at(-1).wheelActive,true);
+            assert.equal(manifest.frames.at(-1).gates["wheel-gate"],true);
+          '
       - name: Build standalone Phaser game
         run: npm run build --prefix phaser
       - name: Verify chapter selection and painting in Chromium
