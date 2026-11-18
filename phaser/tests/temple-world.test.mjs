@@ -215,6 +215,8 @@ test('head reservoir alone cannot turn wheel; releasing water charges it and flo
   advance(step,280);
   assert.equal(templeWorld.state.gates['wheel-gate'],true,
     'Once the mechanism catches, bridges remain safe');
+  assert.equal(templeWorld.state.surfaces['wheel-tail'],42,
+    'The latched wheel must finish filling the tail even if the head valve reverses');
 });
 
 function poweredTemple(){

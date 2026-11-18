@@ -70,9 +70,9 @@ export function stepTemple(spec,state,{cratePositions={}}={}){
       next=volume.minSurface+(volume.maxSurface-volume.minSurface)*fill;
     }else{
       const mode=controller.kind==='linked'?
-        (state.released&&
+        ((state.wheelActive||state.released&&
           surfaces[spec.waterControllers.find(c=>c.id===controller.upstream).volume]
-            <=controller.threshold?'fill':'drain'):
+            <=controller.threshold)?'fill':'drain'):
         state.modes[controller.id];
       const rate=controller.ratePerTick;
       next=clamp(next+(mode==='fill'?-rate:mode==='drain'?rate:0),
