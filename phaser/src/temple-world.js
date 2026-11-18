@@ -1,5 +1,6 @@
 import {createTempleState,setTempleValve,stepTemple,
   buoyantPosition,templeCurrentAt} from './temple-rules.js';
+import {templeShoreBounds} from './temple-shoreline.js';
 
 const TILE=16;
 const clamp=(value,lo,hi)=>Math.max(lo,Math.min(hi,value));
@@ -53,8 +54,10 @@ export function restoreTempleWorld(spec,world,snapshot){
 }
 
 export function templeInWater(world,groundAt,x,y){
-  return world.waterBodies.some(volume=>x>=volume.start*TILE&&
-    x<volume.end*TILE&&y>=volume.surface*TILE&&y<groundAt(x));
+  return world.waterBodies.some(basin=>{
+    const {left,right,y:surface}=templeShoreBounds(basin,groundAt);
+    return x>=left&&x<right&&y>=surface&&y<groundAt(x);
+  });
 }
 
 export function templeGateBlock(spec,world,fromX,toX,feet){
