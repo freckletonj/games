@@ -83,10 +83,11 @@ export function stepTemple(spec,state,{cratePositions={}}={}){
     return [plate.id,Math.abs(crate.x-cellX*16)<=plate.radius&&
       Math.abs(crate.y-cellY*16)<=plate.radius];
   }));
-  const gates=Object.fromEntries(spec.gates.map(gate=>
-    [gate.id,Boolean(plates[gate.opensWhen])]));
   const wheel=spec.waterwheel;
   const wheelController=spec.waterControllers.find(c=>c.id===wheel.upstream);
   const wheelActive=surfaces[wheelController.volume]<=wheel.engageSurface;
+  const gates=Object.fromEntries(spec.gates.map(gate=>
+    [gate.id,gate.opensWhen===wheel.id?wheelActive:
+      Boolean(plates[gate.opensWhen])]));
   return {...interim,plates,gates,wheelActive};
 }
