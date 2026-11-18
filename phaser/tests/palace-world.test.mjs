@@ -237,3 +237,30 @@ test('the closed Eclipse shutter prevents prism-gate bypass until used',()=>{
   assert.equal(palaceWorld.state.gates['observatory-light-gate'],true,
     'A physically clear prism beam must open the observatory door');
 });
+
+
+test('capture-orb hit cycles a named switch exactly once, without an Up press',()=>{
+  const x=36*16,player=explorer(0,x,groundAt(x));
+  const {palaceWorld,step}=simulation([player]);
+  palaceWorld.orbHits.push('atrium-mirror','atrium-mirror');
+  step([controls]);
+  assert.equal(palaceWorld.state.mirrors['atrium-mirror'],-45);
+  assert.deepEqual(palaceWorld.orbHits,[]);
+  for(let tick=0;tick<25;tick++)step([controls]);
+  assert.equal(palaceWorld.decks.find(d=>d.id==='atrium-crystal').enabled,true);
+  palaceWorld.orbHits.push('atrium-mirror');
+  step([controls]);
+  assert.equal(palaceWorld.state.mirrors['atrium-mirror'],45);
+});
+
+test('orb-activated Eclipse shutter participates in the physical beam gate',()=>{
+  const x=180*16,player=explorer(0,x,groundAt(x));
+  const {palaceWorld,step}=simulation([player]);
+  palaceWorld.state=setMirrorDetent(palace,palaceWorld.state,'observatory-prism',-45);
+  for(let tick=0;tick<65;tick++)step([controls]);
+  assert.equal(palaceWorld.state.gates['observatory-light-gate'],false);
+  palaceWorld.orbHits.push('eclipse-shutter');
+  for(let tick=0;tick<150;tick++)step([controls]);
+  assert.equal(palaceWorld.state.shutters['eclipse-shutter'],'open');
+  assert.equal(palaceWorld.state.gates['observatory-light-gate'],true);
+});
