@@ -11,7 +11,6 @@ import {createTempleWorld,stepTempleWorld,templeInWater,templeBasinAt,
 import {setTempleValve} from '../src/temple-rules.js';
 import {templeWaterColumns,createTempleScene} from '../src/temple-scene.js';
 import {templeShoreBounds} from '../src/temple-shoreline.js';
-import {templeShoreBounds} from '../src/temple-shoreline.js';
 
 const scope={};
 scope.window=scope;vm.createContext(scope);
