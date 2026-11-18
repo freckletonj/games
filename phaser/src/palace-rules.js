@@ -7,6 +7,7 @@ export function createPalaceState(spec){
   return {tick:0,
     mirrors:Object.fromEntries(spec.mirrors.map(m=>[m.id,m.initial])),
     shutters:Object.fromEntries(spec.shutters.map(s=>[s.id,s.initial])),
+    gates:Object.fromEntries((spec.beamGates??[]).map(g=>[g.id,false])), 
     platforms:Object.fromEntries(spec.phasePlatforms.map(p=>[p.id,{
       solid:p.rule==='shadow',pending:null,remaining:0
     }]))};
@@ -141,5 +142,7 @@ export function stepPalace(spec,state,{occupiedPlatformIds=[],solidAt=null}={}){
     else
       platforms[platform.id]={solid:desired,pending:null,remaining:0};
   }
-  return {...next,platforms,light};
+  const gates=Object.fromEntries((spec.beamGates??[]).map(g=>
+    [g.id,Boolean(state.gates[g.id]||light.lit.includes(g.target))]));
+  return {...next,platforms,gates,light};
 }
