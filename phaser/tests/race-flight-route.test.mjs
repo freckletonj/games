@@ -42,10 +42,10 @@ function flightRoute(humanCount){
   for(let tick=0;tick<1000;tick++){
     for(const player of players){
       const mount=player.mount;
-      const flying=mount.x>212*16;
+      const flying=mount.x>210*16;
       const jumpPressed=flying&&(mount.grounded||
-        mount.flapWait===0&&mount.y>825&&mount.vy>=0);
-      const down=flying&&mount.y<790;
+        mount.flapWait===0&&mount.y>820&&mount.vy>=0);
+      const down=flying&&mount.y<785;
       const {action}=stepMountedMotion(mount,{right:true,left:false,
         down,jumpPressed,jump:jumpPressed},1,physics);
       const seat=seatFor('pegasus',mount.grounded?action:'jump');
