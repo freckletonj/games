@@ -88,18 +88,48 @@
       10
     ],
     [
-      71,
+      48,
+      53,
+      12
+    ],
+    [
+      62,
+      52,
+      12
+    ],
+    [
+      76,
+      53,
+      12
+    ],
+    [
+      89,
       51,
+      11
+    ],
+    [
+      109,
+      50,
       10
     ],
     [
-      108,
-      49,
-      8
+      117,
+      50,
+      12
+    ],
+    [
+      131,
+      52,
+      12
     ],
     [
       145,
-      48,
+      51,
+      12
+    ],
+    [
+      159,
+      49,
       10
     ],
     [
@@ -513,12 +543,30 @@
   "camera": {
     "behind": 320,
     "ahead": 240,
-    "verticalPadding": 100
+    "verticalPadding": 100,
+    "leftGrace": 48,
+    "recoveryTicks": 40
   },
   "goalPolicy": "contact-only",
   "flightVoid": {
     "from": 213,
     "to": 340,
     "fallY": 66
-  }
+  },
+  "routeChoices": [
+    {
+      "id": "woodland-fork",
+      "from": 47,
+      "to": 99,
+      "upper": "Hop onto blue stepping stones",
+      "lower": "Gallop below and jump the fallen log"
+    },
+    {
+      "id": "high-canopy",
+      "from": 113,
+      "to": 170,
+      "upper": "Leap between the high canopy decks",
+      "lower": "Stay low, time the boulder and cart"
+    }
+  ]
 }
