@@ -1,0 +1,4 @@
+# Explicit CI trigger for Wonderwood regressions.
+# Only changes to this file (or a manual workflow_dispatch) launch the workflow.
+# Update the request line when an on-demand test run is needed.
+Request: initial verification of trigger-only CI, 2026-11-18
