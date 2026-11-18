@@ -43,6 +43,14 @@ export function stepMountedMotion(m,actions,step,world){
     }
   }
   m.vy+=(settings.kind==='flight'?.28:.43)*step;
+  if(settings.kind==='flight'&&!m.grounded){
+    for(const draft of world.flightVolumes??[]){
+      const [x1,y1,x2,y2]=draft.bounds;
+      if(m.x>=x1*world.tile&&m.x<x2*world.tile&&
+         m.y>=y1*world.tile&&m.y<y2*world.tile)
+        m.vy+=draft.forceY*step;
+    }
+  }
   if(settings.kind==='flight'&&actions.down&&!m.grounded)
     m.vy+=.35*step;
   m.vy=clamp(m.vy,-9,7.5);
