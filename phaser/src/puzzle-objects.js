@@ -153,10 +153,6 @@ function friendshipHint(player,animals,kind,name,food){
   return 'F / B · offer '+name+' two '+food+' treats';
 }
 
-export function cavernPuzzlesComplete(objects){
-  return objects.every(object=>object.state===(object.kind==='breakable-wall'?'broken':'settled'));
-}
-
 export function cavernHint(objects,player,animals,hasKey){
   const [boulder,lowerSeal,bridge,upperSeal]=objects;
   const {x,y,form}=player;
@@ -189,6 +185,5 @@ export function cavernHint(objects,player,animals,hasKey){
   if(y>432)return moonwing('Find the updraft. Ride it up, then fly toward the right lip.');
   if(y>272)return moonwing('Fly right from the chimney lip to the summit.');
   if(hasKey)return 'Walk through the summit gate.';
-  return cavernPuzzlesComplete(objects)?'Collect the Summit Light by the gate.':
-    'The Summit Light unlocks when both seals, the bridge, and the boulder are cleared.';
+  return 'Collect the Summit Light by the gate.';
 }
