@@ -10,7 +10,7 @@ import {createTempleWorld,stepTempleWorld,templeInWater,templeBasinAt,
   restoreTempleWorld} from '../src/temple-world.js';
 import {setTempleValve} from '../src/temple-rules.js';
 import {templeWaterColumns,createTempleScene} from '../src/temple-scene.js';
-import {templeShoreBounds} from '../src/temple-shoreline.js';
+import {templeShoreBounds,templeWaterMaskBounds} from '../src/temple-shoreline.js';
 
 const scope={};
 scope.window=scope;vm.createContext(scope);
@@ -352,10 +352,8 @@ test('sloping Temple shorelines are wet in both the rendered and physics model',
 
 test('a fixed high-tide basin mask contains every possible waterline',()=>{
   for(const volume of temple.waterVolumes){
-    const full=templeShoreBounds({
-      start:volume.from,end:volume.to,surface:volume.maxSurface
-    },groundAt);
-    for(let surface=volume.maxSurface;surface<=volume.minSurface;surface++){
+    const full=templeWaterMaskBounds(volume,groundAt);
+    for(let surface=volume.maxSurface;surface<=volume.minSurface;surface+=.1){
       const bounds=templeShoreBounds({
         start:volume.from,end:volume.to,surface
       },groundAt);
