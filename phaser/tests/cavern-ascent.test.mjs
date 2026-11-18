@@ -10,7 +10,7 @@ import {advanceTreatFlight,treatLanding} from '../src/treat-motion.js';
 import {orbStep} from '../src/physics.js';
 import {machinePlatforms,stepMachines} from '../src/machines.js';
 import {createPuzzleObjects,pushPuzzleObject,blockPuzzleX,punchWall,
-  stepPuzzleObjects,cavernPuzzlesComplete} from '../src/puzzle-objects.js';
+  stepPuzzleObjects} from '../src/puzzle-objects.js';
 
 const level=compileCave(layout);
 
@@ -237,13 +237,11 @@ test('the standing bridge cannot be flown over from its pushing ledge',()=>{
   assert.ok(furthest<spec.home[0], 'the bridge must block the flight path');
 });
 
-test('the summit light requires both seals and both rock crossings',()=>{
+test('the summit light is present even while every rock puzzle is unsolved',()=>{
   const {objects}=simulate(220,2880,'gravelback',level.puzzleObjects);
-  for(const object of objects){
-    assert.ok(!cavernPuzzlesComplete(objects));
-    object.state=object.kind==='breakable-wall'?'broken':'settled';
-  }
-  assert.ok(cavernPuzzlesComplete(objects));
+  assert.equal(objects.length,4);
+  assert.ok(objects.every(object=>object.state==='ready'));
+  assert.ok(level.objects.some(object=>object.kind==='springKey'));
 });
 
 test('the low roof keeps Moonwing from skipping the first boulder on its ledge',()=>{
