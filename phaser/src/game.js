@@ -608,7 +608,7 @@ class Wonderwood extends Phaser.Scene {
       if(partner?.assist)this.moveAssistPlayer(partner,STILL);
     }else if(this.palaceWorld){
       camera.stopFollow();
-      camera.centerOn(lead.x+155,lead.y-135);
+      camera.centerOn(lead.x+155,lead.y-160);
     }else if(partner){
       camera.setRoundPixels(false).centerOn(partner.assist?lead.x:(lead.x+partner.x)/2,lead.y-this.lookUp);
       if(partner.assist)this.moveAssistPlayer(partner,STILL);
@@ -1586,7 +1586,7 @@ class Wonderwood extends Phaser.Scene {
       Math.max(...human.map(p=>p.x))-Math.min(...human.map(p=>p.x)):0;
     const zoom=Math.min(this.defaultZoom,960/(spread+290));
     this.cameras.main.setZoom(Math.max(.95,zoom))
-      .centerOn(centerX+(human.length===1?155:90),centerY-135);
+      .centerOn(centerX+(human.length===1?155:90),centerY-160);
   }
 
   updatePartyCamera(){
