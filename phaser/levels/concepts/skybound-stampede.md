@@ -1,6 +1,6 @@
 # Level concept: Unicorn Escape — Skybound Stampede
 
-**Status:** implementation candidate. The unregistered [Skybound Stampede level spec](../skybound-stampede.json), [fixed-tick race/readiness rules](../../src/race-rules.js), [schema validation](../../src/future-chapter-validation.js), and [unit tests](../../tests/future-chapters.test.mjs) now exist. Phaser camera/mount integration, full-input solo/co-op routes, approved art, and campaign registration remain outstanding.
+**Status (Nov 17, 2026): both route halves geometry-proven, not release-ready.** The unregistered [level spec](../skybound-stampede.json), [fixed-tick race rules](../../src/race-rules.js), [production race/collision/camera adapter](../../src/race-world.js), [validator](../../src/future-chapter-validation.js) and separate [Unicorn corridor](../../tests/race-geometry-route.test.mjs) / [Pegasus flight](../../tests/race-flight-route.test.mjs) tests exist. Both phases have **solo and two-rider** production-motion proofs. A single browser journey including **befriending, switching mounts, setbacks and actual completion** has not yet been demonstrated.
 
 ## Player fantasy and non-negotiable flow
 
@@ -64,18 +64,33 @@ Follow [AGENTS.md](../../../AGENTS.md), [DYNAMIC-SCENE-ART.md](../../DYNAMIC-SCE
 6. Reuse approved Unicorn/Pegasus animation atlases and seated explorer rider poses/hip offsets. Add only pose coverage justified by the race (if needed); maintain frame pivots and collision box alignment. Keep obstacle art separate from static world masks.
 7. Register final scene planes and object sprites only after V overlay, full scroll, camera-stop, and both rider poses pass at actual gameplay zoom. The scroll effect is a **camera and parallax presentation of deterministic geometry**, not a license for art and physics to diverge.
 
+## Progress / outstanding acceptance gates
+
+- [x] Compile and validate two authored scrolling corridors, stationary sanctuary, 60 Hz phase machine, named hazards, gust volumes, encounter bounds and camera progress anchor.
+- [x] Verify distinct mounted Unicorn/Pegasus readiness for **every active human** (1P/2P), exclude cloud assist, prevent scroll before both riders are ready, and preserve hard sanctuary stop/restart semantics.
+- [x] Implement reproducible world-space hazard collisions and production Pegasus gust forces; test failure/retry and consistent collision/motion ticks.
+- [x] Prove **separate** solo and 2P real-mounted-motion routes through the ground hazards and flight hazards, including physical Light and exit contact from sanctuary. The two phases have **not** been joined into a full route.
+- [x] Export static physical-material maps and five deterministic context/time frames for corral, woodland, sanctuary, storm and climax in CI.
+- [ ] Complete and test one **unbroken** Phaser input sequence: forage/feed two Unicorns, mount both; survive ground; dismount at zero-scroll sanctuary, feed and mount distinct Pegasi; survive flight; collect Light and trigger real game completion.
+- [ ] Verify treat supplies/refills, proper mount/rider pivots, late join/drop-out, cloud assist, mounted input and checkpoint placement under actual browser controls.
+- [ ] Validate physical hazard warnings and safe reaction windows across different timings, both camera views, knockouts, pause/restart and retry; ensure stage `finished` cannot substitute for actual pickup/exit completion.
+- [ ] Generate and approve guide-conditioned native-detail woodland/sanctuary/storm backgrounds and true-alpha moving obstacle sprites at the authored world pivots; repair their static holes and render synced hazard/warning cues.
+- [ ] Verify V overlay, camera windows and phase stops in the standalone Chromium and Firefox offline builds for **both** party sizes before campaign/art registration.
+
+The full acceptance checklist below intentionally leaves compound browser, feeding, warning and painting tasks open.
+
 ## TODO / acceptance checklist
 
 - [ ] Author the full horizontal route, two distinct movement envelopes, obstacle timing/spacing, sanctuary stop, checkpoints, pickups and finish using a versioned level specification.
-- [ ] Define and validate a phase-state schema, world-space progress anchor and fixed-tick scroll speed/easing; separate camera movement from obstacle physics.
-- [ ] Implement the all-active-player Unicorn readiness check at the start (solo 1/1, co-op 2/2), including joining/leaving and an explicit cloud-assist policy.
+- [x] Define and validate a phase-state schema, world-space progress anchor and fixed-tick scroll progression; separate camera movement from obstacle physics. *(Fixed-tick rule/adapter proven; browser camera presentation pending.)*
+- [x] Implement the all-active-player Unicorn readiness check at the start (solo 1/1, co-op 2/2), including joining/leaving and an explicit cloud-assist policy. *(Unit-level readiness; live join/drop browser flows pending.)*
 - [ ] Implement the safe midpoint stop, deactivation of chasing hazards, dismount/feeding space, sufficient star treats, and an all-active-player Pegasus readiness check before resuming.
 - [ ] Reuse/test existing mount trust, mount/dismount, seated rider art, Unicorn jumps, Pegasus repeated wingbeats and Down-controlled descent; add only necessary runner-mode movement.
 - [ ] Implement ground hazards: timed moving boulder, swinging branch, crossing cart and jumpable static obstacles, all with generous telegraph windows.
 - [ ] Implement flight hazards: changing altitude passages, moving shutters/fans, descending clusters, passing flyers and deterministic gusts, with separate up/down routes.
 - [ ] Define forgiving shared 2P failure and recovery: no follower-bubble shortcut, synchronized checkpoint restart, pause freezes time and camera, never leave a rider behind.
 - [ ] Validate hazard clearances and reaction time from production Unicorn/Pegasus acceleration, jump arc, wingbeat and camera speed, rather than visual guessing.
-- [ ] Add pure 60 Hz tests for readiness gates, exact midpoint halt, second-phase resume, hazard motion repeatability, camera/physics synchronization, and retry/recall.
+- [x] Add pure 60 Hz tests for readiness gates, exact midpoint halt, second-phase resume, hazard motion repeatability, camera/physics synchronization, and retry/recall.
 - [ ] Run full real-input solo and 2P browser journeys including feeding and mounting both species, pausing, failing, recovering, switching phase, collecting the light, and exiting.
 - [ ] Export deterministic material and time-sampled obstacle bitmap guides; give an image model the complete level outline and approved Wonderwood visual reference.
 - [ ] Generate/refine cohesive native-detail ground, sanctuary and flight art; repair static background around all individually moving alpha cutouts and align rider pivots.
