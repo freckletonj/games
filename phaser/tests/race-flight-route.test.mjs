@@ -39,7 +39,7 @@ function flightRoute(humanCount){
   stepRaceWorld(race,state,players);
   assert.equal(state.state.phase,'flightScroll');
   const touched=new Set();
-  let entered=false,airborneTicks=0;
+  let entered=false,airborneTicks=0,atLight=null,atExit=null;
   for(let tick=0;tick<1200;tick++){
     for(const player of players){
       const mount=player.mount;
@@ -64,21 +64,26 @@ function flightRoute(humanCount){
     const step=stepRaceWorld(race,state,players);
     if(step.restarted)
       return {status:'collision',hit:step.hit,tick,players,state,touched,entered};
-    for(const player of players)
+    for(const player of players){
+      if(Math.abs(player.x-relicX)<40)
+        atLight={tick,x:player.x,y:player.y,goal:[relicX,relicY]};
+      if(Math.abs(player.x-exitX)<40)
+        atExit={tick,x:player.x,y:player.y,goal:[exitX,exitY]};
       if(Math.abs(player.x-relicX)<19&&
          Math.abs(player.y-relicY)<26)touched.add(player.id);
+    }
     if(touched.size&&players.some(player=>
       Math.abs(player.x-exitX)<28&&Math.abs(player.y-exitY)<26))
       entered=true;
     if(state.state.phase==='finished'&&touched.size===humanCount&&entered)
       return {status:'finished',tick,players,state,touched,entered,airborneTicks};
   }
-  return {status:'timeout',players,state,touched,entered,airborneTicks};
+  return {status:'timeout',players,state,touched,entered,airborneTicks,atLight,atExit};
 }
 
 test('solo Pegasus safely flies all authored storm hazards to the physical exit',()=>{
   const route=flightRoute(1);
-  assert.equal(route.status,'finished',JSON.stringify({tick:route.tick,hit:route.hit,positions:route.players.map(p=>[p.mount.x,p.mount.y]),phase:route.state.state.phase}));
+  assert.equal(route.status,'finished',JSON.stringify({tick:route.tick,hit:route.hit,positions:route.players.map(p=>[p.mount.x,p.mount.y,p.mount.vy,p.mount.grounded]),phase:route.state.state.phase,touched:[...route.touched],entered:route.entered,atLight:route.atLight,atExit:route.atExit}));
   assert.equal(route.state.state.anchor,344*16);
   assert.deepEqual([...route.touched],[0],
     'The rider must touch the actual Light pickup, not just reach an X threshold');
@@ -90,7 +95,7 @@ test('solo Pegasus safely flies all authored storm hazards to the physical exit'
 
 test('two independent Pegasi complete the storm and both touch the Light',()=>{
   const route=flightRoute(2);
-  assert.equal(route.status,'finished',JSON.stringify({tick:route.tick,hit:route.hit,positions:route.players.map(p=>[p.mount.x,p.mount.y]),phase:route.state.state.phase}));
+  assert.equal(route.status,'finished',JSON.stringify({tick:route.tick,hit:route.hit,positions:route.players.map(p=>[p.mount.x,p.mount.y,p.mount.vy,p.mount.grounded]),phase:route.state.state.phase,touched:[...route.touched],entered:route.entered,atLight:route.atLight,atExit:route.atExit}));
   assert.equal(route.state.state.anchor,344*16);
   assert.deepEqual([...route.touched].sort(),[0,1]);
   assert.ok(route.entered);
