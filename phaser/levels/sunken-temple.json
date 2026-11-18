@@ -1,0 +1,437 @@
+{
+  "version": 1,
+  "id": "sunken-temple",
+  "biome": "coast",
+  "width": 224,
+  "height": 64,
+  "ridge": [
+    [
+      0,
+      45
+    ],
+    [
+      28,
+      45
+    ],
+    [
+      32,
+      57
+    ],
+    [
+      55,
+      57
+    ],
+    [
+      59,
+      44
+    ],
+    [
+      70,
+      44
+    ],
+    [
+      74,
+      57
+    ],
+    [
+      103,
+      57
+    ],
+    [
+      107,
+      45
+    ],
+    [
+      125,
+      45
+    ],
+    [
+      130,
+      57
+    ],
+    [
+      160,
+      57
+    ],
+    [
+      164,
+      40
+    ],
+    [
+      179,
+      40
+    ],
+    [
+      185,
+      57
+    ],
+    [
+      209,
+      57
+    ],
+    [
+      213,
+      39
+    ],
+    [
+      224,
+      39
+    ]
+  ],
+  "terrainFeatures": [],
+  "water": [],
+  "bridges": [],
+  "ledges": [
+    [
+      23,
+      42,
+      8
+    ],
+    [
+      55,
+      42,
+      10
+    ],
+    [
+      69,
+      43,
+      8
+    ],
+    [
+      97,
+      44,
+      10
+    ],
+    [
+      119,
+      43,
+      9
+    ],
+    [
+      156,
+      40,
+      9
+    ],
+    [
+      177,
+      38,
+      10
+    ],
+    [
+      207,
+      39,
+      9
+    ]
+  ],
+  "creatures": [
+    [
+      "tideling",
+      20
+    ],
+    [
+      "tideling",
+      120
+    ]
+  ],
+  "checkpoints": [
+    60,
+    127,
+    176
+  ],
+  "snacks": [
+    16,
+    65,
+    122,
+    177
+  ],
+  "stars": [
+    [
+      47,
+      54
+    ],
+    [
+      90,
+      52
+    ],
+    [
+      145,
+      51
+    ],
+    [
+      196,
+      53
+    ]
+  ],
+  "relic": [
+    "springKey",
+    218,
+    37
+  ],
+  "landmarks": [],
+  "sections": [
+    {
+      "id": "tidal-courtyard",
+      "range": [
+        0,
+        70
+      ],
+      "challenge": "tide-and-raft",
+      "goal": "Observe a slow tide, ride the first raft and discover the draining shelf",
+      "recovery": 60
+    },
+    {
+      "id": "sluice-hall",
+      "range": [
+        70,
+        130
+      ],
+      "challenge": "valve-current-and-crate",
+      "goal": "Set the valve, float the timber crate to the plate and open the sluice",
+      "recovery": 127
+    },
+    {
+      "id": "wheel-cascade",
+      "range": [
+        130,
+        224
+      ],
+      "challenge": "linked-flood-and-waterwheel",
+      "goal": "Release the cascade, ride the final two rafts and collect the Temple Light",
+      "recovery": 176
+    }
+  ],
+  "waterVolumes": [
+    {
+      "id": "courtyard",
+      "from": 32,
+      "to": 55,
+      "minSurface": 55,
+      "maxSurface": 46,
+      "startSurface": 55,
+      "groundBottom": 57
+    },
+    {
+      "id": "sluice",
+      "from": 74,
+      "to": 103,
+      "minSurface": 55,
+      "maxSurface": 45,
+      "startSurface": 55,
+      "groundBottom": 57
+    },
+    {
+      "id": "wheel-head",
+      "from": 130,
+      "to": 160,
+      "minSurface": 55,
+      "maxSurface": 44,
+      "startSurface": 55,
+      "groundBottom": 57
+    },
+    {
+      "id": "wheel-tail",
+      "from": 185,
+      "to": 209,
+      "minSurface": 55,
+      "maxSurface": 42,
+      "startSurface": 55,
+      "groundBottom": 57
+    }
+  ],
+  "waterControllers": [
+    {
+      "id": "courtyard-tide",
+      "kind": "triangle",
+      "volume": "courtyard",
+      "halfPeriodTicks": 360
+    },
+    {
+      "id": "sluice-valve",
+      "kind": "valve",
+      "volume": "sluice",
+      "ratePerTick": 0.025,
+      "initial": "drain"
+    },
+    {
+      "id": "head-flood",
+      "kind": "valve",
+      "volume": "wheel-head",
+      "ratePerTick": 0.025,
+      "initial": "drain"
+    },
+    {
+      "id": "tail-flood",
+      "kind": "linked",
+      "volume": "wheel-tail",
+      "ratePerTick": 0.02,
+      "upstream": "head-flood",
+      "threshold": 46
+    }
+  ],
+  "valves": [
+    {
+      "id": "sluice-handle",
+      "at": [
+        68,
+        43
+      ],
+      "controller": "sluice-valve",
+      "modes": [
+        "drain",
+        "hold",
+        "fill"
+      ],
+      "reach": 36
+    },
+    {
+      "id": "cascade-handle",
+      "at": [
+        125,
+        43
+      ],
+      "controller": "head-flood",
+      "modes": [
+        "drain",
+        "hold",
+        "fill"
+      ],
+      "reach": 36
+    }
+  ],
+  "buoyantObjects": [
+    {
+      "id": "courtyard-raft",
+      "kind": "raft",
+      "volume": "courtyard",
+      "home": [
+        43,
+        54
+      ],
+      "size": [
+        96,
+        20
+      ],
+      "floatOffset": 0
+    },
+    {
+      "id": "sluice-raft",
+      "kind": "raft",
+      "volume": "sluice",
+      "home": [
+        81,
+        54
+      ],
+      "size": [
+        80,
+        20
+      ],
+      "floatOffset": 0
+    },
+    {
+      "id": "timber-crate",
+      "kind": "crate",
+      "volume": "sluice",
+      "home": [
+        94,
+        54
+      ],
+      "size": [
+        36,
+        36
+      ],
+      "floatOffset": 0
+    },
+    {
+      "id": "head-raft",
+      "kind": "raft",
+      "volume": "wheel-head",
+      "home": [
+        143,
+        54
+      ],
+      "size": [
+        88,
+        20
+      ],
+      "floatOffset": 0
+    },
+    {
+      "id": "tail-raft",
+      "kind": "raft",
+      "volume": "wheel-tail",
+      "home": [
+        196,
+        54
+      ],
+      "size": [
+        88,
+        20
+      ],
+      "floatOffset": 0
+    }
+  ],
+  "pressurePlates": [
+    {
+      "id": "sluice-plate",
+      "at": [
+        101,
+        44
+      ],
+      "radius": 20,
+      "requires": "timber-crate",
+      "opens": "sluice-gate"
+    }
+  ],
+  "gates": [
+    {
+      "id": "sluice-gate",
+      "at": [
+        106,
+        44
+      ],
+      "size": [
+        16,
+        96
+      ],
+      "default": "closed",
+      "opensWhen": "sluice-plate"
+    }
+  ],
+  "currents": [
+    {
+      "id": "sluice-flow",
+      "volume": "sluice",
+      "direction": 1,
+      "forcePerTick": 0.08,
+      "activeWhen": "fill"
+    }
+  ],
+  "waterwheel": {
+    "id": "temple-wheel",
+    "at": [
+      165,
+      45
+    ],
+    "radius": 58,
+    "upstream": "head-flood",
+    "downstream": "tail-flood",
+    "engageSurface": 46,
+    "opens": "wheel-walkway"
+  },
+  "linkedPlatforms": [
+    {
+      "id": "wheel-walkway",
+      "home": [
+        173,
+        40
+      ],
+      "size": [
+        144,
+        20
+      ],
+      "enabledWhen": "temple-wheel"
+    }
+  ],
+  "goalPolicy": "contact-only",
+  "resetPolicy": "controllers-return-to-checkpoint"
+}
