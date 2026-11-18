@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import race from '../levels/skybound-stampede.json' with {type:'json'};
 import {stepMountedMotion,MOUNTS} from '../src/mounts.js';
 import {createRaceWorld,stepRaceWorld,raceRiderLeftBehind,
-  raceCameraFrame} from '../src/race-world.js';
+  raceCameraFrame,raceHazardContact} from '../src/race-world.js';
 
 const world={width:race.width*16,height:race.height*16,tile:16,
   groundAt:()=>880,platformSegments:[],inWater:()=>false};
@@ -173,4 +173,22 @@ test('camera framing is continuous at corral, sanctuary and finish stops',()=>{
   state.state={...state.state,phase:'finished'};
   const atFinish=raceCameraFrame(race,state.state,players);
   assert.equal(beforeFinish.x,atFinish.x);
+});
+
+test('authored race hazards distinguish a grounded hit from a cleared jump',()=>{
+  const root=race.hazards.find(h=>h.id==='root-trainer');
+  const gap=race.hazards.find(h=>h.id==='bridge-gap');
+  const log={...root,x:root.home[0]*16,y:root.home[1]*16};
+  const drop={...gap,x:gap.home[0]*16,y:gap.home[1]*16};
+  assert.equal(raceHazardContact(log,{x:log.x,y:912,grounded:true}),true);
+  assert.equal(raceHazardContact(log,{x:log.x,y:815,grounded:false}),false);
+  assert.equal(raceHazardContact(log,{x:log.x+100,y:912,grounded:true}),false);
+  assert.equal(raceHazardContact(drop,{x:drop.x,y:928,grounded:true}),true);
+  assert.equal(raceHazardContact(drop,{x:drop.x,y:890,grounded:false}),false);
+  const flyer=race.hazards.find(h=>h.id==='crossing-flyer');
+  const flying={...flyer,x:flyer.home[0]*16,y:flyer.home[1]*16};
+  assert.equal(raceHazardContact(flying,
+    {x:flying.x,y:flying.y+36,grounded:false}),true);
+  assert.equal(raceHazardContact(flying,
+    {x:flying.x,y:flying.y+150,grounded:false}),false);
 });
