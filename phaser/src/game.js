@@ -47,6 +47,7 @@ import {createTempleWorld,stepTempleWorld,templeInWater,
 import {createTempleScene,drawTempleScene} from './temple-scene.js';
 import {createPalaceWorld,stepPalaceWorld,restorePalaceWorld,
   palaceBlockHorizontal} from './palace-world.js';
+import {createPalaceScene,drawPalaceScene} from './palace-scene.js';
 import {createRaceWorld,stepRaceWorld,raceCameraFrame} from './race-world.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
@@ -289,6 +290,7 @@ class Wonderwood extends Phaser.Scene {
     this.walkableMachines=[];
     this.templeWorld=null;
     this.palaceWorld=null;
+    this.palaceScene=null;
     this.palaceCheckpoint=null;
     this.raceWorld=null;
     this.raceRecalling=false;
@@ -566,6 +568,8 @@ class Wonderwood extends Phaser.Scene {
     if(this.walkableMachines.length||this.puzzleObjects.length)this.deckOverlay=this.add.graphics().setDepth(101);
     this.templeArt=this.templeWorld?createTempleScene(this,this.level.templeSpec,
       this.templeWorld,APPROVED_SCENE_ART[this.chapter.id]):null;
+    this.palaceScene=this.palaceWorld?createPalaceScene(this,
+      this.level.palaceSpec):null;
     this.windColumns=makeThermals(this,this.level.thermalVolumes,TILE);
     this.spawnObjects();
     this.spawnMounts();
@@ -586,7 +590,9 @@ class Wonderwood extends Phaser.Scene {
         id===1&&this.confirmedExplorers[0]&&this.assistOption.checked);
     });
     const camera=this.cameras.main;
-    this.defaultZoom=this.level.cave?(this.chapter.id==='skywell-ascent'?1.4:1.25):2;
+    // Frame local switches, rays and their associated platforms together.
+    this.defaultZoom=this.palaceWorld?1:
+      this.level.cave?(this.chapter.id==='skywell-ascent'?1.4:1.25):2;
     this.lookUp=this.level.cave?40:38;
     camera.setZoom(this.defaultZoom).setBounds(0,0,this.worldW,this.worldH);
     const [lead,partner]=this.players;
@@ -623,6 +629,9 @@ class Wonderwood extends Phaser.Scene {
 
   groundAt(x){
     if(this.level.cave)return this.level.cave.groundAt(x);
+    const voidArea=this.level.raceSpec?.flightVoid;
+    if(voidArea&&x>=voidArea.from*TILE&&x<voidArea.to*TILE)
+      return this.worldH+256;
     return surfaceGroundAt(this.level,x);
   }
 
@@ -852,7 +861,8 @@ class Wonderwood extends Phaser.Scene {
       groundAt:x=>this.groundAt(x),
       platformSegments:this.level.platformSegments,
       ceilingAt:this.level.cave?x=>this.level.cave.ceilingAt(x):null,
-      flightVolumes:this.level.raceSpec?.flightVolumes??[]
+      flightVolumes:this.level.raceSpec?.flightVolumes??[],
+      jumpScale:this.raceWorld&&m.kind==='unicorn'?1.15:1
     });
     if(launch)m.action='';
     if(launch==='takeoff')this.sparkle(m.x,m.y-35,0xffecce);
@@ -1441,6 +1451,19 @@ class Wonderwood extends Phaser.Scene {
         this.level.rockPolygons):null;
       const next=orbStep(orb,floor,step,landing);
       Object.assign(orb,next);
+      if(this.palaceWorld){
+        const controls=[...this.level.palaceSpec.mirrors,
+          ...this.level.palaceSpec.shutters];
+        const hit=controls.find(control=>{
+          const [cx,cy]=control.controlAt.map(n=>n*TILE);
+          return Math.hypot(orb.x-cx,orb.y-cy)<40;
+        });
+        if(hit){
+          this.palaceWorld.orbHits.push(hit.id);
+          this.sparkle(orb.x,orb.y,0xffe9ad);
+          orb.life=0;
+        }
+      }
       orb.visual.setPosition(orb.x,orb.y)
         .setRotation((150-orb.life)*.09*Math.sign(orb.vx));
       if(orb.bounces>oldBounces)
@@ -2108,6 +2131,8 @@ class Wonderwood extends Phaser.Scene {
     if(this.stage<0)return;
     if(this.templeArt)drawTempleScene(this.templeArt,this.level.templeSpec,
       this.templeWorld,x=>this.groundAt(x),this.geometryOverlay.visible);
+    if(this.palaceScene)drawPalaceScene(this.palaceScene,
+      this.level.palaceSpec,this.palaceWorld);
     if(this.deckOverlay){
       this.deckOverlay.clear();
       if(this.geometryOverlay.visible){
@@ -2150,7 +2175,11 @@ class Wonderwood extends Phaser.Scene {
     const jungleHint=lead.rope?
       'Up / Down · climb   ·   Tap ← / → low to swing higher   ·   Jump · let go':
       lead.x<1410?'Hold ↑ to grab a rope · P2 uses 8':'Find the key on the canopy shelf.';
-    const leadHint=lead.clouded?'P1 · Steer with the stick or direction keys · Jump to break free':
+    const leadHint=this.palaceWorld?
+      'G / X · Throw orbs at lettered switches. Matching bridges show SOLID or GHOST.':
+      this.raceWorld?.state.phase==='flightScroll'?
+      'Pegasus · Tap Jump to flap. The canyon has no floor; stay airborne!':
+      lead.clouded?'P1 · Steer with the stick or direction keys · Jump to break free':
       lead.sleep?'R / LB · revive at camp':
       this.isCavern?cavernHint(this.puzzleObjects,lead,this.animals,this.shared.relic):
       this.puzzleObjects.length?puzzleHint(this.puzzleObjects,lead,this.animals):
