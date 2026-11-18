@@ -57,27 +57,45 @@ export function createTempleScene(scene,spec,world,approved){
       fontFamily:'system-ui',fontSize:'12px',fontStyle:'bold',
       color:'#ffe3a1',backgroundColor:'#293a4bdd',padding:{x:6,y:5}
     }).setOrigin(.5,1).setDepth(39);
-  return {water:scene.add.graphics().setDepth(-29),
+
+  // Each basin has its own static terrain-shaped mask. The water itself is
+  // a full-depth translucent rectangle whose top follows the live surface.
+  // Neither the mask nor the rectangle depends on drawing new bank polygons
+  // each simulation tick.
+  const waterFills=spec.waterVolumes.map(volume=>{
+    const {left,right,y}=templeShoreBounds({
+      start:volume.from,end:volume.to,surface:volume.maxSurface
+    },x=>scene.groundAt(x));
+    const shape=scene.add.graphics().setVisible(false);
+    shape.fillStyle(0xffffff).beginPath().moveTo(left,y).lineTo(right,y);
+    for(let x=right;x>left;x-=4)
+      shape.lineTo(x,Math.max(y,scene.groundAt(x)));
+    shape.lineTo(left,y).closePath().fillPath();
+    const water=scene.add.rectangle(left,volume.startSurface*TILE,
+      right-left,scene.worldH-volume.startSurface*TILE,0x2a9ab4,.54)
+      .setOrigin(0,0).setDepth(-29);
+    water.setMask(shape.createGeometryMask());
+    return {id:volume.id,water,left,right};
+  });
+  return {waterFills,waterline:scene.add.graphics().setDepth(-28),
     guide,labels:{wheelLabel,bridgeLabel},
     debug:scene.add.graphics().setDepth(102),objects};
 }
 
 export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
   const strips=templeWaterColumns(world,groundAt);
-  art.water.clear().fillStyle(0x2a9ab4,.54);
-  // Fill one continuous, terrain-shaped polygon per basin. Discrete
-  // rectangles leave visible slivers at the bank even if physics is wet.
-  for(const basin of world.waterBodies){
-    const {left,right,y}=templeShoreBounds(basin,groundAt);
-    art.water.beginPath().moveTo(left,y).lineTo(right,y);
-    for(let x=right;x>left;x-=4)
-      art.water.lineTo(x,Math.max(y,groundAt(x)));
-    art.water.lineTo(left,y).closePath().fillPath();
+  // Update only the surface of each independent water layer. Its fixed
+  // shoreline mask clips the full-height fill to the actual basin walls.
+  for(const fill of art.waterFills){
+    const basin=world.waterBodies.find(b=>b.id===fill.id);
+    const y=basin.surface*TILE;
+    fill.water.setPosition(fill.left,y)
+      .setSize(fill.right-fill.left,spec.height*TILE-y);
   }
-  art.water.lineStyle(2,0x8ad6d8,.8);
+  art.waterline.clear().lineStyle(2,0x8ad6d8,.8);
   for(const basin of world.waterBodies){
     const {left,right,y}=templeShoreBounds(basin,groundAt);
-    art.water.lineBetween(left,y,right,y);
+    art.waterline.lineBetween(left,y,right,y);
   }
   for(const deck of world.decks)
     deck.visual?.setPosition(...deck.position).setVisible(deck.enabled!==false);
