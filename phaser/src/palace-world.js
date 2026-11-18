@@ -59,7 +59,10 @@ export function stepPalaceWorld(spec,world,players,actions){
     }
   };
   for(const id of world.orbHits.splice(0)){
-    if(fireRelay(id))continue;
+    if(spec.circuitSwitches?.length){
+      fireRelay(id);
+      continue;
+    }
     const control=controls.find(item=>item.id===id);
     if(control&&!operated.has(id))activate(control);
   }
@@ -74,6 +77,9 @@ export function stepPalaceWorld(spec,world,players,actions){
       fireRelay(relay.id);
       continue;
     }
+    // In the redesigned Palace there are exactly three controls;
+    // hidden mirror/shutter detents are implementation details.
+    if(spec.circuitSwitches?.length)continue;
     const candidate=controls.map(control=>({
       ...control,distance:Math.hypot(
         player.x-control.controlAt[0]*TILE,
