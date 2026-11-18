@@ -274,7 +274,7 @@ test('final wheel walkway has no collision until its controller reaches the thre
   assert.equal(templeWorld.state.wheelActive,true);
   assert.equal(deck.enabled,true);
   player.x=197*16;player.y=41*16-6;player.grounded=false;
-  player.vy=5;player.onPlatform=null;
+  player.vy=6;player.onPlatform=null;
   step();
   assert.equal(player.onPlatform,deck.id);
   assert.equal(player.y,41*16);
