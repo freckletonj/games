@@ -6,7 +6,7 @@
 
 The candidate remains **outside the normal campaign**. To inspect the unfinished
 level with its authored terrain and plain mechanical blocks, build the Phaser
-HTML and open it with `?temple-preview#sunken-temple`. This intentionally
+HTML and open it with `#sunken-temple` (or `?temple-preview#sunken-temple`). This intentionally
 works without approved panorama or mechanism sprites. The art-free prototype
 uses the same water, gate, platform and player physics as the finished scene.
 

@@ -61,7 +61,8 @@ const TEMPLE_PREVIEW={
   signs:[],events:[]
 };
 const CHAPTERS=[...campaign(WW.chapters),
-  ...(new URLSearchParams(location.search).has('temple-preview')?
+  ...((location.hash==='#sunken-temple'||
+      new URLSearchParams(location.search).has('temple-preview'))?
     [TEMPLE_PREVIEW]:[])];
 const APPROVED_SCENE_ART=__SCENE_ASSETS__;
 const TILE=16;
