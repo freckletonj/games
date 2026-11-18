@@ -435,11 +435,11 @@
     {
       "id": "wheel-walkway",
       "home": [
-        173,
-        40
+        197,
+        41
       ],
       "size": [
-        144,
+        384,
         20
       ],
       "enabledWhen": "temple-wheel"
