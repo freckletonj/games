@@ -589,7 +589,13 @@ class Wonderwood extends Phaser.Scene {
     this.lookUp=this.level.cave?40:38;
     camera.setZoom(this.defaultZoom).setBounds(0,0,this.worldW,this.worldH);
     const [lead,partner]=this.players;
-    if(partner){
+    if(this.raceWorld){
+      camera.stopFollow();
+      const frame=raceCameraFrame(this.level.raceSpec,
+        this.raceWorld.state,this.players);
+      camera.setZoom(frame.zoom).centerOn(frame.x,frame.y);
+      if(partner?.assist)this.moveAssistPlayer(partner,STILL);
+    }else if(partner){
       camera.setRoundPixels(false).centerOn(partner.assist?lead.x:(lead.x+partner.x)/2,lead.y-this.lookUp);
       if(partner.assist)this.moveAssistPlayer(partner,STILL);
     }else{
@@ -1493,6 +1499,13 @@ class Wonderwood extends Phaser.Scene {
     p.invincible=1.5;p.health=3;
     p.visual.setPosition(p.x,p.y);
     this.flash('Back at the last safe camp',1300);
+  }
+
+  updateRaceCamera(){
+    const camera=this.cameras.main;
+    const frame=raceCameraFrame(this.level.raceSpec,
+      this.raceWorld.state,this.players);
+    camera.setZoom(frame.zoom).centerOn(frame.x,frame.y);
   }
 
   updatePartyCamera(){
