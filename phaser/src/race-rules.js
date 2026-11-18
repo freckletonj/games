@@ -19,6 +19,10 @@ export function raceHazardPose(hazard,tick){
   const phase=2*Math.PI*((tick+phaseTicks)%periodTicks)/periodTicks;
   if(axis==='x')pose.x+=amplitude*Math.sin(phase);
   if(axis==='y')pose.y+=amplitude*Math.sin(phase);
+  // Rocks descend steadily, briefly disappear into the cloud bank and
+  // restart overhead; their world-space collider follows the same pose.
+  if(axis==='fall')pose.y+=amplitude*(
+    ((tick+phaseTicks)%periodTicks)/periodTicks-.5);
   if(axis==='rotation')pose.rotation=phase;
   return pose;
 }
