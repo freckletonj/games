@@ -63,35 +63,11 @@
     ],
     [
       213,
-      59
+      71
     ],
     [
-      239,
-      59
-    ],
-    [
-      246,
-      63
-    ],
-    [
-      266,
-      63
-    ],
-    [
-      273,
-      56
-    ],
-    [
-      302,
-      56
-    ],
-    [
-      308,
-      63
-    ],
-    [
-      335,
-      63
+      339,
+      71
     ],
     [
       341,
@@ -134,26 +110,6 @@
     [
       204,
       47,
-      12
-    ],
-    [
-      239,
-      48,
-      12
-    ],
-    [
-      267,
-      41,
-      14
-    ],
-    [
-      299,
-      43,
-      12
-    ],
-    [
-      330,
-      42,
       12
     ]
   ],
@@ -249,7 +205,7 @@
       "id": "groundScroll",
       "from": 512,
       "to": 2944,
-      "speed": 2.8,
+      "speed": 2.45,
       "next": "sanctuaryStop"
     },
     {
@@ -327,10 +283,10 @@
         56
       ],
       "size": [
-        36,
-        20
+        28,
+        12
       ],
-      "warningDistance": 120
+      "warningDistance": 195
     },
     {
       "id": "bridge-gap",
@@ -341,10 +297,10 @@
         57
       ],
       "size": [
-        72,
-        30
+        44,
+        22
       ],
-      "warningDistance": 160
+      "warningDistance": 235
     },
     {
       "id": "boulder-run",
@@ -355,8 +311,8 @@
         52
       ],
       "size": [
-        48,
-        48
+        32,
+        32
       ],
       "motion": {
         "axis": "x",
@@ -364,7 +320,7 @@
         "periodTicks": 180,
         "phaseTicks": 80
       },
-      "warningDistance": 200
+      "warningDistance": 275
     },
     {
       "id": "branch-swing",
@@ -375,8 +331,8 @@
         43
       ],
       "size": [
-        24,
-        80
+        18,
+        52
       ],
       "motion": {
         "axis": "x",
@@ -384,7 +340,7 @@
         "periodTicks": 210,
         "phaseTicks": 44
       },
-      "warningDistance": 210
+      "warningDistance": 285
     },
     {
       "id": "crossing-cart",
@@ -395,8 +351,8 @@
         52
       ],
       "size": [
-        36,
-        32
+        28,
+        20
       ],
       "motion": {
         "axis": "x",
@@ -404,7 +360,7 @@
         "periodTicks": 240,
         "phaseTicks": 0
       },
-      "warningDistance": 230
+      "warningDistance": 305
     },
     {
       "id": "high-arch",
@@ -559,5 +515,10 @@
     "ahead": 240,
     "verticalPadding": 100
   },
-  "goalPolicy": "contact-only"
+  "goalPolicy": "contact-only",
+  "flightVoid": {
+    "from": 213,
+    "to": 340,
+    "fallY": 66
+  }
 }
