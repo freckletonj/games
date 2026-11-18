@@ -3,14 +3,17 @@ import {createRaceState,raceHazardPose,stepRace} from './race-rules.js';
 const SCROLLING=new Set(['groundScroll','flightScroll']);
 
 export function createRaceWorld(spec){
-  return {state:createRaceState(spec),hazards:[]};
+  return {state:createRaceState(spec),hazards:[],offscreenTicks:0};
 }
 
 export function raceRiderLeftBehind(spec,state,players){
   if(!SCROLLING.has(state.phase))return false;
+  const frame=raceCameraFrame(spec,state,players);
+  const leftEdge=frame.x-960/(2*frame.zoom);
+  const grace=48;
   return players.some(player=>!player.assist&&
     (player.sleep||player.bubble||player.clouded||
-      !player.mount||player.mount.x<state.anchor-spec.camera.behind));
+      !player.mount||player.mount.x<leftEdge-grace));
 }
 
 // The progress anchor runs independently of Phaser's camera and rendered
@@ -45,7 +48,11 @@ export function raceHazardContact(hazard,mount){
 
 export function stepRaceWorld(spec,world,players,{paused=false,failed=false,recall=false}={}){
   const previous=world.state.phase;
-  const leftBehind=raceRiderLeftBehind(spec,world.state,players);
+  const offscreen=raceRiderLeftBehind(spec,world.state,players);
+  // The rescue zone is beyond the visible left edge, not the abstract
+  // progress anchor. Let a rider recover from a momentary camera straggle.
+  if(!paused)world.offscreenTicks=offscreen?world.offscreenTicks+1:0;
+  const leftBehind=world.offscreenTicks>=40;
   // No ground shortcut through the storm canyon. Falling below the
   // authored cloudline restarts both humans at their Pegasus sanctuary.
   const voidArea=spec.flightVoid;
@@ -56,6 +63,7 @@ export function stepRaceWorld(spec,world,players,{paused=false,failed=false,reca
   world.state=stepRace(spec,world.state,players,{
     paused,failed:failed||leftBehind||fell,recall
   });
+  if(world.state.restarted)world.offscreenTicks=0;
   if(!paused&&!world.state.restarted)constrainRaceRiders(spec,world.state,players);
   const scrolling=SCROLLING.has(world.state.phase);
   world.hazards=scrolling?spec.hazards.filter(h=>h.stage===world.state.phase)
