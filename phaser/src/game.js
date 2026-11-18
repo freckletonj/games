@@ -2201,6 +2201,12 @@ class Wonderwood extends Phaser.Scene {
       lead.x<1410?'Hold ↑ to grab a rope · P2 uses 8':'Find the key on the canopy shelf.';
     const leadHint=this.palaceWorld?
       'G / X · Shoot the big colored lamp. Follow its line to the matching bridge and door.':
+      this.raceWorld?.state.phase==='waitingForUnicorns'?
+      'Give a Unicorn two berry treats (F), then press T to ride. Both riders must mount.':
+      this.raceWorld?.state.phase==='waitingForPegasi'?
+      'Choose stars (E), give a Pegasus two treats (F), and press T to fly.':
+      this.raceWorld?.state.phase==='groundScroll'?
+      'Jump to the highlighted upper platforms, or gallop below and time the obstacles.':
       this.raceWorld?.state.phase==='flightScroll'?
       'Pegasus · Tap Jump to flap. The canyon has no floor; stay airborne!':
       lead.clouded?'P1 · Steer with the stick or direction keys · Jump to break free':
