@@ -147,7 +147,7 @@ function runPalaceRoute(humans,operateMirrors){
     const material=level.materialColumn(x)(y);
     return material==='rock'||material==='shelf';
   };
-  const touched=new Set(),activations=new Map();
+  const touched=new Set();
   const relic=level.objects.find(item=>item.kind==='springKey');
   const exit=level.objects.find(item=>item.kind==='exit');
   const center=item=>[(item.x+.5)*16,(item.y+.5)*16-12];
@@ -155,30 +155,21 @@ function runPalaceRoute(humans,operateMirrors){
   let light=false,finished=false;
   for(let tick=0;tick<2900;tick++){
     const actions=players.map(player=>{
-      let upPressed=false;
       if(operateMirrors&&player.id===0){
-        const candidates=[...palace.mirrors,
-          palace.shutters.find(shutter=>shutter.id==='eclipse-shutter')];
-        const closest=candidates.map(control=>({
-          control,distance:Math.hypot(
-            player.x-control.controlAt[0]*16,
-            player.y-control.controlAt[1]*16)
-        })).filter(item=>item.distance<30)
-          .sort((a,b)=>a.distance-b.distance)[0];
-        if(closest){
-          const id=closest.control.id,required=id==='observatory-prism'?2:1;
-          const count=activations.get(id)??0;
-          if(count<required&&tick%3===0){
-            activations.set(id,count+1);
-            upPressed=true;
-            touched.add(id);
-          }
+        const relay=palace.circuitSwitches.find(relay=>!touched.has(relay.id)&&
+          Math.hypot(player.x-relay.at[0]*16,
+            player.y-relay.at[1]*16)<38);
+        if(relay){
+          // The world receives the same named orb hit as the live Phaser
+          // projectile collision, then advances ordinary player movement.
+          palaceWorld.orbHits.push(relay.id);
+          touched.add(relay.id);
         }
       }
       const jumpForRelic=!light&&player.x>rx-90&&
         player.x<rx-50&&player.grounded;
       const jump=tick%18===0||jumpForRelic;
-      return {...controls,right:true,upPressed,jump,jumpPressed:jump};
+      return {...controls,right:true,jump,jumpPressed:jump};
     });
     step(actions);
     if(players.some(player=>Math.abs(player.x-rx)<19&&
@@ -201,14 +192,13 @@ test('closed optical gates prevent bypassing every unsolved puzzle',()=>{
   assert.ok(Object.values(route.palaceWorld.state.gates).every(open=>!open));
 });
 
-test('normal input solves all three beams and physically reaches light and exit',()=>{
+test('three single-hit room relays open the real path to the Light and exit',()=>{
   const result=runPalaceRoute(1,true);
   assert.ok(result.finished,'The solo explorer must physically reach the exit');
   assert.ok(result.light,'The floating Palace Light must be touched');
   assert.ok(Object.values(result.palaceWorld.state.gates).every(Boolean));
   assert.deepEqual(result.activated,
-    ['atrium-mirror','gallery-mirror-a','gallery-mirror-b',
-      'observatory-prism','eclipse-shutter']);
+    ['blue-relay','pink-relay','gold-relay']);
   assert.ok(result.tick<2000);
   assert.equal(runPalaceRoute(1,true).tick,result.tick,
     'Replaying the same 60 Hz input sequence produces the exact arrival tick');
