@@ -2214,7 +2214,7 @@ class Wonderwood extends Phaser.Scene {
       this.raceWorld?.state.phase==='groundScroll'?
       'Jump to the highlighted upper platforms, or gallop below and time the obstacles.':
       this.raceWorld?.state.phase==='flightScroll'?
-      'Pegasus · Tap Jump to flap. The canyon has no floor; stay airborne!':
+      'Pegasus · Flap between thunderclouds above and storm clouds below; dodge falling rocks!':
       lead.clouded?'P1 · Steer with the stick or direction keys · Jump to break free':
       lead.sleep?'R / LB · revive at camp':
       this.isCavern?cavernHint(this.puzzleObjects,lead,this.animals,this.shared.relic):
