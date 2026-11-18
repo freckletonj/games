@@ -7,7 +7,13 @@ const HAZARD_NAMES={
  'crossing-cart':'CART','high-arch':'HIGH ARCH',
  'low-tunnel':'LOW TUNNEL','cloud-shutter':'SHUTTER',
  'rotating-fan':'FAN','falling-crystal':'CRYSTAL',
- 'crossing-flyer':'FLYER'
+ 'crossing-flyer':'FLYER',
+ 'first-hanging-rock':'HANGING ROCK · DIVE',
+ 'falling-boulder-one':'FALLING BOULDER',
+ 'thunder-gate':'STORM WALL · FLY LOW',
+ 'falling-boulder-two':'FALLING BOULDER',
+ 'low-rock-shelf':'CLOUD ROCK · CLIMB',
+ 'last-hanging-rock':'ROCK OVERHANG'
 };
 
 export function createRaceScene(scene,spec){
@@ -33,6 +39,28 @@ export function createRaceScene(scene,spec){
 export function drawRaceScene(art,spec,world,players){
   const g=art.graphics;
   g.clear();
+  const voidArea=spec.flightVoid;
+  if(voidArea&&(world.state.phase==='flightScroll'||
+      world.state.phase==='waitingForPegasi')){
+    const left=voidArea.from*TILE,width=(voidArea.to-voidArea.from)*TILE;
+    const ceiling=voidArea.ceilingY*TILE,clouds=voidArea.fallY*TILE;
+    // World-space cloud banks: the visible edges ARE the fail thresholds.
+    g.fillStyle(0x35294b,.42).fillRect(left,0,width,ceiling);
+    g.fillStyle(0x4d2e54,.40)
+      .fillRect(left,clouds,width,spec.height*TILE-clouds);
+    g.lineStyle(5,0xffa16a,.95);
+    for(let x=left;x<left+width;x+=42){
+      g.lineBetween(x,clouds,x+25,clouds);
+      g.lineBetween(x,ceiling,x+25,ceiling);
+    }
+    for(let x=left;x<left+width;x+=90){
+      const wave=7*Math.sin(world.state.tick*.025+x*.04);
+      g.fillStyle(0xe19c9b,.26).fillCircle(x,clouds+18+wave,42);
+      g.fillStyle(0xb67f9a,.38).fillCircle(x+38,clouds+39-wave,55);
+      g.fillStyle(0xa1a0d5,.30).fillCircle(x,ceiling-20-wave,39);
+      g.fillStyle(0xd5b6e8,.33).fillCircle(x+36,ceiling-34+wave,47);
+    }
+  }
   const groundPhase=world.state.phase==='groundScroll';
   if(groundPhase||world.state.phase==='waitingForUnicorns'){
     // Clearly mark the alternate high path even when V debugging is off.
@@ -45,14 +73,36 @@ export function drawRaceScene(art,spec,world,players){
   }
   for(const hazard of world.hazards){
     const [w,h]=hazard.size;
-    g.fillStyle(0xd95764,.27).fillRect(hazard.x-w/2,hazard.y-h/2,w,h);
-    g.lineStyle(3,0xffa18a,.95).strokeRect(hazard.x-w/2,hazard.y-h/2,w,h);
+    if(['falling-boulder','storm-shelf','storm-gate'].includes(hazard.kind)){
+      g.fillStyle(hazard.kind==='falling-boulder'?0x9a6d65:0x524c68,.97);
+      g.fillRoundedRect(hazard.x-w/2,hazard.y-h/2,w,h,8);
+      g.lineStyle(4,0xffb88b,.96)
+        .strokeRoundedRect(hazard.x-w/2,hazard.y-h/2,w,h,8);
+      g.lineStyle(2,0xd3bbcc,.68);
+      g.lineBetween(hazard.x-w*.25,hazard.y-h*.12,
+        hazard.x+w*.05,hazard.y+h*.13);
+      g.lineBetween(hazard.x+w*.05,hazard.y+h*.13,
+        hazard.x+w*.25,hazard.y-h*.04);
+    }else{
+      g.fillStyle(0xd95764,.27).fillRect(hazard.x-w/2,hazard.y-h/2,w,h);
+      g.lineStyle(3,0xffa18a,.95)
+        .strokeRect(hazard.x-w/2,hazard.y-h/2,w,h);
+    }
     const warnX=hazard.x-Math.min(130,hazard.warningDistance*.5);
     const warnY=hazard.y-h/2-14;
     g.fillStyle(0x472d31,.86).fillRoundedRect(warnX-8,warnY-23,24,24,6);
     g.lineStyle(2,0xffcf91,.95).strokeRoundedRect(warnX-8,warnY-23,24,24,6);
     g.lineStyle(3,0xffd591).lineBetween(warnX+4,warnY-17,warnX+4,warnY-9);
     g.fillStyle(0xffd591).fillCircle(warnX+4,warnY-4,2);
+  }
+  if(voidArea&&(world.state.phase==='flightScroll'||
+      world.state.phase==='waitingForPegasi')){
+    g.lineStyle(3,0xffb890,.95);
+    for(let x=voidArea.from*TILE+50;x<voidArea.to*TILE;x+=390){
+      g.lineBetween(x,voidArea.fallY*TILE-42,x,voidArea.fallY*TILE-11);
+      g.lineBetween(x-9,voidArea.fallY*TILE-23,x,voidArea.fallY*TILE-11);
+      g.lineBetween(x+9,voidArea.fallY*TILE-23,x,voidArea.fallY*TILE-11);
+    }
   }
   art.signs.forEach((sign,index)=>{
     const choice=spec.routeChoices[index];
