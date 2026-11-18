@@ -35,7 +35,7 @@ export function stepMountedMotion(m,actions,step,world){
   let launch=null;
   if(actions.jumpPressed){
     if(m.grounded){
-      m.vy=settings.jump;m.grounded=false;m.flaps=1;m.flapWait=8;
+      m.vy=settings.jump*(world.jumpScale??1);m.grounded=false;m.flaps=1;m.flapWait=8;
       launch='takeoff';
     }else if(settings.kind==='flight'&&m.flapWait===0){
       m.vy=Math.min(m.vy,-5.4);m.flapWait=8;m.flaps++;
