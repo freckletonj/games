@@ -50,6 +50,14 @@ export function validateFutureChapter(spec){
     }
   }
   if(spec.lightSources){
+    for(const control of [...spec.mirrors,...spec.shutters]){
+      if(!Array.isArray(control.controlAt)||
+         control.controlAt.length!==2||
+         control.controlAt.some((n,i)=>!Number.isFinite(n)||
+           n<0||n>=(i===0?spec.width:spec.height))||
+         !(control.reach>0))
+        fail('invalid reachable optical control '+control.id);
+    }
     for(const m of spec.mirrors){
       if(!m.angles.includes(m.initial)||m.angles.some(a=>!Number.isFinite(a)))
         fail('invalid mirror detents');
