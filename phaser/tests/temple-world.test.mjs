@@ -269,7 +269,7 @@ test('two explorers share one valve detent and one physical crate push per tick'
   players[0].y=crate.y+11;
   players[1].y=crate.y+11;
   stepTempleWorld(temple,world,players,[
-    {right:true},{right:true}
+    {right:true,left:false},{right:true,left:false}
   ]);
   assert.ok(Math.abs(crate.x-before-1.8)<.001,
     'Two simultaneous players may not push the same crate twice');
