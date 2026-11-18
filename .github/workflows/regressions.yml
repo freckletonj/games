@@ -1,12 +1,7 @@
 name: Wonderwood regressions
 
+# CI is intentionally run on demand, not on commits or pull requests.
 on:
-  push:
-    branches:
-      - main
-      - design/storybook-remaster
-      - feature/intentional-gameplay
-  pull_request:
   workflow_dispatch:
 
 jobs:
