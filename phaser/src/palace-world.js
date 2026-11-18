@@ -22,6 +22,26 @@ export function stepPalaceWorld(spec,world,players,actions){
   const operated=new Set();
   const controls=[...spec.mirrors.map(m=>({...m,kind:'mirror'})),
     ...spec.shutters.map(s=>({...s,kind:'shutter'}))];
+  // One large relay per room powers the full visible circuit. It cannot
+  // accidentally turn an already solved bridge off.
+  const fireRelay=id=>{
+    const relay=spec.circuitSwitches?.find(item=>item.id===id);
+    if(!relay)return false;
+    if(id==='blue-relay')
+      state=setMirrorDetent(spec,state,'atrium-mirror',-45);
+    if(id==='pink-relay'){
+      state=setMirrorDetent(spec,state,'gallery-mirror-a',-45);
+      state=setMirrorDetent(spec,state,'gallery-mirror-b',-45);
+      state=setPalaceShutter(spec,state,'gallery-shutter','open');
+    }
+    if(id==='gold-relay'){
+      state=setMirrorDetent(spec,state,'observatory-prism',-45);
+      state=setPalaceShutter(spec,state,'eclipse-shutter','open');
+    }
+    operated.add(id);
+    return true;
+  };
+  // Individual mirror detents remain available for testing and Up input.
   // Projectile contact and Up use the same finite detents. Hits are
   // consumed once, so an orb cannot turn a switch repeatedly.
   const activate=control=>{
@@ -39,6 +59,7 @@ export function stepPalaceWorld(spec,world,players,actions){
     }
   };
   for(const id of world.orbHits.splice(0)){
+    if(fireRelay(id))continue;
     const control=controls.find(item=>item.id===id);
     if(control&&!operated.has(id))activate(control);
   }
@@ -46,6 +67,13 @@ export function stepPalaceWorld(spec,world,players,actions){
   for(const player of players){
     if(player.assist||player.sleep||player.bubble||player.clouded||
        !actions[player.id]?.upPressed)continue;
+    const relay=(spec.circuitSwitches??[]).find(control=>
+      Math.hypot(player.x-control.at[0]*TILE,
+        player.y-control.at[1]*TILE)<=40);
+    if(relay){
+      fireRelay(relay.id);
+      continue;
+    }
     const candidate=controls.map(control=>({
       ...control,distance:Math.hypot(
         player.x-control.controlAt[0]*TILE,
