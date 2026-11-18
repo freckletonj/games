@@ -58,11 +58,12 @@ export function stepPlayerMotion(p,actions,step,world){
     const swimmer=p.form==='tideling'&&inWater;
     const canFlap=FLAPPING_FORMS.has(p.form);
     p.floatTime=(p.floatTime??0)+step;
-    const basin=world.waterBodies?.find(b=>
-      p.x>=b.start*world.tile&&p.x<=b.end*world.tile);
+    const basin=world.basinAt?
+      world.basinAt(p.x):world.waterBodies?.find(b=>
+        p.x>=b.start*world.tile&&p.x<=b.end*world.tile);
     const waterline=basin?basin.surface*world.tile:null;
     const floating=p.form!=='tideling'&&basin&&
-      p.y>=waterline+9&&(inWater||p.floating&&world.inWater(p.x,waterline+1));
+      p.y>=waterline+5&&(inWater||p.floating&&world.inWater(p.x,waterline+1));
     p.floating=Boolean(floating);
     let floatJump=false;
     const direction=Number(actions.right)-Number(actions.left);
