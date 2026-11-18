@@ -64,7 +64,8 @@ export function stepRaceWorld(spec,world,players,{paused=false,failed=false,reca
   const fell=world.state.phase==='flightScroll'&&voidArea&&players.some(p=>
     !p.assist&&p.mount?.kind==='pegasus'&&
     p.mount.x>=voidArea.from*16&&p.mount.x<voidArea.to*16&&
-    p.mount.y>=voidArea.fallY*16);
+    (p.mount.y>=voidArea.fallY*16||
+      p.mount.y<=voidArea.ceilingY*16));
   world.state=stepRace(spec,world.state,players,{
     paused,failed:failed||leftBehind||fell,recall
   });
