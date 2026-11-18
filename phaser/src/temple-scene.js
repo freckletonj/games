@@ -1,4 +1,5 @@
 // Runtime water and independent painted mechanism cutouts for the Temple.
+import {templeShoreBounds} from './temple-shoreline.js';
 // The mask follows the exact dynamic volume height and compiled ground, not
 // any waterline inferred from a static background painting.
 const TILE=16;
@@ -6,11 +7,11 @@ const TILE=16;
 export function templeWaterColumns(world,groundAt,pitch=8){
   const strips=[];
   for(const basin of world.waterBodies){
-    const top=basin.surface*TILE;
-    for(let x=basin.start*TILE;x<basin.end*TILE;x+=pitch){
-      const width=Math.min(pitch,basin.end*TILE-x);
+    const {left,right,y}=templeShoreBounds(basin,groundAt);
+    for(let x=left;x<right;x+=pitch){
+      const width=Math.min(pitch,right-x);
       const bottom=groundAt(x+width/2);
-      if(bottom>top)strips.push({x,y:top,width,height:bottom-top});
+      if(bottom>y)strips.push({x,y,width,height:bottom-y});
     }
   }
   return strips;
@@ -53,9 +54,10 @@ export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
   for(const strip of strips)
     art.water.fillRect(strip.x,strip.y,strip.width,strip.height);
   art.water.lineStyle(2,0x8ad6d8,.8);
-  for(const basin of world.waterBodies)
-    art.water.lineBetween(basin.start*TILE,basin.surface*TILE,
-      basin.end*TILE,basin.surface*TILE);
+  for(const basin of world.waterBodies){
+    const {left,right,y}=templeShoreBounds(basin,groundAt);
+    art.water.lineBetween(left,y,right,y);
+  }
   for(const deck of world.decks)
     deck.visual?.setPosition(...deck.position).setVisible(deck.enabled!==false);
   for(const crate of world.crates)
@@ -73,9 +75,10 @@ export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
     for(const strip of strips)
       art.debug.fillRect(strip.x,strip.y,strip.width,strip.height);
     art.debug.lineStyle(2,0x5bf5e8,.95);
-    for(const basin of world.waterBodies)
-      art.debug.lineBetween(basin.start*TILE,basin.surface*TILE,
-        basin.end*TILE,basin.surface*TILE);
+    for(const basin of world.waterBodies){
+      const {left,right,y}=templeShoreBounds(basin,groundAt);
+      art.debug.lineBetween(left,y,right,y);
+    }
     art.debug.lineStyle(2,0xffd28d,.96);
     for(const deck of world.decks){
       if(deck.enabled===false)continue;
