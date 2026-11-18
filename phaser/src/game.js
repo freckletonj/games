@@ -851,7 +851,8 @@ class Wonderwood extends Phaser.Scene {
       width:this.worldW,height:this.worldH,tile:TILE,
       groundAt:x=>this.groundAt(x),
       platformSegments:this.level.platformSegments,
-      ceilingAt:this.level.cave?x=>this.level.cave.ceilingAt(x):null
+      ceilingAt:this.level.cave?x=>this.level.cave.ceilingAt(x):null,
+      flightVolumes:this.level.raceSpec?.flightVolumes??[]
     });
     if(launch)m.action='';
     if(launch==='takeoff')this.sparkle(m.x,m.y-35,0xffecce);
