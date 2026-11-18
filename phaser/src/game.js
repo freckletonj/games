@@ -36,7 +36,7 @@ import {makeGeometryOverlay,paintScene,sceneTextures} from './painted-scene.js';
 import {deckTopAt,platformPosition,stepPlatforms} from './moving-platforms.js';
 import {machinePlatforms,stepMachines} from './machines.js';
 import {createPuzzleObjects,pushPuzzleObject,blockPuzzleX,puzzleTop,punchWall,
-  stepPuzzleObjects,puzzleHint,cavernHint,cavernPuzzlesComplete} from './puzzle-objects.js';
+  stepPuzzleObjects,puzzleHint,cavernHint} from './puzzle-objects.js';
 import sealAtlas from '../assets/generated/stonewake-hollow/seal-fragments.webp';
 import sealPlan from '../levels/stonewake-seal.json' with {type:'json'};
 import {bodyHitsRock,rockContains,sweepRockBody} from './cave-solids.js';
@@ -1820,7 +1820,6 @@ class Wonderwood extends Phaser.Scene {
         item.visual.setFrame(3);
         if(item.halo)item.halo.setStrokeStyle(1.4,0x9de9bb,.68);
       }else if(item.kind===this.chapter.key){
-        if(this.isCavern&&!cavernPuzzlesComplete(this.puzzleObjects))continue;
         item.used=true;item.visual.destroy();item.halo?.destroy();
         this.shared.relic=true;
         this.items.find(exit=>exit.kind==='exit')?.visual.setFrame(1);
