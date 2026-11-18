@@ -44,6 +44,7 @@ import {surfaceGroundAt} from './surface-geometry.js';
 import {createTempleWorld,stepTempleWorld,templeInWater,
   templeBlockHorizontal,templeCurrent,snapshotTempleWorld,
   restoreTempleWorld} from './temple-world.js';
+import {createTempleScene,drawTempleScene} from './temple-scene.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
 const CHAPTERS=campaign(WW.chapters);
@@ -278,6 +279,7 @@ class Wonderwood extends Phaser.Scene {
     this.puzzleObjects=[];
     this.walkableMachines=[];
     this.templeWorld=null;
+    this.templeArt=null;
     this.templeCheckpoint=null;
     this.templeRecalling=false;
     this.deckOverlay=null;
@@ -545,6 +547,8 @@ class Wonderwood extends Phaser.Scene {
         .setOrigin(.5,1).setDisplaySize(...object.size).setDepth(-19);
     }
     if(this.walkableMachines.length||this.puzzleObjects.length)this.deckOverlay=this.add.graphics().setDepth(101);
+    this.templeArt=this.templeWorld?createTempleScene(this,this.level.templeSpec,
+      this.templeWorld,APPROVED_SCENE_ART[this.chapter.id]):null;
     this.windColumns=makeThermals(this,this.level.thermalVolumes,TILE);
     this.spawnObjects();
     this.spawnMounts();
@@ -2015,6 +2019,8 @@ class Wonderwood extends Phaser.Scene {
       }
     }
     if(this.stage<0)return;
+    if(this.templeArt)drawTempleScene(this.templeArt,this.level.templeSpec,
+      this.templeWorld,x=>this.groundAt(x),this.geometryOverlay.visible);
     if(this.deckOverlay){
       this.deckOverlay.clear();
       if(this.geometryOverlay.visible){
