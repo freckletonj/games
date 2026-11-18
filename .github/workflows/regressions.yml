@@ -1,8 +1,12 @@
 name: Wonderwood regressions
 
-# CI is intentionally run on demand, not on commits or pull requests.
+# Run on demand via the Actions UI or by explicitly updating ci-trigger.txt.
+# Ordinary source commits and pull-request updates do not start CI.
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - .github/ci-trigger.txt
 
 jobs:
   browser:
