@@ -948,6 +948,14 @@ class Wonderwood extends Phaser.Scene {
     this.healthBars=[...document.querySelectorAll('#ww-health progress')];
     const notice=document.getElementById('ww-notice');
     const help=document.getElementById('ww-help');
+    // Palace captions live at the floor; keep instructions in the HUD,
+    // not across the switches that the player must shoot.
+    help.style.top=this.palaceWorld?'68px':'';
+    help.style.bottom=this.palaceWorld?'auto':'';
+    help.style.left=this.palaceWorld?'12px':'';
+    help.style.transform=this.palaceWorld?'none':'';
+    help.style.textAlign=this.palaceWorld?'left':'';
+    help.style.fontSize=this.palaceWorld?'12px':'';
     const pause=document.getElementById('ww-pause');
     pause.hidden=true;
     this.hud={setText:value=>{status.textContent=value;}};
@@ -2188,7 +2196,7 @@ class Wonderwood extends Phaser.Scene {
       'Up / Down · climb   ·   Tap ← / → low to swing higher   ·   Jump · let go':
       lead.x<1410?'Hold ↑ to grab a rope · P2 uses 8':'Find the key on the canopy shelf.';
     const leadHint=this.palaceWorld?
-      'G / X · Throw orbs at lettered switches. Matching bridges show SOLID or GHOST.':
+      'G / X · Hit lettered switches with orbs. Crystals need light; shadow decks need darkness.':
       this.raceWorld?.state.phase==='flightScroll'?
       'Pegasus · Tap Jump to flap. The canyon has no floor; stay airborne!':
       lead.clouded?'P1 · Steer with the stick or direction keys · Jump to break free':
