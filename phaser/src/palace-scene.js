@@ -7,18 +7,18 @@ const groups=[
 ];
 const controlNames={
  'atrium-mirror':'A · ATRIUM MIRROR',
- 'gallery-mirror-a':'B · GALLERY MIRROR 1',
- 'gallery-mirror-b':'C · GALLERY MIRROR 2',
- 'gallery-shutter':'D · GALLERY SHUTTER',
- 'observatory-prism':'E · ECLIPSE PRISM',
- 'eclipse-shutter':'F · ECLIPSE SHUTTER'
+ 'gallery-mirror-a':'B · MIRROR 1',
+ 'gallery-mirror-b':'C · MIRROR 2',
+ 'gallery-shutter':'D · SHUTTER',
+ 'observatory-prism':'E · PRISM',
+ 'eclipse-shutter':'F · SHUTTER'
 };
 const platformNames={
  'atrium-crystal':'ATRIUM BRIDGE',
  'gallery-crystal':'GALLERY BRIDGE',
- 'gallery-darkstone':'SHADOW LANDING',
+ 'gallery-darkstone':'SHADOW-ONLY LANDING',
  'eclipse-stair-low':'LIT STAIR',
- 'eclipse-stair-high':'SHADOW STAIR'
+ 'eclipse-stair-high':'SHADOW-ONLY STAIR'
 };
 const groupFor=id=>groups.find(g=>g.controls.includes(id)||g.target===id);
 const hex=color=>'#'+color.toString(16).padStart(6,'0');
