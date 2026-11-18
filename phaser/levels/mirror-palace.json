@@ -1,0 +1,423 @@
+{
+  "version": 1,
+  "id": "mirror-palace",
+  "biome": "summit",
+  "width": 228,
+  "height": 64,
+  "ridge": [
+    [
+      0,
+      46
+    ],
+    [
+      40,
+      46
+    ],
+    [
+      44,
+      55
+    ],
+    [
+      72,
+      55
+    ],
+    [
+      76,
+      43
+    ],
+    [
+      88,
+      43
+    ],
+    [
+      92,
+      55
+    ],
+    [
+      130,
+      55
+    ],
+    [
+      134,
+      42
+    ],
+    [
+      145,
+      42
+    ],
+    [
+      150,
+      55
+    ],
+    [
+      190,
+      55
+    ],
+    [
+      194,
+      37
+    ],
+    [
+      228,
+      37
+    ]
+  ],
+  "terrainFeatures": [],
+  "water": [],
+  "bridges": [],
+  "ledges": [
+    [
+      35,
+      41,
+      10
+    ],
+    [
+      69,
+      40,
+      10
+    ],
+    [
+      85,
+      39,
+      10
+    ],
+    [
+      124,
+      39,
+      11
+    ],
+    [
+      141,
+      38,
+      10
+    ],
+    [
+      185,
+      35,
+      11
+    ],
+    [
+      199,
+      34,
+      12
+    ]
+  ],
+  "creatures": [
+    [
+      "glimmermoth",
+      18
+    ]
+  ],
+  "checkpoints": [
+    76,
+    136,
+    195
+  ],
+  "snacks": [
+    14,
+    83,
+    144
+  ],
+  "stars": [
+    [
+      62,
+      49
+    ],
+    [
+      120,
+      51
+    ],
+    [
+      171,
+      49
+    ]
+  ],
+  "relic": [
+    "springKey",
+    219,
+    35
+  ],
+  "landmarks": [],
+  "sections": [
+    {
+      "id": "single-beam-atrium",
+      "range": [
+        0,
+        76
+      ],
+      "challenge": "mirror-detent",
+      "goal": "Turn one mirror to light the first crystal bridge",
+      "recovery": 76
+    },
+    {
+      "id": "shadow-gallery",
+      "range": [
+        76,
+        145
+      ],
+      "challenge": "shutter-and-two-mirrors",
+      "goal": "Steer a beam through two redirects and land on the darkstone crossing",
+      "recovery": 136
+    },
+    {
+      "id": "eclipse-observatory",
+      "range": [
+        145,
+        228
+      ],
+      "challenge": "eclipse-and-prism",
+      "goal": "Arrange lit and shaded platforms, then collect the Palace Light",
+      "recovery": 195
+    }
+  ],
+  "lightSources": [
+    {
+      "id": "atrium-sun",
+      "at": [
+        16,
+        30
+      ],
+      "direction": 0,
+      "range": 60,
+      "enabled": true
+    },
+    {
+      "id": "gallery-lantern",
+      "at": [
+        82,
+        28
+      ],
+      "direction": 0,
+      "range": 75,
+      "enabled": true
+    },
+    {
+      "id": "eclipse-sun",
+      "at": [
+        157,
+        25
+      ],
+      "direction": 0,
+      "range": 65,
+      "enabled": true
+    }
+  ],
+  "mirrors": [
+    {
+      "id": "atrium-mirror",
+      "at": [
+        54,
+        30
+      ],
+      "angles": [
+        -45,
+        45
+      ],
+      "initial": 45,
+      "reach": 38
+    },
+    {
+      "id": "gallery-mirror-a",
+      "at": [
+        93,
+        28
+      ],
+      "angles": [
+        -45,
+        45
+      ],
+      "initial": 45,
+      "reach": 38
+    },
+    {
+      "id": "gallery-mirror-b",
+      "at": [
+        93,
+        16
+      ],
+      "angles": [
+        -45,
+        45
+      ],
+      "initial": 45,
+      "reach": 38
+    },
+    {
+      "id": "observatory-prism",
+      "at": [
+        180,
+        25
+      ],
+      "angles": [
+        -45,
+        0,
+        45
+      ],
+      "initial": 0,
+      "reach": 40
+    }
+  ],
+  "shutters": [
+    {
+      "id": "gallery-shutter",
+      "from": [
+        108,
+        12
+      ],
+      "to": [
+        108,
+        36
+      ],
+      "initial": "open",
+      "states": [
+        "open",
+        "closed"
+      ],
+      "reach": 40
+    },
+    {
+      "id": "eclipse-shutter",
+      "from": [
+        187,
+        13
+      ],
+      "to": [
+        187,
+        31
+      ],
+      "initial": "closed",
+      "states": [
+        "open",
+        "closed"
+      ],
+      "reach": 40
+    }
+  ],
+  "occluders": [
+    {
+      "id": "eclipse-disc",
+      "center": [
+        169,
+        25
+      ],
+      "radius": 5,
+      "orbit": [
+        169,
+        25
+      ],
+      "orbitRadius": 6,
+      "periodTicks": 600,
+      "phaseTicks": 0
+    }
+  ],
+  "beamTargets": [
+    {
+      "id": "atrium-target",
+      "at": [
+        54,
+        18
+      ],
+      "radius": 2,
+      "source": "atrium-sun"
+    },
+    {
+      "id": "gallery-target",
+      "at": [
+        123,
+        16
+      ],
+      "radius": 2,
+      "source": "gallery-lantern"
+    },
+    {
+      "id": "observatory-target",
+      "at": [
+        180,
+        12
+      ],
+      "radius": 3,
+      "source": "eclipse-sun"
+    }
+  ],
+  "phasePlatforms": [
+    {
+      "id": "atrium-crystal",
+      "home": [
+        61,
+        41
+      ],
+      "size": [
+        176,
+        20
+      ],
+      "rule": "lit",
+      "target": "atrium-target",
+      "previewTicks": 24
+    },
+    {
+      "id": "gallery-crystal",
+      "home": [
+        108,
+        39
+      ],
+      "size": [
+        176,
+        20
+      ],
+      "rule": "lit",
+      "target": "gallery-target",
+      "previewTicks": 24
+    },
+    {
+      "id": "gallery-darkstone",
+      "home": [
+        125,
+        39
+      ],
+      "size": [
+        112,
+        20
+      ],
+      "rule": "shadow",
+      "target": "gallery-target",
+      "previewTicks": 24
+    },
+    {
+      "id": "eclipse-stair-low",
+      "home": [
+        160,
+        37
+      ],
+      "size": [
+        96,
+        20
+      ],
+      "rule": "lit",
+      "target": "observatory-target",
+      "previewTicks": 30
+    },
+    {
+      "id": "eclipse-stair-high",
+      "home": [
+        176,
+        33
+      ],
+      "size": [
+        96,
+        20
+      ],
+      "rule": "shadow",
+      "target": "observatory-target",
+      "previewTicks": 30
+    }
+  ],
+  "opticalRules": {
+    "maxBounces": 6,
+    "rayWidth": 2,
+    "hitTolerance": 4,
+    "rayUpdate": "before-collision",
+    "riderGraceTicks": 30
+  },
+  "goalPolicy": "contact-only",
+  "resetPolicy": "mirror-detents-and-occluder-phase"
+}
