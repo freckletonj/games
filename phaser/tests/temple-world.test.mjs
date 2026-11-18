@@ -260,3 +260,22 @@ test('co-op simultaneous input changes each valve only one detent per tick',()=>
   ]);
   assert.equal(world.state.modes['sluice-valve'],'fill');
 });
+
+test('final wheel walkway has no collision until its controller reaches the threshold',()=>{
+  const {player,templeWorld,step}=simulation(explorer(197*16,41*16-6));
+  const deck=templeWorld.decks.find(deck=>deck.id==='wheel-walkway');
+  assert.equal(deck.enabled,false);
+  player.grounded=false;player.coyote=0;player.vy=5;
+  step();
+  assert.notEqual(player.onPlatform,deck.id);
+  templeWorld.state=setTempleValve(temple,templeWorld.state,
+    'cascade-handle','fill');
+  for(let i=0;i<410;i++)step();
+  assert.equal(templeWorld.state.wheelActive,true);
+  assert.equal(deck.enabled,true);
+  player.x=197*16;player.y=41*16-6;player.grounded=false;
+  player.vy=5;player.onPlatform=null;
+  step();
+  assert.equal(player.onPlatform,deck.id);
+  assert.equal(player.y,41*16);
+});
