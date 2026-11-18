@@ -11,7 +11,8 @@ const scope={};scope.window=scope;vm.createContext(scope);
 vm.runInContext(readFileSync(new URL('../../src/platform/world-compiler.js',
   import.meta.url),'utf8'),scope);
 const level=scope.WW.worldCompiler.compile(race);
-const groundAt=x=>surfaceGroundAt(level,x);
+const groundAt=x=>x>=race.flightVoid.from*16&&x<race.flightVoid.to*16?
+  level.height*16+256:surfaceGroundAt(level,x);
 const physics={width:level.width*16,height:level.height*16,tile:16,
   groundAt,platformSegments:level.platformSegments,
   flightVolumes:race.flightVolumes};
@@ -38,16 +39,24 @@ function flightRoute(humanCount){
   stepRaceWorld(race,state,players);
   assert.equal(state.state.phase,'flightScroll');
   const touched=new Set();
-  let entered=false;
-  for(let tick=0;tick<1000;tick++){
+  let entered=false,airborneTicks=0;
+  for(let tick=0;tick<1200;tick++){
     for(const player of players){
       const mount=player.mount;
-      const flying=mount.x>210*16;
+      const flying=mount.x>209*16;
+      const goalHeight=mount.x>334*16?relicY+34:785;
+      // Cruise safely between the high/low hazards, then ascend to the
+      // real Light. A grounded Pegasus never crosses the void corridor.
       const jumpPressed=flying&&(mount.grounded||
-        mount.flapWait===0&&mount.y>820&&mount.vy>=0);
-      const down=flying&&mount.y<785;
+        mount.flapWait===0&&mount.y>goalHeight+6&&mount.vy>=0);
+      const down=flying&&mount.y<goalHeight-25;
       const {action}=stepMountedMotion(mount,{right:true,left:false,
         down,jumpPressed,jump:jumpPressed},1,physics);
+      if(mount.x>race.flightVoid.from*16&&
+        mount.x<race.flightVoid.to*16){
+        if(mount.grounded)return {status:'grounded',tick,players,state,touched,entered};
+        airborneTicks++;
+      }
       const seat=seatFor('pegasus',mount.grounded?action:'jump');
       player.x=mount.x+seat.x*mount.face;
       player.y=mount.y+seat.y;
@@ -61,10 +70,10 @@ function flightRoute(humanCount){
     if(touched.size&&players.some(player=>
       Math.abs(player.x-exitX)<28&&Math.abs(player.y-exitY)<26))
       entered=true;
-    if(state.state.phase==='finished')
-      return {status:'finished',tick,players,state,touched,entered};
+    if(state.state.phase==='finished'&&touched.size===humanCount&&entered)
+      return {status:'finished',tick,players,state,touched,entered,airborneTicks};
   }
-  return {status:'timeout',players,state,touched,entered};
+  return {status:'timeout',players,state,touched,entered,airborneTicks};
 }
 
 test('solo Pegasus safely flies all authored storm hazards to the physical exit',()=>{
@@ -74,6 +83,7 @@ test('solo Pegasus safely flies all authored storm hazards to the physical exit'
   assert.deepEqual([...route.touched],[0],
     'The rider must touch the actual Light pickup, not just reach an X threshold');
   assert.ok(route.entered,'The rider must reach the compiled exit after the Light');
+  assert.ok(route.airborneTicks>100,'A flight route must stay airborne over the void');
   assert.ok(route.tick<1000);
   assert.equal(flightRoute(1).tick,route.tick);
 });
