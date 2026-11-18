@@ -37,7 +37,8 @@ export function validateFutureChapter(spec){
     for(const v of spec.valves)needs('waterControllers',v.controller);
     for(const b of spec.buoyantObjects)needs('waterVolumes',b.volume);
     for(const p of spec.pressurePlates){needs('buoyantObjects',p.requires);needs('gates',p.opens)}
-    for(const g of spec.gates)needs('pressurePlates',g.opensWhen);
+    for(const g of spec.gates)if(g.opensWhen!==spec.waterwheel.id)
+      needs('pressurePlates',g.opensWhen);
     for(const c of spec.currents)needs('waterVolumes',c.volume);
     needs('waterControllers',spec.waterwheel.upstream);
   }
