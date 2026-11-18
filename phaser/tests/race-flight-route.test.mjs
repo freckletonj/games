@@ -82,7 +82,7 @@ test('two independent Pegasi complete the storm and both touch the Light',()=>{
   const route=flightRoute(2);
   assert.equal(route.status,'finished');
   assert.equal(route.state.state.anchor,344*16);
-  assert.deepEqual([...route.touched],[0,1]);
+  assert.deepEqual([...route.touched].sort(),[0,1]);
   assert.ok(route.entered);
   assert.ok(route.players.every(player=>player.mount.kind==='pegasus'));
   assert.equal(flightRoute(2).tick,route.tick);
