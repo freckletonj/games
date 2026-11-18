@@ -595,7 +595,7 @@ class Wonderwood extends Phaser.Scene {
     });
     const camera=this.cameras.main;
     // Frame local switches, rays and their associated platforms together.
-    this.defaultZoom=this.palaceWorld?0.78:
+    this.defaultZoom=this.palaceWorld?1.35:
       this.level.cave?(this.chapter.id==='skywell-ascent'?1.4:1.25):2;
     this.lookUp=this.level.cave?40:38;
     camera.setZoom(this.defaultZoom).setBounds(0,0,this.worldW,this.worldH);
@@ -608,7 +608,7 @@ class Wonderwood extends Phaser.Scene {
       if(partner?.assist)this.moveAssistPlayer(partner,STILL);
     }else if(this.palaceWorld){
       camera.stopFollow();
-      camera.centerOn(lead.x+300,lead.y-326);
+      camera.centerOn(lead.x+155,lead.y-135);
     }else if(partner){
       camera.setRoundPixels(false).centerOn(partner.assist?lead.x:(lead.x+partner.x)/2,lead.y-this.lookUp);
       if(partner.assist)this.moveAssistPlayer(partner,STILL);
@@ -1580,9 +1580,13 @@ class Wonderwood extends Phaser.Scene {
   updatePalaceCamera(){
     const human=this.players.filter(p=>!p.assist&&!p.bubble);
     if(!human.length)return;
-    const x=human.reduce((sum,p)=>sum+p.x,0)/human.length+300;
-    const y=human.reduce((sum,p)=>sum+p.y,0)/human.length-326;
-    this.cameras.main.setZoom(this.defaultZoom).centerOn(x,y);
+    const centerX=human.reduce((sum,p)=>sum+p.x,0)/human.length;
+    const centerY=human.reduce((sum,p)=>sum+p.y,0)/human.length;
+    const spread=human.length>1?
+      Math.max(...human.map(p=>p.x))-Math.min(...human.map(p=>p.x)):0;
+    const zoom=Math.min(this.defaultZoom,960/(spread+290));
+    this.cameras.main.setZoom(Math.max(.95,zoom))
+      .centerOn(centerX+(human.length===1?155:90),centerY-135);
   }
 
   updatePartyCamera(){
