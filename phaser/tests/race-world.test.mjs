@@ -314,3 +314,16 @@ test('both upper route entries are reachable with an ordinary Unicorn jump',()=>
     assert.ok((ground[1]-y)*16<112,'Route entry platform is too high');
   }
 });
+
+
+test('mount-selection corral never recalls unmounted players',()=>{
+  const player={id:0,x:166,y:880,mount:null,assist:false,
+    sleep:false,bubble:null,clouded:null};
+  const world=createRaceWorld(race);
+  for(let tick=0;tick<180;tick++){
+    const result=stepRaceWorld(race,world,[player]);
+    assert.equal(result.restarted,false);
+    assert.equal(result.state.phase,'waitingForUnicorns');
+    assert.equal(world.offscreenTicks,0);
+  }
+});
