@@ -116,6 +116,7 @@ export function stepTempleWorld(spec,world,players,actions){
       crate.x=clamp(crate.x+move*1.8,
         volume.from*TILE+crate.size[0]/2,
         volume.to*TILE-crate.size[0]/2);
+      break; // One physical crate displacement per tick, even with two pushers.
     }
   }
   world.state=state;
