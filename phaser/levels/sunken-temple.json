@@ -374,14 +374,14 @@
       "kind": "raft",
       "volume": "wheel-tail",
       "home": [
-        198,
+        197,
         54
       ],
       "size": [
         96,
         20
       ],
-      "floatOffset": -16
+      "floatOffset": -32
     }
   ],
   "pressurePlates": [
@@ -463,7 +463,7 @@
     {
       "id": "wheel-bridge-b",
       "home": [
-        210,
+        209,
         39
       ],
       "size": [
@@ -502,8 +502,8 @@
     },
     {
       "id": "tail-dock-lip",
-      "left": 202.5,
-      "right": 203,
+      "left": 202,
+      "right": 202.5,
       "top": 39,
       "bottom": 57
     }

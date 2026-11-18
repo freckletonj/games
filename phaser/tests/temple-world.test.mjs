@@ -178,7 +178,7 @@ test('two intentional jumps bridge A → downstream raft → bridge B',()=>{
     if(player.onPlatform==='tail-raft'){aboard=true;break;}
   }
   assert.ok(aboard,'Bridge A to raft '+JSON.stringify(firstTrace));
-  for(let i=0;i<50&&player.x<200.5*16;i++)step({right:true});
+  for(let i=0;i<55&&player.x<199.85*16;i++)step({right:true});
   assert.equal(player.onPlatform,'tail-raft');
   let second=false;
   for(let i=0;i<130;i++){
@@ -200,7 +200,7 @@ test('without the middle raft, bridge A cannot be jumped directly to bridge B',(
     const jump=i%55<25;
     step({right:true,jump,jumpPressed:i%55===0});
   }
-  assert.ok(player.x<204*16,'No-raft final '+JSON.stringify({
+  assert.ok(player.x<203*16,'No-raft final +JSON.stringify({
     x:player.x,y:player.y,platform:player.onPlatform,
     ground:groundAt(player.x),water:templeWorld.state.surfaces['wheel-tail']}));
 });
