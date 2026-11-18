@@ -6,7 +6,8 @@ import palace from '../levels/mirror-palace.json' with {type:'json'};
 import {stepPlayerMotion} from '../src/player-motion.js';
 import {surfaceGroundAt} from '../src/surface-geometry.js';
 import {createPalaceWorld,stepPalaceWorld,restorePalaceWorld} from '../src/palace-world.js';
-import {tracePalaceBeams,setMirrorDetent} from '../src/palace-rules.js';
+import {tracePalaceBeams,setMirrorDetent,
+  createPalaceState} from '../src/palace-rules.js';
 import {deckTopAt} from '../src/moving-platforms.js';
 
 const scope={};scope.window=scope;vm.createContext(scope);
@@ -111,4 +112,23 @@ test('checkpoint reset restores finite mirror states and platform collision',()=
   assert.equal(palaceWorld.decks.find(d=>d.id==='atrium-crystal').enabled,false);
   step([{upPressed:true}]);
   assert.equal(palaceWorld.state.mirrors['atrium-mirror'],-45);
+});
+
+test('rock from the compiled material classifier blocks a beam before its target',()=>{
+  const initial=createPalaceState(palace);
+  const turned=setMirrorDetent(palace,initial,'atrium-mirror',-45);
+  const unobstructed=tracePalaceBeams(palace,turned);
+  assert.ok(unobstructed.lit.includes('atrium-target'));
+  const physical=createPalaceWorld(palace,level);
+  assert.equal(physical.solidAt(4*16,50*16),true);
+  assert.equal(physical.solidAt(4*16,25*16),false);
+  assert.ok(tracePalaceBeams(palace,turned,{solidAt:physical.solidAt})
+    .lit.includes('atrium-target'));
+  const artificialRock=(x,y)=>physical.solidAt(x,y)||
+    (x>=31*16&&x<=32*16&&y>25*16&&y<33*16);
+  const blocked=tracePalaceBeams(palace,turned,{solidAt:artificialRock});
+  assert.ok(!blocked.lit.includes('atrium-target'));
+  const segment=blocked.segments.find(segment=>segment.source==='atrium-sun');
+  assert.equal(segment.hit,null);
+  assert.ok(Math.abs(segment.to[0]-31*16)<.01);
 });
