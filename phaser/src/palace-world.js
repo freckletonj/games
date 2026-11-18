@@ -1,0 +1,66 @@
+import {createPalaceState,setMirrorDetent,setPalaceShutter,
+  stepPalace} from './palace-rules.js';
+
+const TILE=16;
+
+export function createPalaceWorld(spec){
+  const state=createPalaceState(spec);
+  const decks=spec.phasePlatforms.map(platform=>{
+    const position=platform.home.map(cell=>cell*TILE);
+    return {...platform,kind:'phase',position,previous:position,
+      enabled:state.platforms[platform.id].solid};
+  });
+  return {state,decks};
+}
+
+export function stepPalaceWorld(spec,world,players,actions){
+  let state=world.state;
+  const operated=new Set();
+  const controls=[...spec.mirrors.map(m=>({...m,kind:'mirror'})),
+    ...spec.shutters.map(s=>({...s,kind:'shutter'}))];
+  // A persistent mirror detent or shutter does not require a second
+  // explorer to hold a switch while the first crosses.
+  for(const player of players){
+    if(player.assist||player.sleep||player.bubble||player.clouded||
+       !actions[player.id]?.upPressed)continue;
+    const candidate=controls.map(control=>({
+      ...control,distance:Math.hypot(
+        player.x-control.controlAt[0]*TILE,
+        player.y-control.controlAt[1]*TILE)}))
+      .filter(control=>control.distance<=control.reach&&
+        !operated.has(control.id))
+      .sort((a,b)=>a.distance-b.distance)[0];
+    if(!candidate)continue;
+    operated.add(candidate.id);
+    if(candidate.kind==='mirror'){
+      const detents=candidate.angles;
+      const current=state.mirrors[candidate.id];
+      const next=detents[(detents.indexOf(current)+1)%detents.length];
+      state=setMirrorDetent(spec,state,candidate.id,next);
+    }else{
+      const positions=candidate.states;
+      const current=state.shutters[candidate.id];
+      const next=positions[(positions.indexOf(current)+1)%positions.length];
+      state=setPalaceShutter(spec,state,candidate.id,next);
+    }
+  }
+  const occupied=spec.phasePlatforms.filter(platform=>{
+    const [x,y]=platform.home.map(n=>n*TILE);
+    return players.some(player=>!player.assist&&!player.sleep&&
+      !player.bubble&&!player.clouded&&
+      (player.onPlatform===platform.id||
+        Math.abs(player.x-x)<=platform.size[0]/2+9&&
+        player.y>y&&player.y-27<y+platform.size[1]));
+  }).map(platform=>platform.id);
+  state=stepPalace(spec,state,{occupiedPlatformIds:occupied});
+  world.state=state;
+  for(const deck of world.decks)
+    deck.enabled=state.platforms[deck.id].solid;
+  return world;
+}
+
+export function restorePalaceWorld(world,state){
+  world.state=state;
+  for(const deck of world.decks)deck.enabled=state.platforms[deck.id].solid;
+  return world;
+}
