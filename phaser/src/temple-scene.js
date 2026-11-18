@@ -65,8 +65,15 @@ export function createTempleScene(scene,spec,world,approved){
 export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
   const strips=templeWaterColumns(world,groundAt);
   art.water.clear().fillStyle(0x2a9ab4,.54);
-  for(const strip of strips)
-    art.water.fillRect(strip.x,strip.y,strip.width,strip.height);
+  // Fill one continuous, terrain-shaped polygon per basin. Discrete
+  // rectangles leave visible slivers at the bank even if physics is wet.
+  for(const basin of world.waterBodies){
+    const {left,right,y}=templeShoreBounds(basin,groundAt);
+    art.water.beginPath().moveTo(left,y).lineTo(right,y);
+    for(let x=right;x>left;x-=4)
+      art.water.lineTo(x,Math.max(y,groundAt(x)));
+    art.water.lineTo(left,y).closePath().fillPath();
+  }
   art.water.lineStyle(2,0x8ad6d8,.8);
   for(const basin of world.waterBodies){
     const {left,right,y}=templeShoreBounds(basin,groundAt);
