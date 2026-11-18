@@ -46,8 +46,15 @@ export function raceHazardContact(hazard,mount){
 export function stepRaceWorld(spec,world,players,{paused=false,failed=false,recall=false}={}){
   const previous=world.state.phase;
   const leftBehind=raceRiderLeftBehind(spec,world.state,players);
+  // No ground shortcut through the storm canyon. Falling below the
+  // authored cloudline restarts both humans at their Pegasus sanctuary.
+  const voidArea=spec.flightVoid;
+  const fell=world.state.phase==='flightScroll'&&voidArea&&players.some(p=>
+    !p.assist&&p.mount?.kind==='pegasus'&&
+    p.mount.x>=voidArea.from*16&&p.mount.x<voidArea.to*16&&
+    p.mount.y>=voidArea.fallY*16);
   world.state=stepRace(spec,world.state,players,{
-    paused,failed:failed||leftBehind,recall
+    paused,failed:failed||leftBehind||fell,recall
   });
   if(!paused&&!world.state.restarted)constrainRaceRiders(spec,world.state,players);
   const scrolling=SCROLLING.has(world.state.phase);
