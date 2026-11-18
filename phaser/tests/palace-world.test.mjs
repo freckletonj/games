@@ -220,7 +220,8 @@ test('the closed Eclipse shutter prevents prism-gate bypass until used',()=>{
   for(let tick=0;tick<620;tick++)step([controls]);
   assert.equal(palaceWorld.state.gates['observatory-light-gate'],false,
     'An eclipse opening must not ignore the authored blocking shutter');
-  step([{upPressed:true}]);
+  palaceWorld.orbHits.push('gold-relay');
+  step([controls]);
   assert.equal(palaceWorld.state.shutters['eclipse-shutter'],'open');
   for(let tick=0;tick<620&&
     !palaceWorld.state.gates['observatory-light-gate'];tick++)step([controls]);
@@ -229,18 +230,19 @@ test('the closed Eclipse shutter prevents prism-gate bypass until used',()=>{
 });
 
 
-test('capture-orb hit cycles a named switch exactly once, without an Up press',()=>{
+test('a room orb relay permanently illuminates its matching bridge',()=>{
   const x=36*16,player=explorer(0,x,groundAt(x));
   const {palaceWorld,step}=simulation([player]);
-  palaceWorld.orbHits.push('atrium-mirror','atrium-mirror');
+  palaceWorld.orbHits.push('blue-relay','blue-relay');
   step([controls]);
   assert.equal(palaceWorld.state.mirrors['atrium-mirror'],-45);
   assert.deepEqual(palaceWorld.orbHits,[]);
   for(let tick=0;tick<25;tick++)step([controls]);
   assert.equal(palaceWorld.decks.find(d=>d.id==='atrium-crystal').enabled,true);
-  palaceWorld.orbHits.push('atrium-mirror');
+  palaceWorld.orbHits.push('blue-relay');
   step([controls]);
-  assert.equal(palaceWorld.state.mirrors['atrium-mirror'],45);
+  assert.equal(palaceWorld.state.mirrors['atrium-mirror'],-45);
+  assert.equal(palaceWorld.decks.find(d=>d.id==='atrium-crystal').enabled,true);
 });
 
 test('orb-activated Eclipse shutter participates in the physical beam gate',()=>{
@@ -249,16 +251,17 @@ test('orb-activated Eclipse shutter participates in the physical beam gate',()=>
   palaceWorld.state=setMirrorDetent(palace,palaceWorld.state,'observatory-prism',-45);
   for(let tick=0;tick<65;tick++)step([controls]);
   assert.equal(palaceWorld.state.gates['observatory-light-gate'],false);
-  palaceWorld.orbHits.push('eclipse-shutter');
+  palaceWorld.orbHits.push('gold-relay');
   for(let tick=0;tick<150;tick++)step([controls]);
   assert.equal(palaceWorld.state.shutters['eclipse-shutter'],'open');
   assert.equal(palaceWorld.state.gates['observatory-light-gate'],true);
 });
 
 
-test('every orb switch is above the walkway and within a thrown orb reach',()=>{
-  for(const control of [...palace.mirrors,...palace.shutters]){
-    const x=control.controlAt[0]*16,y=control.controlAt[1]*16;
+test('the three visible orb relays are reachable from their walkways',()=>{
+  assert.equal(palace.circuitSwitches.length,3);
+  for(const control of palace.circuitSwitches){
+    const x=control.at[0]*16,y=control.at[1]*16;
     const launchY=groundAt(x)-17;
     assert.ok(Math.abs(launchY-y)<=34,
       control.id+' must be reachable from the playable walkway with an orb');
