@@ -42,7 +42,8 @@ import sealPlan from '../levels/stonewake-seal.json' with {type:'json'};
 import {bodyHitsRock,rockContains,sweepRockBody} from './cave-solids.js';
 import {surfaceGroundAt} from './surface-geometry.js';
 import {createTempleWorld,stepTempleWorld,templeInWater,
-  templeBlockHorizontal,templeCurrent} from './temple-world.js';
+  templeBlockHorizontal,templeCurrent,snapshotTempleWorld,
+  restoreTempleWorld} from './temple-world.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
 const CHAPTERS=campaign(WW.chapters);
@@ -277,6 +278,8 @@ class Wonderwood extends Phaser.Scene {
     this.puzzleObjects=[];
     this.walkableMachines=[];
     this.templeWorld=null;
+    this.templeCheckpoint=null;
+    this.templeRecalling=false;
     this.deckOverlay=null;
     this.lastInput=[{},{}];
     this.pendingActions=[{},{}];
@@ -503,7 +506,10 @@ class Wonderwood extends Phaser.Scene {
     this.level=compileChapter(this.chapter,WW.worldCompiler);
     this.templeWorld=this.level.templeSpec?
       createTempleWorld(this.level.templeSpec):null;
-    if(this.templeWorld)this.level.waterBodies=this.templeWorld.waterBodies;
+    if(this.templeWorld){
+      this.level.waterBodies=this.templeWorld.waterBodies;
+      this.templeCheckpoint=snapshotTempleWorld(this.templeWorld);
+    }
     this.worldW=this.level.width*TILE;
     this.worldH=this.level.height*TILE;
     this.shared={relic:!this.level.objects.some(o=>o.kind===this.chapter.key),shards:0,collected:new Set(),checkpoint:null,
@@ -1438,6 +1444,14 @@ class Wonderwood extends Phaser.Scene {
   }
 
   recall(p){
+    if(this.templeWorld&&!this.templeRecalling){
+      this.templeRecalling=true;
+      restoreTempleWorld(this.level.templeSpec,this.templeWorld,
+        this.templeCheckpoint);
+      for(const explorer of this.players)this.recall(explorer);
+      this.templeRecalling=false;
+      return;
+    }
     p.onPlatform=null;p.launchSpeed=0;p.floatTime=0;p.floating=false;
     p.rope=null;p.ropeLock=0;
     if(p.mount)this.dismount(p);
@@ -1833,6 +1847,8 @@ class Wonderwood extends Phaser.Scene {
       }else if(item.kind==='checkpoint'){
         item.used=true;
         this.shared.checkpoint={x:item.x,y:item.y};
+        if(this.templeWorld)this.templeCheckpoint=
+          snapshotTempleWorld(this.templeWorld);
         for(const explorer of this.players){
           explorer.checkpoint={...this.shared.checkpoint};
           if(!explorer.sleep)explorer.health=3;
