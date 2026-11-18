@@ -44,7 +44,21 @@ export function createTempleScene(scene,spec,world,approved){
   objects[wheel.id]=scene.add.image(wheel.at[0]*TILE,wheel.at[1]*TILE,
     texture(wheel.id)).setDisplaySize(wheel.radius*2,wheel.radius*2)
     .setDepth(-17);
+  const guide=scene.add.graphics().setDepth(-16);
+  const wheelLabel=scene.add.text(
+    wheel.at[0]*TILE,wheel.at[1]*TILE-wheel.radius-24,
+    'WATERWHEEL · FILL CASCADE VALVE',{
+      fontFamily:'system-ui',fontSize:'12px',fontStyle:'bold',
+      color:'#fff4c1',backgroundColor:'#153746d9',padding:{x:7,y:5}
+    }).setOrigin(.5,1).setDepth(39);
+  const bridge=spec.linkedPlatforms[0];
+  const bridgeLabel=scene.add.text(bridge.home[0]*TILE,
+    bridge.home[1]*TILE-36,'BRIDGE OFF · ACTIVATE WATERWHEEL',{
+      fontFamily:'system-ui',fontSize:'12px',fontStyle:'bold',
+      color:'#ffe3a1',backgroundColor:'#293a4bdd',padding:{x:6,y:5}
+    }).setOrigin(.5,1).setDepth(39);
   return {water:scene.add.graphics().setDepth(-29),
+    guide,labels:{wheelLabel,bridgeLabel},
     debug:scene.add.graphics().setDepth(102),objects};
 }
 
@@ -69,6 +83,26 @@ export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
   for(const gate of spec.gates)
     art.objects[gate.id].setVisible(!world.state.gates[gate.id]);
   art.objects[spec.waterwheel.id].setRotation(world.state.wheelAngle);
+  // The wheel turns an actual gate/bridge but is not itself a blocking
+  // collider. Open spokes and a mechanism label distinguish it from a wall.
+  const wheel=spec.waterwheel,wx=wheel.at[0]*TILE,wy=wheel.at[1]*TILE;
+  const active=world.state.wheelActive;
+  art.guide.clear();
+  art.guide.lineStyle(4,active?0xffda79:0xa5dae2,.9)
+    .strokeCircle(wx,wy,wheel.radius);
+  for(let index=0;index<8;index++){
+    const angle=world.state.wheelAngle+index*Math.PI/4;
+    art.guide.lineStyle(4,active?0xffda79:0xa5dae2,.75)
+      .lineBetween(wx,wy,wx+Math.cos(angle)*wheel.radius,
+        wy+Math.sin(angle)*wheel.radius);
+  }
+  art.guide.fillStyle(0x173e4a,.8).fillCircle(wx,wy,10);
+  art.labels.wheelLabel.setText(active?
+    'WATERWHEEL TURNING · BRIDGE POWERED':
+    'WATERWHEEL · FILL CASCADE VALVE');
+  art.labels.bridgeLabel.setText(active?
+    'BRIDGE ON · WALK ACROSS':
+    'BRIDGE OFF · ACTIVATE WATERWHEEL');
   art.debug.clear();
   if(showOverlay){
     art.debug.fillStyle(0x20c0ec,.36);
