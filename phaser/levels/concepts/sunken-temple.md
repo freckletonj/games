@@ -2,6 +2,48 @@
 
 **Status (Nov 17, 2026): geometry-route proven, not release-ready.** The unregistered [level spec](../sunken-temple.json), [fixed-tick rules](../../src/temple-rules.js), [production world adapter](../../src/temple-world.js), [runtime water/art adapter](../../src/temple-scene.js), [validator](../../src/future-chapter-validation.js), and [motion-level tests](../../tests/temple-world.test.mjs) exist. Production-rule **solo and two-explorer** simulations reach the Light and exit. This is **not** an end-to-end in-browser route or approved painting.
 
+## Playable graybox puzzle iteration (PR #19)
+
+The candidate remains **outside the normal campaign**. To inspect the unfinished
+level with its authored terrain and plain mechanical blocks, build the Phaser
+HTML and open it with `?temple-preview#sunken-temple`. This intentionally
+works without approved panorama or mechanism sprites. The art-free prototype
+uses the same water, gate, platform and player physics as the finished scene.
+
+The route is no longer an unbroken rightward run:
+
+1. **Courtyard:** at low tide, enter the first basin and jump onto the raft;
+   ride it to high tide, then jump to the dock. The waterline alone is too
+   low for a normal explorer to reach that dock. The first Stardrop is an
+   optional low-water exploration reward.
+2. **Sluice:** operate the upstream fill handle. A stone weir blocks the
+   crate while the water is low. Push the crate over the weir while flooded.
+   Move from the water to the sluice raft, then to the upper drain handle;
+   select Hold, then Drain. Only the crate's **bottom** settling onto the
+   floor socket latches the closed arch gate open.
+3. **Temple heart:** fill the head reservoir, take its raft to the wheel
+   station, and operate the separate release. Only released water can
+   charge the wheel. After the visible delay, the mechanism latches the
+   physical bridge and exit gate while the downstream basin continues
+   filling.
+4. **Final crossing:** bridge A ends before bridge B begins. From bridge A,
+   jump to the high downstream raft, then jump to bridge B. The raft supplies
+   a real intermediate landing, not just a visual ornament.
+
+Every critical gate extends above ordinary or Tidefox jumps. Success
+latches completed gates and bridges instead of retracting occupied surfaces.
+Valve changes remain reversible; checkpoint snapshots retain the ratchets.
+The waterwheel and sluice mechanisms are independent of the rendered art.
+The pressure plate and weir use authored geometry, not proximity to a
+floating crate or a fake interaction flag.
+
+Dedicated tests in `tests/temple-world.test.mjs` cover each isolated input
+sequence, low-crate obstruction, raised-crate passage, drain/socket contact,
+latching, waterwheel release, the two raft jumps, and attempted raft-free
+crossings. The browser playthrough and balance/difficulty review remain
+separate acceptance gates; deterministic tests alone do not make the
+chapter release-ready.
+
 ## Player fantasy
 
 Explore a warm, overgrown stone temple where water is the principal moving mechanism. The same room is traversed differently when it is empty, partly flooded, and full. The level combines *rising and falling water*, *buoyant platforms*, *swimmable passages*, *valves and gates*, *currents*, and a final *waterwheel chain reaction*. The drama comes from understanding a physical system, not from demanding twitch-perfect inputs.
