@@ -1023,7 +1023,12 @@ class Wonderwood extends Phaser.Scene {
   }
 
   waterSplash(x){
-    const water=this.level.waterBodies.find(b=>x>=b.start*TILE&&x<=b.end*TILE);
+    // Temple flooding extends up sloping banks beyond the flat-floor cells.
+    // A splash outside an actual basin should not try to read its surface.
+    const water=this.templeWorld?
+      templeBasinAt(this.templeWorld,px=>this.groundAt(px),x):
+      this.level.waterBodies.find(b=>x>=b.start*TILE&&x<b.end*TILE);
+    if(!water)return;
     const y=water.surface*TILE;
     const ripple=this.add.ellipse(x,y,14,4).setStrokeStyle(1,0xc8faff,.8).setDepth(26);
     this.tweens.add({targets:ripple,scaleX:2.9,scaleY:1.7,alpha:0,
