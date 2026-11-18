@@ -46,6 +46,7 @@ import {createTempleWorld,stepTempleWorld,templeInWater,
   restoreTempleWorld} from './temple-world.js';
 import {createTempleScene,drawTempleScene} from './temple-scene.js';
 import {createPalaceWorld,stepPalaceWorld,restorePalaceWorld} from './palace-world.js';
+import {createRaceWorld,stepRaceWorld,raceCameraFrame} from './race-world.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
 const CHAPTERS=campaign(WW.chapters);
@@ -191,6 +192,8 @@ class Wonderwood extends Phaser.Scene {
           }))
         }:null,
         movingPlatforms:this.walkableMachines?.map(({id,position})=>({id,position}))||[],
+        race:this.raceWorld?{...this.raceWorld.state,
+          hazards:this.raceWorld.hazards.map(h=>({...h}))}:null,
         palace:this.palaceWorld?{tick:this.palaceWorld.state.tick,
           mirrors:{...this.palaceWorld.state.mirrors},
           shutters:{...this.palaceWorld.state.shutters},
@@ -286,6 +289,8 @@ class Wonderwood extends Phaser.Scene {
     this.templeWorld=null;
     this.palaceWorld=null;
     this.palaceCheckpoint=null;
+    this.raceWorld=null;
+    this.raceRecalling=false;
     this.templeArt=null;
     this.templeCheckpoint=null;
     this.templeRecalling=false;
@@ -518,6 +523,7 @@ class Wonderwood extends Phaser.Scene {
     this.palaceWorld=this.level.palaceSpec?
       createPalaceWorld(this.level.palaceSpec,this.level):null;
     if(this.palaceWorld)this.palaceCheckpoint=this.palaceWorld.state;
+    this.raceWorld=this.level.raceSpec?createRaceWorld(this.level.raceSpec):null;
     if(this.templeWorld){
       this.level.waterBodies=this.templeWorld.waterBodies;
       this.templeCheckpoint=snapshotTempleWorld(this.templeWorld);
@@ -759,7 +765,9 @@ class Wonderwood extends Phaser.Scene {
   }
 
   spawnMounts(){
-    for(const [kind,cell,ledgeHeight] of LOCATIONS[this.chapter.id]||[]){
+    const encounters=this.level.raceSpec?.mountEncounters.map(
+      mount=>[mount.kind,mount.at[0]])??LOCATIONS[this.chapter.id]??[];
+    for(const [kind,cell,ledgeHeight] of encounters){
       const {manifest}=mounts[kind];
       const x=(cell+.5)*TILE;
       const y=ledgeHeight!==undefined?ledgeHeight*TILE:this.groundAt(x);
