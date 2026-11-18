@@ -496,14 +496,14 @@
         "atrium-crystal"
       ],
       "gate": "atrium-light-gate",
-      "help": "Shoot the blue lamp. The bridge lights up."
+      "help": "Shoot the blue lamp to make the nearby bridge solid"
     },
     {
       "id": "pink-relay",
       "room": "2 · GALLERY",
       "at": [
-        82,
-        42
+        108,
+        54
       ],
       "color": "pink",
       "target": "gallery-target",
@@ -512,7 +512,7 @@
         "gallery-darkstone"
       ],
       "gate": "gallery-light-gate",
-      "help": "Shoot the pink lamp. Both stepping stones appear."
+      "help": "Shoot the pink lamp directly beside the Gallery bridge"
     },
     {
       "id": "gold-relay",
@@ -528,7 +528,7 @@
         "eclipse-stair-high"
       ],
       "gate": "observatory-light-gate",
-      "help": "Shoot the gold lamp. Climb the two stairs to the Light."
+      "help": "Shoot the gold lamp to bring back the final two stairs"
     }
   ]
 }
