@@ -1,6 +1,6 @@
 # Level concept: Unicorn Escape — Skybound Stampede
 
-**Status:** concept / implementation plan only. No auto-scroll implementation, level JSON, mount changes, or image assets are included in this PR.
+**Status:** implementation candidate. The unregistered [Skybound Stampede level spec](../skybound-stampede.json), [fixed-tick race/readiness rules](../../src/race-rules.js), [schema validation](../../src/future-chapter-validation.js), and [unit tests](../../tests/future-chapters.test.mjs) now exist. Phaser camera/mount integration, full-input solo/co-op routes, approved art, and campaign registration remain outstanding.
 
 ## Player fantasy and non-negotiable flow
 
