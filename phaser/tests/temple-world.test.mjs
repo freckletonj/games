@@ -348,3 +348,30 @@ test('sloping Temple shorelines are wet in both the rendered and physics model',
   assert.equal(player.floating,true,
     'Entering the wet bank must not remain ordinary dry-ground walking');
 });
+
+
+test('a fixed high-tide basin mask contains every possible waterline',()=>{
+  for(const volume of temple.waterVolumes){
+    const full=templeShoreBounds({
+      start:volume.from,end:volume.to,surface:volume.maxSurface
+    },groundAt);
+    for(let surface=volume.maxSurface;surface<=volume.minSurface;surface++){
+      const bounds=templeShoreBounds({
+        start:volume.from,end:volume.to,surface
+      },groundAt);
+      assert.ok(bounds.left>=full.left-.1,volume.id+' left bank escapes mask');
+      assert.ok(bounds.right<=full.right+.1,volume.id+' right bank escapes mask');
+      assert.ok(bounds.y>=full.y,volume.id+' water rises above its mask');
+    }
+  }
+});
+
+test('a water splash outside the flooded basins has no water surface',()=>{
+  const world=createTempleWorld(temple);
+  assert.equal(templeBasinAt(world,groundAt,12*16),null);
+  assert.equal(templeBasinAt(world,groundAt,223*16),null);
+  const courtyard=world.waterBodies.find(b=>b.id==='courtyard');
+  courtyard.surface=46;
+  const {left}=templeShoreBounds(courtyard,groundAt);
+  assert.equal(templeBasinAt(world,groundAt,left+15)?.id,'courtyard');
+});
