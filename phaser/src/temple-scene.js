@@ -23,6 +23,7 @@ export function createTempleScene(scene,spec,world,approved){
   if(missing.length)throw Error('Sunken Temple lacks approved alpha art: '+
     missing.join(', '));
   const texture=id=>'deck-'+scene.chapter.id+'-'+id;
+  const objects={};
   for(const deck of world.decks){
     deck.visual=scene.add.image(...deck.position,texture(deck.id))
       .setOrigin(.5,0).setDisplaySize(...deck.size).setDepth(-19);
@@ -31,19 +32,19 @@ export function createTempleScene(scene,spec,world,approved){
     crate.visual=scene.add.image(crate.x,crate.y,texture(crate.id))
       .setOrigin(.5,0).setDisplaySize(...crate.size).setDepth(-18);
   for(const valve of spec.valves){
-    valve.visual=scene.add.image(valve.at[0]*TILE,valve.at[1]*TILE,
+    objects[valve.id]=scene.add.image(valve.at[0]*TILE,valve.at[1]*TILE,
       texture(valve.id)).setDisplaySize(36,36).setDepth(-17);
   }
   for(const gate of spec.gates){
-    gate.visual=scene.add.image(gate.at[0]*TILE,gate.at[1]*TILE,
+    objects[gate.id]=scene.add.image(gate.at[0]*TILE,gate.at[1]*TILE,
       texture(gate.id)).setOrigin(.5,0).setDisplaySize(...gate.size).setDepth(-18);
   }
   const wheel=spec.waterwheel;
-  wheel.visual=scene.add.image(wheel.at[0]*TILE,wheel.at[1]*TILE,
+  objects[wheel.id]=scene.add.image(wheel.at[0]*TILE,wheel.at[1]*TILE,
     texture(wheel.id)).setDisplaySize(wheel.radius*2,wheel.radius*2)
     .setDepth(-17);
   return {water:scene.add.graphics().setDepth(-29),
-    debug:scene.add.graphics().setDepth(102)};
+    debug:scene.add.graphics().setDepth(102),objects};
 }
 
 export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
@@ -61,11 +62,11 @@ export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
     crate.visual?.setPosition(crate.x,crate.y);
   for(const valve of spec.valves){
     const angle={drain:-.5,hold:0,fill:.5}[world.state.modes[valve.controller]];
-    valve.visual?.setRotation(angle);
+    art.objects[valve.id].setRotation(angle);
   }
   for(const gate of spec.gates)
-    gate.visual?.setVisible(!world.state.gates[gate.id]);
-  spec.waterwheel.visual?.setRotation(world.state.wheelAngle);
+    art.objects[gate.id].setVisible(!world.state.gates[gate.id]);
+  art.objects[spec.waterwheel.id].setRotation(world.state.wheelAngle);
   art.debug.clear();
   if(showOverlay){
     art.debug.fillStyle(0x20c0ec,.36);
