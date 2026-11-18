@@ -1,5 +1,6 @@
 import {createTempleState,setTempleValve,stepTemple,
   buoyantPosition,templeCurrentAt} from './temple-rules.js';
+import {templeShoreBounds} from './temple-shoreline.js';
 
 const TILE=16;
 const clamp=(value,lo,hi)=>Math.max(lo,Math.min(hi,value));
@@ -52,9 +53,19 @@ export function restoreTempleWorld(spec,world,snapshot){
   return world;
 }
 
+// Use the same terrain-clipped wet extent for visuals, movement and buoyancy.
+// The authored start/end cells mark the flat basin floor, not its wet banks.
+export function templeBasinAt(world,groundAt,x){
+  for(const basin of world.waterBodies){
+    const {left,right}=templeShoreBounds(basin,groundAt);
+    if(x>=left&&x<right)return basin;
+  }
+  return null;
+}
+
 export function templeInWater(world,groundAt,x,y){
-  return world.waterBodies.some(volume=>x>=volume.start*TILE&&
-    x<volume.end*TILE&&y>=volume.surface*TILE&&y<groundAt(x));
+  const basin=templeBasinAt(world,groundAt,x);
+  return Boolean(basin&&y>=basin.surface*TILE&&y<groundAt(x));
 }
 
 export function templeGateBlock(spec,world,fromX,toX,feet){
