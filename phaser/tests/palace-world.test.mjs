@@ -79,7 +79,9 @@ test('a solid platform never materializes inside an occupied body',()=>{
   player.grounded=false;player.vy=0;player.coyote=0;
   palaceWorld.state=setMirrorDetent(palace,palaceWorld.state,
     'atrium-mirror',-45);
-  for(let i=0;i<60;i++)step([controls]);
+  // Keep the body in the geometric intersection while checking the
+  // solver; actual movement would normally let a falling explorer leave.
+  for(let i=0;i<60;i++)stepPalaceWorld(palace,palaceWorld,[player],[controls]);
   assert.equal(deck.enabled,false);
   player.x=36*16;player.y=groundAt(player.x);player.vy=0;player.grounded=true;
   step([controls]);
