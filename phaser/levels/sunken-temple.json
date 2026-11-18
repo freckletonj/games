@@ -395,6 +395,19 @@
       ],
       "default": "closed",
       "opensWhen": "sluice-plate"
+    },
+    {
+      "id": "wheel-gate",
+      "at": [
+        212,
+        39
+      ],
+      "size": [
+        16,
+        192
+      ],
+      "default": "closed",
+      "opensWhen": "temple-wheel"
     }
   ],
   "currents": [
