@@ -313,7 +313,7 @@ test('Temple water meets each sloping bank with no rectangular shoreline gap',()
     assert.ok(right>basin.end*16,'Water must reach the right slope');
     assert.ok(Math.abs(groundAt(left)-y)<1);
     assert.ok(Math.abs(groundAt(right)-y)<1);
-    assert.equal(templeInWater(world,groundAt,left+16,y+10),true);
+    assert.equal(templeInWater(world,groundAt,(basin.start+1)*16,y+10),true);
     assert.equal(templeInWater(world,groundAt,left-4,y+10),false);
     const strips=templeWaterColumns(world,groundAt,4);
     assert.ok(strips.some(strip=>strip.x<basin.start*16));
