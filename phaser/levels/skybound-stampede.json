@@ -555,8 +555,8 @@
     "cloudAssistCountsAsRider": false
   },
   "camera": {
-    "behind": 250,
-    "ahead": 200,
+    "behind": 320,
+    "ahead": 240,
     "verticalPadding": 100
   },
   "goalPolicy": "contact-only"
