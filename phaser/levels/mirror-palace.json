@@ -214,7 +214,11 @@
         45
       ],
       "initial": 45,
-      "reach": 38
+      "reach": 38,
+      "controlAt": [
+        36,
+        45
+      ]
     },
     {
       "id": "gallery-mirror-a",
@@ -227,7 +231,11 @@
         45
       ],
       "initial": 45,
-      "reach": 38
+      "reach": 38,
+      "controlAt": [
+        82,
+        42
+      ]
     },
     {
       "id": "gallery-mirror-b",
@@ -240,7 +248,11 @@
         45
       ],
       "initial": 45,
-      "reach": 38
+      "reach": 38,
+      "controlAt": [
+        88,
+        42
+      ]
     },
     {
       "id": "observatory-prism",
@@ -254,7 +266,11 @@
         45
       ],
       "initial": 0,
-      "reach": 40
+      "reach": 40,
+      "controlAt": [
+        172,
+        39
+      ]
     }
   ],
   "shutters": [
@@ -273,7 +289,11 @@
         "open",
         "closed"
       ],
-      "reach": 40
+      "reach": 40,
+      "controlAt": [
+        91,
+        40
+      ]
     },
     {
       "id": "eclipse-shutter",
@@ -290,7 +310,11 @@
         "open",
         "closed"
       ],
-      "reach": 40
+      "reach": 40,
+      "controlAt": [
+        179,
+        39
+      ]
     }
   ],
   "occluders": [
