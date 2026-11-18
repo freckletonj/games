@@ -6,14 +6,16 @@ import stonewake from '../levels/stonewake-hollow.json' with {type:'json'};
 import jungle from '../levels/monkey-jungle.json' with {type:'json'};
 import cavern from '../levels/cavern-ascent.json' with {type:'json'};
 import brassworks from '../levels/brassworks.json' with {type:'json'};
+import sunkenTemple from '../levels/sunken-temple.json' with {type:'json'};
 import {grottoChapter} from './cave-chapter.js';
 import {skywellChapter} from './skywell-chapter.js';
 import {caveLayout,compileCave,skywellLayout} from './cave-layout.js';
 import {validateEncounters} from './encounters.js';
 import {compileRockPolygons,rockContains} from './cave-solids.js';
 import {surfaceMaterialColumn} from './surface-geometry.js';
+import {validateFutureChapter} from './future-chapter-validation.js';
 
-export const surfaceDesigns={...designs,[meadow.id]:meadow,[orchard.id]:orchard,[brassworks.id]:brassworks,[stonewake.id]:stonewake,[jungle.id]:jungle};
+export const surfaceDesigns={...designs,[meadow.id]:meadow,[orchard.id]:orchard,[brassworks.id]:brassworks,[stonewake.id]:stonewake,[jungle.id]:jungle,[sunkenTemple.id]:sunkenTemple};
 const orchardChapter={
   id:orchard.id,biome:orchard.biome,name:'Clockwork Orchard',difficulty:'Ride',
   tagline:'Ride a harvest lift, a ravine ferry, and a wheel gondola to the roof garden.',
@@ -64,6 +66,7 @@ export function compileChapter(chapter,compiler){
   }
   const design=surfaceDesigns[chapter.id];
   if(chapter.id===meadow.id)validateEncounters(design);
+  if(chapter.id===sunkenTemple.id)validateFutureChapter(design);
   const level=compiler.compile(design,chapter);
   level.rockPolygons=compileRockPolygons(design.rockPolygons,level.width,level.height);
   level.materialColumn=x=>{
@@ -74,6 +77,7 @@ export function compileChapter(chapter,compiler){
   level.puzzleObjects=withSealFractures(design.puzzleObjects??[]);
   level.movingPlatforms=design.movingPlatforms??[];
   level.machines=design.machines??[];
+  level.templeSpec=design.waterVolumes?design:null;
   level.sceneFeatures=design.sceneFeatures??[];
   for(const [kind,x] of design.pickups??[])level.objects.push({kind,x});
   level.ropes=design.ropes??[];
