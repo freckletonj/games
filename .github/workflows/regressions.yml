@@ -81,3 +81,35 @@ jobs:
             dist/art-guides/*.svg
             dist/performance-report.json
           if-no-files-found: ignore
+
+  phaser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Phaser and browser test dependencies
+        run: |
+          npm install --prefix phaser --no-audit --no-fund
+          python -m pip install playwright pillow
+          python -m playwright install --with-deps chromium
+      - name: Test Phaser gameplay and cave geometry
+        run: npm test --prefix phaser
+      - name: Build standalone Phaser game
+        run: npm run build --prefix phaser
+      - name: Verify chapter selection and painting in Chromium
+        run: python phaser/tests/chapters.py
+      - name: Upload playable Phaser and Cavern Ascent preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cavern-ascent-phaser-preview
+          path: |
+            dist/wonderwood-phaser.html
+            dist/phaser-chapter-cavern-ascent.png
+          if-no-files-found: ignore

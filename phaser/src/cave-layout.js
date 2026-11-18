@@ -1,4 +1,5 @@
 import {compileRockPolygons,rockContains} from './cave-solids.js';
+import {contourAt} from './rock-edges.js';
 // Luminous Grotto: a single, smoothly-authored 3200 x 1792 world.
 // These coordinates are 16-pixel cells, taken from the approved HTML trial.
 // One source controls the painting guide, movement and debug overlay.
@@ -178,13 +179,31 @@ export function compileCave(layout=caveLayout){
       throw Error('Invalid climb wall');
   }
   const polygons=compileRockPolygons(rockPolygons,width,height,tile);
-  const groundAt=x=>contourY(floor,Math.max(0,Math.min(width,x/tile)))*tile;
-  const ceilingAt=x=>contourY(ceiling,Math.max(0,Math.min(width,x/tile)))*tile;
+  // Sample the authored smooth curves into half-tile vector segments once.
+  // Art masks, movement and collision then use the same piecewise lines.
+  const floorSegments=Array.from({length:width*2+1},(_,i)=>
+    [i*tile/2,contourY(floor,i/2)*tile]);
+  const ceilingSegments=Array.from({length:width*2+1},(_,i)=>
+    [i*tile/2,contourY(ceiling,i/2)*tile]);
+  const groundAt=x=>contourAt(floorSegments,x);
+  const ceilingAt=x=>contourAt(ceilingSegments,x);
   const waterBodies=pools.map(p=>({id:p.id,start:p.from,end:p.to,
     surface:p.surface,bottom:Math.max(...surface.slice(p.from,p.to+1))}));
   const climbWalls=walls.map(w=>({...w,
     bottom:Math.min(w.bottom,contourY(floor,w.x))}));
   const platformSegments=shelves.map(p=>({...p,kind:'platform',style:'ledge'}));
+  const puzzleObjects=(layout.puzzleObjects??[]).map(object=>{
+    if(!object.banks)return object;
+    const [near,far]=object.banks.map(id=>shelves.find(shelf=>shelf.id===id));
+    if(!near||!far||near.y!==far.y||near.x+near.length>=far.x)
+      throw Error('Bridge needs two separate banks at the same height: '+object.id);
+    const gapStart=(near.x+near.length)*tile,gapEnd=far.x*tile;
+    const center=(gapStart+gapEnd)/2,halfSpan=object.size[1]/2;
+    if(center-halfSpan>=gapStart||center+halfSpan<=gapEnd||
+      center-halfSpan<near.x*tile||center+halfSpan>(far.x+far.length)*tile)
+      throw Error('Fallen bridge must overlap both banks: '+object.id);
+    return {...object,platform:[center,near.y*tile]};
+  });
   // One classifier powers the material PNG, water queries and physics grid.
   // Moving a polygon changes both visible rock and physical collision.
   // Compile vertical material queries once per pixel column when exporting
@@ -214,8 +233,9 @@ export function compileCave(layout=caveLayout){
     }));
   return {
     width,height,biome:'coast',surface,ceiling:roof,waterBodies,grid,
-    platformSegments,climbWalls,rockPolygons:polygons,materialAt,materialColumn,
-    thermalVolumes:[],setpieces:[],vistas:[],dressing:[],landmarks:[],
+    platformSegments,climbWalls,rockPolygons:polygons,floorSegments,ceilingSegments,
+    materialAt,materialColumn,puzzleObjects,
+    thermalVolumes:layout.thermalVolumes??[],setpieces:[],vistas:[],dressing:[],landmarks:[],
     sections:[],goalRoute:(layout.id==='skywell-ascent'?[
       {x:7,kind:'start'},...walls.map(w=>({x:w.x,kind:'wallJump'})),
       {x:182,kind:'objective'},{x:212,kind:'exit'}]:[]),

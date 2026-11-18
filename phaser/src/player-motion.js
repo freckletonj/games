@@ -2,7 +2,7 @@ import {deckTopAt,movingLanding} from './moving-platforms.js';
 import {landingY,platformTopAt,safeHorizontalX} from './physics.js';
 import {tryBloomBoost} from './springboard.js';
 import {stepRopePlayer} from './rope-swing.js';
-import {sweepRockBody} from './cave-solids.js';
+import {rockEdges,rockSupportAt,sweepRockEdges,sweepContourX} from './rock-edges.js';
 import {DANDELION_BOOST} from './pickups.js';
 
 const FLAPPING_FORMS=new Set(['skyling','glimmermoth','cloudwhisp']);
@@ -16,12 +16,15 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export function stepPlayerMotion(p,actions,step,world){
   const events=[];
   const decks=world.movingPlatforms??[];
+  const terrainX=(from,to,feet,swimming=false)=>world.floorSegments?
+    sweepContourX(world.floorSegments,from,to,feet,swimming?7:11):
+    safeHorizontalX(from,to,feet,world.groundAt,swimming);
   const support=p.grounded?decks.find(deck=>deck.id===p.onPlatform):null;
   if(support){
     const [x,y]=support.position;
     const [previousX,previousY]=support.previous;
     const carriedX=clamp(p.x+x-previousX+(support.beltSpeed??0),10,world.width-10);
-    p.x=safeHorizontalX(p.x,carriedX,y,world.groundAt);
+    p.x=terrainX(p.x,carriedX,y);
     p.y=deckTopAt(support,p.x)??p.y+y-previousY;
     if(support.fire){
       p.launchSpeed=support.boost;p.vy=-support.rise;
@@ -141,8 +144,7 @@ export function stepPlayerMotion(p,actions,step,world){
     const slope=onTerrain?(world.groundAt(p.x+2)-world.groundAt(p.x-2))/4:0;
     const surfaceVx=p.vx/Math.hypot(1,slope);
     const nextX=clamp(p.x+(surfaceVx+(p.launchSpeed??0))*step,10,world.width-10);
-    let safeX=safeHorizontalX(p.x,nextX,p.y,
-      x=>world.groundAt(x),swimmer);
+    let safeX=terrainX(p.x,nextX,p.y,swimmer);
     // Authored climbing faces are real solid obstacles. Jump over a wall's
     // top, or use a second jump while adjacent to spring off its face.
     for(const wall of world.climbWalls||[]){
@@ -154,19 +156,42 @@ export function stepPlayerMotion(p,actions,step,world){
       if(p.x>=wallX+12&&safeX<wallX+12)
         safeX=wallX+12;
     }
-    if(world.rockPolygons?.length)
-      safeX=sweepRockBody(world.rockPolygons,p.x,p.y,safeX,'x').value;
+    const edges=world.rockPolygons?.length?rockEdges(world.rockPolygons):[];
+    // Walk the authored rock's top edges directly. A slope changes the
+    // player's foot height analytically, without repeated upward probes.
+    const onLedge=platformTopAt(p.x,p.y-.5,p.y+.5,
+      world.platformSegments,world.tile)!==null;
+    const supportEdge=p.grounded&&!support&&!onLedge&&p.vy>=0?
+      rockSupportAt(edges,p.x,p.y,9,9):null;
+    const nextEdge=supportEdge?
+      rockSupportAt(edges,safeX,supportEdge.y,9,9):null;
+    let rockWalk=false;
+    if(nextEdge){
+      // The supporting edges define the walking path, not obstacles to
+      // that very path. Sweep walls and undersides along the slope instead.
+      const footY=Math.min(supportEdge.y,nextEdge.y);
+      const obstacles=edges.filter(edge=>edge.ny>=-.5&&
+        Math.min(edge.a[1],edge.b[1])<footY-.02);
+      const contact=sweepRockEdges(obstacles,p.x,supportEdge.y,safeX,nextEdge.y);
+      safeX=contact.x;
+      p.y=contact.blocked?supportEdge.y:nextEdge.y;
+      p.vy=0;
+      rockWalk=!contact.blocked;
+    }else if(edges.length){
+      safeX=sweepRockEdges(edges,p.x,p.y,safeX,p.y).x;
+    }
     if(world.blockHorizontal) safeX=world.blockHorizontal(p.x,safeX,p.y);
     if(Math.abs(safeX-nextX)>.2)p.vx=0;
     const dx=safeX-p.x;
     if(dx||direction)p.face=Math.sign(dx||direction);
     p.x=safeX;
     const priorY=p.y,wasGrounded=p.grounded,impactSpeed=p.vy;
-    const vertical=world.rockPolygons?.length?
-      sweepRockBody(world.rockPolygons,p.x,p.y,p.y+p.vy*step,'y'):
-      {value:p.y+p.vy*step,blocked:false};
-    const rockLanding=vertical.blocked&&p.vy>0;
-    p.y=vertical.value;
+    const vertical=edges.length&&!rockWalk?
+      sweepRockEdges(edges,p.x,p.y,p.x,p.y+p.vy*step):
+      {y:rockWalk?p.y:p.y+p.vy*step,blocked:false,normal:null};
+    const rockLanding=vertical.blocked&&impactSpeed>0&&
+      vertical.normal[1]<0;
+    p.y=vertical.y;
     if(vertical.blocked)p.vy=0;
     let landing=landingY(priorY,p.y,p.vy,p.grounded,
       p.x,world.groundAt(p.x),world.platformSegments,world.tile);
@@ -193,7 +218,7 @@ export function stepPlayerMotion(p,actions,step,world){
         events.push('land');
         if(impactSpeed>3.8)events.push('hardLand');
       }
-    }else if(rockLanding){
+    }else if(rockLanding||rockWalk){
       p.grounded=true;p.coyote=5;p.jumps=0;p.flaps=0;
       if(impactSpeed>1.3)events.push('land');
     }else p.grounded=false;

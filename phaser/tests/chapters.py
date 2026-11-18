@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parents[2]
 GAME = ROOT / "dist/wonderwood-phaser.html"
 CHAPTERS = [
     "first-forest", "crystal-coast", "starfall-summit",
-    "willow-wetlands", "cloud-gardens", "monkey-jungle"
+    "willow-wetlands", "cloud-gardens", "monkey-jungle", "cavern-ascent"
 ]
 
 
@@ -32,6 +32,8 @@ def main():
             page.locator("#ww-menu-continue").click()
             if chapter == "monkey-jungle":
                 page.get_by_role("button", name="Monkey Jungle").click()
+            elif chapter == "cavern-ascent":
+                page.get_by_role("button", name="Cavern Ascent").click()
             else:
                 page.locator("#ww-level-grid button").nth(i).click()
 
@@ -53,6 +55,10 @@ def main():
             assert state["platformCount"] > 0, state
             art = state["sceneArt"]
             assert not art["geometryOverlay"], art
+            if chapter == "cavern-ascent":
+                assert len(state["movingPlatforms"]) == 4, state
+                assert len(state["puzzleObjects"]) == 4, state
+                assert art["layers"][0]["worldPixels"] == [1280, 3200], art
             right = 0
             for index, layer in enumerate(art["layers"]):
                 assert layer["textureKey"] == f"scene-{chapter}-scene-{index}", layer
@@ -63,6 +69,46 @@ def main():
                 assert worldHeight <= sourceHeight <= 4096, layer
                 right += layer["worldPixels"][0]
             assert right == state["worldWidth"], art
+            if chapter == "cavern-ascent":
+                # Real keyboard input on the actual bottom cave floor.
+                start = state["players"][0]
+                page.keyboard.down("d")
+                page.wait_for_function(
+                    "x => window.__wonderwoodPhaser.snapshot().players[0].x > x + 40",
+                    arg=start["x"], timeout=10000,
+                )
+                page.keyboard.up("d")
+                walked = page.evaluate("window.__wonderwoodPhaser.snapshot()")
+                assert abs(walked["players"][0]["y"] - start["y"]) < 2, walked
+
+                page.keyboard.down("f")
+                page.wait_for_function(
+                    "window.__wonderwoodPhaser.snapshot().lures.length > 0",
+                    timeout=10000,
+                )
+                page.keyboard.up("f")
+                tossed = page.evaluate("window.__wonderwoodPhaser.snapshot()")
+                assert tossed["lures"][0]["x"] > walked["players"][0]["x"] + 60, tossed
+                page.wait_for_function(
+                    """() => {
+                      const state=window.__wonderwoodPhaser.snapshot();
+                      return state.lures.some(food=>food.landed) ||
+                        state.animals.some(animal=>animal.trust>0);
+                    }""", timeout=20000,
+                )
+
+                page.keyboard.down("g")
+                page.wait_for_function(
+                    "window.__wonderwoodPhaser.snapshot().orbStates.length > 0",
+                    timeout=10000,
+                )
+                page.keyboard.up("g")
+                page.wait_for_function(
+                    "window.__wonderwoodPhaser.snapshot().orbStates.some(orb => orb.bounces > 0)",
+                    timeout=10000,
+                )
+                bounced = page.evaluate("window.__wonderwoodPhaser.snapshot()")
+                assert any(orb["y"] < start["y"] for orb in bounced["orbStates"]), bounced
             page.keyboard.press("v")
             assert page.evaluate(
                 "window.__wonderwoodPhaser.snapshot().sceneArt.geometryOverlay"

@@ -96,6 +96,10 @@ export function stepPuzzleObjects(objects,decks){
       object.angle=object.startAngle+(Math.PI/2-object.startAngle)*progress**2;
       const pivot=object.platform[0]-object.size[1]/2;
       object.x=object.home[0]+(pivot-object.home[0])*progress**2;
+      if(object.banks){
+        const pivotY=object.platform[1]+object.size[0]/2;
+        object.bottom=object.home[1]+(pivotY-object.home[1])*progress**2;
+      }
       if(progress<1)continue;
     }else continue;
 
@@ -147,4 +151,39 @@ function friendshipHint(player,animals,kind,name,food){
     return 'G / X · send a friendship orb toward '+name;
   if(player.food!==(food==='star'?2:0))return 'E / RB · select '+food+' treats for '+name;
   return 'F / B · offer '+name+' two '+food+' treats';
+}
+
+export function cavernHint(objects,player,animals,hasKey){
+  const [boulder,lowerSeal,bridge,upperSeal]=objects;
+  const {x,y,form}=player;
+  const moonwing=route=>form==='skyling'?route:
+    friendshipHint(player,animals,'skyling','Moonwing','star');
+  const flintfist=()=>friendshipHint(player,animals,'flintfist','Flintfist','berry');
+  const punch=()=>form==='flintfist'?'F / B · punch through the cracked seal.':flintfist();
+
+  if(y>2880)return moonwing('Tap Jump repeatedly to reach the low ledge.');
+  if(y>2720&&x<432){
+    if(boulder.state==='settled')return 'Walk over the fallen boulder.';
+    return form==='gravelback'?'Walk into the boulder and keep pushing.':
+      friendshipHint(player,animals,'gravelback','Gravelback','berry');
+  }
+  if(y>2560)return moonwing('Climb around the left edge of the rock overhang.');
+  if(y===2560&&x<lowerSeal.home[0]&&lowerSeal.state==='ready')return punch();
+  if(y===2016&&x>=368&&x<=592)return 'Jump right to the bridge bank, or recall to camp.';
+  if(y>2120)return moonwing('At camp, fly around the left end of the long stone ceiling.');
+  if(y>=1984&&x<1184){
+    if(bridge.state==='tipping')return 'Wait for the span to settle onto the far bank.';
+    if(bridge.state==='settled')return 'Drop to the near bank and walk across the stone bridge.';
+    if(y>bridge.pushAbove)return moonwing('Fly to the high ledge beside the standing bridge.');
+    return form==='flintfist'?'Walk into the standing bridge until it tips.':flintfist();
+  }
+  if(y>1760)return moonwing('Climb the right wall to the boulder gallery.');
+  if(y>1600&&x>=368)return 'Jump left across the boulders. A missed jump drops you to the chamber below.';
+  if(y>1456&&y<=1600)return moonwing('Fly around the right tip of the rock, then turn left to camp.');
+  if(y>1120)return moonwing('Climb the west wall and circle the left side of the next overhang.');
+  if(y===1120&&x<upperSeal.home[0]&&upperSeal.state==='ready')return punch();
+  if(y>432)return moonwing('Find the updraft. Ride it up, then fly toward the right lip.');
+  if(y>272)return moonwing('Fly right from the chimney lip to the summit.');
+  if(hasKey)return 'Walk through the summit gate.';
+  return 'Collect the Summit Light by the gate.';
 }

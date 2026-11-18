@@ -4,6 +4,8 @@ import {compileRockPolygons,bodyHitsRock,sweepRockBody} from '../src/cave-solids
 import {compileCave,skywellLayout,vaultLayout,caveContainsWater}
   from '../src/cave-layout.js';
 import {stepPlayerMotion} from '../src/player-motion.js';
+import {rockEdges,rockSupportAt,sweepRockEdges,contourAt,sweepContourX}
+  from '../src/rock-edges.js';
 
 const testRock=compileRockPolygons([{
   id:'bridge',points:[[8,30],[18,30],[20,33],[20,40],[8,40]]
@@ -97,4 +99,58 @@ test('Skyling reaches the high vaulted shelf while the ordinary player cannot',(
     'the ordinary explorer cannot clear this optional upper shelf');
   assert.equal(attempts('skyling'),true,
     'the transformed Skyling can use earned flaps to reach it');
+});
+
+test('rock polygons compile to deterministic oriented collision segments',()=>{
+  const edges=rockEdges(testRock);
+  assert.equal(edges.length,testRock[0].points.length);
+  assert.equal(rockEdges(testRock),edges,'reuse compiled edges between ticks');
+  assert.ok(edges.some(e=>e.ny===-1),'upper rock edge faces outwards');
+  assert.ok(edges.some(e=>e.ny===1),'underside faces outwards');
+});
+
+test('swept segment collision catches walls, floors and overhang undersides',()=>{
+  const edges=rockEdges(testRock);
+  const wall=sweepRockEdges(edges,6*16,36*16,10*16,36*16);
+  assert.equal(wall.blocked,true);
+  assert.ok(Math.abs(wall.x-(8*16-10))<.03);
+  const floor=sweepRockEdges(edges,12*16,28*16,12*16,36*16);
+  assert.equal(floor.blocked,true);
+  assert.ok(Math.abs(floor.y-30*16)<.03);
+  const underside=sweepRockEdges(edges,12*16,45*16,12*16,36*16);
+  assert.equal(underside.blocked,true);
+  assert.ok(Math.abs(underside.y-(40*16+27))<.03);
+  assert.equal(sweepRockEdges(edges,12*16,28*16,12*16,27*16).blocked,false);
+});
+
+test('a rock slope has continuous support heights without per-pixel stepping',()=>{
+  const slope=compileRockPolygons([{
+    id:'ramp',points:[[4,8],[10,4],[10,15],[4,15]]
+  }],32,20);
+  const edges=rockEdges(slope);
+  const a=rockSupportAt(edges,100,100,100,100);
+  const b=rockSupportAt(edges,101,100,100,100);
+  assert.ok(a&&b);
+  assert.ok(Math.abs((b.y-a.y)+2/3)<1e-9);
+  assert.equal(sweepRockEdges(edges,55,115,190,115).blocked,true,
+    'the vector sweep still blocks a real rock wall');
+});
+
+test('authored cave heightfields become shared floor and ceiling line segments',()=>{
+  const level=compileCave(skywellLayout);
+  assert.equal(level.floorSegments.length,skywellLayout.width*2+1);
+  assert.equal(level.ceilingSegments.length,skywellLayout.width*2+1);
+  for(const x of [0,19.25*16,52.5*16,93.375*16,200*16]){
+    assert.equal(level.cave.groundAt(x),contourAt(level.floorSegments,x));
+    assert.equal(level.cave.ceilingAt(x),contourAt(level.ceilingSegments,x));
+  }
+});
+
+test('an uphill floor is crossed at the exact vector intersection',()=>{
+  const slope=[[0,100],[100,80]];
+  assert.ok(Math.abs(sweepContourX(slope,0,100,99,5)-30)<1e-9);
+  assert.equal(sweepContourX(slope,100,0,85,5),0,
+    'downhill travel must remain unobstructed');
+  assert.equal(sweepContourX(slope,0,100,105,5),0,
+    'already-embedded feet cannot advance into more rock');
 });

@@ -17,7 +17,7 @@ const registry=JSON.parse(readFileSync(new URL(
   'phaser/assets/generated/approved-scene-art.json',root),'utf8'));
 
 test('every playable chapter compiles and has registered art',()=>{
-  assert.equal(chapters.length,11);
+  assert.equal(chapters.length,12);
   assert.deepEqual(Object.keys(registry).sort(),chapters.map(chapter=>chapter.id).sort());
   for(const chapter of chapters){
     const level=compileChapter(chapter,compiler);
@@ -89,5 +89,23 @@ test('the Brassworks registers an alpha sprite for each machine',()=>{
     const data=readFileSync(new URL(state.platforms[machine],root));
     assert.equal(data.toString('ascii',8,16),'WEBPVP8L');
     assert.ok(data.readUInt32LE(21)&(1<<28),machine+' must carry alpha');
+  }
+});
+
+test('Cavern Ascent registers its painted scene and every walkable prop',()=>{
+  const id='cavern-ascent';
+  const level=compileChapter({id},compiler);
+  const art=registry[id];
+  assert.equal(art.scene.length,1);
+  const painting=readFileSync(new URL(art.scene[0],root));
+  assert.equal(painting.toString('ascii',0,4),'RIFF');
+  assert.equal(painting.toString('ascii',8,12),'WEBP');
+  const ids=[...level.machines,...level.puzzleObjects.filter(object=>object.kind!=='breakable-wall')]
+    .map(object=>object.id);
+  assert.deepEqual(Object.keys(art.platforms).sort(),ids.sort());
+  for(const path of Object.values(art.platforms)){
+    const image=readFileSync(new URL(path,root));
+    assert.equal(image.toString('hex',0,8),'89504e470d0a1a0a',path);
+    assert.equal(image.readUInt8(25),6,path+' must be RGBA');
   }
 });

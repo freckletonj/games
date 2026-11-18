@@ -676,7 +676,7 @@ WW.games.animals = (() => {
           if(c.active&&p.id===c.owner&&p.previousX<c.finish*TILE&&p.x>=c.finish*TILE){
             c.completed=true;c.active=false;WW.audio.play('gem');WW.input.rumble(p.id,.55,200);
             particles(p.x,p.y-12,'#ffd78e',32);
-            say('SPEED TRIAL COMPLETE! The Prism Gem has awakened.',3000);
+            say('SPEED TRIAL COMPLETE! Great run!',3000);
           }
         }
       }
@@ -693,13 +693,6 @@ WW.games.animals = (() => {
           say('Picnic basket! Restocked every kind of magic treat.');WW.input.rumble(p.id,.25,100);particles(item.x,item.y,'#ffb7ce',18);
         }
         else if(goalKinds.has(item.kind)){
-          const challenge=challenges.find(c=>c.goal===item.kind&&!c.completed);
-          if(challenge){
-            if(clock>(item.lastHint||0)+2){
-              item.lastHint=clock;say(challenge.type==='sprint'?'Run the crystal speed trial first!':'Befriend two Emberkits to awaken this gem!',2500);
-            }
-            return;
-          }
           WW.audio.play('gem');item.used=true;shared.keys[item.kind]=true;
           const goal=goals.find(g=>g.kind===item.kind);
           say(`${goal.name} found! ${goals.filter(g=>shared.keys[g.kind]).length}/${goals.length} relics collected.`,2600);
