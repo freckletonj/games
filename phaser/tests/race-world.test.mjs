@@ -221,3 +221,23 @@ test('an actual rider touching an authored obstacle resets the whole race',()=>{
   assert.equal(avoided.hit,null);
   assert.equal(clear.state.phase,'groundScroll');
 });
+
+test('Pegasus gust volumes change the actual 60 Hz vertical trajectory',()=>{
+  const draft=race.flightVolumes[0];
+  const x=(draft.bounds[0]+3)*16,y=42*16;
+  const plain={...rider(0,'pegasus',x).mount,
+    x,y,grounded:false,vy:0};
+  const wind={...plain};
+  const still={...world,groundAt:()=>1100};
+  const gust={...still,flightVolumes:[draft]};
+  const coast={left:false,right:false,down:false,jump:false,
+    jumpPressed:false};
+  for(let tick=0;tick<30;tick++){
+    stepMountedMotion(plain,coast,1,still);
+    stepMountedMotion(wind,coast,1,gust);
+  }
+  assert.ok(wind.y<plain.y-40,
+    'The declared updraft must materially lift an airborne Pegasus');
+  assert.ok(wind.vy<plain.vy);
+  assert.equal(wind.x,plain.x);
+});
