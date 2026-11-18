@@ -50,7 +50,19 @@ function shutterHit(origin,direction,shutter){
   return distance>.001&&fraction>=0&&fraction<=1?distance:null;
 }
 
-export function tracePalaceBeams(spec,state){
+// Small, fixed world-space steps consult the very same compiled material
+// predicate as collision and art masks. No painted highlight can transmit a
+// ray through a wall; the result depends only on geometry and tick state.
+function rockDistance(origin,direction,range,solidAt){
+  if(!solidAt)return null;
+  for(let along=4;along<=range;along+=4){
+    if(solidAt(origin[0]+direction[0]*along,
+      origin[1]+direction[1]*along))return along;
+  }
+  return null;
+}
+
+export function tracePalaceBeams(spec,state,{solidAt=null}={}){
   const segments=[],lit=new Set();
   const maxBounces=spec.opticalRules.maxBounces;
   for(const source of spec.lightSources.filter(s=>s.enabled)){
@@ -60,6 +72,8 @@ export function tracePalaceBeams(spec,state){
     for(let bounce=0;bounce<=maxBounces;bounce++){
       const direction=[Math.cos(angle),Math.sin(angle)];
       const hits=[];
+      const rock=rockDistance(origin,direction,source.range*16,solidAt);
+      if(rock!==null)hits.push({kind:'rock',id:null,distance:rock});
       const test=(kind,id,distance)=>{if(distance!==null&&distance>0)
         hits.push({kind,id,distance});};
       for(const mirror of spec.mirrors){
@@ -96,11 +110,11 @@ export function tracePalaceBeams(spec,state){
   return {segments,lit:[...lit].sort()};
 }
 
-export function stepPalace(spec,state,{occupiedPlatformIds=[]}={}){
+export function stepPalace(spec,state,{occupiedPlatformIds=[],solidAt=null}={}){
   // Order: deterministic occluders and detents -> ray hits -> phase
   // telegraph -> solid collision flags -> scene drawing.
   const next={...state,tick:state.tick+1};
-  const light=tracePalaceBeams(spec,next);
+  const light=tracePalaceBeams(spec,next,{solidAt});
   const occupied=new Set(occupiedPlatformIds);
   const platforms={};
   for(const platform of spec.phasePlatforms){
