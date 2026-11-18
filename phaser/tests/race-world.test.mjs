@@ -241,3 +241,26 @@ test('Pegasus gust volumes change the actual 60 Hz vertical trajectory',()=>{
   assert.ok(wind.vy<plain.vy);
   assert.equal(wind.x,plain.x);
 });
+
+
+test('open-air Pegasus route recalls the party instead of allowing a ground shortcut',()=>{
+  const player=rider(0,'pegasus',230*16);
+  const state=createRaceWorld(race);
+  state.state={...state.state,phase:'flightScroll',anchor:4000,
+    checkpoint:'sanctuary',activeIds:[0]};
+  player.mount.y=(race.flightVoid.fallY+.25)*16;
+  player.y=player.mount.y;
+  const result=stepRaceWorld(race,state,[player]);
+  assert.equal(result.restarted,true);
+  assert.equal(result.state.phase,'waitingForPegasi');
+  assert.equal(result.state.checkpoint,'sanctuary');
+});
+
+test('the storm canyon specifies a void below the flight path',()=>{
+  assert.ok(race.flightVoid.from>205);
+  assert.ok(race.flightVoid.to<341);
+  assert.ok(race.flightVoid.fallY>60);
+  const flightFloor=race.ridge.filter(([x])=>
+    x>=race.flightVoid.from&&x<=race.flightVoid.to);
+  assert.ok(flightFloor.every(([,y])=>y>race.flightVoid.fallY));
+});
