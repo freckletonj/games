@@ -1,5 +1,5 @@
 // Runtime water and independent painted mechanism cutouts for the Temple.
-import {templeShoreBounds} from './temple-shoreline.js';
+import {templeShoreBounds,templeWaterMaskBounds} from './temple-shoreline.js';
 // The mask follows the exact dynamic volume height and compiled ground, not
 // any waterline inferred from a static background painting.
 const TILE=16;
@@ -63,9 +63,7 @@ export function createTempleScene(scene,spec,world,approved){
   // Neither the mask nor the rectangle depends on drawing new bank polygons
   // each simulation tick.
   const waterFills=spec.waterVolumes.map(volume=>{
-    const {left,right,y}=templeShoreBounds({
-      start:volume.from,end:volume.to,surface:volume.maxSurface
-    },x=>scene.groundAt(x));
+    const {left,right,y}=templeWaterMaskBounds(volume,x=>scene.groundAt(x));
     const shape=scene.add.graphics().setVisible(false);
     shape.fillStyle(0xffffff).beginPath().moveTo(left,y).lineTo(right,y);
     for(let x=right;x>left;x-=4)
