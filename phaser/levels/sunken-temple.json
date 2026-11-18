@@ -487,10 +487,24 @@
   ],
   "obstacles": [
     {
+      "id": "courtyard-dock-lip",
+      "left": 58,
+      "right": 58.75,
+      "top": 39,
+      "bottom": 57
+    },
+    {
       "id": "sluice-weir",
       "left": 87,
       "right": 89,
       "top": 51,
+      "bottom": 57
+    },
+    {
+      "id": "tail-dock-lip",
+      "left": 202.5,
+      "right": 203,
+      "top": 39,
       "bottom": 57
     }
   ]

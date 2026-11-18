@@ -49,8 +49,8 @@ test('ordinary water-jump can board the low raft, which carries its rider to the
   let boarded=false;
   const trace=[];
   for(let i=0;i<180;i++){
-    const jump=i>10&&i%44===12;
-    step({jump,jumpPressed:jump});
+    const jump=i>10&&i%44>=12&&i%44<30;
+    step({jump,jumpPressed:i>10&&i%44===12});
     if(i%12===0)trace.push([i,Math.round(player.y),player.onPlatform,
       player.floating,Math.round(templeWorld.decks[0].position[1])]);
     if(player.onPlatform==='courtyard-raft'){boarded=true;break;}
@@ -60,11 +60,11 @@ test('ordinary water-jump can board the low raft, which carries its rider to the
   assert.equal(templeWorld.state.surfaces.courtyard,42);
   assert.equal(player.onPlatform,'courtyard-raft');
   assert.ok(Math.abs(player.y-41*16)<.1);
-  let jumped=false,reached=false;
+  let jumpAt=-1,reached=false;
   for(let i=0;i<140;i++){
-    const jump=!jumped&&player.x>=55.5*16;
-    jumped||=jump;
-    step({right:true,jump,jumpPressed:jump});
+    if(jumpAt<0&&player.x>=55.5*16)jumpAt=i;
+    const jump=jumpAt>=0&&i-jumpAt<22;
+    step({right:true,jump,jumpPressed:i===jumpAt});
     if(player.x>=59*16&&player.y<=39*16+3){reached=true;break;}
   }
   assert.ok(reached,'Riding high and jumping from the raft must reach the right dock');
@@ -75,8 +75,8 @@ test('jump-spamming through the courtyard without its raft cannot reach the dock
   templeWorld.decks.find(d=>d.id==='courtyard-raft').enabled=false;
   let farthest=player.x;
   for(let i=0;i<950;i++){
-    const jump=i%38===0;
-    step({right:true,jump,jumpPressed:jump});
+    const jump=i%55<22;
+    step({right:true,jump,jumpPressed:i%55===0});
     farthest=Math.max(farthest,player.x);
   }
   assert.ok(farthest<59*16,'No-raft route '+JSON.stringify({
@@ -172,7 +172,7 @@ test('two intentional jumps bridge A → downstream raft → bridge B',()=>{
   const {step}=simulation(player,templeWorld);
   let aboard=false,firstTrace=[];
   for(let i=0;i<120;i++){
-    step({right:true,jump:i===0,jumpPressed:i===0});
+    step({right:true,jump:i<25,jumpPressed:i===0});
     if(i%10===0)firstTrace.push([i,player.x,player.y,player.onPlatform,
       player.grounded,player.floating]);
     if(player.onPlatform==='tail-raft'){aboard=true;break;}
@@ -182,7 +182,7 @@ test('two intentional jumps bridge A → downstream raft → bridge B',()=>{
   assert.equal(player.onPlatform,'tail-raft');
   let second=false;
   for(let i=0;i<130;i++){
-    step({right:true,jump:i===0,jumpPressed:i===0});
+    step({right:true,jump:i<25,jumpPressed:i===0});
     if(player.onPlatform==='wheel-bridge-b'){second=true;break;}
   }
   assert.ok(second,'The second jump must reach the final bridge');
@@ -197,8 +197,8 @@ test('without the middle raft, bridge A cannot be jumped directly to bridge B',(
   player.onPlatform='wheel-bridge-a';
   const {step}=simulation(player,templeWorld);
   for(let i=0;i<450;i++){
-    const jump=i%36===0;
-    step({right:true,jump,jumpPressed:jump});
+    const jump=i%55<25;
+    step({right:true,jump,jumpPressed:i%55===0});
   }
   assert.ok(player.x<204*16,'No-raft final '+JSON.stringify({
     x:player.x,y:player.y,platform:player.onPlatform,
