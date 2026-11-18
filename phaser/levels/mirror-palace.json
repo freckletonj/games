@@ -298,11 +298,11 @@
     {
       "id": "eclipse-shutter",
       "from": [
-        187,
+        175,
         13
       ],
       "to": [
-        187,
+        175,
         31
       ],
       "initial": "closed",
