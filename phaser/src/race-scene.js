@@ -33,7 +33,26 @@ export function createRaceScene(scene,spec){
     fontFamily:'system-ui',fontSize:'12px',fontStyle:'bold',
     color:'#fff5d4',backgroundColor:'#522e30dd',padding:{x:6,y:4}
   }).setDepth(49).setOrigin(.5,1);
-  return {graphics,signs,notice};
+  const dangerLabels=[];
+  if(spec.flightVoid){
+    for(let x=spec.flightVoid.from+12;x<spec.flightVoid.to;x+=33){
+      dangerLabels.push(scene.add.text(x*TILE,
+        spec.flightVoid.fallY*TILE-20,'↓ STORM CLOUDS = RESTART',{
+          fontFamily:'system-ui',fontSize:'13px',fontStyle:'bold',
+          color:'#ffe6c9',backgroundColor:'#683544dc',
+          padding:{x:7,y:4}
+        }).setOrigin(.5,1).setDepth(37));
+      dangerLabels.push(scene.add.text(x*TILE,
+        spec.flightVoid.ceilingY*TILE+35,
+        '↑ THUNDERHEADS = RESTART',{
+          fontFamily:'system-ui',fontSize:'13px',fontStyle:'bold',
+          color:'#f0e6ff',backgroundColor:'#3e345cda',
+          padding:{x:7,y:4}
+        }).setOrigin(.5,0).setDepth(37));
+    }
+    for(const label of dangerLabels)label.setVisible(false);
+  }
+  return {graphics,signs,notice,dangerLabels};
 }
 
 export function drawRaceScene(art,spec,world,players){
@@ -61,6 +80,9 @@ export function drawRaceScene(art,spec,world,players){
       g.fillStyle(0xd5b6e8,.33).fillCircle(x+36,ceiling-34+wave,47);
     }
   }
+  const flightPhase=world.state.phase==='flightScroll'||
+    world.state.phase==='waitingForPegasi';
+  for(const label of art.dangerLabels)label.setVisible(flightPhase);
   const groundPhase=world.state.phase==='groundScroll';
   if(groundPhase||world.state.phase==='waitingForUnicorns'){
     // Clearly mark the alternate high path even when V debugging is off.
