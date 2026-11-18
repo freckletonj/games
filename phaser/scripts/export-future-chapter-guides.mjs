@@ -119,23 +119,33 @@ for(const spec of specs){
     }
   }else if(spec.id==='mirror-palace'){
     const initial=createPalaceState(spec);
+    const solidAt=(x,y)=>['rock','shelf'].includes(
+      surfaceMaterialColumn(level,x)(y));
     let atrium=setMirrorDetent(spec,initial,'atrium-mirror',-45);
-    atrium=repeat(atrium,60,s=>stepPalace(spec,s));
+    atrium=repeat(atrium,60,s=>stepPalace(spec,s,{solidAt}));
     let gallery=setMirrorDetent(spec,atrium,'gallery-mirror-a',-45);
     gallery=setMirrorDetent(spec,gallery,'gallery-mirror-b',-45);
-    gallery=repeat(gallery,60,s=>stepPalace(spec,s));
+    gallery=repeat(gallery,60,s=>stepPalace(spec,s,{solidAt}));
     let eclipse=setMirrorDetent(spec,gallery,'observatory-prism',-45);
-    eclipse=repeat(eclipse,150,s=>stepPalace(spec,s));
+    eclipse=repeat(eclipse,150,s=>stepPalace(spec,s,{solidAt}));
     for(const [name,state] of [['initial-shadow',initial],
       ['lit-atrium',atrium],['gallery-redirect',gallery],
       ['eclipse-observatory',eclipse]]){
-      const light=tracePalaceBeams(spec,state);
-      const objects=spec.phasePlatforms.map(p=>box(p.home[0]*16,
+      const light=tracePalaceBeams(spec,state,{solidAt});
+      const phase=spec.phasePlatforms.map(p=>box(p.home[0]*16,
         p.home[1]*16,...p.size,state.platforms[p.id].solid?'lit':'ghost'));
-      frames.push(await sample(directory,level,name,[],objects,light.segments,{
-        tick:state.tick,mirrors:state.mirrors,shutters:state.shutters,
-        phasePlatforms:state.platforms,beams:light.segments,litTargets:light.lit
-      }));
+      const gates=spec.beamGates.filter(g=>!state.gates[g.id])
+        .map(g=>box(g.at[0]*16,g.at[1]*16,...g.size,'gate'));
+      frames.push(await sample(directory,level,name,[],[...phase,...gates],
+        light.segments,{
+          tick:state.tick,mirrors:state.mirrors,shutters:state.shutters,
+          phasePlatforms:state.platforms,gates:state.gates,
+          gatePivots:spec.beamGates.map(g=>({id:g.id,
+            at:g.at.map(v=>v*16),size:g.size,target:g.target})),
+          controlPivots:[...spec.mirrors,...spec.shutters].map(c=>({
+            id:c.id,at:c.controlAt.map(v=>v*16)})),
+          beams:light.segments,litTargets:light.lit
+        }));
     }
   }else{
     const p1={id:0,mount:{kind:'unicorn'}};
