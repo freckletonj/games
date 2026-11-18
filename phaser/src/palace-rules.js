@@ -56,8 +56,16 @@ function shutterHit(origin,direction,shutter){
 function rockDistance(origin,direction,range,solidAt){
   if(!solidAt)return null;
   for(let along=4;along<=range;along+=4){
-    if(solidAt(origin[0]+direction[0]*along,
-      origin[1]+direction[1]*along))return along;
+    if(!solidAt(origin[0]+direction[0]*along,
+      origin[1]+direction[1]*along))continue;
+    let clear=along-4,blocked=along;
+    for(let i=0;i<10;i++){
+      const middle=(clear+blocked)/2;
+      if(solidAt(origin[0]+direction[0]*middle,
+        origin[1]+direction[1]*middle))blocked=middle;
+      else clear=middle;
+    }
+    return blocked;
   }
   return null;
 }
