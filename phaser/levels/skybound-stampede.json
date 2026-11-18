@@ -205,7 +205,7 @@
       "id": "groundScroll",
       "from": 512,
       "to": 2944,
-      "speed": 2.45,
+      "speed": 2.8,
       "next": "sanctuaryStop"
     },
     {
