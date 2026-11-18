@@ -367,11 +367,11 @@
     {
       "id": "atrium-crystal",
       "home": [
-        61,
-        41
+        56,
+        45
       ],
       "size": [
-        336,
+        448,
         20
       ],
       "rule": "lit",
@@ -382,10 +382,10 @@
       "id": "gallery-crystal",
       "home": [
         108,
-        39
+        53
       ],
       "size": [
-        304,
+        272,
         20
       ],
       "rule": "lit",
@@ -396,10 +396,10 @@
       "id": "gallery-darkstone",
       "home": [
         125,
-        39
+        53
       ],
       "size": [
-        304,
+        176,
         20
       ],
       "rule": "lit",
