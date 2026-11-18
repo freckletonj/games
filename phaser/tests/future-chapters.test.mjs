@@ -36,17 +36,17 @@ test('all three unregistered layouts compile with the production geometry compil
 test('water tide, valve reversals and raft carry are fixed-tick and repeatable',()=>{
   const run=()=>{
     let state=createTempleState(templeSpec);
-    for(let tick=0;tick<360;tick++)state=stepTemple(templeSpec,state);
-    assert.equal(state.surfaces.courtyard,46);
+    for(let tick=0;tick<420;tick++)state=stepTemple(templeSpec,state);
+    assert.equal(state.surfaces.courtyard,42);
     const high=state;
-    for(let tick=0;tick<360;tick++)state=stepTemple(templeSpec,state);
+    for(let tick=0;tick<420;tick++)state=stepTemple(templeSpec,state);
     assert.equal(state.surfaces.courtyard,55);
     state=setTempleValve(templeSpec,state,'sluice-handle','fill');
     for(let tick=0;tick<400;tick++)state=stepTemple(templeSpec,state);
     assert.equal(state.surfaces.sluice,45);
     assert.ok(buoyantCarry(templeSpec,createTempleState(templeSpec),state,
       'sluice-raft').y<0);
-    assert.equal(buoyantPosition(templeSpec,state,'sluice-raft').y,720);
+    assert.equal(buoyantPosition(templeSpec,state,'sluice-raft').y,43*16);
     assert.ok(templeCurrentAt(templeSpec,state,85*16,50*16)>0);
     state=setTempleValve(templeSpec,state,'sluice-handle','hold');
     state=stepTemple(templeSpec,state);
@@ -65,16 +65,21 @@ test('pressure plate needs an actual crate contact; wheel triggers linked flood'
   assert.equal(stepTemple(templeSpec,state).gates['sluice-gate'],false);
   state=setTempleValve(templeSpec,state,'sluice-handle','fill');
   state=setTempleValve(templeSpec,state,'cascade-handle','fill');
-  for(let i=0;i<440;i++)state=stepTemple(templeSpec,state);
+  for(let i=0;i<300;i++)state=stepTemple(templeSpec,state);
+  assert.equal(state.wheelActive,false,'Filling alone cannot turn the wheel');
+  assert.equal(state.surfaces['wheel-tail'],55);
+  state={...state,released:true};
+  for(let i=0;i<95;i++)state=stepTemple(templeSpec,state);
   assert.equal(state.wheelActive,true);
   assert.ok(state.surfaces['wheel-tail']<55);
+  const crate=templeSpec.buoyantObjects.find(o=>o.id==='timber-crate');
   state=stepTemple(templeSpec,state,{cratePositions:{
-    'timber-crate':{x:101*16,y:44*16}
+    'timber-crate':{x:93*16,y:57*16-crate.size[1]}
   }});
   assert.equal(state.plates['sluice-plate'],true);
   assert.equal(state.gates['sluice-gate'],true);
   state=stepTemple(templeSpec,state);
-  assert.equal(state.gates['sluice-gate'],false);
+  assert.equal(state.gates['sluice-gate'],true,'A solved gate must latch');
 });
 
 test('mirror detents generate finite, geometric beam paths and target hits',()=>{
