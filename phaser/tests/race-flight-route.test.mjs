@@ -44,7 +44,10 @@ function flightRoute(humanCount){
     for(const player of players){
       const mount=player.mount;
       const flying=mount.x>209*16&&mount.x<340*16;
-      const goalHeight=mount.x>325*16?relicY+30:850;
+      // Dive under the central rock gate, then climb over the low shelf.
+      // The route is driven by real wingbeat/down controls, never teleportation.
+      const goalHeight=mount.x>325*16?relicY+30:
+        mount.x>=268*16&&mount.x<296*16?917:850;
       // Cruise safely between the high/low hazards, then ascend to the
       // real Light. A grounded Pegasus never crosses the void corridor.
       const jumpPressed=flying&&(mount.grounded||
