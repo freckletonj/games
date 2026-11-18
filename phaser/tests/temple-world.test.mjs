@@ -253,6 +253,28 @@ test('without the middle raft, bridge A cannot be jumped directly to bridge B',(
     ground:groundAt(player.x),water:templeWorld.state.surfaces['wheel-tail']}));
 });
 
+test('two explorers share one valve detent and one physical crate push per tick',()=>{
+  const world=createTempleWorld(temple);
+  const valve=temple.valves[0],x=valve.at[0]*16,y=valve.at[1]*16;
+  const players=[explorer(x,y),explorer(x+8,y,1)];
+  stepTempleWorld(temple,world,players,[
+    {upPressed:true},{upPressed:true}
+  ]);
+  assert.equal(world.state.modes['sluice-valve'],'fill');
+  for(let i=0;i<270;i++)
+    stepTempleWorld(temple,world,players,[{},{}]);
+  const crate=world.crates[0],before=crate.x;
+  players[0].x=crate.x-crate.size[0]/2-12;
+  players[1].x=players[0].x;
+  players[0].y=crate.y+11;
+  players[1].y=crate.y+11;
+  stepTempleWorld(temple,world,players,[
+    {right:true},{right:true}
+  ]);
+  assert.ok(Math.abs(crate.x-before-1.8)<.001,
+    'Two simultaneous players may not push the same crate twice');
+});
+
 test('Tidefox current changes with valves and stays deterministic',()=>{
   const {player,templeWorld,step}=simulation(explorer(85*16,50*16));
   templeWorld.state=setTempleValve(temple,templeWorld.state,'sluice-handle','fill');
