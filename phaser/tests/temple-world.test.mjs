@@ -117,12 +117,60 @@ test('solo valve inputs independently select fill, hold and drain',()=>{
   const {templeWorld,step}=simulation(explorer(70*16,39*16));
   step({upPressed:true});
   assert.equal(templeWorld.state.modes['sluice-valve'],'fill');
-  const upper=simulation(explorer(102*16,40*16),templeWorld);
+  const upper=simulation(explorer(102*16,42*16),templeWorld);
   upper.step({upPressed:true});
   assert.equal(templeWorld.state.modes['sluice-valve'],'hold');
   upper.step();
   upper.step({upPressed:true});
   assert.equal(templeWorld.state.modes['sluice-valve'],'drain');
+});
+
+test('sluice raft is boardable from water and can deliver the explorer to its upper control',()=>{
+  const {player,templeWorld,step}=simulation(explorer(100*16,55*16+11));
+  player.grounded=false;
+  templeWorld.state=setTempleValve(temple,templeWorld.state,'sluice-handle','fill');
+  advance(step,270);
+  assert.equal(templeWorld.state.surfaces.sluice,45);
+  let boarded=false;
+  for(let i=0;i<160;i++){
+    const jump=i%48>=8&&i%48<32;
+    step({jump,jumpPressed:i%48===8});
+    if(player.onPlatform==='sluice-raft'){boarded=true;break;}
+  }
+  assert.ok(boarded,'The sluice raft must be reachable from the water with held Jump');
+  let ledge=false;
+  for(let i=0;i<95;i++){
+    step({right:true,jump:i<25,jumpPressed:i===0});
+    if(player.x>=101*16&&player.y<=42*16+2&&player.grounded){
+      ledge=true;break;
+    }
+  }
+  assert.ok(ledge,'Riding the raft must make the drain-control balcony reachable');
+  step({upPressed:true});
+  assert.equal(templeWorld.state.modes['sluice-valve'],'hold');
+});
+
+test('head raft can be boarded and delivers the player to the cascade release ledge',()=>{
+  const {player,templeWorld,step}=simulation(explorer(157*16,55*16+11));
+  player.grounded=false;
+  templeWorld.state=setTempleValve(temple,templeWorld.state,'cascade-handle','fill');
+  advance(step,280);
+  assert.equal(templeWorld.state.surfaces['wheel-head'],44);
+  let boarded=false;
+  for(let i=0;i<160;i++){
+    const jump=i%48>=8&&i%48<32;
+    step({jump,jumpPressed:i%48===8});
+    if(player.onPlatform==='head-raft'){boarded=true;break;}
+  }
+  assert.ok(boarded,'The head raft must be reachable without simulated rider attachment');
+  let ledge=false;
+  for(let i=0;i<95;i++){
+    step({right:true,jump:i<25,jumpPressed:i===0});
+    if(player.x>=159*16&&player.y<=41*16+2&&player.grounded){
+      ledge=true;break;
+    }
+  }
+  assert.ok(ledge,'The release station should be a forgiving jump from the raft');
 });
 
 test('a closed sluice arch blocks walking and jumping above its upper ledge',()=>{
