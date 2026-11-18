@@ -1,6 +1,6 @@
 # Level concept: The Sunken Temple
 
-**Status:** concept / implementation plan only. No level JSON, runtime feature, art asset, or campaign registration is added by this document.
+**Status:** implementation candidate. The unregistered [Sunken Temple level spec](../sunken-temple.json), [fixed-tick water/mechanism rules](../../src/temple-rules.js), [schema validation](../../src/future-chapter-validation.js), and [unit tests](../../tests/future-chapters.test.mjs) now exist. Scene integration, complete input-driven routes, approved art, and campaign registration remain outstanding.
 
 ## Player fantasy
 
