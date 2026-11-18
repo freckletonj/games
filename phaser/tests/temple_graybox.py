@@ -1,67 +1,86 @@
-"""Exercise the unregistered Sunken Temple without paintings in real Chromium.
+"""Open the three unregistered experimental chapters in the real offline game.
 
-This is intentionally a graybox smoke test; route-by-route deterministic
-movement and negative bypasses live in tests/temple-world.test.mjs.
+The production Phaser engine and keyboard inputs run unchanged; only the
+offline test wrapper supplies a browser-compatible localStorage shim.
 """
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 GAME = Path(__file__).resolve().parents[2] / "dist/wonderwood-phaser.html"
+GRAYBOX = GAME.with_name("wonderwood-phaser-graybox.html")
+CHAPTERS = ["sunken-temple", "mirror-palace", "skybound-stampede"]
+WORLD_KEYS = ["temple", "palace", "race"]
 
 
 def main():
+    assert GRAYBOX.is_file() and GRAYBOX.stat().st_size > 500_000
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(
             headless=True, args=["--enable-webgl", "--use-gl=swiftshader"]
         )
-        page = browser.new_page(viewport={"width": 960, "height": 540})
-        errors = []
-        page.on("pageerror", lambda error: errors.append(str(error)))
-        page.goto(GAME.as_uri() + "#sunken-temple", wait_until="load")
-        page.wait_for_function(
-            "window.__wonderwoodPhaser?.snapshot().stage === -1", timeout=30000
-        )
-        page.locator(".ww-explorers button").first.click()
-        page.locator("#ww-menu-continue").click()
-        chapter_buttons = page.locator("#ww-level-grid button")
-        labels = chapter_buttons.all_inner_texts()
-        assert any("Sunken Temple" in label for label in labels), (
-            "Temple preview chapter card missing", labels,
-            page.evaluate("location.href")
-        )
-        chapter_buttons.filter(has_text="Sunken Temple").click()
-        page.locator("#ww-menu-play").click()
-        page.wait_for_function(
-            "window.__wonderwoodPhaser?.snapshot().chapter === 'sunken-temple'",
-            timeout=30000,
-        )
-        state = page.evaluate("window.__wonderwoodPhaser.snapshot()")
-        assert state["temple"], state
-        assert len(state["temple"]["rafts"]) == 6, state["temple"]
-        assert state["sceneArt"]["layers"] == [], "Graybox must need no painting"
-        assert state["temple"]["gates"] == {
-            "sluice-gate": False, "wheel-gate": False
-        }
-        x = state["players"][0]["x"]
-        page.keyboard.down("d")
-        page.wait_for_function(
-            "x => window.__wonderwoodPhaser.snapshot().players[0].x > x+30",
-            arg=x, timeout=20000
-        )
-        page.keyboard.up("d")
-        page.wait_for_function(
-            "window.__wonderwoodPhaser.snapshot().temple.tick >= 40"
-        )
-        water = page.evaluate("window.__wonderwoodPhaser.snapshot().temple")
-        assert water["surfaces"]["courtyard"] < 55, water
-        page.keyboard.press("v")
-        assert page.evaluate(
-            "window.__wonderwoodPhaser.snapshot().sceneArt.geometryOverlay"
-        )
-        page.keyboard.press("v")
-        assert not errors, "Temple preview browser errors: " + str(errors)
+        for chapter, world_key in zip(CHAPTERS, WORLD_KEYS):
+            page = browser.new_page(viewport={"width": 960, "height": 540})
+            errors = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            # The dedicated downloaded file enters preview mode automatically.
+            # A chapter hash selects the same mode in the offline test wrapper.
+            page.goto(GAME.as_uri() + "#" + chapter, wait_until="load")
+            page.wait_for_function(
+                "window.__wonderwoodPhaser?.snapshot().stage === -1",
+                timeout=30000
+            )
+            page.locator(".ww-explorers button").first.click()
+            page.locator("#ww-menu-continue").click()
+            buttons = page.locator("#ww-level-grid button")
+            labels = buttons.all_inner_texts()
+            assert len(labels) == 3 and all(
+                expected.replace("-", " ").lower() in label.lower()
+                for expected, label in zip(CHAPTERS, labels)
+            ), ("Expected three experimental chapters", labels)
+            assert "Experimental grayboxes" in page.locator(
+                "#ww-level-heading"
+            ).inner_text()
+            buttons.filter(has_text=chapter.replace("-", " ").title()).click()
+            page.locator("#ww-menu-play").click()
+            page.wait_for_function(
+                "chapter => window.__wonderwoodPhaser?.snapshot().chapter === chapter",
+                arg=chapter, timeout=30000
+            )
+            state = page.evaluate("window.__wonderwoodPhaser.snapshot()")
+            assert state[world_key], (chapter, state)
+            assert state["sceneArt"]["layers"] == [], (
+                chapter, "Graybox should not require approved scene art"
+            )
+            assert state["players"][0]["grounded"], (chapter, state)
+            if chapter == "sunken-temple":
+                assert len(state["temple"]["rafts"]) == 6
+                assert state["temple"]["gates"] == {
+                    "sluice-gate": False, "wheel-gate": False
+                }
+            start_x = state["players"][0]["x"]
+            page.keyboard.down("d")
+            page.wait_for_function(
+                "x => window.__wonderwoodPhaser.snapshot().players[0].x > x+30",
+                arg=start_x, timeout=20000
+            )
+            page.keyboard.up("d")
+            if chapter == "sunken-temple":
+                page.wait_for_function(
+                    "window.__wonderwoodPhaser.snapshot().temple.tick >= 40"
+                )
+                water = page.evaluate(
+                    "window.__wonderwoodPhaser.snapshot().temple"
+                )
+                assert water["surfaces"]["courtyard"] < 55
+            page.keyboard.press("v")
+            assert page.evaluate(
+                "window.__wonderwoodPhaser.snapshot().sceneArt.geometryOverlay"
+            )
+            page.keyboard.press("v")
+            assert not errors, (chapter, errors)
+            page.close()
         browser.close()
-    print("Unpainted Sunken Temple preview, real movement and collision overlay: PASS")
+    print("All three unpainted playable grayboxes, real movement and collision overlays: PASS")
 
 
 if __name__ == "__main__":

@@ -454,3 +454,20 @@ Run `node phaser/scripts/export-cave-guides.mjs` to produce
 `phaser/scripts/extract-painted-layers.py` for an **approved native-size
 scene**, not the old stretched prototype. The playable Skywell now uses the selected Ancient Sanctuary scene; the
 higher-resolution nine-crop vaulted study is still a future art pass.
+
+## Experimental graybox play (Sunken Temple, Mirror Palace, Skybound Stampede)
+
+These three chapters are **not registered** in the normal campaign and
+have no approved scene paintings. Building Phaser produces a second playable
+artifact, `dist/wonderwood-phaser-graybox.html`. Open that file directly
+in Chromium or Firefox, choose an explorer, and choose one of the three
+experimental levels from the menu. Each level runs the real 60 Hz gameplay
+with geometry-derived ground and interactive mechanism overlays; press **V**
+to inspect collision.
+
+In the normal `wonderwood-phaser.html`, an explicit `#graybox` URL
+fragment opens the same three-level experimental menu. A specific fragment,
+such as `#sunken-temple`, `#mirror-palace`, or
+`#skybound-stampede`, preselects its level. The dedicated graybox HTML
+requires no fragment. CI uploads it under **experimental-graybox-play**,
+separately from the normal campaign build.

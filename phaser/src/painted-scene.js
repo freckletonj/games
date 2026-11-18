@@ -83,3 +83,24 @@ export function makeGeometryOverlay(scene){
   }
   return g;
 }
+
+// The experimental Palace and Stampede have geometry but no approved
+// painting. Render their compiled physical ground and authored platform
+// tops in the standalone graybox without inventing collision from art.
+export function paintGrayboxGround(scene){
+  const g=scene.add.graphics().setDepth(-31);
+  const width=scene.level.width*16;
+  const height=scene.level.height*16;
+  g.fillStyle(0x435c65,1);
+  g.lineStyle(2,0xe4c894,.85);
+  for(let x=0;x<width;x+=8){
+    const ground=scene.groundAt(x+4);
+    if(ground<height)g.fillRect(x,ground,8,height-ground);
+  }
+  g.lineStyle(3,0xe4c894,1);
+  for(const ledge of scene.level.platformSegments)
+    if(ledge.kind==='platform')
+      g.lineBetween(ledge.x*16,ledge.y*16,
+        (ledge.x+ledge.length)*16,ledge.y*16);
+  return g;
+}

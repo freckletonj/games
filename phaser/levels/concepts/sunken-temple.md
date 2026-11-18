@@ -5,9 +5,12 @@
 ## Playable graybox puzzle iteration (PR #19)
 
 The candidate remains **outside the normal campaign**. To inspect the unfinished
-level with its authored terrain and plain mechanical blocks, build the Phaser
-HTML and open it with `#sunken-temple` (or `?temple-preview#sunken-temple`). This intentionally
-works without approved panorama or mechanism sprites. The art-free prototype
+level with its authored terrain and plain mechanical blocks, build Phaser
+and open `dist/wonderwood-phaser-graybox.html`. Select Sunken Temple from
+the three-level experimental menu. In the normal game HTML, `#sunken-temple`
+opens the same preview. CI publishes the standalone graybox under the
+`experimental-graybox-play` artifact. This intentionally works without
+approved panorama or mechanism sprites. The art-free prototype
 uses the same water, gate, platform and player physics as the finished scene.
 
 The route is no longer an unbroken rightward run:

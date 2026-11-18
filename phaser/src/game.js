@@ -32,7 +32,7 @@ import {launchPower,stepPower,powerHitsCreature,applyPowerHit,
 import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat,
   stompCreature} from './creature-motion.js';
 import {caveContainsWater} from './cave-layout.js';
-import {makeGeometryOverlay,paintScene,sceneTextures} from './painted-scene.js';
+import {makeGeometryOverlay,paintScene,paintGrayboxGround,sceneTextures} from './painted-scene.js';
 import {deckTopAt,platformPosition,stepPlatforms} from './moving-platforms.js';
 import {machinePlatforms,stepMachines} from './machines.js';
 import {createPuzzleObjects,pushPuzzleObject,blockPuzzleX,puzzleTop,punchWall,
@@ -52,18 +52,27 @@ import {createRaceWorld,stepRaceWorld,raceCameraFrame} from './race-world.js';
 import {createRaceScene,drawRaceScene} from './race-scene.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
-// Future chapters remain outside the campaign. This opt-in is only for
-// exercising real keyboard/gamepad input against an unpainted graybox.
-const TEMPLE_PREVIEW={
-  id:'sunken-temple',biome:'coast',name:'Sunken Temple · Graybox',
-  difficulty:'Puzzle',tagline:'Test tides, crate sluice and the waterwheel.',
-  key:'springKey',goals:[{kind:'springKey',name:'Temple Light',form:null}],
-  signs:[],events:[]
-};
-const CHAPTERS=[...campaign(WW.chapters),
-  ...((location.hash==='#sunken-temple'||
-      new URLSearchParams(location.search).has('temple-preview'))?
-    [TEMPLE_PREVIEW]:[])];
+// The separately downloadable graybox build exposes all three unfinished
+// chapters together. They never enter the normal painted campaign.
+const PREVIEW_CHAPTERS=[
+  {id:'sunken-temple',biome:'coast',name:'Sunken Temple',difficulty:'Puzzle',
+    tagline:'Tides, floating crates, sluices and the waterwheel.',
+    key:'springKey',goals:[{kind:'springKey',name:'Temple Light',form:null}],
+    signs:[],events:[]},
+  {id:'mirror-palace',biome:'summit',name:'Mirror Palace',difficulty:'Puzzle',
+    tagline:'Aim colored light relays to activate bridges and doors.',
+    key:'springKey',goals:[{kind:'springKey',name:'Palace Light',form:null}],
+    signs:[],events:[]},
+  {id:'skybound-stampede',biome:'summit',name:'Skybound Stampede',difficulty:'Race',
+    tagline:'Ride Unicorns through the ground course, then Pegasi through the storm.',
+    key:'springKey',goals:[{kind:'springKey',name:'Sky Light',form:null}],
+    signs:[],events:[]}
+];
+const PREVIEW_IDS=PREVIEW_CHAPTERS.map(chapter=>chapter.id);
+const GRAYBOX_PREVIEW=location.pathname.endsWith('/wonderwood-phaser-graybox.html')||
+  location.hash==='#graybox'||PREVIEW_IDS.includes(location.hash.slice(1))||
+  new URLSearchParams(location.search).has('graybox');
+const CHAPTERS=GRAYBOX_PREVIEW?PREVIEW_CHAPTERS:campaign(WW.chapters);
 const APPROVED_SCENE_ART=__SCENE_ASSETS__;
 const TILE=16;
 const VIEW_W=480;
@@ -421,6 +430,9 @@ class Wonderwood extends Phaser.Scene {
       return {legend,buttons};
     });
     const grid=document.getElementById('ww-level-grid');
+    if(GRAYBOX_PREVIEW)
+      document.getElementById('ww-level-heading').textContent=
+        'Experimental grayboxes · Choose a level';
     this.levelButtons=CHAPTERS.map((chapter,index)=>{
       const button=document.createElement('button');
       button.type='button';
@@ -550,8 +562,12 @@ class Wonderwood extends Phaser.Scene {
       picnics:0,foods:{berry:14,nectar:6,star:6}};
     this.cameras.main.setBackgroundColor(this.level.cave?0x0b1c2c:SKY[this.level.biome]);
     this.isCavern=this.chapter.id==='cavern-ascent';
-    this.sceneArt=this.templeWorld&&!APPROVED_SCENE_ART[this.chapter.id]?
-      []:paintScene(this,APPROVED_SCENE_ART[this.chapter.id]);
+    const approved=APPROVED_SCENE_ART[this.chapter.id];
+    if(!approved){
+      if(!GRAYBOX_PREVIEW)throw Error('Missing approved art for '+this.chapter.id);
+      this.sceneArt=[];
+      if(!this.templeWorld)paintGrayboxGround(this);
+    }else this.sceneArt=paintScene(this,approved);
     this.geometryOverlay=makeGeometryOverlay(this);
     this.movingPlatforms=(this.level.movingPlatforms??[]).map(platform=>{
       const position=platformPosition(platform,0);
