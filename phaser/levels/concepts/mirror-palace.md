@@ -1,6 +1,6 @@
 # Level concept: The Mirror Palace
 
-**Status:** concept / implementation plan only. No level JSON, physics rule, generated scene image, or campaign registration is added.
+**Status:** implementation candidate. The unregistered [Mirror Palace level spec](../mirror-palace.json), [fixed-tick optical/phase rules](../../src/palace-rules.js), [schema validation](../../src/future-chapter-validation.js), and [unit tests](../../tests/future-chapters.test.mjs) now exist. Production collision integration, complete input-driven routes, approved art, and campaign registration remain outstanding.
 
 ## Player fantasy
 
