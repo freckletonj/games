@@ -54,8 +54,18 @@ export function stepRaceWorld(spec,world,players,{paused=false,failed=false,reca
   world.hazards=scrolling?spec.hazards.filter(h=>h.stage===world.state.phase)
     .map(h=>({id:h.id,kind:h.kind,size:h.size,warningDistance:h.warningDistance,
       ...raceHazardPose(h,world.state.tick)})):[];
+  // Apply physical contact after mounted movement and the fixed-tick hazard
+  // poses have advanced. Everyone recalls together; hazards never move
+  // while the two sanctuary gates are waiting.
+  const collision=world.hazards.find(hazard=>players.some(player=>
+    !player.assist&&player.mount&&
+    raceHazardContact(hazard,player.mount)));
+  if(collision){
+    world.state=stepRace(spec,world.state,players,{failed:true});
+    world.hazards=[];
+  }
   return {state:world.state,transition:previous!==world.state.phase,
-    restarted:world.state.restarted};
+    restarted:world.state.restarted,hit:collision?.id??null};
 }
 
 export function raceCameraFrame(spec,state,players,viewport={width:960,height:540,
