@@ -21,6 +21,8 @@ The route is no longer an unbroken rightward run:
    Move from the water to the sluice raft, then to the upper drain handle;
    select Hold, then Drain. Only the crate's **bottom** settling onto the
    floor socket latches the closed arch gate open.
+   A separate narrow bottom tunnel under the weir is passable by diving as
+   Tidefox, but too short for the crate and too deep for normal floating.
 3. **Temple heart:** fill the head reservoir, take its raft to the wheel
    station, and operate the separate release. Only released water can
    charge the wheel. After the visible delay, the mechanism latches the

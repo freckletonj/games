@@ -113,6 +113,21 @@ test('crate is blocked by the weir when low, clears it when floating, then latch
     'A solved mechanical gate must not close after a valve reversal');
 });
 
+test('the low weir has a Tidefox-only diving tunnel, not a normal swimming bypass',()=>{
+  const ordinary=simulation(explorer(86*16,groundAt(86*16)));
+  advance(ordinary.step,100,()=>({right:true,down:true}));
+  assert.ok(ordinary.player.x<87*16,
+    'An untransformed explorer floats above the narrow underpass');
+  const fox=explorer(86*16,groundAt(86*16));
+  fox.form='tideling';fox.grounded=false;fox.coyote=0;
+  const diver=simulation(fox);
+  advance(diver.step,100,()=>({right:true,down:true}));
+  assert.ok(fox.x>89*16,
+    'Tidefox can descend through the two-tile floor tunnel');
+  assert.equal(diver.templeWorld.state.gates['sluice-gate'],false,
+    'The diving shortcut must not silently solve the crate puzzle');
+});
+
 test('solo valve inputs independently select fill, hold and drain',()=>{
   const {templeWorld,step}=simulation(explorer(70*16,39*16));
   step({upPressed:true});
