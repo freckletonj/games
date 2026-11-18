@@ -35,9 +35,19 @@ await mkdir(outputRoot,{recursive:true});
 
 const box=(x,y,width,height,material)=>({left:x-width/2,right:x+width/2,
   top:y,bottom:y+height,material});
+// Temple-authored stone lips and the sluice weir must occur in both the
+// fixed physical mask and every moving-water context frame. Otherwise a
+// generated panorama could paint a non-traversable lip as open water.
+function authoredStaticColumn(level,x){
+  const base=surfaceMaterialColumn(level,x);
+  const walls=level.templeObstacles??[];
+  return y=>walls.some(w=>x>=w.left*16&&x<w.right*16&&
+    y>=w.top*16&&y<w.bottom*16)?'rock':base(y);
+}
+
 function contextColumn(level,water=[],objects=[],rays=[]){
   return x=>{
-    const staticColumn=surfaceMaterialColumn(level,x);
+    const staticColumn=authoredStaticColumn(level,x);
     const pool=water.find(p=>x>=p.from*16&&x<p.to*16);
     const shapes=objects.filter(o=>x>=o.left&&x<o.right);
     const lines=rays.filter(r=>x>=Math.min(r.from[0],r.to[0])-3&&
@@ -71,9 +81,10 @@ function repeat(state,count,step){
 for(const spec of specs){
   validateFutureChapter(spec);
   const level=scope.WW.worldCompiler.compile(spec);
+  level.templeObstacles=spec.obstacles??[];
   const directory=new URL(spec.id+'/',outputRoot);
   await mkdir(directory,{recursive:true});
-  const staticLevel={...level,materialColumn:x=>surfaceMaterialColumn(level,x)};
+  const staticLevel={...level,materialColumn:x=>authoredStaticColumn(level,x)};
   for(const [filename,layer] of [
     ['world-physical-rock.png','physical-rock'],
     ['world-static-solid.png','static-solid'],
@@ -109,6 +120,11 @@ for(const spec of specs){
         })),wheelActive:state.wheelActive,gates:state.gates,
         gatePivots:spec.gates.map(g=>({id:g.id,at:g.at.map(v=>v*16),
           size:g.size})),
+        obstacles:spec.obstacles,
+        releases:spec.releases.map(release=>({
+          id:release.id,at:release.at.map(n=>n*16),
+          released:state.released
+        })),
         valvePivots:spec.valves.map(v=>({id:v.id,at:v.at.map(n=>n*16),
           mode:state.modes[v.controller]})),
         waterwheel:{id:spec.waterwheel.id,
