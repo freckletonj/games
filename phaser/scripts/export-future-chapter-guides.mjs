@@ -91,15 +91,30 @@ for(const spec of specs){
     for(const [name,state] of [['low-tide',initial],['high-tide',high],
       ['valve-fill',valve],['wheel-finale',finale]]){
       const water=spec.waterVolumes.map(v=>({...v,surface:state.surfaces[v.id]}));
-      const objects=spec.buoyantObjects.map(b=>{
+      const buoyant=spec.buoyantObjects.map(b=>{
         const position=buoyantPosition(spec,state,b.id);
         return box(position.x,position.y,...b.size,'moving');
       });
+      const gates=spec.gates.filter(g=>!state.gates[g.id])
+        .map(g=>box(g.at[0]*16,g.at[1]*16,...g.size,'gate'));
+      const walkway=state.wheelActive?spec.linkedPlatforms.map(p=>
+        box(p.home[0]*16,p.home[1]*16,...p.size,'moving')):[];
+      const objects=[...buoyant,...gates,...walkway];
       frames.push(await sample(directory,level,name,water,objects,[],{
         tick:state.tick,surfaces:state.surfaces,modes:state.modes,
         buoyantObjects:spec.buoyantObjects.map(b=>({
           id:b.id,position:buoyantPosition(spec,state,b.id),size:b.size
-        })),wheelActive:state.wheelActive,gates:state.gates
+        })),wheelActive:state.wheelActive,gates:state.gates,
+        gatePivots:spec.gates.map(g=>({id:g.id,at:g.at.map(v=>v*16),
+          size:g.size})),
+        valvePivots:spec.valves.map(v=>({id:v.id,at:v.at.map(n=>n*16),
+          mode:state.modes[v.controller]})),
+        waterwheel:{id:spec.waterwheel.id,
+          at:spec.waterwheel.at.map(v=>v*16),
+          radius:spec.waterwheel.radius},
+        linkedPlatforms:spec.linkedPlatforms.map(p=>({id:p.id,
+          position:p.home.map(v=>v*16),size:p.size,
+          enabled:state.wheelActive}))
       }));
     }
   }else if(spec.id==='mirror-palace'){
