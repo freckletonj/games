@@ -264,3 +264,13 @@ test('orb-activated Eclipse shutter participates in the physical beam gate',()=>
   assert.equal(palaceWorld.state.shutters['eclipse-shutter'],'open');
   assert.equal(palaceWorld.state.gates['observatory-light-gate'],true);
 });
+
+
+test('every orb switch is above the walkway and within a thrown orb reach',()=>{
+  for(const control of [...palace.mirrors,...palace.shutters]){
+    const x=control.controlAt[0]*16,y=control.controlAt[1]*16;
+    const launchY=groundAt(x)-17;
+    assert.ok(Math.abs(launchY-y)<=34,
+      control.id+' must be reachable from the playable walkway with an orb');
+  }
+});
