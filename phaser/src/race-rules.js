@@ -49,7 +49,12 @@ export function stepRace(spec,state,players,{paused=false,failed=false,recall=fa
     const required=state.phase==='groundScroll'?'unicorn':'pegasus';
     if(!raceReadiness(players,required).ready)return restartRace(spec,state);
     const phase=spec.racePhases.find(phase=>phase.id===state.phase);
-    const anchor=Math.min(phase.to,state.anchor+phase.speed);
+    // Accelerate gently after each mount gate and ease into the sanctuary
+    // and finish instead of starting/stopping at full scroll speed.
+    const smooth=t=>t*t*(3-2*t);
+    const enter=.55+.45*smooth(Math.min(1,(state.tick+1)/145));
+    const leave=.55+.45*smooth(Math.min(1,(phase.to-state.anchor)/260));
+    const anchor=Math.min(phase.to,state.anchor+phase.speed*enter*leave);
     if(anchor===phase.to){
       const next=phase.next;
       return {...state,anchor,tick:state.tick+1,
