@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import race from '../levels/skybound-stampede.json' with {type:'json'};
+import {stepRace} from '../src/race-rules.js';
 import {stepMountedMotion,MOUNTS} from '../src/mounts.js';
 import {createRaceWorld,stepRaceWorld,raceRiderLeftBehind,
   raceCameraFrame,raceHazardContact} from '../src/race-world.js';
