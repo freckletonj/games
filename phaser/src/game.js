@@ -41,6 +41,8 @@ import sealAtlas from '../assets/generated/stonewake-hollow/seal-fragments.webp'
 import sealPlan from '../levels/stonewake-seal.json' with {type:'json'};
 import {bodyHitsRock,rockContains,sweepRockBody} from './cave-solids.js';
 import {surfaceGroundAt} from './surface-geometry.js';
+import {createTempleWorld,stepTempleWorld,templeInWater,
+  templeBlockHorizontal,templeCurrent} from './temple-world.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
 const CHAPTERS=campaign(WW.chapters);
@@ -186,6 +188,12 @@ class Wonderwood extends Phaser.Scene {
           }))
         }:null,
         movingPlatforms:this.walkableMachines?.map(({id,position})=>({id,position}))||[],
+        temple:this.templeWorld?{tick:this.templeWorld.state.tick,
+          surfaces:{...this.templeWorld.state.surfaces},
+          modes:{...this.templeWorld.state.modes},
+          gates:{...this.templeWorld.state.gates},
+          rafts:this.templeWorld.decks.map(d=>({id:d.id,position:d.position})),
+          crates:this.templeWorld.crates.map(c=>({id:c.id,x:c.x,y:c.y}))}:null,
         puzzleObjects:this.puzzleObjects?.map(({id,x,bottom,state,angle,speed,hits})=>({id,x,bottom,state,angle,speed,hits}))||[],
         players:this.players?.map(p=>({x:p.x,y:p.y,face:p.face,vx:p.vx,vy:p.vy,
           floating:p.floating??false,action:p.action,frame:Number(p.visual?.frame?.name),
@@ -268,6 +276,7 @@ class Wonderwood extends Phaser.Scene {
     this.machines=[];
     this.puzzleObjects=[];
     this.walkableMachines=[];
+    this.templeWorld=null;
     this.deckOverlay=null;
     this.lastInput=[{},{}];
     this.pendingActions=[{},{}];
@@ -492,6 +501,9 @@ class Wonderwood extends Phaser.Scene {
     this.progress=playChapter(this.progress,this.chapter.id);
     writeProgress(this.progressStorage,this.progress);
     this.level=compileChapter(this.chapter,WW.worldCompiler);
+    this.templeWorld=this.level.templeSpec?
+      createTempleWorld(this.level.templeSpec):null;
+    if(this.templeWorld)this.level.waterBodies=this.templeWorld.waterBodies;
     this.worldW=this.level.width*TILE;
     this.worldH=this.level.height*TILE;
     this.shared={relic:!this.level.objects.some(o=>o.kind===this.chapter.key),shards:0,collected:new Set(),checkpoint:null,
@@ -518,7 +530,8 @@ class Wonderwood extends Phaser.Scene {
           .setTileScale(.5).setOrigin(.5,0).setDepth(-18);
       }
     }
-    this.walkableMachines=[...this.movingPlatforms,...this.machines];
+    this.walkableMachines=[...this.movingPlatforms,...this.machines,
+      ...(this.templeWorld?.decks??[])];
     this.puzzleObjects=createPuzzleObjects(this.level.puzzleObjects??[]);
     for(const object of this.puzzleObjects){
       if(object.kind==='breakable-wall')this.makeSealVisual(object);
@@ -581,6 +594,8 @@ class Wonderwood extends Phaser.Scene {
   }
 
   inWater(x,y){
+    if(this.templeWorld)return templeInWater(this.templeWorld,
+      px=>this.groundAt(px),x,y);
     if(this.level.cave)return caveContainsWater(this.level,x,y);
     return this.level.waterBodies.some(b=>x>=b.start*TILE&&x<=b.end*TILE&&
       y>=b.surface*TILE&&y<=this.groundAt(x)+3);
@@ -1767,6 +1782,8 @@ class Wonderwood extends Phaser.Scene {
       groundAt:x=>this.groundAt(x),
       ceilingAt:this.level.cave?x=>this.level.cave.ceilingAt(x):null,
       inWater:(x,y)=>this.inWater(x,y),
+      currentAt:this.templeWorld?(x,y)=>templeCurrent(
+        this.templeWorld,this.level.templeSpec,x,y):null,
       waterBodies:this.level.waterBodies,
       thermalVolumes:this.level.thermalVolumes,
       platformSegments:this.level.platformSegments,
@@ -1776,8 +1793,13 @@ class Wonderwood extends Phaser.Scene {
       rockPolygons:this.level.rockPolygons,
       ropes:this.ropes,
       pushSpeed,
-      blockHorizontal:this.puzzleObjects.length?
-        (from,to,feet)=>blockPuzzleX(this.puzzleObjects,from,to,feet):null
+      blockHorizontal:this.puzzleObjects.length||this.templeWorld?
+        (from,to,feet)=>{
+          const puzzle=this.puzzleObjects.length?
+            blockPuzzleX(this.puzzleObjects,from,to,feet):to;
+          return this.templeWorld?templeBlockHorizontal(
+            this.level.templeSpec,this.templeWorld,from,puzzle,feet):puzzle;
+        }:null
     });
   }
 
@@ -1934,6 +1956,8 @@ class Wonderwood extends Phaser.Scene {
         }
       }
       this.updateCaptureBursts();
+      if(this.templeWorld)stepTempleWorld(this.level.templeSpec,
+        this.templeWorld,this.players,tickActions);
       stepPlatforms(this.movingPlatforms,tickTime/1000);
       stepMachines(this.machines,Math.round(tickTime/TICK_MS));
       const settled=stepPuzzleObjects(this.puzzleObjects,this.walkableMachines);
