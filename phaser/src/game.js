@@ -45,6 +45,7 @@ import {createTempleWorld,stepTempleWorld,templeInWater,
   templeBlockHorizontal,templeCurrent,snapshotTempleWorld,
   restoreTempleWorld} from './temple-world.js';
 import {createTempleScene,drawTempleScene} from './temple-scene.js';
+import {createPalaceWorld,stepPalaceWorld,restorePalaceWorld} from './palace-world.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
 const CHAPTERS=campaign(WW.chapters);
@@ -190,6 +191,10 @@ class Wonderwood extends Phaser.Scene {
           }))
         }:null,
         movingPlatforms:this.walkableMachines?.map(({id,position})=>({id,position}))||[],
+        palace:this.palaceWorld?{tick:this.palaceWorld.state.tick,
+          mirrors:{...this.palaceWorld.state.mirrors},
+          shutters:{...this.palaceWorld.state.shutters},
+          platforms:{...this.palaceWorld.state.platforms}}:null,
         temple:this.templeWorld?{tick:this.templeWorld.state.tick,
           surfaces:{...this.templeWorld.state.surfaces},
           modes:{...this.templeWorld.state.modes},
@@ -279,6 +284,8 @@ class Wonderwood extends Phaser.Scene {
     this.puzzleObjects=[];
     this.walkableMachines=[];
     this.templeWorld=null;
+    this.palaceWorld=null;
+    this.palaceCheckpoint=null;
     this.templeArt=null;
     this.templeCheckpoint=null;
     this.templeRecalling=false;
@@ -508,6 +515,9 @@ class Wonderwood extends Phaser.Scene {
     this.level=compileChapter(this.chapter,WW.worldCompiler);
     this.templeWorld=this.level.templeSpec?
       createTempleWorld(this.level.templeSpec):null;
+    this.palaceWorld=this.level.palaceSpec?
+      createPalaceWorld(this.level.palaceSpec):null;
+    if(this.palaceWorld)this.palaceCheckpoint=this.palaceWorld.state;
     if(this.templeWorld){
       this.level.waterBodies=this.templeWorld.waterBodies;
       this.templeCheckpoint=snapshotTempleWorld(this.templeWorld);
@@ -539,7 +549,7 @@ class Wonderwood extends Phaser.Scene {
       }
     }
     this.walkableMachines=[...this.movingPlatforms,...this.machines,
-      ...(this.templeWorld?.decks??[])];
+      ...(this.templeWorld?.decks??[]),...(this.palaceWorld?.decks??[])];
     this.puzzleObjects=createPuzzleObjects(this.level.puzzleObjects??[]);
     for(const object of this.puzzleObjects){
       if(object.kind==='breakable-wall')this.makeSealVisual(object);
@@ -1448,6 +1458,13 @@ class Wonderwood extends Phaser.Scene {
   }
 
   recall(p){
+    if(this.palaceWorld&&!this.templeRecalling){
+      this.templeRecalling=true;
+      restorePalaceWorld(this.palaceWorld,this.palaceCheckpoint);
+      for(const explorer of this.players)this.recall(explorer);
+      this.templeRecalling=false;
+      return;
+    }
     if(this.templeWorld&&!this.templeRecalling){
       this.templeRecalling=true;
       restoreTempleWorld(this.level.templeSpec,this.templeWorld,
@@ -1853,6 +1870,7 @@ class Wonderwood extends Phaser.Scene {
         this.shared.checkpoint={x:item.x,y:item.y};
         if(this.templeWorld)this.templeCheckpoint=
           snapshotTempleWorld(this.templeWorld);
+        if(this.palaceWorld)this.palaceCheckpoint=this.palaceWorld.state;
         for(const explorer of this.players){
           explorer.checkpoint={...this.shared.checkpoint};
           if(!explorer.sleep)explorer.health=3;
@@ -1978,6 +1996,8 @@ class Wonderwood extends Phaser.Scene {
       this.updateCaptureBursts();
       if(this.templeWorld)stepTempleWorld(this.level.templeSpec,
         this.templeWorld,this.players,tickActions);
+      if(this.palaceWorld)stepPalaceWorld(this.level.palaceSpec,
+        this.palaceWorld,this.players,tickActions);
       stepPlatforms(this.movingPlatforms,tickTime/1000);
       stepMachines(this.machines,Math.round(tickTime/TICK_MS));
       const settled=stepPuzzleObjects(this.puzzleObjects,this.walkableMachines);
@@ -2032,6 +2052,7 @@ class Wonderwood extends Phaser.Scene {
           this.deckOverlay.strokeRect(object.x-width/2,top,width,object.bottom-top);
         }
         for(const deck of this.walkableMachines){
+          if(deck.enabled===false)continue;
           const [x]=deck.position,half=deck.size[deck.kind==='gear'?1:0]/2;
           for(let px=x-half;px<x+half;px+=4){
             const end=Math.min(px+4,x+half);
