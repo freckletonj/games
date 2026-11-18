@@ -122,5 +122,7 @@ export function raceCameraFrame(spec,state,players,viewport={width:960,height:54
   const zoom=Math.max(viewport.defaultZoom*.74,
     Math.min(viewport.defaultZoom,
       viewport.width/(spread+150)));
-  return {x,y:average-70,zoom};
+  // In flight, keep the dangerous lower cloudline near the viewport bottom
+  // rather than framing an empty sky above the rider.
+  return {x,y:average-(state.phase==='flightScroll'?0:70),zoom};
 }
