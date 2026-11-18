@@ -46,8 +46,8 @@ export function createTempleScene(scene,spec,world,approved){
     .setDepth(-17);
   const guide=scene.add.graphics().setDepth(-16);
   const wheelLabel=scene.add.text(
-    wheel.at[0]*TILE,wheel.at[1]*TILE-wheel.radius-24,
-    'WATERWHEEL · FILL CASCADE VALVE',{
+    wheel.at[0]*TILE+80,wheel.at[1]*TILE-wheel.radius-100,
+    'WHEEL → BRIDGE',{
       fontFamily:'system-ui',fontSize:'12px',fontStyle:'bold',
       color:'#fff4c1',backgroundColor:'#153746d9',padding:{x:7,y:5}
     }).setOrigin(.5,1).setDepth(39);
@@ -113,11 +113,9 @@ export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
       art.guide.lineBetween(x,by,Math.min(x+10,bx+width/2),by);
   }
   art.labels.wheelLabel.setText(active?
-    'WATERWHEEL TURNING · BRIDGE POWERED':
-    'WATERWHEEL · FILL CASCADE VALVE');
-  art.labels.bridgeLabel.setText(active?
-    'BRIDGE ON · WALK ACROSS':
-    'BRIDGE OFF · ACTIVATE WATERWHEEL');
+    'WHEEL ON · BRIDGE POWERED':
+    'WHEEL OFF · FILL VALVE');
+  art.labels.bridgeLabel.setText(active?'BRIDGE ON':'BRIDGE OFF');
   art.debug.clear();
   if(showOverlay){
     art.debug.fillStyle(0x20c0ec,.36);
