@@ -188,6 +188,22 @@ test('head raft can be boarded and delivers the player to the cascade release le
   assert.ok(ledge,'The release station should be a forgiving jump from the raft');
 });
 
+test('head wheel-release station cannot be reached from the water without the rising raft',()=>{
+  const {player,templeWorld,step}=simulation(explorer(157*16,groundAt(157*16)));
+  templeWorld.decks.find(d=>d.id==='head-raft').enabled=false;
+  templeWorld.state=setTempleValve(temple,templeWorld.state,'cascade-handle','fill');
+  let farthest=player.x;
+  for(let i=0;i<1000;i++){
+    const jump=i%55<25;
+    step({right:true,jump,jumpPressed:i%55===0});
+    farthest=Math.max(farthest,player.x);
+  }
+  assert.ok(farthest<164*16,
+    'The head reservoir must require boarding the rising raft: '+
+      JSON.stringify({farthest,y:player.y,surface:templeWorld.state.surfaces['wheel-head']}));
+  assert.equal(templeWorld.state.released,false);
+});
+
 test('a closed sluice arch blocks walking and jumping above its upper ledge',()=>{
   const {player,templeWorld,step}=simulation(explorer(104*16,40*16));
   for(let i=0;i<210;i++){

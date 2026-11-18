@@ -506,6 +506,13 @@
       "right": 202.5,
       "top": 39,
       "bottom": 57
+    },
+    {
+      "id": "head-dock-lip",
+      "left": 163,
+      "right": 163.75,
+      "top": 39,
+      "bottom": 57
     }
   ]
 }
