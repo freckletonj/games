@@ -49,6 +49,7 @@ import {createPalaceWorld,stepPalaceWorld,restorePalaceWorld,
   palaceBlockHorizontal} from './palace-world.js';
 import {createPalaceScene,drawPalaceScene} from './palace-scene.js';
 import {createRaceWorld,stepRaceWorld,raceCameraFrame} from './race-world.js';
+import {createRaceScene,drawRaceScene} from './race-scene.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
 const CHAPTERS=campaign(WW.chapters);
@@ -293,6 +294,7 @@ class Wonderwood extends Phaser.Scene {
     this.palaceScene=null;
     this.palaceCheckpoint=null;
     this.raceWorld=null;
+    this.raceScene=null;
     this.raceRecalling=false;
     this.templeArt=null;
     this.templeCheckpoint=null;
@@ -570,6 +572,8 @@ class Wonderwood extends Phaser.Scene {
       this.templeWorld,APPROVED_SCENE_ART[this.chapter.id]):null;
     this.palaceScene=this.palaceWorld?createPalaceScene(this,
       this.level.palaceSpec):null;
+    this.raceScene=this.raceWorld?createRaceScene(this,
+      this.level.raceSpec):null;
     this.windColumns=makeThermals(this,this.level.thermalVolumes,TILE);
     this.spawnObjects();
     this.spawnMounts();
@@ -2153,6 +2157,8 @@ class Wonderwood extends Phaser.Scene {
       this.templeWorld,x=>this.groundAt(x),this.geometryOverlay.visible);
     if(this.palaceScene)drawPalaceScene(this.palaceScene,
       this.level.palaceSpec,this.palaceWorld);
+    if(this.raceScene)drawRaceScene(this.raceScene,
+      this.level.raceSpec,this.raceWorld,this.players);
     if(this.deckOverlay){
       this.deckOverlay.clear();
       if(this.geometryOverlay.visible){
