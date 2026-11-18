@@ -591,7 +591,7 @@ class Wonderwood extends Phaser.Scene {
     });
     const camera=this.cameras.main;
     // Frame local switches, rays and their associated platforms together.
-    this.defaultZoom=this.palaceWorld?.78:
+    this.defaultZoom=this.palaceWorld?0.78:
       this.level.cave?(this.chapter.id==='skywell-ascent'?1.4:1.25):2;
     this.lookUp=this.level.cave?40:38;
     camera.setZoom(this.defaultZoom).setBounds(0,0,this.worldW,this.worldH);
