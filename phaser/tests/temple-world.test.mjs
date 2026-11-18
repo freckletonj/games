@@ -6,7 +6,8 @@ import temple from '../levels/sunken-temple.json' with {type:'json'};
 import {stepPlayerMotion} from '../src/player-motion.js';
 import {surfaceGroundAt} from '../src/surface-geometry.js';
 import {createTempleWorld,stepTempleWorld,templeInWater,
-  templeBlockHorizontal,templeCurrent} from '../src/temple-world.js';
+  templeBlockHorizontal,templeCurrent,snapshotTempleWorld,
+  restoreTempleWorld} from '../src/temple-world.js';
 import {setTempleValve} from '../src/temple-rules.js';
 
 const scope={};
@@ -129,4 +130,29 @@ test('replaying identical real motion inputs from a fresh state is deterministic
     return traces;
   }
   assert.deepEqual(replay(),replay());
+});
+
+test('checkpoint restoration replays tides, rider carry and crate positions exactly',()=>{
+  const {player,templeWorld,step}=simulation(explorer(43*16,54*16));
+  player.onPlatform='courtyard-raft';
+  for(let i=0;i<140;i++)step();
+  const snapshot=snapshotTempleWorld(templeWorld);
+  const playerAtCheckpoint={...player};
+  const deck=templeWorld.decks[0],volume=templeWorld.waterBodies[0];
+  const capture=()=>{
+    const trace=[];
+    for(let i=0;i<160;i++){
+      step({right:i>=50&&i<80});
+      if(i%20===0)trace.push([player.x,player.y,player.onPlatform,
+        volume.surface,deck.position[1]]);
+    }
+    return trace;
+  };
+  const first=capture();
+  restoreTempleWorld(temple,templeWorld,snapshot);
+  Object.assign(player,playerAtCheckpoint);
+  assert.equal(templeWorld.decks[0],deck);
+  assert.equal(templeWorld.waterBodies[0],volume);
+  assert.equal(templeWorld.state.tick,140);
+  assert.deepEqual(capture(),first);
 });
