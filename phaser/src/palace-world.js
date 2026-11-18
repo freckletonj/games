@@ -89,6 +89,7 @@ export function palaceBlockHorizontal(spec,world,fromX,toX,feet){
 }
 
 export function restorePalaceWorld(world,state){
+  world.orbHits.length=0;
   world.state=state;
   for(const deck of world.decks)deck.enabled=state.platforms[deck.id].solid;
   return world;
