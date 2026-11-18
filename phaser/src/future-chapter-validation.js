@@ -41,6 +41,13 @@ export function validateFutureChapter(spec){
       needs('pressurePlates',g.opensWhen);
     for(const c of spec.currents)needs('waterVolumes',c.volume);
     needs('waterControllers',spec.waterwheel.upstream);
+    for(const platform of spec.linkedPlatforms??[]){
+      if(platform.enabledWhen!==spec.waterwheel.id||
+         platform.home[0]*16-platform.size[0]/2<0||
+         platform.home[0]*16+platform.size[0]/2>spec.width*16||
+         platform.size[0]<=0||platform.size[1]<=0)
+        fail('invalid wheel-linked platform '+platform.id);
+    }
   }
   if(spec.lightSources){
     for(const m of spec.mirrors){
