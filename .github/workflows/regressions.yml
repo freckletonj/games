@@ -100,23 +100,40 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Test Phaser gameplay and cave geometry
         run: npm test --prefix phaser
-      - name: Export and inspect Sunken Temple's deterministic art guides
+      - name: Export and inspect three geometry-derived chapter guides
         run: |
-          node phaser/scripts/export-future-chapter-guides.mjs sunken-temple
+          node phaser/scripts/export-future-chapter-guides.mjs
           node --input-type=module -e '
             import assert from "node:assert/strict";
             import {readFileSync} from "node:fs";
-            const directory="dist/future-chapter-guides/sunken-temple/";
-            const manifest=JSON.parse(readFileSync(directory+"manifest.json","utf8"));
-            assert.equal(manifest.frames.length,4);
-            for(const frame of manifest.frames){
-              const image=readFileSync(directory+frame.file);
-              assert.equal(image.subarray(1,4).toString(),"PNG");
-              assert.equal(image.readUInt32BE(16),manifest.width);
-              assert.equal(image.readUInt32BE(20),manifest.height);
+            const chapters=[
+              ["sunken-temple",4],["mirror-palace",4],["skybound-stampede",5]
+            ];
+            for(const [chapter,count] of chapters){
+              const directory="dist/future-chapter-guides/"+chapter+"/";
+              const manifest=JSON.parse(readFileSync(directory+"manifest.json","utf8"));
+              assert.equal(manifest.frames.length,count);
+              for(const file of [...manifest.staticLayers,
+                ...manifest.frames.map(frame=>frame.file)]){
+                const image=readFileSync(directory+file);
+                assert.equal(image.subarray(1,4).toString(),"PNG");
+                assert.equal(image.readUInt32BE(16),manifest.width);
+                assert.equal(image.readUInt32BE(20),manifest.height);
+              }
+              if(chapter==="sunken-temple"){
+                assert.equal(manifest.frames.at(-1).wheelActive,true);
+                assert.equal(manifest.frames.at(-1).gates["wheel-gate"],true);
+              }else if(chapter==="mirror-palace"){
+                assert.equal(manifest.frames[0].gates["atrium-light-gate"],false);
+                assert.equal(manifest.frames[1].gates["atrium-light-gate"],true);
+                assert.equal(manifest.frames[2].gates["gallery-light-gate"],true);
+                assert.equal(manifest.frames[3].gates["observatory-light-gate"],true);
+              }else{
+                assert.equal(manifest.frames[0].phase,"waitingForUnicorns");
+                assert.equal(manifest.frames[2].phase,"waitingForPegasi");
+                assert.equal(manifest.frames[4].phase,"flightScroll");
+              }
             }
-            assert.equal(manifest.frames.at(-1).wheelActive,true);
-            assert.equal(manifest.frames.at(-1).gates["wheel-gate"],true);
           '
       - name: Build standalone Phaser game
         run: npm run build --prefix phaser
