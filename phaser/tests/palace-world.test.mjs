@@ -157,14 +157,16 @@ function runPalaceRoute(humans,operateMirrors){
     const actions=players.map(player=>{
       let upPressed=false;
       if(operateMirrors&&player.id===0){
-        const closest=palace.mirrors.map(mirror=>({
-          mirror,distance:Math.hypot(
-            player.x-mirror.controlAt[0]*16,
-            player.y-mirror.controlAt[1]*16)
+        const candidates=[...palace.mirrors,
+          palace.shutters.find(shutter=>shutter.id==='eclipse-shutter')];
+        const closest=candidates.map(control=>({
+          control,distance:Math.hypot(
+            player.x-control.controlAt[0]*16,
+            player.y-control.controlAt[1]*16)
         })).filter(item=>item.distance<30)
           .sort((a,b)=>a.distance-b.distance)[0];
         if(closest){
-          const id=closest.mirror.id,required=id==='observatory-prism'?2:1;
+          const id=closest.control.id,required=id==='observatory-prism'?2:1;
           const count=activations.get(id)??0;
           if(count<required&&tick%3===0){
             activations.set(id,count+1);
@@ -205,7 +207,8 @@ test('normal input solves all three beams and physically reaches light and exit'
   assert.ok(result.light,'The floating Palace Light must be touched');
   assert.ok(Object.values(result.palaceWorld.state.gates).every(Boolean));
   assert.deepEqual(result.activated,
-    ['atrium-mirror','gallery-mirror-a','gallery-mirror-b','observatory-prism']);
+    ['atrium-mirror','gallery-mirror-a','gallery-mirror-b',
+      'observatory-prism','eclipse-shutter']);
   assert.ok(result.tick<2000);
   assert.equal(runPalaceRoute(1,true).tick,result.tick,
     'Replaying the same 60 Hz input sequence produces the exact arrival tick');
@@ -217,4 +220,20 @@ test('two active explorers can both physically reach the Palace exit',()=>{
   assert.equal(result.light,true);
   assert.equal(result.players.length,2);
   assert.ok(Object.values(result.palaceWorld.state.gates).every(Boolean));
+});
+
+test('the closed Eclipse shutter prevents prism-gate bypass until used',()=>{
+  const x=180*16,player=explorer(0,x,groundAt(x));
+  const {palaceWorld,step}=simulation([player]);
+  palaceWorld.state=setMirrorDetent(palace,palaceWorld.state,
+    'observatory-prism',-45);
+  for(let tick=0;tick<620;tick++)step([controls]);
+  assert.equal(palaceWorld.state.gates['observatory-light-gate'],false,
+    'An eclipse opening must not ignore the authored blocking shutter');
+  step([{upPressed:true}]);
+  assert.equal(palaceWorld.state.shutters['eclipse-shutter'],'open');
+  for(let tick=0;tick<620&&
+    !palaceWorld.state.gates['observatory-light-gate'];tick++)step([controls]);
+  assert.equal(palaceWorld.state.gates['observatory-light-gate'],true,
+    'A physically clear prism beam must open the observatory door');
 });
