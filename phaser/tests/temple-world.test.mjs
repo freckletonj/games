@@ -5,11 +5,12 @@ import vm from 'node:vm';
 import temple from '../levels/sunken-temple.json' with {type:'json'};
 import {stepPlayerMotion} from '../src/player-motion.js';
 import {surfaceGroundAt} from '../src/surface-geometry.js';
-import {createTempleWorld,stepTempleWorld,templeInWater,
+import {createTempleWorld,stepTempleWorld,templeInWater,templeBasinAt,
   templeBlockHorizontal,templeCurrent,snapshotTempleWorld,
   restoreTempleWorld} from '../src/temple-world.js';
 import {setTempleValve} from '../src/temple-rules.js';
 import {templeWaterColumns,createTempleScene} from '../src/temple-scene.js';
+import {templeShoreBounds} from '../src/temple-shoreline.js';
 import {templeShoreBounds} from '../src/temple-shoreline.js';
 
 const scope={};
@@ -319,4 +320,28 @@ test('Temple water meets each sloping bank with no rectangular shoreline gap',()
     assert.ok(strips.some(strip=>strip.x<basin.start*16));
     assert.ok(strips.some(strip=>strip.x+strip.width>basin.end*16));
   }
+});
+
+test('sloping Temple shorelines are wet in both the rendered and physics model',()=>{
+  const world=createTempleWorld(temple);
+  const courtyard=world.waterBodies.find(b=>b.id==='courtyard');
+  courtyard.surface=46;
+  const {left,right,y}=templeShoreBounds(courtyard,groundAt);
+  for(const x of [(left+courtyard.start*16)/2,
+    (right+courtyard.end*16)/2]){
+    const bottom=groundAt(x);
+    assert.ok(bottom>y+10,'The bank has visible water depth');
+    assert.equal(templeBasinAt(world,groundAt,x)?.id,'courtyard');
+    assert.equal(templeInWater(world,groundAt,x,(y+bottom)/2),true);
+  }
+  const player=explorer((left+courtyard.start*16)/2,
+    groundAt((left+courtyard.start*16)/2));
+  const physics={width:level.width*16,height:level.height*16,tile:16,
+    groundAt,waterBodies:world.waterBodies,thermalVolumes:[],
+    platformSegments:level.platformSegments,movingPlatforms:[],
+    inWater:(x,y)=>templeInWater(world,groundAt,x,y),
+    basinAt:x=>templeBasinAt(world,groundAt,x)};
+  stepPlayerMotion(player,controls,1,physics);
+  assert.equal(player.floating,true,
+    'Entering the wet bank must not remain ordinary dry-ground walking');
 });
