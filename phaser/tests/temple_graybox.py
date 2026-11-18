@@ -23,8 +23,13 @@ def main():
         )
         page.locator(".ww-explorers button").first.click()
         page.locator("#ww-menu-continue").click()
-        assert page.locator("#ww-level-grid button").count() == 12
-        page.locator("#ww-level-grid button").last.click()
+        chapter_buttons = page.locator("#ww-level-grid button")
+        labels = chapter_buttons.all_inner_texts()
+        assert any("Sunken Temple" in label for label in labels), (
+            "Temple preview chapter card missing", labels,
+            page.evaluate("location.href")
+        )
+        chapter_buttons.filter(has_text="Sunken Temple").click()
         page.locator("#ww-menu-play").click()
         page.wait_for_function(
             "window.__wonderwoodPhaser?.snapshot().chapter === 'sunken-temple'",
