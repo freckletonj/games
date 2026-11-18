@@ -30,6 +30,19 @@ export function constrainRaceRiders(spec,state,players){
   }
 }
 
+// The authored hazard bounds are authoritative. Mounted bodies use a small,
+// consistent collision silhouette around their actual world-space saddle;
+// the independently authored gap catches riders who never clear the floor.
+export function raceHazardContact(hazard,mount){
+  const [width,height]=hazard.size;
+  const overlapsX=Math.abs(mount.x-hazard.x)<width/2+14;
+  if(!overlapsX)return false;
+  if(hazard.kind==='gap')
+    return mount.grounded&&mount.y>=hazard.y-2;
+  const top=hazard.y-height/2,bottom=hazard.y+height/2;
+  return mount.y-5>=top&&mount.y-48<=bottom;
+}
+
 export function stepRaceWorld(spec,world,players,{paused=false,failed=false,recall=false}={}){
   const previous=world.state.phase;
   const leftBehind=raceRiderLeftBehind(spec,world.state,players);
