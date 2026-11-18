@@ -41,7 +41,7 @@ import sealAtlas from '../assets/generated/stonewake-hollow/seal-fragments.webp'
 import sealPlan from '../levels/stonewake-seal.json' with {type:'json'};
 import {bodyHitsRock,rockContains,sweepRockBody} from './cave-solids.js';
 import {surfaceGroundAt} from './surface-geometry.js';
-import {createTempleWorld,stepTempleWorld,templeInWater,
+import {createTempleWorld,stepTempleWorld,templeInWater,templeBasinAt,
   templeBlockHorizontal,templeCurrent,snapshotTempleWorld,
   restoreTempleWorld} from './temple-world.js';
 import {createTempleScene,drawTempleScene} from './temple-scene.js';
@@ -1915,6 +1915,8 @@ class Wonderwood extends Phaser.Scene {
       groundAt:x=>this.groundAt(x),
       ceilingAt:this.level.cave?x=>this.level.cave.ceilingAt(x):null,
       inWater:(x,y)=>this.inWater(x,y),
+      basinAt:this.templeWorld?x=>templeBasinAt(
+        this.templeWorld,px=>this.groundAt(px),x):null,
       currentAt:this.templeWorld?(x,y)=>templeCurrent(
         this.templeWorld,this.level.templeSpec,x,y):null,
       waterBodies:this.level.waterBodies,
