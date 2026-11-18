@@ -22,6 +22,28 @@ export function createTempleWorld(spec){
   return {state,crates,decks,waterBodies};
 }
 
+// Checkpoints preserve the tide phase, valve modes and pushed crate X.
+// Restore in place: the scene and player collision systems retain references
+// to the exact water bodies and deck objects.
+export function snapshotTempleWorld(world){
+  return {state:world.state,cratePositions:world.crates.map(c=>[c.x,c.y])};
+}
+
+export function restoreTempleWorld(spec,world,snapshot){
+  world.state=snapshot.state;
+  world.crates.forEach((crate,index)=>{
+    [crate.x,crate.y]=snapshot.cratePositions[index];
+  });
+  for(const volume of world.waterBodies)
+    volume.surface=world.state.surfaces[volume.id];
+  for(const deck of world.decks){
+    const {x,y}=buoyantPosition(spec,world.state,deck.id);
+    deck.position=[x,y];
+    deck.previous=[x,y];
+  }
+  return world;
+}
+
 export function templeInWater(world,groundAt,x,y){
   return world.waterBodies.some(volume=>x>=volume.start*TILE&&
     x<volume.end*TILE&&y>=volume.surface*TILE&&y<groundAt(x));
