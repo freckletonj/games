@@ -10,6 +10,7 @@ import {createTempleWorld,stepTempleWorld,templeInWater,
   restoreTempleWorld} from '../src/temple-world.js';
 import {setTempleValve} from '../src/temple-rules.js';
 import {templeWaterColumns,createTempleScene} from '../src/temple-scene.js';
+import {templeShoreBounds} from '../src/temple-shoreline.js';
 
 const scope={};
 scope.window=scope;vm.createContext(scope);
@@ -300,4 +301,22 @@ test('runtime water masks are clipped to compiled physical ground at every level
   assert.ok(sluice.every(strip=>strip.y===45*16));
   assert.throws(()=>createTempleScene({chapter:{id:temple.id}},
     temple,world,null),/approved alpha art/);
+});
+
+test('Temple water meets each sloping bank with no rectangular shoreline gap',()=>{
+  const world=createTempleWorld(temple);
+  const basin=world.waterBodies.find(b=>b.id==='courtyard');
+  for(const height of [55,50,46]){
+    basin.surface=height;
+    const {left,right,y}=templeShoreBounds(basin,groundAt);
+    assert.ok(left<basin.start*16,'Water must reach the left slope');
+    assert.ok(right>basin.end*16,'Water must reach the right slope');
+    assert.ok(Math.abs(groundAt(left)-y)<1);
+    assert.ok(Math.abs(groundAt(right)-y)<1);
+    assert.equal(templeInWater(world,groundAt,left+16,y+10),true);
+    assert.equal(templeInWater(world,groundAt,left-4,y+10),false);
+    const strips=templeWaterColumns(world,groundAt,4);
+    assert.ok(strips.some(strip=>strip.x<basin.start*16));
+    assert.ok(strips.some(strip=>strip.x+strip.width>basin.end*16));
+  }
 });
