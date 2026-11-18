@@ -196,6 +196,18 @@ export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
     }
     for(const crate of world.crates)
       art.debug.strokeRect(crate.x-crate.size[0]/2,crate.y,...crate.size);
+    art.debug.fillStyle(0x9772b7,.36).lineStyle(2,0xb9a6dc,.98);
+    for(const wall of spec.obstacles??[]){
+      const x=wall.left*TILE,y=wall.top*TILE;
+      const width=(wall.right-wall.left)*TILE;
+      const height=(wall.bottom-wall.top)*TILE;
+      art.debug.fillRect(x,y,width,height);
+      art.debug.strokeRect(x,y,width,height);
+    }
+    art.debug.lineStyle(2,0xeed18b,.98);
+    for(const plate of spec.pressurePlates)
+      art.debug.lineBetween(plate.at[0]*TILE-plate.radius,
+        plate.at[1]*TILE,plate.at[0]*TILE+plate.radius,plate.at[1]*TILE);
     for(const gate of spec.gates){
       if(world.state.gates[gate.id])continue;
       art.debug.strokeRect(gate.at[0]*TILE-gate.size[0]/2,
