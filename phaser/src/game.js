@@ -1467,11 +1467,9 @@ class Wonderwood extends Phaser.Scene {
       const next=orbStep(orb,floor,step,landing);
       Object.assign(orb,next);
       if(this.palaceWorld){
-        const controls=[...this.level.palaceSpec.mirrors,
-          ...this.level.palaceSpec.shutters];
-        const hit=controls.find(control=>{
-          const [cx,cy]=control.controlAt.map(n=>n*TILE);
-          return Math.hypot(orb.x-cx,orb.y-cy)<40;
+        const hit=this.level.palaceSpec.circuitSwitches.find(control=>{
+          const [cx,cy]=control.at.map(n=>n*TILE);
+          return Math.hypot(orb.x-cx,orb.y-cy)<44;
         });
         if(hit){
           this.palaceWorld.orbHits.push(hit.id);
@@ -2202,7 +2200,7 @@ class Wonderwood extends Phaser.Scene {
       'Up / Down · climb   ·   Tap ← / → low to swing higher   ·   Jump · let go':
       lead.x<1410?'Hold ↑ to grab a rope · P2 uses 8':'Find the key on the canopy shelf.';
     const leadHint=this.palaceWorld?
-      'G / X · Hit lettered switches with orbs. Crystals need light; shadow decks need darkness.':
+      'G / X · Shoot the big colored lamp. Follow its line to the matching bridge and door.':
       this.raceWorld?.state.phase==='flightScroll'?
       'Pegasus · Tap Jump to flap. The canyon has no floor; stay airborne!':
       lead.clouded?'P1 · Steer with the stick or direction keys · Jump to break free':
