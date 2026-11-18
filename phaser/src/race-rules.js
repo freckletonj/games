@@ -4,6 +4,7 @@
 export function raceReadiness(players,kind){
   const humans=players.filter(player=>!player.assist);
   const mounted=humans.filter(player=>player.mount?.kind===kind&&
+    (player.mount.rider===undefined||player.mount.rider===player.id)&&
     !player.sleep&&!player.bubble&&!player.clouded);
   const distinct=new Set(mounted.map(player=>player.mount)).size===mounted.length;
   return {ready:humans.length>0&&mounted.length===humans.length&&distinct,
