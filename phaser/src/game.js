@@ -539,7 +539,8 @@ class Wonderwood extends Phaser.Scene {
       picnics:0,foods:{berry:14,nectar:6,star:6}};
     this.cameras.main.setBackgroundColor(this.level.cave?0x0b1c2c:SKY[this.level.biome]);
     this.isCavern=this.chapter.id==='cavern-ascent';
-    this.sceneArt=paintScene(this,APPROVED_SCENE_ART[this.chapter.id]);
+    this.sceneArt=this.templeWorld&&!APPROVED_SCENE_ART[this.chapter.id]?
+      []:paintScene(this,APPROVED_SCENE_ART[this.chapter.id]);
     this.geometryOverlay=makeGeometryOverlay(this);
     this.movingPlatforms=(this.level.movingPlatforms??[]).map(platform=>{
       const position=platformPosition(platform,0);
@@ -2210,7 +2211,14 @@ class Wonderwood extends Phaser.Scene {
     const jungleHint=lead.rope?
       'Up / Down · climb   ·   Tap ← / → low to swing higher   ·   Jump · let go':
       lead.x<1410?'Hold ↑ to grab a rope · P2 uses 8':'Find the key on the canopy shelf.';
-    const leadHint=this.palaceWorld?
+    const templeHint=lead.x<70*TILE?
+      'Board the low-tide raft, ride it upward, and jump to the high dock.':
+      lead.x<107*TILE?
+      '↑ at valves · Raise the crate over the weir, push it right, then drain it onto the floor socket.':
+      lead.x<170*TILE?
+      'Fill the head reservoir, ride its raft to the high ledge, then press ↑ to release the cascade.':
+      'The wheel powers two bridge sections. Ride the rising raft through the gap.';
+    const leadHint=this.templeWorld?templeHint:this.palaceWorld?
       'G / X · Shoot the big colored lamp. Follow its line to the matching bridge and door.':
       this.raceWorld?.state.phase==='waitingForUnicorns'?
       'Give a Unicorn two berry treats (F), then press T to ride. Both riders must mount.':

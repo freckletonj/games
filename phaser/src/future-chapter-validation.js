@@ -3,7 +3,7 @@
 export function validateFutureChapter(spec){
   const fail=message=>{throw Error(spec.id+': '+message)};
   const groups=['waterVolumes','waterControllers','valves','buoyantObjects',
-    'pressurePlates','gates','currents','lightSources','mirrors','shutters',
+    'pressurePlates','gates','currents','releases','obstacles','linkedPlatforms','lightSources','mirrors','shutters',
     'occluders','beamTargets','phasePlatforms','racePhases','mountEncounters',
     'hazards','flightVolumes'];
   const named=Object.fromEntries(groups.map(group=>
@@ -34,7 +34,22 @@ export function validateFutureChapter(spec){
           fail('invalid valve controller');
       }else fail('unknown water controller');
     }
-    for(const v of spec.valves)needs('waterControllers',v.controller);
+    for(const v of spec.valves){
+      needs('waterControllers',v.controller);
+      if(!Array.isArray(v.at)||v.at.length!==2||v.at.some(n=>!Number.isFinite(n))||
+         !(v.reach>0)||!v.modes?.length)fail('invalid valve '+v.id);
+    }
+    for(const release of spec.releases??[])
+      if(!Array.isArray(release.at)||release.at.length!==2||
+         release.at.some(n=>!Number.isFinite(n))||!(release.reach>0))
+        fail('invalid release '+release.id);
+    for(const wall of spec.obstacles??[])
+      if(!(wall.left>=0&&wall.right<=spec.width&&wall.left<wall.right&&
+           wall.top>=0&&wall.bottom<spec.height&&wall.top<wall.bottom))
+        fail('invalid obstacle '+wall.id);
+    needs('releases',spec.waterwheel.release);
+    if(!Number.isInteger(spec.waterwheel.chargeTicks)||
+       spec.waterwheel.chargeTicks<=0)fail('invalid wheel charge');
     for(const b of spec.buoyantObjects)needs('waterVolumes',b.volume);
     for(const p of spec.pressurePlates){needs('buoyantObjects',p.requires);needs('gates',p.opens)}
     for(const g of spec.gates)if(g.opensWhen!==spec.waterwheel.id)

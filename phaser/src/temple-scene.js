@@ -18,32 +18,48 @@ export function templeWaterColumns(world,groundAt,pitch=8){
 }
 
 export function createTempleScene(scene,spec,world,approved){
-  const ids=[...world.decks,...world.crates,...spec.valves,
-    ...spec.gates,spec.waterwheel].map(item=>item.id);
-  const missing=ids.filter(id=>!approved?.platforms?.[id]);
-  if(missing.length)throw Error('Sunken Temple lacks approved alpha art: '+
-    missing.join(', '));
   const texture=id=>'deck-'+scene.chapter.id+'-'+id;
+  const makeVisual=(id,x,y,width,height,depth,color,originY=0)=>{
+    if(approved?.platforms?.[id])
+      return scene.add.image(x,y,texture(id)).setOrigin(.5,originY)
+        .setDisplaySize(width,height).setDepth(depth);
+    return scene.add.rectangle(x,y,width,height,color,.95)
+      .setOrigin(.5,originY).setDepth(depth);
+  };
+  // The candidate chapter intentionally has no registered painting.
+  // Build its physical ground and shelving directly from authored geometry.
+  const graybox=approved?null:scene.add.graphics().setDepth(-31);
+  if(graybox){
+    graybox.fillStyle(0x435c65);
+    for(let x=0;x<spec.width*TILE;x+=8){
+      const ground=scene.groundAt(x+4);
+      graybox.fillRect(x,ground,8,scene.worldH-ground);
+    }
+    graybox.lineStyle(4,0xd6bc86);
+    for(const [x,y,length] of spec.ledges)
+      graybox.lineBetween(x*TILE,y*TILE,(x+length)*TILE,y*TILE);
+  }
   const objects={};
   for(const deck of world.decks){
-    deck.visual=scene.add.image(...deck.position,texture(deck.id))
-      .setOrigin(.5,0).setDisplaySize(...deck.size).setDepth(-19);
+    deck.visual=makeVisual(deck.id,...deck.position,
+      ...deck.size,-19,deck.kind==='raft'?0xd4a96e:0xc7b7a0);
   }
   for(const crate of world.crates)
-    crate.visual=scene.add.image(crate.x,crate.y,texture(crate.id))
-      .setOrigin(.5,0).setDisplaySize(...crate.size).setDepth(-18);
+    crate.visual=makeVisual(crate.id,crate.x,crate.y,
+      ...crate.size,-18,0xc38b56);
   for(const valve of spec.valves){
-    objects[valve.id]=scene.add.image(valve.at[0]*TILE,valve.at[1]*TILE,
-      texture(valve.id)).setDisplaySize(36,36).setDepth(-17);
+    objects[valve.id]=makeVisual(valve.id,valve.at[0]*TILE,
+      valve.at[1]*TILE,36,36,-17,0xeab864,.5);
   }
-  for(const gate of spec.gates){
-    objects[gate.id]=scene.add.image(gate.at[0]*TILE,gate.at[1]*TILE,
-      texture(gate.id)).setOrigin(.5,0).setDisplaySize(...gate.size).setDepth(-18);
-  }
+  for(const release of spec.releases)
+    objects[release.id]=makeVisual(release.id,release.at[0]*TILE,
+      release.at[1]*TILE,38,38,-17,0xe2b9a0,.5);
+  for(const gate of spec.gates)
+    objects[gate.id]=makeVisual(gate.id,gate.at[0]*TILE,gate.at[1]*TILE,
+      ...gate.size,-18,0x986865);
   const wheel=spec.waterwheel;
-  objects[wheel.id]=scene.add.image(wheel.at[0]*TILE,wheel.at[1]*TILE,
-    texture(wheel.id)).setDisplaySize(wheel.radius*2,wheel.radius*2)
-    .setDepth(-17);
+  objects[wheel.id]=makeVisual(wheel.id,wheel.at[0]*TILE,
+    wheel.at[1]*TILE,wheel.radius*2,wheel.radius*2,-17,0x8fbbb6,.5);
   const guide=scene.add.graphics().setDepth(-16);
   const wheelLabel=scene.add.text(
     wheel.at[0]*TILE+80,wheel.at[1]*TILE-wheel.radius-100,
@@ -51,13 +67,36 @@ export function createTempleScene(scene,spec,world,approved){
       fontFamily:'system-ui',fontSize:'12px',fontStyle:'bold',
       color:'#fff4c1',backgroundColor:'#153746d9',padding:{x:7,y:5}
     }).setOrigin(.5,1).setDepth(39);
-  const bridge=spec.linkedPlatforms[0];
+  const bridge=spec.linkedPlatforms.at(-1);
   const bridgeLabel=scene.add.text(bridge.home[0]*TILE,
     bridge.home[1]*TILE-36,'BRIDGE OFF · ACTIVATE WATERWHEEL',{
       fontFamily:'system-ui',fontSize:'12px',fontStyle:'bold',
       color:'#ffe3a1',backgroundColor:'#293a4bdd',padding:{x:6,y:5}
     }).setOrigin(.5,1).setDepth(39);
 
+  const structures=scene.add.graphics().setDepth(-17);
+  for(const wall of spec.obstacles??[]){
+    structures.fillStyle(0x6e7d83,1);
+    structures.fillRect(wall.left*TILE,wall.top*TILE,
+      (wall.right-wall.left)*TILE,(wall.bottom-wall.top)*TILE);
+  }
+  for(const plate of spec.pressurePlates){
+    structures.fillStyle(0xeac47e,1);
+    structures.fillRect(plate.at[0]*TILE-plate.radius,plate.at[1]*TILE-5,
+      plate.radius*2,5);
+  }
+  const controlLabels=[
+    ...spec.valves.map(valve=>scene.add.text(valve.at[0]*TILE,
+      valve.at[1]*TILE-33,'↑  '+valve.id.replaceAll('-', ' '),{
+        fontFamily:'system-ui',fontSize:'11px',color:'#fff3c4',
+        backgroundColor:'#173541d9',padding:{x:5,y:3}
+      }).setOrigin(.5,1).setDepth(38)),
+    ...spec.releases.map(release=>scene.add.text(release.at[0]*TILE,
+      release.at[1]*TILE-34,'↑  Release cascade',{
+        fontFamily:'system-ui',fontSize:'11px',color:'#fff3c4',
+        backgroundColor:'#173541d9',padding:{x:5,y:3}
+      }).setOrigin(.5,1).setDepth(38))
+  ];
   // Each basin has its own static terrain-shaped mask. The water itself is
   // a full-depth translucent rectangle whose top follows the live surface.
   // Neither the mask nor the rectangle depends on drawing new bank polygons
@@ -76,7 +115,7 @@ export function createTempleScene(scene,spec,world,approved){
     return {id:volume.id,water,left,right};
   });
   return {waterFills,waterline:scene.add.graphics().setDepth(-28),
-    guide,labels:{wheelLabel,bridgeLabel},
+    guide,labels:{wheelLabel,bridgeLabel,controlLabels},structures,graybox,
     debug:scene.add.graphics().setDepth(102),objects};
 }
 
@@ -100,9 +139,12 @@ export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
   for(const crate of world.crates)
     crate.visual?.setPosition(crate.x,crate.y);
   for(const valve of spec.valves){
-    const angle={drain:-.5,hold:0,fill:.5}[world.state.modes[valve.controller]];
+    const mode=world.state.modes[valve.controller];
+    const angle={drain:-.5,hold:0,fill:.5}[mode];
     art.objects[valve.id].setRotation(angle);
   }
+  for(const release of spec.releases)
+    art.objects[release.id].setRotation(world.state.released?.65:-.65);
   for(const gate of spec.gates)
     art.objects[gate.id].setVisible(!world.state.gates[gate.id]);
   art.objects[spec.waterwheel.id].setRotation(world.state.wheelAngle);
@@ -122,15 +164,18 @@ export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
   art.guide.fillStyle(0x173e4a,.8).fillCircle(wx,wy,10);
   // Preview the exact final bridge without pretending it is collidable yet.
   if(!active){
-    const bridge=spec.linkedPlatforms[0],bx=bridge.home[0]*TILE;
-    const by=bridge.home[1]*TILE,[width]=bridge.size;
     art.guide.lineStyle(2,0xffd18b,.6);
-    for(let x=bx-width/2;x<bx+width/2;x+=18)
-      art.guide.lineBetween(x,by,Math.min(x+10,bx+width/2),by);
+    for(const bridge of spec.linkedPlatforms){
+      const bx=bridge.home[0]*TILE,by=bridge.home[1]*TILE;
+      const [width]=bridge.size;
+      for(let x=bx-width/2;x<bx+width/2;x+=18)
+        art.guide.lineBetween(x,by,Math.min(x+10,bx+width/2),by);
+    }
   }
   art.labels.wheelLabel.setText(active?
-    'WHEEL ON · BRIDGE POWERED':
-    'WHEEL OFF · FILL VALVE');
+    'WHEEL LATCHED · CROSS ON RAFT':
+    world.state.released?'WHEEL CHARGING · WATCH THE FLOOD':
+      'WHEEL OFF · FILL THEN RELEASE');
   art.labels.bridgeLabel.setText(active?'BRIDGE ON':'BRIDGE OFF');
   art.debug.clear();
   if(showOverlay){
