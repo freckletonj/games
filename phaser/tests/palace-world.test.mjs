@@ -5,7 +5,8 @@ import vm from 'node:vm';
 import palace from '../levels/mirror-palace.json' with {type:'json'};
 import {stepPlayerMotion} from '../src/player-motion.js';
 import {surfaceGroundAt,surfaceMaterialColumn} from '../src/surface-geometry.js';
-import {createPalaceWorld,stepPalaceWorld,restorePalaceWorld} from '../src/palace-world.js';
+import {createPalaceWorld,stepPalaceWorld,restorePalaceWorld,
+  palaceBlockHorizontal} from '../src/palace-world.js';
 import {tracePalaceBeams,setMirrorDetent,
   createPalaceState} from '../src/palace-rules.js';
 import {deckTopAt} from '../src/moving-platforms.js';
@@ -25,7 +26,9 @@ function simulation(players){
   const palaceWorld=createPalaceWorld(palace);
   const world={width:level.width*16,height:level.height*16,tile:16,
     groundAt,inWater:()=>false,waterBodies:[],thermalVolumes:[],
-    platformSegments:level.platformSegments,movingPlatforms:palaceWorld.decks};
+    platformSegments:level.platformSegments,movingPlatforms:palaceWorld.decks,
+    blockHorizontal:(from,to,feet)=>palaceBlockHorizontal(
+      palace,palaceWorld,from,to,feet)};
   function step(actions){
     stepPalaceWorld(palace,palaceWorld,players,actions);
     for(const player of players)stepPlayerMotion(player,
@@ -132,4 +135,86 @@ test('rock from the compiled material classifier blocks a beam before its target
   const segment=blocked.segments.find(segment=>segment.source==='atrium-sun');
   assert.equal(segment.hit,null);
   assert.ok(Math.abs(segment.to[0]-31*16)<.01);
+});
+
+function runPalaceRoute(humans,operateMirrors){
+  const players=Array.from({length:humans},(_,id)=>
+    explorer(id,72+30*id,groundAt(72+30*id)));
+  const {palaceWorld,step}=simulation(players);
+  // Use the same player movement, phase collision and optical rock mask as
+  // the scene, without painting, gamepad or animation dependencies.
+  palaceWorld.solidAt=(x,y)=>{
+    const material=level.materialColumn(x)(y);
+    return material==='rock'||material==='shelf';
+  };
+  const touched=new Set(),activations=new Map();
+  const relic=level.objects.find(item=>item.kind==='springKey');
+  const exit=level.objects.find(item=>item.kind==='exit');
+  const center=item=>[(item.x+.5)*16,(item.y+.5)*16-12];
+  const [rx,ry]=center(relic),[ex,ey]=center(exit);
+  let light=false,finished=false;
+  for(let tick=0;tick<2900;tick++){
+    const actions=players.map(player=>{
+      let upPressed=false;
+      if(operateMirrors&&player.id===0){
+        const closest=palace.mirrors.map(mirror=>({
+          mirror,distance:Math.hypot(
+            player.x-mirror.controlAt[0]*16,
+            player.y-mirror.controlAt[1]*16)
+        })).filter(item=>item.distance<30)
+          .sort((a,b)=>a.distance-b.distance)[0];
+        if(closest){
+          const id=closest.mirror.id,required=id==='observatory-prism'?2:1;
+          const count=activations.get(id)??0;
+          if(count<required&&tick%3===0){
+            activations.set(id,count+1);
+            upPressed=true;
+            touched.add(id);
+          }
+        }
+      }
+      const jumpForRelic=!light&&player.x>rx-90&&
+        player.x<rx-50&&player.grounded;
+      const jump=tick%18===0||jumpForRelic;
+      return {...controls,right:true,upPressed,jump,jumpPressed:jump};
+    });
+    step(actions);
+    if(players.some(player=>Math.abs(player.x-rx)<19&&
+      Math.abs(player.y-ry)<26))light=true;
+    if(light&&players.every(player=>
+      Math.abs(player.x-ex)<28&&Math.abs(player.y-ey)<26)){
+      finished=true;
+      return {players,palaceWorld,tick,light,finished,activated:[...touched]};
+    }
+  }
+  return {players,palaceWorld,tick:2900,light,finished,activated:[...touched]};
+}
+
+test('closed optical gates prevent bypassing every unsolved puzzle',()=>{
+  const route=runPalaceRoute(1,false);
+  assert.equal(route.finished,false);
+  assert.equal(route.light,false);
+  assert.ok(route.players[0].x<72*16,
+    'The first glass door is a physical collision barrier');
+  assert.ok(Object.values(route.palaceWorld.state.gates).every(open=>!open));
+});
+
+test('normal input solves all three beams and physically reaches light and exit',()=>{
+  const result=runPalaceRoute(1,true);
+  assert.ok(result.finished,'The solo explorer must physically reach the exit');
+  assert.ok(result.light,'The floating Palace Light must be touched');
+  assert.ok(Object.values(result.palaceWorld.state.gates).every(Boolean));
+  assert.deepEqual(result.activated,
+    ['atrium-mirror','gallery-mirror-a','gallery-mirror-b','observatory-prism']);
+  assert.ok(result.tick<2000);
+  assert.equal(runPalaceRoute(1,true).tick,result.tick,
+    'Replaying the same 60 Hz input sequence produces the exact arrival tick');
+});
+
+test('two active explorers can both physically reach the Palace exit',()=>{
+  const result=runPalaceRoute(2,true);
+  assert.equal(result.finished,true);
+  assert.equal(result.light,true);
+  assert.equal(result.players.length,2);
+  assert.ok(Object.values(result.palaceWorld.state.gates).every(Boolean));
 });
