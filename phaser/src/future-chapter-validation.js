@@ -80,6 +80,24 @@ export function validateFutureChapter(spec){
       if(!['lit','shadow'].includes(p.rule)||!(p.previewTicks>0))
         fail('invalid phase platform');
     }
+    if(spec.circuitSwitches){
+      if(spec.circuitSwitches.length!==3)
+        fail('the redesigned Palace needs three room relays');
+      if(new Set(spec.circuitSwitches.map(s=>s.id)).size!==3)
+        fail('repeated Palace circuit relay');
+      for(const relay of spec.circuitSwitches){
+        needs('beamTargets',relay.target);
+        if(!['blue','pink','gold'].includes(relay.color)||!relay.at||
+          relay.at.some((n,i)=>!Number.isFinite(n)||n<0||
+            n>=(i===0?spec.width:spec.height)))
+          fail('invalid relay position or color');
+        for(const id of relay.platforms)
+          if(!spec.phasePlatforms.some(p=>p.id===id&&p.target===relay.target))
+            fail('relay platform does not match light target: '+id);
+        if(!spec.beamGates.some(g=>g.id===relay.gate&&g.target===relay.target))
+          fail('relay gate does not match light target: '+relay.gate);
+      }
+    }
   }
   if(spec.racePhases){
     const order=['waitingForUnicorns','groundScroll','sanctuaryStop',
