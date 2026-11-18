@@ -233,7 +233,8 @@ test('two active explorers share valves/crates but both traverse the complete ro
         Math.hypot(p.x-v.at[0]*16,p.y-v.at[1]*16)<v.reach-5);
       if(valve)pressed.add(valve.id);
       const jump=(p.x>=1578&&p.x<1650&&tick%45===0)||
-        (!light&&p.x>3420&&p.x<3490&&tick%45===0);
+        (!light&&p.x>3420&&p.x<3490&&
+          (tick%45===0||p.grounded&&!p.floating));
       return {...controls,right:true,upPressed:Boolean(valve),
         jump,jumpPressed:jump};
     });
@@ -248,7 +249,10 @@ test('two active explorers share valves/crates but both traverse the complete ro
     if(completed)break;
   }
   assert.ok(gateOpen&&wheelOn);
-  assert.ok(light);
+  assert.ok(light,JSON.stringify({players:players.map(p=>({
+    x:p.x,y:p.y,grounded:p.grounded,floating:p.floating,
+    checkpoint:p.checkpoint
+  })),wheelOn,gateOpen}));
   assert.ok(completed,'Both explorers reach the physical exit after the light');
   assert.deepEqual([...pressed],['sluice-handle','cascade-handle']);
 });
