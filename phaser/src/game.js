@@ -1471,7 +1471,38 @@ class Wonderwood extends Phaser.Scene {
     }
   }
 
+  resetRaceParty(){
+    const sanctuary=this.raceWorld.state.checkpoint==='sanctuary';
+    const candidates=this.level.raceSpec.mountEncounters.filter(mount=>
+      mount.kind===(sanctuary?'pegasus':'unicorn'));
+    this.raceRecalling=true;
+    for(const player of this.players){
+      if(!player.assist&&player.mount)this.dismount(player);
+    }
+    for(const mount of this.mounts){
+      if(mount.kind!==candidates[0].kind)continue;
+      mount.x=mount.homeX;
+      mount.y=this.groundAt(mount.x);
+      mount.vx=0;mount.vy=0;mount.grounded=true;
+      mount.flaps=0;mount.flapWait=0;mount.rider=null;
+    }
+    for(const player of this.players){
+      if(player.assist)continue;
+      const encounter=candidates[Math.min(player.id,candidates.length-1)];
+      const x=encounter.at[0]*TILE-58;
+      player.checkpoint={x,y:this.groundAt(x)};
+      this.recall(player);
+    }
+    this.raceRecalling=false;
+  }
+
   recall(p){
+    if(this.raceWorld&&!this.raceRecalling){
+      stepRaceWorld(this.level.raceSpec,this.raceWorld,this.players,
+        {recall:true});
+      this.resetRaceParty();
+      return;
+    }
     if(this.palaceWorld&&!this.templeRecalling){
       this.templeRecalling=true;
       restorePalaceWorld(this.palaceWorld,this.palaceCheckpoint);
@@ -2041,7 +2072,18 @@ class Wonderwood extends Phaser.Scene {
         p.iceWater=Math.max(0,p.iceWater-1);
         this.movePlayer(p,tickActions[p.id],step);
       }
-      this.updatePartyCamera();
+      if(this.raceWorld){
+        const result=stepRaceWorld(this.level.raceSpec,
+          this.raceWorld,this.players);
+        if(result.restarted)this.resetRaceParty();
+        if(result.transition&&result.state.phase==='sanctuaryStop'){
+          const x=this.level.raceSpec.recovery.sanctuaryCheckpoint*TILE;
+          this.shared.checkpoint={x,y:this.groundAt(x)};
+          for(const player of this.players)
+            if(!player.assist)player.checkpoint={...this.shared.checkpoint};
+        }
+        this.updateRaceCamera();
+      }else this.updatePartyCamera();
       const assistant=this.players[1];
       if(assistant?.assist){
         this.moveAssistPlayer(assistant,tickActions[assistant.id]);
