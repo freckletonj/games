@@ -52,8 +52,11 @@ export function stepRaceWorld(spec,world,players,{paused=false,failed=false,reca
   // The rescue zone is beyond the visible left edge, not the abstract
   // progress anchor. Let a rider recover from a momentary camera straggle.
   if(!paused)world.offscreenTicks=offscreen?world.offscreenTicks+1:0;
-  const incapacitated=players.some(p=>!p.assist&&
-    (p.sleep||p.bubble||p.clouded||!p.mount));
+  // During the mount-selection stops everyone is on foot. This rule only
+  // applies once the scrolling stage actually begins.
+  const incapacitated=SCROLLING.has(world.state.phase)&&
+    players.some(p=>!p.assist&&
+      (p.sleep||p.bubble||p.clouded||!p.mount));
   const leftBehind=incapacitated||world.offscreenTicks>=40;
   // No ground shortcut through the storm canyon. Falling below the
   // authored cloudline restarts both humans at their Pegasus sanctuary.
