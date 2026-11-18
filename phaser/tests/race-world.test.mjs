@@ -264,3 +264,52 @@ test('the storm canyon specifies a void below the flight path',()=>{
     x>=race.flightVoid.from&&x<=race.flightVoid.to);
   assert.ok(flightFloor.every(([,y])=>y>race.flightVoid.fallY));
 });
+
+
+test('the chaser waits until the rider is genuinely offscreen, then allows recovery',()=>{
+  const player=rider(0,'unicorn',232);
+  const world=createRaceWorld(race);
+  stepRaceWorld(race,world,[player]);
+  world.state={...world.state,anchor:960,tick:180,activeIds:[0]};
+  const frame=raceCameraFrame(race,world.state,[player]);
+  const edge=frame.x-960/(2*frame.zoom);
+  player.mount.x=edge+12;
+  player.x=player.mount.x;
+  assert.equal(raceRiderLeftBehind(race,world.state,[player]),false,
+    'Inside the visible camera may never cause a restart');
+  player.mount.x=edge-65;
+  player.x=player.mount.x;
+  assert.equal(raceRiderLeftBehind(race,world.state,[player]),true);
+  for(let i=0;i<39;i++){
+    const result=stepRaceWorld(race,world,[player]);
+    assert.equal(result.restarted,false,'The rider has time to recover');
+  }
+  assert.equal(stepRaceWorld(race,world,[player]).restarted,true);
+  assert.equal(world.state.phase,'waitingForUnicorns');
+});
+
+test('scroll progress eases in and slows before the sanctuary',()=>{
+  const player=rider(0,'unicorn',232);
+  const start=createRaceWorld(race);
+  stepRaceWorld(race,start,[player]);
+  const initial=start.state.anchor;
+  stepRaceWorld(race,start,[player]);
+  const first=start.state.anchor-initial;
+  for(let i=0;i<220;i++)stepRaceWorld({...race,hazards:[]},start,[player]);
+  const mid=stepRaceWorld({...race,hazards:[]},start,[player]);
+  const phase=race.racePhases.find(p=>p.id==='groundScroll');
+  const before={...start.state,anchor:phase.to-45,tick:500};
+  const finish=stepRace(race,before,[player]);
+  assert.ok(first<phase.speed,'The start must not jump straight to full speed');
+  assert.ok(finish.anchor-before.anchor<phase.speed,
+    'Approaching the sanctuary must slow down');
+});
+
+test('both upper route entries are reachable with an ordinary Unicorn jump',()=>{
+  assert.equal(race.routeChoices.length,2);
+  const first=[48,53],second=[109,50];
+  for(const [x,y] of [first,second]){
+    const ground=race.ridge.findLast(point=>point[0]<=x);
+    assert.ok((ground[1]-y)*16<112,'Route entry platform is too high');
+  }
+});
