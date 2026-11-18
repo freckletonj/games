@@ -36,6 +36,11 @@ test('1P and 2P gates are based on actual independent mount objects',()=>{
   assert.equal(raceWorld.state.phase,'waitingForUnicorns',
     'A shared Unicorn is not two distinct seats');
   second.mount=rider(1,'unicorn',408).mount;
+  second.mount.rider=0;
+  stepRaceWorld(race,raceWorld,[first,second]);
+  assert.equal(raceWorld.state.phase,'waitingForUnicorns',
+    'A mount assigned to player one cannot satisfy player two');
+  second.mount.rider=1;
   stepRaceWorld(race,raceWorld,[first,second]);
   assert.equal(raceWorld.state.phase,'groundScroll');
   assert.equal(raceWorld.state.tick,0);
