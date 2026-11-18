@@ -9,6 +9,7 @@ import {createTempleWorld,stepTempleWorld,templeInWater,
   templeBlockHorizontal,templeCurrent,snapshotTempleWorld,
   restoreTempleWorld} from '../src/temple-world.js';
 import {setTempleValve} from '../src/temple-rules.js';
+import {templeWaterColumns,createTempleScene} from '../src/temple-scene.js';
 
 const scope={};
 scope.window=scope;vm.createContext(scope);
@@ -278,4 +279,25 @@ test('final wheel walkway has no collision until its controller reaches the thre
   step();
   assert.equal(player.onPlatform,deck.id);
   assert.equal(player.y,41*16);
+});
+
+test('runtime water masks are clipped to compiled physical ground at every level',()=>{
+  const world=createTempleWorld(temple);
+  const atStart=templeWaterColumns(world,groundAt);
+  assert.ok(atStart.length>0);
+  for(const strip of atStart){
+    assert.ok(strip.height>0);
+    assert.ok(Math.abs(strip.y+strip.height-
+      groundAt(strip.x+strip.width/2))<.001);
+  }
+  world.state=setTempleValve(temple,world.state,'sluice-handle','fill');
+  const person=explorer(10*16,groundAt(10*16));
+  for(let tick=0;tick<420;tick++)
+    stepTempleWorld(temple,world,[person],[controls]);
+  const raised=templeWaterColumns(world,groundAt);
+  const sluice=raised.filter(strip=>strip.x>=74*16&&strip.x<103*16);
+  assert.ok(sluice.length>0);
+  assert.ok(sluice.every(strip=>strip.y===45*16));
+  assert.throws(()=>createTempleScene({chapter:{id:temple.id}},
+    temple,world,null),/approved alpha art/);
 });
