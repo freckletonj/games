@@ -8,6 +8,7 @@ import {createRaceWorld,stepRaceWorld,raceRiderLeftBehind,
 const world={width:race.width*16,height:race.height*16,tile:16,
   groundAt:()=>880,platformSegments:[],inWater:()=>false};
 const actions={left:false,right:true,down:false,jump:false,jumpPressed:false};
+const trainingRace={...race,hazards:[]};
 
 function rider(id,kind,x){
   const mount={kind,x,y:880,vx:0,vy:0,grounded:true,face:1,
@@ -50,12 +51,12 @@ test('mount acceleration and 60 Hz progress retain both riders in camera limits'
   assert.equal(MOUNTS.unicorn.speed,4.2);
   assert.equal(MOUNTS.pegasus.kind,'flight');
   const riders=[rider(0,'unicorn',232),rider(1,'unicorn',408)];
-  const state=createRaceWorld(race);
-  stepRaceWorld(race,state,riders);
+  const state=createRaceWorld(trainingRace);
+  stepRaceWorld(trainingRace,state,riders);
   let observedHazard=false,observedClamp=false;
   for(let tick=0;tick<1000&&state.state.phase==='groundScroll';tick++){
     advanceMounted(riders);
-    const next=stepRaceWorld(race,state,riders);
+    const next=stepRaceWorld(trainingRace,state,riders);
     assert.equal(next.restarted,false,'Both riders stay inside progress window');
     assert.ok(state.state.anchor>=512&&state.state.anchor<=2944);
     assert.ok(riders.every(p=>p.mount.x<=state.state.anchor+race.camera.ahead+.01));
@@ -63,45 +64,45 @@ test('mount acceleration and 60 Hz progress retain both riders in camera limits'
     observedClamp||=riders.some(p=>Math.abs(
       p.mount.x-(state.state.anchor+race.camera.ahead))<.001);
   }
-  assert.ok(observedHazard);
+  assert.equal(observedHazard,false);
   assert.ok(observedClamp);
   assert.equal(state.state.phase,'sanctuaryStop');
   assert.equal(state.state.anchor,2944);
   assert.deepEqual(state.hazards,[]);
-  for(let i=0;i<400;i++)stepRaceWorld(race,state,riders);
+  for(let i=0;i<400;i++)stepRaceWorld(trainingRace,state,riders);
   assert.equal(state.state.phase,'waitingForPegasi');
   assert.equal(state.state.anchor,2944);
 });
 
 test('midpoint stays stopped until every human rides a Pegasus, not cloud assist',()=>{
   const p1=rider(0,'unicorn',232),p2=rider(1,'unicorn',408);
-  const state=createRaceWorld(race);
-  stepRaceWorld(race,state,[p1,p2]);
+  const state=createRaceWorld(trainingRace);
+  stepRaceWorld(trainingRace,state,[p1,p2]);
   for(let i=0;i<1000&&state.state.phase==='groundScroll';i++){
     advanceMounted([p1,p2]);
-    stepRaceWorld(race,state,[p1,p2]);
+    stepRaceWorld(trainingRace,state,[p1,p2]);
   }
-  stepRaceWorld(race,state,[p1,p2]);
+  stepRaceWorld(trainingRace,state,[p1,p2]);
   assert.equal(state.state.phase,'waitingForPegasi');
   p1.mount=rider(0,'pegasus',2984).mount;
-  for(let i=0;i<140;i++)stepRaceWorld(race,state,[p1,p2]);
+  for(let i=0;i<140;i++)stepRaceWorld(trainingRace,state,[p1,p2]);
   assert.equal(state.state.phase,'waitingForPegasi');
   p2.mount=rider(1,'pegasus',3176).mount;
-  stepRaceWorld(race,state,[p1,p2]);
+  stepRaceWorld(trainingRace,state,[p1,p2]);
   assert.equal(state.state.phase,'flightScroll');
   const frozen=state.state;
-  stepRaceWorld(race,state,[p1,p2],{paused:true});
+  stepRaceWorld(trainingRace,state,[p1,p2],{paused:true});
   assert.equal(state.state,frozen);
   for(let i=0;i<1000&&state.state.phase==='flightScroll';i++){
     advanceMounted([p1,p2]);
-    stepRaceWorld(race,state,[p1,p2]);
+    stepRaceWorld(trainingRace,state,[p1,p2]);
   }
   assert.equal(state.state.phase,'finished');
   assert.equal(state.state.anchor,5504);
   assert.deepEqual(state.hazards,[]);
   const cloud={id:1,assist:{},mount:null};
-  const solo=createRaceWorld(race);
-  stepRaceWorld(race,solo,[rider(0,'unicorn',232),cloud]);
+  const solo=createRaceWorld(trainingRace);
+  stepRaceWorld(trainingRace,solo,[rider(0,'unicorn',232),cloud]);
   assert.equal(solo.state.phase,'groundScroll');
 });
 
@@ -191,4 +192,32 @@ test('authored race hazards distinguish a grounded hit from a cleared jump',()=>
     {x:flying.x,y:flying.y+36,grounded:false}),true);
   assert.equal(raceHazardContact(flying,
     {x:flying.x,y:flying.y+150,grounded:false}),false);
+});
+
+test('an actual rider touching an authored obstacle resets the whole race',()=>{
+  const root=race.hazards.find(h=>h.id==='root-trainer');
+  const player=rider(0,'unicorn',232);
+  const state=createRaceWorld(race);
+  stepRaceWorld(race,state,[player]);
+  state.state={...state.state,anchor:800};
+  player.mount.x=root.home[0]*16;
+  player.mount.y=912;
+  player.mount.grounded=true;
+  player.x=player.mount.x;
+  const hit=stepRaceWorld(race,state,[player]);
+  assert.equal(hit.hit,'root-trainer');
+  assert.equal(hit.restarted,true);
+  assert.equal(state.state.phase,'waitingForUnicorns');
+  assert.equal(state.state.anchor,512);
+  assert.deepEqual(state.hazards,[]);
+  // The same horizontal crossing is safe when the rider actually clears
+  // the authored collision envelope on a jump.
+  const clear=createRaceWorld(race);
+  stepRaceWorld(race,clear,[player]);
+  clear.state={...clear.state,anchor:800};
+  player.mount.y=800;
+  player.mount.grounded=false;
+  const avoided=stepRaceWorld(race,clear,[player]);
+  assert.equal(avoided.hit,null);
+  assert.equal(clear.state.phase,'groundScroll');
 });
