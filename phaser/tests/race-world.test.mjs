@@ -327,3 +327,33 @@ test('mount-selection corral never recalls unmounted players',()=>{
     assert.equal(world.offscreenTicks,0);
   }
 });
+
+test('both Pegasus storm cloud edges recall a rider at the real authored boundary',()=>{
+  for(const [edge,offset] of [['ceilingY',-3],['fallY',3]]){
+    const player=rider(0,'pegasus',250*16);
+    player.mount.y=(race.flightVoid[edge]+offset/16)*16;
+    player.y=player.mount.y;
+    const world=createRaceWorld(race);
+    world.state={...world.state,phase:'flightScroll',anchor:4100,
+      checkpoint:'sanctuary',activeIds:[0],tick:140};
+    const result=stepRaceWorld(race,world,[player]);
+    assert.equal(result.restarted,true,edge+' clouds must physically fail');
+    assert.equal(result.state.phase,'waitingForPegasi');
+  }
+});
+
+
+test('all six new Pegasus hazards expose matching collision geometry',()=>{
+  const ids=['first-hanging-rock','falling-boulder-one','thunder-gate',
+    'falling-boulder-two','low-rock-shelf','last-hanging-rock'];
+  const flight=race.hazards.filter(h=>h.stage==='flightScroll');
+  for(const id of ids){
+    const h=flight.find(h=>h.id===id);
+    assert.ok(h,'missing hazard '+id);
+    const position={...h,x:h.home[0]*16,y:h.home[1]*16};
+    assert.equal(raceHazardContact(position,{
+      x:position.x,y:position.y+20,grounded:false}),true,id);
+    assert.equal(raceHazardContact(position,{
+      x:position.x+h.size[0]+80,y:position.y+20,grounded:false}),false,id);
+  }
+});
