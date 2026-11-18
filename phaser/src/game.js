@@ -52,7 +52,17 @@ import {createRaceWorld,stepRaceWorld,raceCameraFrame} from './race-world.js';
 import {createRaceScene,drawRaceScene} from './race-scene.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
-const CHAPTERS=campaign(WW.chapters);
+// Future chapters remain outside the campaign. This opt-in is only for
+// exercising real keyboard/gamepad input against an unpainted graybox.
+const TEMPLE_PREVIEW={
+  id:'sunken-temple',biome:'coast',name:'Sunken Temple · Graybox',
+  difficulty:'Puzzle',tagline:'Test tides, crate sluice and the waterwheel.',
+  key:'springKey',goals:[{kind:'springKey',name:'Temple Light',form:null}],
+  signs:[],events:[]
+};
+const CHAPTERS=[...campaign(WW.chapters),
+  ...(new URLSearchParams(location.search).has('temple-preview')?
+    [TEMPLE_PREVIEW]:[])];
 const APPROVED_SCENE_ART=__SCENE_ASSETS__;
 const TILE=16;
 const VIEW_W=480;
