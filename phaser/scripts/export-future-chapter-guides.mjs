@@ -10,7 +10,7 @@ import {surfaceMaterialColumn} from '../src/surface-geometry.js';
 import {materialGuidePng} from './material-png.mjs';
 import {validateFutureChapter} from '../src/future-chapter-validation.js';
 import {createTempleState,stepTemple,setTempleValve,
-  buoyantPosition} from '../src/temple-rules.js';
+  buoyantPosition,releaseTempleWheel} from '../src/temple-rules.js';
 import {createPalaceState,stepPalace,setMirrorDetent,setPalaceShutter,
   tracePalaceBeams} from '../src/palace-rules.js';
 import {createRaceState,stepRace,raceHazardPose} from '../src/race-rules.js';
@@ -83,11 +83,13 @@ for(const spec of specs){
   const frames=[];
   if(spec.id==='sunken-temple'){
     const initial=createTempleState(spec);
-    let high=repeat(initial,360,s=>stepTemple(spec,s));
+    let high=repeat(initial,420,s=>stepTemple(spec,s));
     let valve=setTempleValve(spec,high,'sluice-handle','fill');
-    valve=repeat(valve,400,s=>stepTemple(spec,s));
+    valve=repeat(valve,270,s=>stepTemple(spec,s));
     let finale=setTempleValve(spec,valve,'cascade-handle','fill');
-    finale=repeat(finale,600,s=>stepTemple(spec,s));
+    finale=repeat(finale,280,s=>stepTemple(spec,s));
+    finale=releaseTempleWheel(spec,finale,'wheel-release');
+    finale=repeat(finale,350,s=>stepTemple(spec,s));
     for(const [name,state] of [['low-tide',initial],['high-tide',high],
       ['valve-fill',valve],['wheel-finale',finale]]){
       const water=spec.waterVolumes.map(v=>({...v,surface:state.surfaces[v.id]}));
