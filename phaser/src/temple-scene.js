@@ -97,6 +97,14 @@ export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
         wy+Math.sin(angle)*wheel.radius);
   }
   art.guide.fillStyle(0x173e4a,.8).fillCircle(wx,wy,10);
+  // Preview the exact final bridge without pretending it is collidable yet.
+  if(!active){
+    const bridge=spec.linkedPlatforms[0],bx=bridge.home[0]*TILE;
+    const by=bridge.home[1]*TILE,[width]=bridge.size;
+    art.guide.lineStyle(2,0xffd18b,.6);
+    for(let x=bx-width/2;x<bx+width/2;x+=18)
+      art.guide.lineBetween(x,by,Math.min(x+10,bx+width/2),by);
+  }
   art.labels.wheelLabel.setText(active?
     'WATERWHEEL TURNING · BRIDGE POWERED':
     'WATERWHEEL · FILL CASCADE VALVE');
