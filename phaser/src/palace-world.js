@@ -64,6 +64,23 @@ export function stepPalaceWorld(spec,world,players,actions){
   return world;
 }
 
+// Crystal doors have the same 16 px authored collision coordinate system
+// as the terrain. A target must actually receive an unobstructed beam before
+// the corresponding door can be crossed.
+export function palaceBlockHorizontal(spec,world,fromX,toX,feet){
+  for(const gate of spec.beamGates??[]){
+    if(world.state.gates[gate.id])continue;
+    const [cx,cy]=gate.at;
+    const [width,height]=gate.size;
+    const left=cx*TILE-width/2-10,right=cx*TILE+width/2+10;
+    const top=cy*TILE,bottom=top+height;
+    if(feet<=top||feet-27>=bottom)continue;
+    if(fromX<=left&&toX>left)toX=left;
+    if(fromX>=right&&toX<right)toX=right;
+  }
+  return toX;
+}
+
 export function restorePalaceWorld(world,state){
   world.state=state;
   for(const deck of world.decks)deck.enabled=state.platforms[deck.id].solid;
