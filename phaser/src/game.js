@@ -45,7 +45,8 @@ import {createTempleWorld,stepTempleWorld,templeInWater,
   templeBlockHorizontal,templeCurrent,snapshotTempleWorld,
   restoreTempleWorld} from './temple-world.js';
 import {createTempleScene,drawTempleScene} from './temple-scene.js';
-import {createPalaceWorld,stepPalaceWorld,restorePalaceWorld} from './palace-world.js';
+import {createPalaceWorld,stepPalaceWorld,restorePalaceWorld,
+  palaceBlockHorizontal} from './palace-world.js';
 import {createRaceWorld,stepRaceWorld,raceCameraFrame} from './race-world.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
@@ -1880,12 +1881,14 @@ class Wonderwood extends Phaser.Scene {
       rockPolygons:this.level.rockPolygons,
       ropes:this.ropes,
       pushSpeed,
-      blockHorizontal:this.puzzleObjects.length||this.templeWorld?
+      blockHorizontal:this.puzzleObjects.length||this.templeWorld||this.palaceWorld?
         (from,to,feet)=>{
           const puzzle=this.puzzleObjects.length?
             blockPuzzleX(this.puzzleObjects,from,to,feet):to;
-          return this.templeWorld?templeBlockHorizontal(
+          const temple=this.templeWorld?templeBlockHorizontal(
             this.level.templeSpec,this.templeWorld,from,puzzle,feet):puzzle;
+          return this.palaceWorld?palaceBlockHorizontal(
+            this.level.palaceSpec,this.palaceWorld,from,temple,feet):temple;
         }:null
     });
   }
