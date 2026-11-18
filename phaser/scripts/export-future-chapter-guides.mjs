@@ -11,7 +11,7 @@ import {materialGuidePng} from './material-png.mjs';
 import {validateFutureChapter} from '../src/future-chapter-validation.js';
 import {createTempleState,stepTemple,setTempleValve,
   buoyantPosition} from '../src/temple-rules.js';
-import {createPalaceState,stepPalace,setMirrorDetent,
+import {createPalaceState,stepPalace,setMirrorDetent,setPalaceShutter,
   tracePalaceBeams} from '../src/palace-rules.js';
 import {createRaceState,stepRace,raceHazardPose} from '../src/race-rules.js';
 
@@ -127,6 +127,7 @@ for(const spec of specs){
     gallery=setMirrorDetent(spec,gallery,'gallery-mirror-b',-45);
     gallery=repeat(gallery,60,s=>stepPalace(spec,s,{solidAt}));
     let eclipse=setMirrorDetent(spec,gallery,'observatory-prism',-45);
+    eclipse=setPalaceShutter(spec,eclipse,'eclipse-shutter','open');
     eclipse=repeat(eclipse,150,s=>stepPalace(spec,s,{solidAt}));
     for(const [name,state] of [['initial-shadow',initial],
       ['lit-atrium',atrium],['gallery-redirect',gallery],
