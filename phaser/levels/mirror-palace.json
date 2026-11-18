@@ -146,7 +146,7 @@
         76
       ],
       "challenge": "mirror-detent",
-      "goal": "Turn one mirror to light the first crystal bridge",
+      "goal": "Shoot the blue relay to illuminate the crystal bridge.",
       "recovery": 76
     },
     {
@@ -156,7 +156,7 @@
         145
       ],
       "challenge": "shutter-and-two-mirrors",
-      "goal": "Steer a beam through two redirects and land on the darkstone crossing",
+      "goal": "Shoot the pink relay to illuminate both gallery steps.",
       "recovery": 136
     },
     {
@@ -166,7 +166,7 @@
         228
       ],
       "challenge": "eclipse-and-prism",
-      "goal": "Arrange lit and shaded platforms, then collect the Palace Light",
+      "goal": "Shoot the gold relay to illuminate the final steps and reach the Palace Light.",
       "recovery": 195
     }
   ],
@@ -324,12 +324,12 @@
         169,
         25
       ],
-      "radius": 5,
+      "radius": 1,
       "orbit": [
         169,
-        25
+        8
       ],
-      "orbitRadius": 6,
+      "orbitRadius": 0,
       "periodTicks": 600,
       "phaseTicks": 0
     }
@@ -371,12 +371,12 @@
         41
       ],
       "size": [
-        176,
+        336,
         20
       ],
       "rule": "lit",
       "target": "atrium-target",
-      "previewTicks": 24
+      "previewTicks": 14
     },
     {
       "id": "gallery-crystal",
@@ -385,12 +385,12 @@
         39
       ],
       "size": [
-        176,
+        304,
         20
       ],
       "rule": "lit",
       "target": "gallery-target",
-      "previewTicks": 24
+      "previewTicks": 14
     },
     {
       "id": "gallery-darkstone",
@@ -399,12 +399,12 @@
         39
       ],
       "size": [
-        112,
+        304,
         20
       ],
-      "rule": "shadow",
+      "rule": "lit",
       "target": "gallery-target",
-      "previewTicks": 24
+      "previewTicks": 14
     },
     {
       "id": "eclipse-stair-low",
@@ -413,12 +413,12 @@
         37
       ],
       "size": [
-        96,
+        176,
         20
       ],
       "rule": "lit",
       "target": "observatory-target",
-      "previewTicks": 30
+      "previewTicks": 14
     },
     {
       "id": "eclipse-stair-high",
@@ -427,12 +427,12 @@
         33
       ],
       "size": [
-        96,
+        176,
         20
       ],
-      "rule": "shadow",
+      "rule": "lit",
       "target": "observatory-target",
-      "previewTicks": 30
+      "previewTicks": 14
     }
   ],
   "opticalRules": {
@@ -480,6 +480,55 @@
         608
       ],
       "target": "observatory-target"
+    }
+  ],
+  "circuitSwitches": [
+    {
+      "id": "blue-relay",
+      "room": "1 · ATRIUM",
+      "at": [
+        36,
+        45
+      ],
+      "color": "blue",
+      "target": "atrium-target",
+      "platforms": [
+        "atrium-crystal"
+      ],
+      "gate": "atrium-light-gate",
+      "help": "Shoot the blue lamp. The bridge lights up."
+    },
+    {
+      "id": "pink-relay",
+      "room": "2 · GALLERY",
+      "at": [
+        82,
+        42
+      ],
+      "color": "pink",
+      "target": "gallery-target",
+      "platforms": [
+        "gallery-crystal",
+        "gallery-darkstone"
+      ],
+      "gate": "gallery-light-gate",
+      "help": "Shoot the pink lamp. Both stepping stones appear."
+    },
+    {
+      "id": "gold-relay",
+      "room": "3 · OBSERVATORY",
+      "at": [
+        172,
+        54
+      ],
+      "color": "gold",
+      "target": "observatory-target",
+      "platforms": [
+        "eclipse-stair-low",
+        "eclipse-stair-high"
+      ],
+      "gate": "observatory-light-gate",
+      "help": "Shoot the gold lamp. Climb the two stairs to the Light."
     }
   ]
 }
