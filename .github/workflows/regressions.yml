@@ -138,6 +138,8 @@ jobs:
         run: npm run build --prefix phaser
       - name: Verify chapter selection and painting in Chromium
         run: python phaser/tests/chapters.py
+      - name: Exercise Sunken Temple graybox with real Chromium input
+        run: python phaser/scripts/run-playwright-inline.py phaser/tests/temple_graybox.py
       - name: Upload playable Phaser and Cavern Ascent preview
         if: always()
         uses: actions/upload-artifact@v4
