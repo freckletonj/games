@@ -7,7 +7,7 @@ const hex=c=>'#'+c.toString(16).padStart(6,'0');
 export function createPalaceScene(scene,spec){
   const graphics=scene.add.graphics().setDepth(20);
   const labels={};
-  for(const [index,relay] of spec.circuitSwitches.entries()){
+  for(const relay of spec.circuitSwitches){
     const [x,y]=relay.at.map(n=>n*TILE),color=COLORS[relay.color];
     const title=scene.add.text(x-130,y-138,
       relay.room+'  ·  SHOOT THE '+relay.color.toUpperCase()+' LAMP',{
@@ -37,17 +37,16 @@ export function drawPalaceScene(art,spec,world){
   g.clear();
   for(const relay of spec.circuitSwitches){
     const [x,y]=relay.at.map(n=>n*TILE),color=COLORS[relay.color];
-    const target=spec.beamTargets.find(t=>t.id===relay.target);
-    const [tx,ty]=target.at.map(n=>n*TILE);
     const platform=spec.phasePlatforms.find(p=>p.id===relay.platforms[0]);
     const [px,py]=platform.home.map(n=>n*TILE);
     const lit=Boolean(state.light?.lit.includes(relay.target));
     const gate=state.gates[relay.gate];
     const labels=art.labels[relay.id];
-    // A single unambiguous switch -> light receiver -> bridge/door chain.
-    g.lineStyle(4,color,lit?.92:.45);
-    g.lineBetween(x,y,tx,ty);
-    g.lineBetween(tx,ty,px,py);
+    // Draw only the nearby, actionable relay-to-bridge circuit. The
+    // underlying optical solver remains authoritative but its high-altitude
+    // mirror geometry no longer clutters the view.
+    g.lineStyle(5,color,lit?.96:.5);
+    g.lineBetween(x,y,px,py);
     const door=spec.beamGates.find(gate=>gate.id===relay.gate);
     g.lineBetween(px,py,door.at[0]*TILE,door.at[1]*TILE+32);
     // Large circular orb target, clearly distinct from scenery and mirrors.
@@ -56,8 +55,8 @@ export function drawPalaceScene(art,spec,world){
     g.fillStyle(color,lit?1:.7).fillCircle(x,y,16);
     g.lineStyle(3,0xffffff,.85);
     g.strokeCircle(x,y,12);
-    g.fillStyle(color,lit?1:.2).fillCircle(tx,ty,16);
-    g.lineStyle(4,color,1).strokeCircle(tx,ty,19);
+    g.fillStyle(color,lit?1:.2).fillCircle(px,py,12);
+    g.lineStyle(4,color,1).strokeCircle(px,py,16);
     // All platform surfaces use one rule: illuminated => SOLID.
     for(const id of relay.platforms){
       const p=spec.phasePlatforms.find(p=>p.id===id);
