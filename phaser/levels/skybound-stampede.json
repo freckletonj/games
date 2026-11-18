@@ -362,7 +362,7 @@
         "axis": "x",
         "amplitude": 40,
         "periodTicks": 180,
-        "phaseTicks": 0
+        "phaseTicks": 80
       },
       "warningDistance": 200
     },
