@@ -1,6 +1,6 @@
 # Level concept: The Sunken Temple
 
-**Status:** implementation candidate. The unregistered [Sunken Temple level spec](../sunken-temple.json), [fixed-tick water/mechanism rules](../../src/temple-rules.js), [schema validation](../../src/future-chapter-validation.js), and [unit tests](../../tests/future-chapters.test.mjs) now exist. Scene integration, complete input-driven routes, approved art, and campaign registration remain outstanding.
+**Status (Nov 17, 2026): geometry-route proven, not release-ready.** The unregistered [level spec](../sunken-temple.json), [fixed-tick rules](../../src/temple-rules.js), [production world adapter](../../src/temple-world.js), [runtime water/art adapter](../../src/temple-scene.js), [validator](../../src/future-chapter-validation.js), and [motion-level tests](../../tests/temple-world.test.mjs) exist. Production-rule **solo and two-explorer** simulations reach the Light and exit. This is **not** an end-to-end in-browser route or approved painting.
 
 ## Player fantasy
 
@@ -52,12 +52,24 @@ Follow [AGENTS.md](../../../AGENTS.md), [STATIC-ART-CONTRACT.md](../../STATIC-AR
 5. Keep variable-height water and foam/ripples as **runtime dynamic layers clipped to simulated water bounds**; a single static baked waterline would contradict the play state. Validate every extreme against V geometry overlay and renderer depth.
 6. Pack and register only approved geometry-matched art in phaser/assets/generated/approved-scene-art.json; the painting never becomes collision data.
 
+## Progress / outstanding acceptance gates
+
+- [x] Compile and validate the authored water volumes and dynamic references; implement 60 Hz tide, valve, raft, pushable crate, current, plate, gate and waterwheel mechanics.
+- [x] Prove **simulated 1P and 2P movement** to Light/exit on compiled geometry; cover failed wheel bypass, water movement, crate contact and deterministic checkpoint replay.
+- [x] Export physical-material maps and four tide / valve / finale frames directly from the compiled and simulated world in CI.
+- [ ] Exercise the **actual Phaser scene** from start to finish in solo and co-op with real key/gamepad input, including Tidefox, air/headroom, reversals, dead ends, failed jumps and checkpoint recall.
+- [ ] Produce and approve geometry-conditioned native-detail panorama and registered **true-alpha** raft/crate/gate/valve/wheel cutouts; repair their backgrounds and verify pivot registration.
+- [ ] Compare simulated water surfaces and collision to painted water/ripple layers at all tested tide extremes using V overlay and gameplay zoom.
+- [ ] Prove candidate chapter completion in the standalone offline Chromium **and Firefox** builds before adding campaign/approved-art registration.
+
+The original full-scope checklist below remains open wherever a *browser- or art-level* acceptance condition has not been demonstrated.
+
 ## TODO / acceptance checklist
 
 - [ ] Block out a three-act route with authored geometry, both dry and flooded clearances, optional paths, checkpoints, and the physical light/gate.
 - [ ] Extend the declarative compiler/validation for bounded water controllers, valves, buoyant objects, currents, and named trigger links.
-- [ ] Implement tide and valve state machines in the production 60 Hz rules; document update order for collisions and supported riders.
-- [ ] Implement floating raft/crate physics, rider carry, current forces, pressure plates, waterwheel and reset behavior.
+- [x] Implement tide and valve state machines in the production 60 Hz rules; document update order for collisions and supported riders. *(Production-rule adapter and deterministic tests; rendered browser route pending.)*
+- [x] Implement floating raft/crate physics, rider carry, current forces, pressure plates, waterwheel and reset behavior. *(Rule/motion-level implementation; in-scene failure and recovery still need acceptance.)*
 - [ ] Make Tidefox and enough favorite treats accessible; provide a complete solo route and useful second-player cooperation without mandatory simultaneous controls.
 - [ ] Ensure safe recovery for failed jumps, submerged rooms, interrupted valve transitions, recall, and checkpoint respawn.
 - [ ] Create deterministic tests for low/high tide, valve reversals, buoyancy, player support, swimming, current force, and repeatability after restart.
