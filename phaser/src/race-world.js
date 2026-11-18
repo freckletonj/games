@@ -57,7 +57,7 @@ export function stepRaceWorld(spec,world,players,{paused=false,failed=false,reca
   // Apply physical contact after mounted movement and the fixed-tick hazard
   // poses have advanced. Everyone recalls together; hazards never move
   // while the two sanctuary gates are waiting.
-  const collision=world.hazards.find(hazard=>players.some(player=>
+  const collision=paused?null:world.hazards.find(hazard=>players.some(player=>
     !player.assist&&player.mount&&
     raceHazardContact(hazard,player.mount)));
   if(collision){
