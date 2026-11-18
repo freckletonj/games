@@ -516,7 +516,7 @@ class Wonderwood extends Phaser.Scene {
     this.templeWorld=this.level.templeSpec?
       createTempleWorld(this.level.templeSpec):null;
     this.palaceWorld=this.level.palaceSpec?
-      createPalaceWorld(this.level.palaceSpec):null;
+      createPalaceWorld(this.level.palaceSpec,this.level):null;
     if(this.palaceWorld)this.palaceCheckpoint=this.palaceWorld.state;
     if(this.templeWorld){
       this.level.waterBodies=this.templeWorld.waterBodies;
