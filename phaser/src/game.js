@@ -591,7 +591,7 @@ class Wonderwood extends Phaser.Scene {
     });
     const camera=this.cameras.main;
     // Frame local switches, rays and their associated platforms together.
-    this.defaultZoom=this.palaceWorld?1:
+    this.defaultZoom=this.palaceWorld?.78:
       this.level.cave?(this.chapter.id==='skywell-ascent'?1.4:1.25):2;
     this.lookUp=this.level.cave?40:38;
     camera.setZoom(this.defaultZoom).setBounds(0,0,this.worldW,this.worldH);
@@ -602,6 +602,9 @@ class Wonderwood extends Phaser.Scene {
         this.raceWorld.state,this.players);
       camera.setZoom(frame.zoom).centerOn(frame.x,frame.y);
       if(partner?.assist)this.moveAssistPlayer(partner,STILL);
+    }else if(this.palaceWorld){
+      camera.stopFollow();
+      camera.centerOn(lead.x+300,lead.y-326);
     }else if(partner){
       camera.setRoundPixels(false).centerOn(partner.assist?lead.x:(lead.x+partner.x)/2,lead.y-this.lookUp);
       if(partner.assist)this.moveAssistPlayer(partner,STILL);
@@ -1564,6 +1567,14 @@ class Wonderwood extends Phaser.Scene {
     camera.setZoom(frame.zoom).centerOn(frame.x,frame.y);
   }
 
+  updatePalaceCamera(){
+    const human=this.players.filter(p=>!p.assist&&!p.bubble);
+    if(!human.length)return;
+    const x=human.reduce((sum,p)=>sum+p.x,0)/human.length+300;
+    const y=human.reduce((sum,p)=>sum+p.y,0)/human.length-326;
+    this.cameras.main.setZoom(this.defaultZoom).centerOn(x,y);
+  }
+
   updatePartyCamera(){
     const [lead,partner]=this.players;
     if(!partner)return;
@@ -2110,7 +2121,8 @@ class Wonderwood extends Phaser.Scene {
             if(!player.assist)player.checkpoint={...this.shared.checkpoint};
         }
         this.updateRaceCamera();
-      }else this.updatePartyCamera();
+      }else if(this.palaceWorld)this.updatePalaceCamera();
+      else this.updatePartyCamera();
       const assistant=this.players[1];
       if(assistant?.assist){
         this.moveAssistPlayer(assistant,tickActions[assistant.id]);
