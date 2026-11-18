@@ -269,7 +269,7 @@
       "reach": 40,
       "controlAt": [
         172,
-        39
+        54
       ]
     }
   ],
@@ -291,8 +291,8 @@
       ],
       "reach": 40,
       "controlAt": [
-        91,
-        40
+        100,
+        54
       ]
     },
     {
@@ -312,8 +312,8 @@
       ],
       "reach": 40,
       "controlAt": [
-        179,
-        39
+        180,
+        54
       ]
     }
   ],
@@ -443,5 +443,43 @@
     "riderGraceTicks": 30
   },
   "goalPolicy": "contact-only",
-  "resetPolicy": "mirror-detents-and-occluder-phase"
+  "resetPolicy": "mirror-detents-and-occluder-phase",
+  "beamGates": [
+    {
+      "id": "atrium-light-gate",
+      "at": [
+        72,
+        25
+      ],
+      "size": [
+        24,
+        560
+      ],
+      "target": "atrium-target"
+    },
+    {
+      "id": "gallery-light-gate",
+      "at": [
+        136,
+        20
+      ],
+      "size": [
+        24,
+        576
+      ],
+      "target": "gallery-target"
+    },
+    {
+      "id": "observatory-light-gate",
+      "at": [
+        194,
+        17
+      ],
+      "size": [
+        24,
+        608
+      ],
+      "target": "observatory-target"
+    }
+  ]
 }
