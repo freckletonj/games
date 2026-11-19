@@ -424,15 +424,7 @@
       "opensWhen": "temple-wheel"
     }
   ],
-  "currents": [
-    {
-      "id": "sluice-flow",
-      "volume": "sluice",
-      "direction": 1,
-      "forcePerTick": 0.08,
-      "activeWhen": "fill"
-    }
-  ],
+  "currents": [],
   "waterwheel": {
     "id": "temple-wheel",
     "at": [

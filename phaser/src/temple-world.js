@@ -8,8 +8,11 @@ const clamp=(value,lo,hi)=>Math.max(lo,Math.min(hi,value));
 export function createTempleWorld(spec){
   const state=createTempleState(spec);
   const crates=spec.buoyantObjects.filter(object=>object.kind==='crate')
-    .map(object=>({...object,x:object.home[0]*TILE,
-      y:buoyantPosition(spec,state,object.id).y}));
+    .map(object=>{
+      const x=object.home[0]*TILE;
+      const y=buoyantPosition(spec,state,object.id).y;
+      return {...object,x,y,position:[x,y],previous:[x,y]};
+    });
   const decks=spec.buoyantObjects.filter(object=>object.kind==='raft')
     .map(object=>{
       const position=buoyantPosition(spec,state,object.id);
@@ -39,6 +42,8 @@ export function restoreTempleWorld(spec,world,snapshot){
   world.state=snapshot.state;
   world.crates.forEach((crate,index)=>{
     [crate.x,crate.y]=snapshot.cratePositions[index];
+    crate.position=[crate.x,crate.y];
+    crate.previous=crate.position;
   });
   for(const volume of world.waterBodies)
     volume.surface=world.state.surfaces[volume.id];
@@ -145,12 +150,19 @@ export function stepTempleWorld(spec,world,players,actions){
     if(deck.enabledWhen)deck.enabled=state.wheelActive;
   }
   for(const crate of world.crates){
+    crate.previous=crate.position;
     crate.y=buoyantPosition(spec,state,crate.id).y;
     const volume=spec.waterVolumes.find(v=>v.id===crate.volume);
     for(const player of players){
       const move=Number(actions[player.id]?.right)-Number(actions[player.id]?.left);
-      if(!move||player.assist||player.sleep||player.bubble||player.clouded||
-         player.mount||Math.abs(player.y-crate.y)>32)continue;
+      // Only an explorer braced against the crate's side can move it.
+      // Standing on top, jumping past it, or falling alongside it
+      // must never exert a horizontal push.
+      if(!move||actions[player.id]?.jump||player.assist||player.sleep||
+         player.bubble||player.clouded||player.mount||
+         !(player.grounded||player.floating)||
+         player.onPlatform===crate.id||
+         player.y<crate.y+10||player.y>crate.y+crate.size[1]+8)continue;
       const edge=crate.x-move*(crate.size[0]/2+12);
       if(Math.abs(player.x-edge)>22)continue;
       const half=crate.size[0]/2;
@@ -167,6 +179,7 @@ export function stepTempleWorld(spec,world,players,actions){
       crate.x=target;
       break; // One physical crate displacement per tick, even with two pushers.
     }
+    crate.position=[crate.x,crate.y];
   }
   world.state=state;
   return world;

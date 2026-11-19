@@ -29,7 +29,8 @@ function simulation(player,templeWorld=createTempleWorld(temple)){
     basinAt:x=>templeBasinAt(templeWorld,groundAt,x),
     currentAt:(x,y)=>templeCurrent(templeWorld,temple,x,y),
     waterBodies:templeWorld.waterBodies,thermalVolumes:[],
-    platformSegments:level.platformSegments,movingPlatforms:templeWorld.decks,
+    platformSegments:level.platformSegments,
+    movingPlatforms:[...templeWorld.decks,...templeWorld.crates],
     floorSegments:level.floorSegments,
     blockHorizontal:(from,to,feet)=>templeBlockHorizontal(
       temple,templeWorld,from,to,feet)};

@@ -588,7 +588,8 @@ class Wonderwood extends Phaser.Scene {
       }
     }
     this.walkableMachines=[...this.movingPlatforms,...this.machines,
-      ...(this.templeWorld?.decks??[]),...(this.palaceWorld?.decks??[])];
+      ...(this.templeWorld?.decks??[]),...(this.templeWorld?.crates??[]),
+      ...(this.palaceWorld?.decks??[])];
     this.puzzleObjects=createPuzzleObjects(this.level.puzzleObjects??[]);
     for(const object of this.puzzleObjects){
       if(object.kind==='breakable-wall')this.makeSealVisual(object);
