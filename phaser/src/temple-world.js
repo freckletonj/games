@@ -92,6 +92,16 @@ export function templeGateBlock(spec,world,fromX,toX,feet){
 // fixed-tick crate push advances it; it cannot be walked through.
 export function templeBlockHorizontal(spec,world,fromX,toX,feet){
   toX=templeGateBlock(spec,world,fromX,toX,feet);
+  // A single-cell rock face cannot be climbed by walking in tiny steps
+  // along its interpolated heightfield. Crossing requires the player's feet
+  // to clear the actual crest, as they can from the elevated raft.
+  // This is terrain collision, not a freestanding invisible puzzle pillar.
+  for(let index=1;index<spec.ridge.length;index++){
+    const [ax,ay]=spec.ridge[index-1], [bx,by]=spec.ridge[index];
+    if(ay-by<8*(bx-ax))continue;
+    const edge=bx*TILE-10;
+    if(feet>by*TILE+1&&fromX<=edge&&toX>edge)toX=edge;
+  }
   for(const wall of spec.obstacles??[]){
     const top=wall.top*TILE,bottom=wall.bottom*TILE;
     if(feet<=top||feet-27>=bottom)continue;
