@@ -180,7 +180,7 @@
       "id": "gallery-lantern",
       "at": [
         82,
-        28
+        41
       ],
       "direction": 0,
       "range": 75,
@@ -190,7 +190,7 @@
       "id": "eclipse-sun",
       "at": [
         157,
-        25
+        43
       ],
       "direction": 0,
       "range": 65,
@@ -219,7 +219,7 @@
       "id": "gallery-mirror-a",
       "at": [
         93,
-        28
+        41
       ],
       "angles": [
         -45,
@@ -236,7 +236,7 @@
       "id": "gallery-mirror-b",
       "at": [
         93,
-        16
+        35
       ],
       "angles": [
         -45,
@@ -253,7 +253,7 @@
       "id": "observatory-prism",
       "at": [
         180,
-        25
+        43
       ],
       "angles": [
         -45,
@@ -273,11 +273,11 @@
       "id": "gallery-shutter",
       "from": [
         108,
-        12
+        28
       ],
       "to": [
         108,
-        36
+        43
       ],
       "initial": "closed",
       "states": [
@@ -294,11 +294,11 @@
       "id": "eclipse-shutter",
       "from": [
         175,
-        13
+        35
       ],
       "to": [
         175,
-        31
+        48
       ],
       "initial": "closed",
       "states": [
@@ -322,9 +322,9 @@
       "radius": 1,
       "orbit": [
         169,
-        16
+        33
       ],
-      "orbitRadius": 9,
+      "orbitRadius": 10,
       "periodTicks": 420,
       "phaseTicks": 105
     }
@@ -343,7 +343,7 @@
       "id": "gallery-target",
       "at": [
         123,
-        16
+        35
       ],
       "radius": 2,
       "source": "gallery-lantern"
@@ -352,7 +352,7 @@
       "id": "observatory-target",
       "at": [
         180,
-        12
+        34
       ],
       "radius": 3,
       "source": "eclipse-sun"
