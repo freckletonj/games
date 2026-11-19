@@ -132,6 +132,13 @@ jobs:
                 assert.equal(image.readUInt32BE(20),manifest.height);
               }
               if(chapter==="sunken-temple"){
+                assert.ok(manifest.frames[1].surfaces.courtyard<=42.5+0.001,
+                  "high-tide conditioning must be sampled after initial delay");
+                const art=JSON.parse(readFileSync(directory+"imagegen-handoff.json","utf8"));
+                assert.equal(art.dimensions.width,manifest.width);
+                assert.equal(art.dimensions.height,manifest.height);
+                assert.equal(art.stateFrames.length,4);
+                assert.ok(art.alphaCutouts.some(p=>p.id==="timber-crate"));
                 assert.equal(manifest.frames.at(-1).wheelActive,true);
                 assert.equal(manifest.frames.at(-1).gates["wheel-gate"],true);
               }else if(chapter==="mirror-palace"){
@@ -149,6 +156,12 @@ jobs:
               }
             }
           '
+      - name: Render Temple geometry-registered composition, states and alpha sprites
+        run: |
+          python phaser/scripts/render-temple-art-studies.py
+          test -s dist/future-chapter-guides/sunken-temple/composition-study.png
+          test -s dist/future-chapter-guides/sunken-temple/context-high-tide.png
+          test -s dist/future-chapter-guides/sunken-temple/object-studies/timber-crate.png
       - name: Upload exact geometry guides for visual review
         if: always()
         uses: actions/upload-artifact@v4
