@@ -9,11 +9,13 @@ from playwright.sync_api import sync_playwright
 GAME = Path(__file__).resolve().parents[2] / "dist/wonderwood-phaser.html"
 GRAYBOX = GAME.with_name("wonderwood-phaser-graybox.html")
 CHAPTERS = ["sunken-temple", "mirror-palace", "skybound-stampede"]
+CAPTURES = GAME.parents[1] / "dist" / "graybox-screenshots"
 WORLD_KEYS = ["temple", "palace", "race"]
 
 
 def main():
     assert GRAYBOX.is_file() and GRAYBOX.stat().st_size > 500_000
+    CAPTURES.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(
             headless=True, args=["--enable-webgl", "--use-gl=swiftshader"]
@@ -78,6 +80,7 @@ def main():
                 timeout=5000,
             )
             page.keyboard.up("v")
+            page.screenshot(path=str(CAPTURES / (chapter + "-collision.png")))
             page.wait_for_timeout(60)
             page.keyboard.press("v")
             page.wait_for_function(

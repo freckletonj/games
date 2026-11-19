@@ -134,6 +134,13 @@ jobs:
               }
             }
           '
+      - name: Upload exact geometry guides for visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experimental-geometry-review
+          path: dist/future-chapter-guides/
+          if-no-files-found: ignore
       - name: Build standalone Phaser game
         run: |
           npm run build --prefix phaser
@@ -142,6 +149,13 @@ jobs:
         run: python phaser/tests/chapters.py
       - name: Exercise all three grayboxes with real Chromium input
         run: python phaser/scripts/run-playwright-inline.py phaser/tests/temple_graybox.py
+      - name: Upload Chromium collision screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experimental-collision-captures
+          path: dist/graybox-screenshots/*.png
+          if-no-files-found: ignore
       - name: Upload three playable experimental grayboxes
         if: always()
         uses: actions/upload-artifact@v4
