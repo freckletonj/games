@@ -1,4 +1,4 @@
 # Explicit CI trigger for Wonderwood regressions.
 # Only changes to this file (or a manual workflow_dispatch) launch the workflow.
 # Update the request line when an on-demand test run is needed.
-Request: Validate image-model painted Sunken Temple, exact alpha masks, real-input chapter and offline build, 2026-11-19
+Request: Painted Sunken Temple full CI plus real-browser low-tide and high-tide captures, 2026-11-19
