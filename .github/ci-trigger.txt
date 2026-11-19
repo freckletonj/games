@@ -1,4 +1,4 @@
 # Explicit CI trigger for Wonderwood regressions.
 # Only changes to this file (or a manual workflow_dispatch) launch the workflow.
 # Update the request line when an on-demand test run is needed.
-Request: Verify Mirror Palace terrain-clean overhaul, ArrowUp interaction, and complete traversal v2, 2026-11-18
+Request: Verify camera-visible Atrium beams, six-station route, and browser interaction, 2026-11-18
