@@ -136,6 +136,40 @@ test('starting at the real valve, solo walking and filling moves the crate over 
     'The gate should still require draining the crate onto its socket');
 });
 
+test('solo inputs can unlock the second-basin door from the actual upstream valve',()=>{
+  const player=explorer(70*16,39*16),templeWorld=createTempleWorld(temple);
+  const {step}=simulation(player,templeWorld),crate=templeWorld.crates[0];
+  step({upPressed:true});
+  let aligned=false;
+  for(let i=0;i<800;i++){
+    step({right:true});
+    if(crate.x>=93*16){aligned=true;break;}
+  }
+  assert.ok(aligned,'Must position the crate using natural player movement');
+  assert.equal(templeWorld.state.gates['sluice-gate'],false);
+  const drain=temple.valves.find(v=>v.id==='sluice-drain');
+  let atControl=false;
+  for(let i=0;i<640;i++){
+    const jump=i%58<23;
+    step({right:true,jump,jumpPressed:i%58===0});
+    if(Math.hypot(player.x-drain.at[0]*16,player.y-drain.at[1]*16)
+       <=drain.reach-5){atControl=true;break;}
+  }
+  assert.ok(atControl,'Solo route must reach the upper drain valve: '+
+    JSON.stringify({player:[player.x,player.y],
+      crate:[crate.x,crate.y],surface:templeWorld.state.surfaces.sluice}));
+  step({upPressed:true});
+  assert.equal(templeWorld.state.modes['sluice-valve'],'hold');
+  step();
+  step({upPressed:true});
+  assert.equal(templeWorld.state.modes['sluice-valve'],'drain');
+  advance(step,280);
+  assert.equal(templeWorld.state.plates['sluice-plate'],true,
+    'Real valve/drain operation must actually press the plate');
+  assert.equal(templeWorld.state.gates['sluice-gate'],true);
+  assert.equal(templeWorld.state.modes['sluice-valve'],'fill');
+});
+
 test('crate is a real standable platform and floats upward under the player',()=>{
   const templeWorld=createTempleWorld(temple),crate=templeWorld.crates[0];
   const player=explorer(crate.x,crate.y-66);
