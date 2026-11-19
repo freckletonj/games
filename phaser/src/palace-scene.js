@@ -78,7 +78,8 @@ export function drawPalaceScene(art,spec,world){
     const on=lit.includes(target.id),color=sourceColor(target.source);
     g.fillStyle(on?color:0x233c4c,on?1:.95).fillCircle(x,y,12);
     g.lineStyle(4,color,on?1:.55).strokeCircle(x,y,16);
-    art.status[target.id].setText(on?'RECEIVER LIT':'RECEIVER DARK');
+    art.status[target.id].setText(on?'RECEIVER LIT':
+      state.charged[target.id]?'LIGHT STORED ✓':'RECEIVER DARK');
   }
   for(const station of spec.controlStations){
     const [x,y]=station.at.map(n=>n*TILE),color=COLORS[station.color];

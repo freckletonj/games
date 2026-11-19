@@ -77,11 +77,6 @@
       10
     ],
     [
-      124,
-      39,
-      11
-    ],
-    [
       141,
       38,
       10
@@ -372,10 +367,10 @@
       "id": "gallery-near",
       "home": [
         114,
-        52
+        53
       ],
       "size": [
-        256,
+        128,
         20
       ],
       "rule": "lit",
@@ -383,13 +378,55 @@
       "previewTicks": 18
     },
     {
-      "id": "gallery-middle",
+      "id": "gallery-step-two",
       "home": [
-        125,
-        48
+        118,
+        51
       ],
       "size": [
-        224,
+        128,
+        20
+      ],
+      "rule": "lit",
+      "target": "gallery-target",
+      "previewTicks": 18
+    },
+    {
+      "id": "gallery-step-three",
+      "home": [
+        122,
+        49
+      ],
+      "size": [
+        128,
+        20
+      ],
+      "rule": "lit",
+      "target": "gallery-target",
+      "previewTicks": 18
+    },
+    {
+      "id": "gallery-step-four",
+      "home": [
+        126,
+        47
+      ],
+      "size": [
+        128,
+        20
+      ],
+      "rule": "lit",
+      "target": "gallery-target",
+      "previewTicks": 18
+    },
+    {
+      "id": "gallery-step-five",
+      "home": [
+        129,
+        45
+      ],
+      "size": [
+        128,
         20
       ],
       "rule": "lit",
@@ -399,11 +436,11 @@
     {
       "id": "gallery-far",
       "home": [
-        133,
-        44
+        132,
+        43
       ],
       "size": [
-        176,
+        128,
         20
       ],
       "rule": "lit",
@@ -413,50 +450,98 @@
     {
       "id": "eclipse-step-one",
       "home": [
-        157,
-        51
+        174,
+        53
       ],
       "size": [
-        176,
+        224,
         20
       ],
       "rule": "lit",
       "target": "observatory-target",
-      "previewTicks": 25
+      "previewTicks": 25,
+      "latch": true
     },
     {
       "id": "eclipse-step-two",
       "home": [
-        170,
-        47
+        176,
+        51
       ],
       "size": [
-        176,
+        192,
         20
       ],
       "rule": "lit",
       "target": "observatory-target",
-      "previewTicks": 25
+      "previewTicks": 25,
+      "latch": true
     },
     {
       "id": "eclipse-step-three",
       "home": [
-        183,
-        43
+        180,
+        49
       ],
       "size": [
-        176,
+        160,
         20
       ],
       "rule": "lit",
       "target": "observatory-target",
-      "previewTicks": 25
+      "previewTicks": 25,
+      "latch": true
     },
     {
       "id": "eclipse-step-four",
       "home": [
-        191,
-        39
+        184,
+        47
+      ],
+      "size": [
+        160,
+        20
+      ],
+      "rule": "lit",
+      "target": "observatory-target",
+      "previewTicks": 25,
+      "latch": true
+    },
+    {
+      "id": "eclipse-step-five",
+      "home": [
+        187,
+        45
+      ],
+      "size": [
+        128,
+        20
+      ],
+      "rule": "lit",
+      "target": "observatory-target",
+      "previewTicks": 25,
+      "latch": true
+    },
+    {
+      "id": "eclipse-step-six",
+      "home": [
+        189,
+        43
+      ],
+      "size": [
+        128,
+        20
+      ],
+      "rule": "lit",
+      "target": "observatory-target",
+      "previewTicks": 25,
+      "latch": true
+    },
+    {
+      "id": "eclipse-step-seven",
+      "home": [
+        190,
+        41
       ],
       "size": [
         112,
@@ -464,7 +549,23 @@
       ],
       "rule": "lit",
       "target": "observatory-target",
-      "previewTicks": 25
+      "previewTicks": 25,
+      "latch": true
+    },
+    {
+      "id": "eclipse-step-eight",
+      "home": [
+        191,
+        39
+      ],
+      "size": [
+        96,
+        20
+      ],
+      "rule": "lit",
+      "target": "observatory-target",
+      "previewTicks": 25,
+      "latch": true
     }
   ],
   "opticalRules": {
@@ -567,7 +668,7 @@
       "id": "observatory-prism-dial",
       "room": "OBSERVATORY",
       "at": [
-        164,
+        153,
         54
       ],
       "kind": "mirror",
@@ -579,7 +680,7 @@
       "id": "observatory-shutter",
       "room": "OBSERVATORY",
       "at": [
-        181,
+        162,
         54
       ],
       "kind": "shutter",

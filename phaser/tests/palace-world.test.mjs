@@ -106,7 +106,8 @@ test('gallery requires two actual reflections and an independently opened curtai
   assert.equal(state().shutters['gallery-shutter'],'open');
   assert.equal(gallery(),true);
   ticks(world.step,25);
-  assert.ok(['gallery-near','gallery-middle','gallery-far'].every(id=>
+  assert.ok(['gallery-near','gallery-step-two','gallery-step-three',
+    'gallery-step-four','gallery-step-five','gallery-far'].every(id=>
     world.palaceWorld.decks.find(d=>d.id===id).enabled));
   assert.equal(state().gates['gallery-light-gate'],true);
   const segment=state().light.segments.find(s=>
@@ -129,10 +130,31 @@ test('three-position prism and eclipse shutter independently complete the gold s
     'observatory-light-gate'];tick++)world.step();
   assert.equal(world.palaceWorld.state.gates['observatory-light-gate'],true);
   assert.ok(world.palaceWorld.decks.filter(d=>
-    d.target==='observatory-target').length===4);
+    d.target==='observatory-target').length===8);
   const eclipse=palace.occluders[0];
   assert.deepEqual(occluderPosition(eclipse,0),
     occluderPosition(eclipse,eclipse.periodTicks));
+});
+
+test('stored eclipse light cannot retract the staircase during a later shadow',()=>{
+  let state=createPalaceState(palace);
+  state=setMirrorDetent(palace,state,'observatory-prism',-45);
+  state=setPalaceShutter(palace,state,'eclipse-shutter','open');
+  for(let tick=0;tick<500&&!state.charged['observatory-target'];tick++)
+    state=stepPalace(palace,state);
+  assert.equal(state.charged['observatory-target'],true,
+    'The eclipse must permit a clean charging window');
+  for(let i=0;i<80;i++)state=stepPalace(palace,state);
+  let shaded=false;
+  for(let i=0;i<840;i++){
+    state=stepPalace(palace,state);
+    if(!state.light.lit.includes('observatory-target'))shaded=true;
+    assert.ok(palace.phasePlatforms.filter(p=>p.latch).every(p=>
+      state.platforms[p.id].solid),
+      'Stored light must not collapse an in-progress ascent');
+  }
+  assert.ok(shaded,'The disc must cast a real moving shadow');
+  assert.equal(createPalaceState(palace).charged['observatory-target'],undefined);
 });
 
 test('incomplete optical paths cannot turn on the matching gate or platforms',()=>{
