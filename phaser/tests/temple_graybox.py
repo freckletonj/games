@@ -72,11 +72,18 @@ def main():
                     "window.__wonderwoodPhaser.snapshot().temple"
                 )
                 assert water["surfaces"]["courtyard"] < 55
-            page.keyboard.press("v")
-            assert page.evaluate(
-                "window.__wonderwoodPhaser.snapshot().sceneArt.geometryOverlay"
+            page.keyboard.down("v")
+            page.wait_for_function(
+                "window.__wonderwoodPhaser.snapshot().sceneArt.geometryOverlay",
+                timeout=5000,
             )
+            page.keyboard.up("v")
+            page.wait_for_timeout(60)
             page.keyboard.press("v")
+            page.wait_for_function(
+                "!window.__wonderwoodPhaser.snapshot().sceneArt.geometryOverlay",
+                timeout=5000,
+            )
             assert not errors, (chapter, errors)
             page.close()
         browser.close()
