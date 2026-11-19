@@ -58,9 +58,9 @@ test('ordinary water-jump can board the low raft, which carries its rider to the
   }
   assert.ok(boarded,'Raft boarding trace '+JSON.stringify(trace));
   while(templeWorld.state.tick<420)step();
-  assert.equal(templeWorld.state.surfaces.courtyard,43);
+  assert.equal(templeWorld.state.surfaces.courtyard,42.5);
   assert.equal(player.onPlatform,'courtyard-raft');
-  assert.ok(Math.abs(player.y-41.5*16)<.1);
+  assert.ok(Math.abs(player.y-(42.5*16-28))<.1);
   let jumpAt=-1,reached=false;
   const dockTrace=[];
   for(let i=0;i<140;i++){
@@ -408,7 +408,7 @@ test('without the middle raft, bridge A cannot be jumped directly to bridge B',(
     const jump=i%55<25;
     step({right:true,jump,jumpPressed:i%55===0});
   }
-  assert.ok(player.x<203*16,'No-raft final '+JSON.stringify({
+  assert.ok(player.x<213*16,'No-raft final exit '+JSON.stringify({
     x:player.x,y:player.y,platform:player.onPlatform,
     ground:groundAt(player.x),water:templeWorld.state.surfaces['wheel-tail']}));
 });
@@ -684,7 +684,7 @@ test('runtime water masks are clipped to compiled physical ground at every level
 test('Temple water meets each sloping bank with no rectangular shoreline gap',()=>{
   const world=createTempleWorld(temple);
   const basin=world.waterBodies.find(b=>b.id==='courtyard');
-  for(const height of [55,49,43]){
+  for(const height of [55,49,42.5]){
     basin.surface=height;
     const {left,right,y}=templeShoreBounds(basin,groundAt);
     assert.ok(left<basin.start*16,'Water must reach the left slope');

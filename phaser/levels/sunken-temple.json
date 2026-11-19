@@ -206,7 +206,7 @@
       "from": 32,
       "to": 55,
       "minSurface": 55,
-      "maxSurface": 43,
+      "maxSurface": 42.5,
       "startSurface": 55,
       "groundBottom": 57
     },
@@ -325,7 +325,7 @@
         112,
         20
       ],
-      "floatOffset": -24
+      "floatOffset": -28
     },
     {
       "id": "sluice-raft",

@@ -37,7 +37,7 @@ test('water tide, valve reversals and raft carry are fixed-tick and repeatable',
   const run=()=>{
     let state=createTempleState(templeSpec);
     for(let tick=0;tick<420;tick++)state=stepTemple(templeSpec,state);
-    assert.equal(state.surfaces.courtyard,43);
+    assert.equal(state.surfaces.courtyard,42.5);
     const high=state;
     for(let tick=0;tick<420;tick++)state=stepTemple(templeSpec,state);
     assert.equal(state.surfaces.courtyard,55);

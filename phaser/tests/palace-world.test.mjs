@@ -240,7 +240,11 @@ test('three single-hit room relays open the real path to the Light and exit',()=
 
 test('two active explorers can both physically reach the Palace exit',()=>{
   const result=runPalaceRoute(2,true);
-  assert.equal(result.finished,true);
+  assert.equal(result.finished,true,JSON.stringify({
+    players:result.players.map(p=>({x:p.x,y:p.y,platform:p.onPlatform})),
+    gates:result.palaceWorld.state.gates,activated:result.activated,
+    tick:result.tick
+  }));
   assert.equal(result.light,true);
   assert.equal(result.players.length,2);
   assert.ok(Object.values(result.palaceWorld.state.gates).every(Boolean));
