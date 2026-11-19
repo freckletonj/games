@@ -120,7 +120,7 @@
         145
       ],
       "challenge": "two-reflections-and-shutter",
-      "goal": "Align both pink mirrors and raise the curtain; then ascend the three crystal steps",
+      "goal": "Aim two reflections and open the shutter, then follow the permanently stored pink light up six forming crystal steps",
       "recovery": 136
     },
     {
@@ -130,7 +130,7 @@
         228
       ],
       "challenge": "prism-shutter-and-eclipse",
-      "goal": "Align the gold prism and eclipse curtain to build a four-step staircase to the Moonlight Terrace",
+      "goal": "Aim the prism, open the shutter, accumulate clear gold light between eclipse shadows, and climb the staged eight-step staircase",
       "recovery": 195
     }
   ],
@@ -255,7 +255,7 @@
       ],
       "reach": 40,
       "controlAt": [
-        100,
+        106,
         54
       ]
     },
@@ -324,7 +324,8 @@
         34
       ],
       "radius": 3,
-      "source": "eclipse-sun"
+      "source": "eclipse-sun",
+      "chargeTicks": 30
     }
   ],
   "phasePlatforms": [
@@ -340,7 +341,8 @@
       ],
       "rule": "lit",
       "target": "atrium-target",
-      "previewTicks": 18
+      "previewTicks": 18,
+      "latch": true
     },
     {
       "id": "gallery-near",
@@ -354,7 +356,9 @@
       ],
       "rule": "lit",
       "target": "gallery-target",
-      "previewTicks": 18
+      "previewTicks": 18,
+      "latch": true,
+      "buildDelayTicks": 0
     },
     {
       "id": "gallery-step-two",
@@ -368,7 +372,9 @@
       ],
       "rule": "lit",
       "target": "gallery-target",
-      "previewTicks": 18
+      "previewTicks": 18,
+      "latch": true,
+      "buildDelayTicks": 5
     },
     {
       "id": "gallery-step-three",
@@ -382,7 +388,9 @@
       ],
       "rule": "lit",
       "target": "gallery-target",
-      "previewTicks": 18
+      "previewTicks": 18,
+      "latch": true,
+      "buildDelayTicks": 10
     },
     {
       "id": "gallery-step-four",
@@ -396,7 +404,9 @@
       ],
       "rule": "lit",
       "target": "gallery-target",
-      "previewTicks": 18
+      "previewTicks": 18,
+      "latch": true,
+      "buildDelayTicks": 15
     },
     {
       "id": "gallery-step-five",
@@ -410,7 +420,9 @@
       ],
       "rule": "lit",
       "target": "gallery-target",
-      "previewTicks": 18
+      "previewTicks": 18,
+      "latch": true,
+      "buildDelayTicks": 20
     },
     {
       "id": "gallery-far",
@@ -424,7 +436,9 @@
       ],
       "rule": "lit",
       "target": "gallery-target",
-      "previewTicks": 18
+      "previewTicks": 18,
+      "latch": true,
+      "buildDelayTicks": 25
     },
     {
       "id": "eclipse-step-one",
@@ -439,7 +453,8 @@
       "rule": "lit",
       "target": "observatory-target",
       "previewTicks": 25,
-      "latch": true
+      "latch": true,
+      "buildDelayTicks": 0
     },
     {
       "id": "eclipse-step-two",
@@ -454,7 +469,8 @@
       "rule": "lit",
       "target": "observatory-target",
       "previewTicks": 25,
-      "latch": true
+      "latch": true,
+      "buildDelayTicks": 4
     },
     {
       "id": "eclipse-step-three",
@@ -469,7 +485,8 @@
       "rule": "lit",
       "target": "observatory-target",
       "previewTicks": 25,
-      "latch": true
+      "latch": true,
+      "buildDelayTicks": 8
     },
     {
       "id": "eclipse-step-four",
@@ -484,7 +501,8 @@
       "rule": "lit",
       "target": "observatory-target",
       "previewTicks": 25,
-      "latch": true
+      "latch": true,
+      "buildDelayTicks": 12
     },
     {
       "id": "eclipse-step-five",
@@ -499,7 +517,8 @@
       "rule": "lit",
       "target": "observatory-target",
       "previewTicks": 25,
-      "latch": true
+      "latch": true,
+      "buildDelayTicks": 16
     },
     {
       "id": "eclipse-step-six",
@@ -514,7 +533,8 @@
       "rule": "lit",
       "target": "observatory-target",
       "previewTicks": 25,
-      "latch": true
+      "latch": true,
+      "buildDelayTicks": 20
     },
     {
       "id": "eclipse-step-seven",
@@ -529,7 +549,8 @@
       "rule": "lit",
       "target": "observatory-target",
       "previewTicks": 25,
-      "latch": true
+      "latch": true,
+      "buildDelayTicks": 24
     },
     {
       "id": "eclipse-step-eight",
@@ -544,7 +565,8 @@
       "rule": "lit",
       "target": "observatory-target",
       "previewTicks": 25,
-      "latch": true
+      "latch": true,
+      "buildDelayTicks": 28
     }
   ],
   "opticalRules": {
@@ -605,7 +627,8 @@
       "kind": "mirror",
       "control": "atrium-mirror",
       "color": "blue",
-      "hint": "Turn the blue mirror until the beam points at the receiver"
+      "hint": "Turn the blue mirror until the beam points at the receiver",
+      "label": "BLUE MIRROR"
     },
     {
       "id": "gallery-first",
@@ -617,7 +640,8 @@
       "kind": "mirror",
       "control": "gallery-mirror-a",
       "color": "pink",
-      "hint": "First reflection: aim the beam upward"
+      "hint": "First reflection: aim the beam upward",
+      "label": "LOWER MIRROR"
     },
     {
       "id": "gallery-second",
@@ -629,19 +653,22 @@
       "kind": "mirror",
       "control": "gallery-mirror-b",
       "color": "pink",
-      "hint": "Second reflection: send the beam horizontally"
+      "hint": "Second reflection: send the beam horizontally",
+      "label": "UPPER MIRROR"
     },
     {
       "id": "gallery-curtain",
       "room": "GALLERY",
       "at": [
-        109,
+        106,
         54
       ],
       "kind": "shutter",
       "control": "gallery-shutter",
       "color": "pink",
-      "hint": "Open the curtain blocking the pink beam"
+      "hint": "Open the curtain blocking the pink beam",
+      "label": "PINK CURTAIN",
+      "labelOffsetY": 76
     },
     {
       "id": "observatory-prism-dial",
@@ -653,7 +680,8 @@
       "kind": "mirror",
       "control": "observatory-prism",
       "color": "gold",
-      "hint": "Rotate the three-position prism to aim upward"
+      "hint": "Rotate the three-position prism to aim upward",
+      "label": "GOLD PRISM"
     },
     {
       "id": "observatory-shutter",
@@ -665,7 +693,9 @@
       "kind": "shutter",
       "control": "eclipse-shutter",
       "color": "gold",
-      "hint": "Open the eclipse curtain to expose the receiver"
+      "hint": "Open the eclipse curtain to expose the receiver",
+      "labelOffsetY": 74,
+      "label": "ECLIPSE CURTAIN"
     }
   ]
 }

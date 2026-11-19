@@ -91,7 +91,12 @@ export function validateFutureChapter(spec){
       fail('invalid shutter state');
     for(const o of spec.occluders)
       if(!Number.isInteger(o.periodTicks)||o.periodTicks<=0)fail('invalid occluder');
-    for(const t of spec.beamTargets)needs('lightSources',t.source);
+    for(const t of spec.beamTargets){
+      needs('lightSources',t.source);
+      if(t.chargeTicks!==undefined&&
+         (!Number.isInteger(t.chargeTicks)||t.chargeTicks<1))
+        fail('invalid receiver charge time '+t.id);
+    }
     for(const gate of spec.beamGates??[]){
       needs('beamTargets',gate.target);
       const [x,y]=gate.at,[width,height]=gate.size;
@@ -102,7 +107,9 @@ export function validateFutureChapter(spec){
     }
     for(const p of spec.phasePlatforms){
       needs('beamTargets',p.target);
-      if(!['lit','shadow'].includes(p.rule)||!(p.previewTicks>0))
+      if(!['lit','shadow'].includes(p.rule)||
+         !Number.isInteger(p.previewTicks)||p.previewTicks<=0||
+         !Number.isInteger(p.buildDelayTicks??0)||(p.buildDelayTicks??0)<0)
         fail('invalid phase platform');
     }
     if(spec.id==='mirror-palace'){

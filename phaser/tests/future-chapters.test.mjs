@@ -126,7 +126,8 @@ test('phase platforms telegraph changes and never change collision inside a ride
     {occupiedPlatformIds:['atrium-crystal']});
   assert.equal(state.platforms['atrium-crystal'].solid,true);
   state=stepPalace(palaceSpec,state);
-  assert.equal(state.platforms['atrium-crystal'].solid,false);
+  assert.equal(state.platforms['atrium-crystal'].solid,true,
+    'Completed optical puzzles store their light, even after a dial is revisited');
 });
 
 test('solo, co-op and cloud assist readiness gates require distinct correct mounts',()=>{

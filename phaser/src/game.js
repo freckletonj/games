@@ -220,6 +220,8 @@ class Wonderwood extends Phaser.Scene {
         palace:this.palaceWorld?{tick:this.palaceWorld.state.tick,
           mirrors:{...this.palaceWorld.state.mirrors},
           shutters:{...this.palaceWorld.state.shutters},
+          charged:{...this.palaceWorld.state.charged},
+          chargeTicks:{...this.palaceWorld.state.chargeTicks},
           gates:{...this.palaceWorld.state.gates},
           lit:[...(this.palaceWorld.state.light?.lit??[])],
           platforms:{...this.palaceWorld.state.platforms}}:null,
@@ -2275,10 +2277,33 @@ class Wonderwood extends Phaser.Scene {
       !templeTailReady?
         'Bridge A is solid. Wait for the downstream raft and Bridge B to rise before crossing.':
         'Both bridges are solid. Jump from A to the raft, then from the raft to B.';
-    const leadHint=this.templeWorld?templeHint:this.palaceWorld?
-      lead.x<76*TILE?'↑ near blue dial / G shoots · Bend the ray up to the blue receiver.':
-      lead.x<145*TILE?'Pink gallery · Aim both mirrors upward and right, then open the light curtain.':
-      'Gold observatory · Rotate prism and open shutter; climb the four lit steps.':
+    const palaceState=this.palaceWorld?.state;
+    const palaceCharge=palaceState?.chargeTicks['observatory-target']??0;
+    const palaceCap=this.level.palaceSpec?.beamTargets.find(t=>
+      t.id==='observatory-target')?.chargeTicks??1;
+    const palaceHint=!palaceState?'':lead.x<76*TILE?
+      palaceState.charged['atrium-target']?
+        'Blue receiver saved ✓ · Cross the solid bridge to the next room.':
+        'Follow the blue ray. Turn the dial (↑) or hit it with an orb (G) to reach the receiver.':
+      lead.x<145*TILE?
+        palaceState.charged['gallery-target']?
+          'Pink light saved ✓ · Ascend all six crystal steps; the path will stay solid.':
+        palaceState.mirrors['gallery-mirror-a']!==-45?
+          'Pink ray · Try the first mirror and watch where the beam stops.':
+        palaceState.mirrors['gallery-mirror-b']!==-45?
+          'First bounce aligned · Redirect the second reflection toward the receiver.':
+        palaceState.shutters['gallery-shutter']==='closed'?
+          'Two bounces aligned · The curtain blocks the beam. Open it.':
+          'Pink receiver awaits light · Watch the traced beam and emerging stair.':
+      palaceState.charged['observatory-target']?
+        'Gold light saved ✓ · Follow all eight solid crystal steps up to the Light.':
+      palaceState.mirrors['observatory-prism']!==-45?
+        'Gold prism · Cycle its three detents to aim sunlight upward.':
+      palaceState.shutters['eclipse-shutter']==='closed'?
+        'Gold beam aligned · Open the eclipse curtain with ↑.':
+        'Capacitor '+Math.round(100*palaceCharge/palaceCap)+
+          '% · The moving eclipse casts a shadow. Clear light adds charge; progress is saved.';
+    const leadHint=this.templeWorld?templeHint:this.palaceWorld?palaceHint:
       this.raceWorld?.state.phase==='waitingForUnicorns'?
       'Give a Unicorn two berry treats (F), then press T to ride. Both riders must mount.':
       this.raceWorld?.state.phase==='waitingForPegasi'?

@@ -105,7 +105,7 @@ test('gallery requires two actual reflections and an independently opened curtai
   operate(world,player,'gallery-curtain');
   assert.equal(state().shutters['gallery-shutter'],'open');
   assert.equal(gallery(),true);
-  ticks(world.step,25);
+  ticks(world.step,55);
   assert.ok(['gallery-near','gallery-step-two','gallery-step-three',
     'gallery-step-four','gallery-step-five','gallery-far'].every(id=>
     world.palaceWorld.decks.find(d=>d.id===id).enabled));
@@ -113,6 +113,55 @@ test('gallery requires two actual reflections and an independently opened curtai
   const segment=state().light.segments.find(s=>
     s.source==='gallery-lantern'&&s.hit==='gallery-target');
   assert.ok(segment,'The target was reached by a traced reflected beam');
+});
+
+test('the stored blue bridge survives a second exploratory dial turn',()=>{
+  const player=explorer(0,36*16),world=simulation([player]);
+  world.step([{upPressed:true}]);
+  ticks(world.step,30);
+  const bridge=world.palaceWorld.decks.find(d=>d.id==='atrium-crystal');
+  assert.equal(bridge.enabled,true);
+  assert.equal(world.palaceWorld.state.charged['atrium-target'],true);
+  world.step([{upPressed:true}]);
+  ticks(world.step,100);
+  assert.equal(world.palaceWorld.state.light.lit.includes('atrium-target'),false);
+  assert.equal(bridge.enabled,true,'A solved room cannot trap a returning player');
+  assert.equal(world.palaceWorld.state.gates['atrium-light-gate'],true);
+});
+
+test('gallery stores the full optical solution and grows steps from near to far',()=>{
+  let state=createPalaceState(palace);
+  state=setMirrorDetent(palace,state,'gallery-mirror-a',-45);
+  state=setMirrorDetent(palace,state,'gallery-mirror-b',-45);
+  state=setPalaceShutter(palace,state,'gallery-shutter','open');
+  for(let i=0;i<27;i++)state=stepPalace(palace,state);
+  assert.equal(state.charged['gallery-target'],true);
+  assert.equal(state.platforms['gallery-near'].solid,true);
+  assert.equal(state.platforms['gallery-far'].solid,false,
+    'The far step should form after the near landing');
+  for(let i=0;i<35;i++)state=stepPalace(palace,state);
+  assert.ok(palace.phasePlatforms.filter(p=>p.target==='gallery-target')
+    .every(p=>state.platforms[p.id].solid));
+  state=setPalaceShutter(palace,state,'gallery-shutter','closed');
+  for(let i=0;i<95;i++)state=stepPalace(palace,state);
+  assert.equal(state.light.lit.includes('gallery-target'),false);
+  assert.ok(palace.phasePlatforms.filter(p=>p.target==='gallery-target')
+    .every(p=>state.platforms[p.id].solid),
+  'Stored pink light protects the return route from further experimentation');
+});
+
+test('gallery curtain control leaves space for the nearby first step to form',()=>{
+  const station=palace.controlStations.find(s=>s.id==='gallery-curtain');
+  const player=explorer(0,station.at[0]*16,station.at[1]*16);
+  const world=simulation([player]);
+  world.palaceWorld.state=setMirrorDetent(palace,world.palaceWorld.state,
+    'gallery-mirror-a',-45);
+  world.palaceWorld.state=setMirrorDetent(palace,world.palaceWorld.state,
+    'gallery-mirror-b',-45);
+  world.step([{upPressed:true}]);
+  ticks(world.step,60);
+  assert.equal(world.palaceWorld.decks.find(d=>d.id==='gallery-near').enabled,true,
+    'The control operator should not obstruct the first ladder step');
 });
 
 test('three-position prism and eclipse shutter independently complete the gold staircase',()=>{
@@ -136,6 +185,37 @@ test('three-position prism and eclipse shutter independently complete the gold s
     occluderPosition(eclipse,eclipse.periodTicks));
 });
 
+test('the eclipse capacitor needs accumulated clean light and remembers shadows',()=>{
+  let state=createPalaceState(palace);
+  state=setMirrorDetent(palace,state,'observatory-prism',-45);
+  state=setPalaceShutter(palace,state,'eclipse-shutter','open');
+  const receiver=palace.beamTargets.find(t=>t.id==='observatory-target');
+  const required=receiver.chargeTicks;
+  assert.ok(required>=20);
+  let sawShadow=false,sawLight=false,previousCharge=0;
+  for(let tick=0;tick<900&&!state.charged[receiver.id];tick++){
+    state=stepPalace(palace,state);
+    const charge=state.chargeTicks[receiver.id];
+    const hit=state.light.lit.includes(receiver.id);
+    sawShadow ||= !hit;
+    sawLight ||= hit;
+    assert.ok(charge>=previousCharge,'Eclipse shadows cannot erase earned charge');
+    if(!hit)assert.equal(charge,previousCharge);
+    if(charge<required){
+      assert.equal(state.gates['observatory-light-gate'],false);
+      assert.equal(state.platforms['eclipse-step-one'].solid,false);
+    }
+    previousCharge=charge;
+  }
+  assert.equal(state.charged[receiver.id],true);
+  assert.equal(state.chargeTicks[receiver.id],required);
+  assert.ok(sawLight&&sawShadow,'The disc must actually interrupt the charging ray');
+  assert.equal(state.gates['observatory-light-gate'],true);
+  for(let i=0;i<70;i++)state=stepPalace(palace,state);
+  assert.ok(palace.phasePlatforms.filter(p=>p.target===receiver.id)
+    .every(p=>state.platforms[p.id].solid));
+});
+
 test('stored eclipse light cannot retract the staircase during a later shadow',()=>{
   let state=createPalaceState(palace);
   state=setMirrorDetent(palace,state,'observatory-prism',-45);
@@ -144,12 +224,12 @@ test('stored eclipse light cannot retract the staircase during a later shadow',(
     state=stepPalace(palace,state);
   assert.equal(state.charged['observatory-target'],true,
     'The eclipse must permit a clean charging window');
-  for(let i=0;i<80;i++)state=stepPalace(palace,state);
+  for(let i=0;i<90;i++)state=stepPalace(palace,state);
   let shaded=false;
   for(let i=0;i<840;i++){
     state=stepPalace(palace,state);
     if(!state.light.lit.includes('observatory-target'))shaded=true;
-    assert.ok(palace.phasePlatforms.filter(p=>p.latch).every(p=>
+    assert.ok(palace.phasePlatforms.filter(p=>p.target==='observatory-target').every(p=>
       state.platforms[p.id].solid),
       'Stored light must not collapse an in-progress ascent');
   }
@@ -226,7 +306,24 @@ test('phase decks never vanish under occupied riders and never spawn inside a bo
   player.onPlatform=null;player.grounded=true;
   world.step();
   ticks(world.step,25);
-  assert.equal(bridge.enabled,false);
+  assert.equal(bridge.enabled,true,
+    'A properly powered bridge must stay safe for a returning explorer');
+});
+
+test('a temporary unlatched practice deck stays solid under its rider',()=>{
+  const temporary={...palace,phasePlatforms:palace.phasePlatforms.map(p=>
+    p.id==='atrium-crystal'?{...p,latch:false}:p)};
+  const player=explorer(0,36*16),world=createPalaceWorld(temporary,level);
+  world.state=setMirrorDetent(temporary,world.state,'atrium-mirror',-45);
+  for(let i=0;i<30;i++)stepPalaceWorld(temporary,world,[player],[controls]);
+  assert.equal(world.decks[0].enabled,true);
+  player.x=58*16;player.y=45*16;player.onPlatform='atrium-crystal';
+  world.state=setMirrorDetent(temporary,world.state,'atrium-mirror',45);
+  for(let i=0;i<65;i++)stepPalaceWorld(temporary,world,[player],[controls]);
+  assert.equal(world.decks[0].enabled,true,'Occupancy delays an unsafe withdrawal');
+  player.x=36*16;player.y=46*16;player.onPlatform=null;
+  for(let i=0;i<30;i++)stepPalaceWorld(temporary,world,[player],[controls]);
+  assert.equal(world.decks[0].enabled,false,'Temporary decks can clear once empty');
 });
 
 test('checkpoint reset restores shutters, mirror detents and collision flags',()=>{

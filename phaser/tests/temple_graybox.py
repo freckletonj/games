@@ -73,7 +73,13 @@ def main():
                 water = page.evaluate(
                     "window.__wonderwoodPhaser.snapshot().temple"
                 )
-                assert water["surfaces"]["courtyard"] < 55
+                assert water["surfaces"]["courtyard"] == 55, (
+                    "Courtyard intentionally waits at low tide for first-time boarding", water
+                )
+                page.wait_for_function(
+                    "window.__wonderwoodPhaser.snapshot().temple.surfaces.courtyard < 55",
+                    timeout=20000,
+                )
             if chapter == "mirror-palace":
                 assert state["palace"]["gates"] == {
                     "atrium-light-gate": False,

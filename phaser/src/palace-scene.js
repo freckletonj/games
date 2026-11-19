@@ -11,7 +11,7 @@ export function createPalaceScene(scene,spec){
   const labels={};
   for(const station of spec.controlStations){
     const [x,y]=station.at.map(n=>n*TILE),color=COLORS[station.color];
-    const label=scene.add.text(x,y-44,'',{
+    const label=scene.add.text(x,y-(station.labelOffsetY??44),'',{
       fontFamily:'system-ui',fontSize:'12px',fontStyle:'bold',
       color:hex(color),backgroundColor:'#14293dee',padding:{x:6,y:4}
     }).setOrigin(.5,1).setDepth(45);
@@ -75,23 +75,39 @@ export function drawPalaceScene(art,spec,world){
   }
   for(const target of spec.beamTargets){
     const [x,y]=target.at.map(n=>n*TILE);
-    const on=lit.includes(target.id),color=sourceColor(target.source);
-    g.fillStyle(on?color:0x233c4c,on?1:.95).fillCircle(x,y,12);
-    g.lineStyle(4,color,on?1:.55).strokeCircle(x,y,16);
-    art.status[target.id].setText(on?'RECEIVER LIT':
-      state.charged[target.id]?'LIGHT STORED ✓':'RECEIVER DARK');
+    const on=lit.includes(target.id),stored=Boolean(state.charged[target.id]);
+    const color=sourceColor(target.source);
+    const total=spec.phasePlatforms.filter(p=>p.target===target.id).length;
+    const solid=spec.phasePlatforms.filter(p=>p.target===target.id&&
+      state.platforms[p.id].solid).length;
+    const charge=state.chargeTicks[target.id]??0;
+    const required=target.chargeTicks??1;
+    g.fillStyle(on||stored?color:0x233c4c,on?1:stored?.65:.95)
+      .fillCircle(x,y,12);
+    g.lineStyle(4,color,on||stored?1:.55).strokeCircle(x,y,16);
+    art.status[target.id].setText(stored?
+      solid===total?'LIGHT STORED ✓ · CROSS':
+        'CRYSTALS FORMING '+solid+'/'+total:
+      required>1&&charge>0?
+        'CAPACITOR '+Math.round(100*charge/required)+'%'+
+          (on?' · CHARGING':' · SHADOW'):
+      on?'RECEIVER LIT':'RECEIVER DARK');
   }
   for(const station of spec.controlStations){
     const [x,y]=station.at.map(n=>n*TILE),color=COLORS[station.color];
-    const value=station.kind==='mirror'?
-      state.mirrors[station.control]+'°':
-      state.shutters[station.control].toUpperCase();
+    const mechanism=(station.kind==='mirror'?spec.mirrors:spec.shutters)
+      .find(item=>item.id===station.control);
+    const options=station.kind==='mirror'?mechanism.angles:mechanism.states;
+    const current=station.kind==='mirror'?
+      state.mirrors[station.control]:state.shutters[station.control];
+    const next=options[(options.indexOf(current)+1)%options.length];
+    const format=value=>station.kind==='mirror'?value+'°':value.toUpperCase();
     g.fillStyle(0x162f40,1).fillCircle(x,y-15,16);
     g.lineStyle(4,color,1).strokeCircle(x,y-15,16);
     g.lineStyle(2,0xffffff,.9).lineBetween(x-7,y-15,x+7,y-15);
     art.labels[station.id].setText(
-      '↑ / ORB · '+station.control.replaceAll('-', ' ').toUpperCase()+
-      ' · '+value);
+      '↑ / ORB · '+(station.label??station.control.toUpperCase())+
+      ' · '+format(current)+' → '+format(next));
   }
   for(const platform of spec.phasePlatforms){
     const [x,y]=platform.home.map(n=>n*TILE);

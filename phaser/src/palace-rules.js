@@ -8,6 +8,7 @@ export function createPalaceState(spec){
     mirrors:Object.fromEntries(spec.mirrors.map(m=>[m.id,m.initial])),
     shutters:Object.fromEntries(spec.shutters.map(s=>[s.id,s.initial])),
     charged:{},
+    chargeTicks:Object.fromEntries(spec.beamTargets.map(target=>[target.id,0])),
     gates:Object.fromEntries((spec.beamGates??[]).map(g=>[g.id,false])), 
     platforms:Object.fromEntries(spec.phasePlatforms.map(p=>[p.id,{
       solid:p.rule==='shadow',pending:null,remaining:0
@@ -126,23 +127,31 @@ export function stepPalace(spec,state,{occupiedPlatformIds=[],solidAt=null}={}){
   const next={...state,tick:state.tick+1};
   const light=tracePalaceBeams(spec,next,{solidAt});
   const occupied=new Set(occupiedPlatformIds);
-  // A clean ray charges the observatory's optical capacitor once.
-  // Subsequent eclipse shadows cannot erase a staircase mid-jump.
+  // Receivers store light once genuinely solved. The early rooms latch on
+  // the first correct ray, avoiding disappearing paths when someone explores
+  // a dial later. The eclipse capacitor instead accumulates clean exposure
+  // across shadow windows, so the moving occluder matters without an
+  // arbitrary precision-timing penalty or loss of earned progress.
   const charged={...state.charged};
-  for(const platform of spec.phasePlatforms)
-    if(platform.latch&&light.lit.includes(platform.target))
-      charged[platform.target]=true;
+  const chargeTicks={...state.chargeTicks};
+  for(const target of spec.beamTargets){
+    if(charged[target.id]||!light.lit.includes(target.id))continue;
+    chargeTicks[target.id]=Math.min(target.chargeTicks??1,
+      (chargeTicks[target.id]??0)+1);
+    if(chargeTicks[target.id]>=(target.chargeTicks??1))
+      charged[target.id]=true;
+  }
   const platforms={};
   for(const platform of spec.phasePlatforms){
     const current=state.platforms[platform.id];
-    const illuminated=light.lit.includes(platform.target)||
-      Boolean(platform.latch&&charged[platform.target]);
+    const illuminated=platform.latch?Boolean(charged[platform.target]):
+      light.lit.includes(platform.target);
     const desired=platform.rule==='lit'?illuminated:!illuminated;
     if(desired===current.solid)
       platforms[platform.id]={solid:desired,pending:null,remaining:0};
     else if(current.pending!==desired)
       platforms[platform.id]={solid:current.solid,pending:desired,
-        remaining:platform.previewTicks};
+        remaining:platform.previewTicks+(desired?(platform.buildDelayTicks??0):0)};
     else if(current.remaining>1)
       platforms[platform.id]={...current,remaining:current.remaining-1};
     else if(occupied.has(platform.id))
@@ -151,6 +160,6 @@ export function stepPalace(spec,state,{occupiedPlatformIds=[],solidAt=null}={}){
       platforms[platform.id]={solid:desired,pending:null,remaining:0};
   }
   const gates=Object.fromEntries((spec.beamGates??[]).map(g=>
-    [g.id,Boolean(state.gates[g.id]||light.lit.includes(g.target))]));
-  return {...next,charged,platforms,gates,light};
+    [g.id,Boolean(state.gates[g.id]||charged[g.target])]));
+  return {...next,charged,chargeTicks,platforms,gates,light};
 }
