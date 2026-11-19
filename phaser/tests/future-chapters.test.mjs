@@ -47,7 +47,8 @@ test('water tide, valve reversals and raft carry are fixed-tick and repeatable',
     assert.ok(buoyantCarry(templeSpec,createTempleState(templeSpec),state,
       'sluice-raft').y<0);
     assert.equal(buoyantPosition(templeSpec,state,'sluice-raft').y,43.5*16);
-    assert.ok(templeCurrentAt(templeSpec,state,85*16,50*16)>0);
+    assert.equal(templeCurrentAt(templeSpec,state,85*16,50*16),0,
+       'An untelegraphed current must not push an idle explorer');
     state=setTempleValve(templeSpec,state,'sluice-handle','hold');
     state=stepTemple(templeSpec,state);
     assert.equal(state.surfaces.sluice,45);
