@@ -1,4 +1,4 @@
 # Explicit CI trigger for Wonderwood regressions.
 # Only changes to this file (or a manual workflow_dispatch) launch the workflow.
 # Update the request line when an on-demand test run is needed.
-Request: Verify forgiving court dock, true tail exit bypass, and 2P Palace route, 2026-11-18
+Request: Final Temple solo route and Palace two-player Light pickup, collision captures, 2026-11-18
