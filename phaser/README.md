@@ -1,8 +1,10 @@
 # Wonderwood / Phaser 4
 
-An offline nine-chapter adventure built with Phaser 4. The surface
-chapters compile from declarative JSON and the two caves from declarative
-geometry in `src/cave-layout.js`. The campaign uses one painted-scene renderer.
+An offline fifteen-chapter adventure built with Phaser 4: twelve painted
+chapters and three gameplay-first graybox chapters. The surface chapters
+compile from declarative JSON and the caves from declarative geometry in
+`src/cave-layout.js`. Approved chapters use the painted-scene renderer;
+the new grayboxes display their compiled playable geometry.
 The original Canvas campaign remains independently playable.
 The self-contained game plays offline with no CDN, external images or fetches.
 
@@ -454,3 +456,34 @@ Run `node phaser/scripts/export-cave-guides.mjs` to produce
 `phaser/scripts/extract-painted-layers.py` for an **approved native-size
 scene**, not the old stretched prototype. The playable Skywell now uses the selected Ancient Sanctuary scene; the
 higher-resolution nine-crop vaulted study is still a future art pass.
+
+## Three experimental chapters in the main campaign
+
+**Sunken Temple, Mirror Palace, and Skybound Stampede** appear at the end of
+the ordinary **Choose a level** menu alongside all existing chapters.
+Select a character, pick any of these levels, and play them using the normal
+controls and 60 Hz physics. The same single-file
+`dist/wonderwood-phaser.html` includes the original painted chapters and the
+three geometry-first experiments; there is no separate experimental build,
+URL flag, or filename required. Direct fragments such as
+`#sunken-temple`, `#mirror-palace`, and `#skybound-stampede` merely preselect
+the corresponding normal menu card.
+
+**Sunken Temple now has a registered AI-painted visual candidate:** an
+illustrated, world-locked background, compiler-masked static solid material,
+and separate true-alpha textures for rafts, crate, valves, waterwheel, gates
+and bridges. Its four water surfaces still follow the exact 60 Hz simulation;
+the painting never changes the collision geometry. See
+[the generated art notes](assets/generated/sunken-temple/README.md).
+The return was smaller than the 3584×1024 world, so the packed texture is
+not a final native-detail art approval. Human V-overlay alignment, solo/co-op
+difficulty and offline browser acceptance remain open.
+
+**Mirror Palace and Skybound Stampede remain unpainted grayboxes.** They still
+render compiled terrain and collision-aligned prototype effects. Press
+**V** in any experimental chapter to compare gameplay contacts with
+the visual treatment. All three remain playable and selectable through the
+ordinary campaign ledger.
+
+CI checks all three through the regular offline game and publishes the single
+playable HTML as `wonderwood-main-game-with-grayboxes`.

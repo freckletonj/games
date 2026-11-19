@@ -6,14 +6,20 @@ import stonewake from '../levels/stonewake-hollow.json' with {type:'json'};
 import jungle from '../levels/monkey-jungle.json' with {type:'json'};
 import cavern from '../levels/cavern-ascent.json' with {type:'json'};
 import brassworks from '../levels/brassworks.json' with {type:'json'};
+import sunkenTemple from '../levels/sunken-temple.json' with {type:'json'};
+import mirrorPalace from '../levels/mirror-palace.json' with {type:'json'};
+import skyboundStampede from '../levels/skybound-stampede.json' with {type:'json'};
 import {grottoChapter} from './cave-chapter.js';
 import {skywellChapter} from './skywell-chapter.js';
 import {caveLayout,compileCave,skywellLayout} from './cave-layout.js';
 import {validateEncounters} from './encounters.js';
 import {compileRockPolygons,rockContains} from './cave-solids.js';
 import {surfaceMaterialColumn} from './surface-geometry.js';
+import {validateFutureChapter} from './future-chapter-validation.js';
 
-export const surfaceDesigns={...designs,[meadow.id]:meadow,[orchard.id]:orchard,[brassworks.id]:brassworks,[stonewake.id]:stonewake,[jungle.id]:jungle};
+export const surfaceDesigns={...designs,[meadow.id]:meadow,[orchard.id]:orchard,[brassworks.id]:brassworks,[stonewake.id]:stonewake,[jungle.id]:jungle,
+  [sunkenTemple.id]:sunkenTemple,[mirrorPalace.id]:mirrorPalace,
+  [skyboundStampede.id]:skyboundStampede};
 const orchardChapter={
   id:orchard.id,biome:orchard.biome,name:'Clockwork Orchard',difficulty:'Ride',
   tagline:'Ride a harvest lift, a ravine ferry, and a wheel gondola to the roof garden.',
@@ -44,6 +50,24 @@ const cavernChapter={
   key:'springKey',goals:[{kind:'springKey',name:'Summit Light',form:null}],
   signs:[],events:[]
 };
+// The three new chapters currently render authored gameplay geometry rather
+// than commissioned scenery. They belong to the normal chapter selection so
+// graybox playtesting uses the same progression and input flow as every level.
+export const grayboxChapters=[
+  {id:sunkenTemple.id,biome:sunkenTemple.biome,name:'Sunken Temple',difficulty:'Puzzle',
+    tagline:'Tides, floating crates, sluices and the waterwheel.',
+    key:'springKey',goals:[{kind:'springKey',name:'Temple Light',form:null}],
+    signs:[],events:[]},
+  {id:mirrorPalace.id,biome:mirrorPalace.biome,name:'Mirror Palace',difficulty:'Puzzle',
+    tagline:'Turn mirrors, raise curtains and build bridges from real sunlight.',
+    key:'springKey',goals:[{kind:'springKey',name:'Palace Light',form:null}],
+    signs:[],events:[]},
+  {id:skyboundStampede.id,biome:skyboundStampede.biome,
+    name:'Skybound Stampede',difficulty:'Race',
+    tagline:'Ride Unicorns through the ground course, then Pegasi through the storm.',
+    key:'springKey',goals:[{kind:'springKey',name:'Sky Light',form:null}],
+    signs:[],events:[]}
+];
 const caves={
   [grottoChapter.id]:caveLayout,
   [skywellChapter.id]:skywellLayout,
@@ -51,7 +75,7 @@ const caves={
 };
 
 export function campaign(surfaceChapters){
-  return [...surfaceChapters,grottoChapter,skywellChapter,orchardChapter,brassworksChapter,stonewakeChapter,jungleChapter,cavernChapter];
+  return [...surfaceChapters,grottoChapter,skywellChapter,orchardChapter,brassworksChapter,stonewakeChapter,jungleChapter,cavernChapter,...grayboxChapters];
 }
 
 export function compileChapter(chapter,compiler){
@@ -64,6 +88,8 @@ export function compileChapter(chapter,compiler){
   }
   const design=surfaceDesigns[chapter.id];
   if(chapter.id===meadow.id)validateEncounters(design);
+  if(chapter.id===sunkenTemple.id||chapter.id===mirrorPalace.id||
+     chapter.id===skyboundStampede.id)validateFutureChapter(design);
   const level=compiler.compile(design,chapter);
   level.rockPolygons=compileRockPolygons(design.rockPolygons,level.width,level.height);
   level.materialColumn=x=>{
@@ -74,6 +100,9 @@ export function compileChapter(chapter,compiler){
   level.puzzleObjects=withSealFractures(design.puzzleObjects??[]);
   level.movingPlatforms=design.movingPlatforms??[];
   level.machines=design.machines??[];
+  level.templeSpec=design.waterVolumes?design:null;
+  level.palaceSpec=design.lightSources?design:null;
+  level.raceSpec=design.racePhases?design:null;
   level.sceneFeatures=design.sceneFeatures??[];
   for(const [kind,x] of design.pickups??[])level.objects.push({kind,x});
   level.ropes=design.ropes??[];

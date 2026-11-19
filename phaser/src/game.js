@@ -32,7 +32,7 @@ import {launchPower,stepPower,powerHitsCreature,applyPowerHit,
 import {ATTACKS,tickCreatureRespawn,stepCreatureMotion,creatureAction,stepCreatureThreat,
   stompCreature} from './creature-motion.js';
 import {caveContainsWater} from './cave-layout.js';
-import {makeGeometryOverlay,paintScene,sceneTextures} from './painted-scene.js';
+import {makeGeometryOverlay,paintScene,paintGrayboxGround,sceneTextures} from './painted-scene.js';
 import {deckTopAt,platformPosition,stepPlatforms} from './moving-platforms.js';
 import {machinePlatforms,stepMachines} from './machines.js';
 import {createPuzzleObjects,pushPuzzleObject,blockPuzzleX,puzzleTop,punchWall,
@@ -41,8 +41,19 @@ import sealAtlas from '../assets/generated/stonewake-hollow/seal-fragments.webp'
 import sealPlan from '../levels/stonewake-seal.json' with {type:'json'};
 import {bodyHitsRock,rockContains,sweepRockBody} from './cave-solids.js';
 import {surfaceGroundAt} from './surface-geometry.js';
+import {createTempleWorld,stepTempleWorld,templeInWater,templeBasinAt,
+  templeBlockHorizontal,templeCurrent,snapshotTempleWorld,
+  restoreTempleWorld} from './temple-world.js';
+import {createTempleScene,drawTempleScene} from './temple-scene.js';
+import {createPalaceWorld,stepPalaceWorld,restorePalaceWorld,
+  palaceBlockHorizontal,palaceSteepBanks} from './palace-world.js';
+import {createPalaceScene,drawPalaceScene} from './palace-scene.js';
+import {createRaceWorld,stepRaceWorld,raceCameraFrame,raceHazardContact} from './race-world.js';
+import {createRaceScene,drawRaceScene} from './race-scene.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
+// Every chapter, including the three unpainted geometry-first levels, now
+// lives in the normal campaign. No filename, fragment or preview flag is needed.
 const CHAPTERS=campaign(WW.chapters);
 const APPROVED_SCENE_ART=__SCENE_ASSETS__;
 const TILE=16;
@@ -186,6 +197,22 @@ class Wonderwood extends Phaser.Scene {
           }))
         }:null,
         movingPlatforms:this.walkableMachines?.map(({id,position})=>({id,position}))||[],
+        race:this.raceWorld?{...this.raceWorld.state,
+          hazards:this.raceWorld.hazards.map(h=>({...h}))}:null,
+        palace:this.palaceWorld?{tick:this.palaceWorld.state.tick,
+          mirrors:{...this.palaceWorld.state.mirrors},
+          shutters:{...this.palaceWorld.state.shutters},
+          charged:{...this.palaceWorld.state.charged},
+          chargeTicks:{...this.palaceWorld.state.chargeTicks},
+          gates:{...this.palaceWorld.state.gates},
+          lit:[...(this.palaceWorld.state.light?.lit??[])],
+          platforms:{...this.palaceWorld.state.platforms}}:null,
+        temple:this.templeWorld?{tick:this.templeWorld.state.tick,
+          surfaces:{...this.templeWorld.state.surfaces},
+          modes:{...this.templeWorld.state.modes},
+          gates:{...this.templeWorld.state.gates},
+          rafts:this.templeWorld.decks.map(d=>({id:d.id,position:d.position})),
+          crates:this.templeWorld.crates.map(c=>({id:c.id,x:c.x,y:c.y}))}:null,
         puzzleObjects:this.puzzleObjects?.map(({id,x,bottom,state,angle,speed,hits})=>({id,x,bottom,state,angle,speed,hits}))||[],
         players:this.players?.map(p=>({x:p.x,y:p.y,face:p.face,vx:p.vx,vy:p.vy,
           floating:p.floating??false,action:p.action,frame:Number(p.visual?.frame?.name),
@@ -268,6 +295,16 @@ class Wonderwood extends Phaser.Scene {
     this.machines=[];
     this.puzzleObjects=[];
     this.walkableMachines=[];
+    this.templeWorld=null;
+    this.palaceWorld=null;
+    this.palaceScene=null;
+    this.palaceCheckpoint=null;
+    this.raceWorld=null;
+    this.raceScene=null;
+    this.raceRecalling=false;
+    this.templeArt=null;
+    this.templeCheckpoint=null;
+    this.templeRecalling=false;
     this.deckOverlay=null;
     this.lastInput=[{},{}];
     this.pendingActions=[{},{}];
@@ -492,13 +529,29 @@ class Wonderwood extends Phaser.Scene {
     this.progress=playChapter(this.progress,this.chapter.id);
     writeProgress(this.progressStorage,this.progress);
     this.level=compileChapter(this.chapter,WW.worldCompiler);
+    this.templeWorld=this.level.templeSpec?
+      createTempleWorld(this.level.templeSpec):null;
+    this.palaceWorld=this.level.palaceSpec?
+      createPalaceWorld(this.level.palaceSpec,this.level):null;
+    if(this.palaceWorld)this.palaceCheckpoint=this.palaceWorld.state;
+    this.raceWorld=this.level.raceSpec?createRaceWorld(this.level.raceSpec):null;
+    if(this.templeWorld){
+      this.level.waterBodies=this.templeWorld.waterBodies;
+      this.templeCheckpoint=snapshotTempleWorld(this.templeWorld);
+    }
     this.worldW=this.level.width*TILE;
     this.worldH=this.level.height*TILE;
     this.shared={relic:!this.level.objects.some(o=>o.kind===this.chapter.key),shards:0,collected:new Set(),checkpoint:null,
       picnics:0,foods:{berry:14,nectar:6,star:6}};
     this.cameras.main.setBackgroundColor(this.level.cave?0x0b1c2c:SKY[this.level.biome]);
     this.isCavern=this.chapter.id==='cavern-ascent';
-    this.sceneArt=paintScene(this,APPROVED_SCENE_ART[this.chapter.id]);
+    const approved=APPROVED_SCENE_ART[this.chapter.id];
+    if(!approved){
+      if(!this.templeWorld&&!this.palaceWorld&&!this.raceWorld)
+        throw Error('Missing approved art for '+this.chapter.id);
+      this.sceneArt=[];
+      if(!this.templeWorld)paintGrayboxGround(this);
+    }else this.sceneArt=paintScene(this,approved);
     this.geometryOverlay=makeGeometryOverlay(this);
     this.movingPlatforms=(this.level.movingPlatforms??[]).map(platform=>{
       const position=platformPosition(platform,0);
@@ -518,7 +571,9 @@ class Wonderwood extends Phaser.Scene {
           .setTileScale(.5).setOrigin(.5,0).setDepth(-18);
       }
     }
-    this.walkableMachines=[...this.movingPlatforms,...this.machines];
+    this.walkableMachines=[...this.movingPlatforms,...this.machines,
+      ...(this.templeWorld?.decks??[]),...(this.templeWorld?.crates??[]),
+      ...(this.palaceWorld?.decks??[])];
     this.puzzleObjects=createPuzzleObjects(this.level.puzzleObjects??[]);
     for(const object of this.puzzleObjects){
       if(object.kind==='breakable-wall')this.makeSealVisual(object);
@@ -526,6 +581,12 @@ class Wonderwood extends Phaser.Scene {
         .setOrigin(.5,1).setDisplaySize(...object.size).setDepth(-19);
     }
     if(this.walkableMachines.length||this.puzzleObjects.length)this.deckOverlay=this.add.graphics().setDepth(101);
+    this.templeArt=this.templeWorld?createTempleScene(this,this.level.templeSpec,
+      this.templeWorld,APPROVED_SCENE_ART[this.chapter.id]):null;
+    this.palaceScene=this.palaceWorld?createPalaceScene(this,
+      this.level.palaceSpec):null;
+    this.raceScene=this.raceWorld?createRaceScene(this,
+      this.level.raceSpec):null;
     this.windColumns=makeThermals(this,this.level.thermalVolumes,TILE);
     this.spawnObjects();
     this.spawnMounts();
@@ -546,11 +607,22 @@ class Wonderwood extends Phaser.Scene {
         id===1&&this.confirmedExplorers[0]&&this.assistOption.checked);
     });
     const camera=this.cameras.main;
-    this.defaultZoom=this.level.cave?(this.chapter.id==='skywell-ascent'?1.4:1.25):2;
+    // Frame local switches, rays and their associated platforms together.
+    this.defaultZoom=this.palaceWorld?1.35:
+      this.level.cave?(this.chapter.id==='skywell-ascent'?1.4:1.25):2;
     this.lookUp=this.level.cave?40:38;
     camera.setZoom(this.defaultZoom).setBounds(0,0,this.worldW,this.worldH);
     const [lead,partner]=this.players;
-    if(partner){
+    if(this.raceWorld){
+      camera.stopFollow();
+      const frame=raceCameraFrame(this.level.raceSpec,
+        this.raceWorld.state,this.players);
+      camera.setZoom(frame.zoom).centerOn(frame.x,frame.y);
+      if(partner?.assist)this.moveAssistPlayer(partner,STILL);
+    }else if(this.palaceWorld){
+      camera.stopFollow();
+      camera.centerOn(lead.x+155,lead.y-160);
+    }else if(partner){
       camera.setRoundPixels(false).centerOn(partner.assist?lead.x:(lead.x+partner.x)/2,lead.y-this.lookUp);
       if(partner.assist)this.moveAssistPlayer(partner,STILL);
     }else{
@@ -577,10 +649,15 @@ class Wonderwood extends Phaser.Scene {
 
   groundAt(x){
     if(this.level.cave)return this.level.cave.groundAt(x);
+    const voidArea=this.level.raceSpec?.flightVoid;
+    if(voidArea&&x>=voidArea.from*TILE&&x<voidArea.to*TILE)
+      return this.worldH+256;
     return surfaceGroundAt(this.level,x);
   }
 
   inWater(x,y){
+    if(this.templeWorld)return templeInWater(this.templeWorld,
+      px=>this.groundAt(px),x,y);
     if(this.level.cave)return caveContainsWater(this.level,x,y);
     return this.level.waterBodies.some(b=>x>=b.start*TILE&&x<=b.end*TILE&&
       y>=b.surface*TILE&&y<=this.groundAt(x)+3);
@@ -724,7 +801,9 @@ class Wonderwood extends Phaser.Scene {
   }
 
   spawnMounts(){
-    for(const [kind,cell,ledgeHeight] of LOCATIONS[this.chapter.id]||[]){
+    const encounters=this.level.raceSpec?.mountEncounters.map(
+      mount=>[mount.kind,mount.at[0]])??LOCATIONS[this.chapter.id]??[];
+    for(const [kind,cell,ledgeHeight] of encounters){
       const {manifest}=mounts[kind];
       const x=(cell+.5)*TILE;
       const y=ledgeHeight!==undefined?ledgeHeight*TILE:this.groundAt(x);
@@ -801,7 +880,9 @@ class Wonderwood extends Phaser.Scene {
       width:this.worldW,height:this.worldH,tile:TILE,
       groundAt:x=>this.groundAt(x),
       platformSegments:this.level.platformSegments,
-      ceilingAt:this.level.cave?x=>this.level.cave.ceilingAt(x):null
+      ceilingAt:this.level.cave?x=>this.level.cave.ceilingAt(x):null,
+      flightVolumes:this.level.raceSpec?.flightVolumes??[],
+      jumpScale:this.raceWorld&&m.kind==='unicorn'?1.15:1
     });
     if(launch)m.action='';
     if(launch==='takeoff')this.sparkle(m.x,m.y-35,0xffecce);
@@ -832,6 +913,14 @@ class Wonderwood extends Phaser.Scene {
       groundAt:x=>this.groundAt(x),inWater:(x,y)=>this.inWater(x,y)};
     for(const m of this.mounts){
       if(m.rider!==null||m.clouded)continue;
+      // Leave a dismounted, trusted Unicorn where its rider left it.
+      // The ground race keeps scrolling, so returning to the Unicorn is a
+      // player choice rather than a forced pause or an AI grazing detour.
+      if(this.raceWorld?.state.phase==='groundScroll'&&
+         m.kind==='unicorn'&&m.trust>=100&&m.grounded){
+        this.animateMount(m,'idle',step/60);
+        continue;
+      }
       const near=this.players.filter(p=>!p.sleep&&!p.bubble&&!p.assist&&!p.clouded&&
         Math.abs(p.x-m.x)<80&&Math.abs(p.y-m.y)<48)
         .sort((a,b)=>Math.abs(a.x-m.x)-Math.abs(b.x-m.x))[0];
@@ -884,6 +973,14 @@ class Wonderwood extends Phaser.Scene {
     this.healthBars=[...document.querySelectorAll('#ww-health progress')];
     const notice=document.getElementById('ww-notice');
     const help=document.getElementById('ww-help');
+    // Palace captions live at the floor; keep instructions in the HUD,
+    // not across the switches that the player must shoot.
+    help.style.top=this.palaceWorld?'68px':'';
+    help.style.bottom=this.palaceWorld?'auto':'';
+    help.style.left=this.palaceWorld?'12px':'';
+    help.style.transform=this.palaceWorld?'none':'';
+    help.style.textAlign=this.palaceWorld?'left':'';
+    help.style.fontSize=this.palaceWorld?'12px':'';
     const pause=document.getElementById('ww-pause');
     pause.hidden=true;
     this.hud={setText:value=>{status.textContent=value;}};
@@ -947,7 +1044,12 @@ class Wonderwood extends Phaser.Scene {
   }
 
   waterSplash(x){
-    const water=this.level.waterBodies.find(b=>x>=b.start*TILE&&x<=b.end*TILE);
+    // Temple flooding extends up sloping banks beyond the flat-floor cells.
+    // A splash outside an actual basin should not try to read its surface.
+    const water=this.templeWorld?
+      templeBasinAt(this.templeWorld,px=>this.groundAt(px),x):
+      this.level.waterBodies.find(b=>x>=b.start*TILE&&x<b.end*TILE);
+    if(!water)return;
     const y=water.surface*TILE;
     const ripple=this.add.ellipse(x,y,14,4).setStrokeStyle(1,0xc8faff,.8).setDepth(26);
     this.tweens.add({targets:ripple,scaleX:2.9,scaleY:1.7,alpha:0,
@@ -1390,6 +1492,17 @@ class Wonderwood extends Phaser.Scene {
         this.level.rockPolygons):null;
       const next=orbStep(orb,floor,step,landing);
       Object.assign(orb,next);
+      if(this.palaceWorld){
+        const hit=this.level.palaceSpec.controlStations.find(control=>{
+          const [cx,cy]=control.at.map(n=>n*TILE);
+          return Math.hypot(orb.x-cx,orb.y-cy)<44;
+        });
+        if(hit){
+          this.palaceWorld.orbHits.push(hit.id);
+          this.sparkle(orb.x,orb.y,0xffe9ad);
+          orb.life=0;
+        }
+      }
       orb.visual.setPosition(orb.x,orb.y)
         .setRotation((150-orb.life)*.09*Math.sign(orb.vx));
       if(orb.bounces>oldBounces)
@@ -1422,7 +1535,70 @@ class Wonderwood extends Phaser.Scene {
     }
   }
 
+  resetRaceParty(){
+    const sanctuary=this.raceWorld.state.checkpoint==='sanctuary';
+    const candidates=this.level.raceSpec.mountEncounters.filter(mount=>
+      mount.kind===(sanctuary?'pegasus':'unicorn'));
+    this.raceRecalling=true;
+    for(const player of this.players){
+      if(!player.assist&&player.mount)this.dismount(player);
+    }
+    for(const mount of this.mounts){
+      if(mount.kind!==candidates[0].kind)continue;
+      mount.x=mount.homeX;
+      mount.y=this.groundAt(mount.x);
+      mount.vx=0;mount.vy=0;mount.grounded=true;mount.jumpCut=false;
+      mount.flaps=0;mount.flapWait=0;mount.rider=null;
+      mount.visual.clearTint().setAlpha(1).setRotation(0);
+    }
+    for(const player of this.players){
+      if(player.assist)continue;
+      const encounter=candidates[Math.min(player.id,candidates.length-1)];
+      const x=encounter.at[0]*TILE-58;
+      player.checkpoint={x,y:this.groundAt(x)};
+      this.recall(player);
+    }
+    for(const player of this.players)
+      player.visual.clearTint().setAlpha(1).setRotation(0);
+    this.raceRecalling=false;
+  }
+
+  playRaceImpact(hit){
+    const hazard=this.raceWorld.hazards.find(h=>h.id===hit);
+    const player=this.players.find(p=>p.mount&&hazard&&
+      raceHazardContact(hazard,p.mount));
+    this.cameras.main.shake(150,.004);
+    if(!player)return;
+    const mount=player.mount;
+    mount.visual.setTint(0xffc0ac);
+    player.visual.setTint(0xffc0ac);
+    this.tweens.add({targets:[mount.visual,player.visual],
+      y:'-=13',angle:-15*mount.face,duration:210,hold:150,yoyo:true,
+      ease:'Cubic.easeOut'});
+  }
+
   recall(p){
+    if(this.raceWorld&&!this.raceRecalling){
+      stepRaceWorld(this.level.raceSpec,this.raceWorld,this.players,
+        {recall:true});
+      this.resetRaceParty();
+      return;
+    }
+    if(this.palaceWorld&&!this.templeRecalling){
+      this.templeRecalling=true;
+      restorePalaceWorld(this.palaceWorld,this.palaceCheckpoint);
+      for(const explorer of this.players)this.recall(explorer);
+      this.templeRecalling=false;
+      return;
+    }
+    if(this.templeWorld&&!this.templeRecalling){
+      this.templeRecalling=true;
+      restoreTempleWorld(this.level.templeSpec,this.templeWorld,
+        this.templeCheckpoint);
+      for(const explorer of this.players)this.recall(explorer);
+      this.templeRecalling=false;
+      return;
+    }
     p.onPlatform=null;p.launchSpeed=0;p.floatTime=0;p.floating=false;
     p.rope=null;p.ropeLock=0;
     if(p.mount)this.dismount(p);
@@ -1435,6 +1611,25 @@ class Wonderwood extends Phaser.Scene {
     p.invincible=1.5;p.health=3;
     p.visual.setPosition(p.x,p.y);
     this.flash('Back at the last safe camp',1300);
+  }
+
+  updateRaceCamera(){
+    const camera=this.cameras.main;
+    const frame=raceCameraFrame(this.level.raceSpec,
+      this.raceWorld.state,this.players);
+    camera.setZoom(frame.zoom).centerOn(frame.x,frame.y);
+  }
+
+  updatePalaceCamera(){
+    const human=this.players.filter(p=>!p.assist&&!p.bubble);
+    if(!human.length)return;
+    const centerX=human.reduce((sum,p)=>sum+p.x,0)/human.length;
+    const centerY=human.reduce((sum,p)=>sum+p.y,0)/human.length;
+    const spread=human.length>1?
+      Math.max(...human.map(p=>p.x))-Math.min(...human.map(p=>p.x)):0;
+    const zoom=Math.min(this.defaultZoom,960/(spread+290));
+    this.cameras.main.setZoom(Math.max(.95,zoom))
+      .centerOn(centerX+(human.length===1?155:90),centerY-160);
   }
 
   updatePartyCamera(){
@@ -1767,6 +1962,10 @@ class Wonderwood extends Phaser.Scene {
       groundAt:x=>this.groundAt(x),
       ceilingAt:this.level.cave?x=>this.level.cave.ceilingAt(x):null,
       inWater:(x,y)=>this.inWater(x,y),
+      basinAt:this.templeWorld?x=>templeBasinAt(
+        this.templeWorld,px=>this.groundAt(px),x):null,
+      currentAt:this.templeWorld?(x,y)=>templeCurrent(
+        this.templeWorld,this.level.templeSpec,x,y):null,
       waterBodies:this.level.waterBodies,
       thermalVolumes:this.level.thermalVolumes,
       platformSegments:this.level.platformSegments,
@@ -1776,8 +1975,15 @@ class Wonderwood extends Phaser.Scene {
       rockPolygons:this.level.rockPolygons,
       ropes:this.ropes,
       pushSpeed,
-      blockHorizontal:this.puzzleObjects.length?
-        (from,to,feet)=>blockPuzzleX(this.puzzleObjects,from,to,feet):null
+      blockHorizontal:this.puzzleObjects.length||this.templeWorld||this.palaceWorld?
+        (from,to,feet,onTerrain)=>{
+          const puzzle=this.puzzleObjects.length?
+            blockPuzzleX(this.puzzleObjects,from,to,feet):to;
+          const temple=this.templeWorld?templeBlockHorizontal(
+            this.level.templeSpec,this.templeWorld,from,puzzle,feet):puzzle;
+          return this.palaceWorld?palaceBlockHorizontal(
+            this.level.palaceSpec,this.palaceWorld,from,temple,feet,onTerrain):temple;
+        }:null
     });
   }
 
@@ -1811,6 +2017,9 @@ class Wonderwood extends Phaser.Scene {
       }else if(item.kind==='checkpoint'){
         item.used=true;
         this.shared.checkpoint={x:item.x,y:item.y};
+        if(this.templeWorld)this.templeCheckpoint=
+          snapshotTempleWorld(this.templeWorld);
+        if(this.palaceWorld)this.palaceCheckpoint=this.palaceWorld.state;
         for(const explorer of this.players){
           explorer.checkpoint={...this.shared.checkpoint};
           if(!explorer.sleep)explorer.health=3;
@@ -1915,6 +2124,16 @@ class Wonderwood extends Phaser.Scene {
         if(this.walkThroughGate())return;
         continue;
       }
+      // Preserve the exact obstacle, rider pose and camera for the impact
+      // animation. Do not advance mounts or detect a second collision while
+      // the party is waiting to be safely recalled.
+      if(this.raceWorld?.state.phase==='crash'){
+        const crash=stepRaceWorld(this.level.raceSpec,
+          this.raceWorld,this.players);
+        if(crash.restarted)this.resetRaceParty();
+        this.updateRaceCamera();
+        continue;
+      }
       for(const item of this.items){
         if(item.kind==='snack'&&item.used){
           item.respawn-=step/60;
@@ -1934,6 +2153,10 @@ class Wonderwood extends Phaser.Scene {
         }
       }
       this.updateCaptureBursts();
+      if(this.templeWorld)stepTempleWorld(this.level.templeSpec,
+        this.templeWorld,this.players,tickActions);
+      if(this.palaceWorld)stepPalaceWorld(this.level.palaceSpec,
+        this.palaceWorld,this.players,tickActions);
       stepPlatforms(this.movingPlatforms,tickTime/1000);
       stepMachines(this.machines,Math.round(tickTime/TICK_MS));
       const settled=stepPuzzleObjects(this.puzzleObjects,this.walkableMachines);
@@ -1956,7 +2179,20 @@ class Wonderwood extends Phaser.Scene {
         p.iceWater=Math.max(0,p.iceWater-1);
         this.movePlayer(p,tickActions[p.id],step);
       }
-      this.updatePartyCamera();
+      if(this.raceWorld){
+        const result=stepRaceWorld(this.level.raceSpec,
+          this.raceWorld,this.players);
+        if(result.restarted)this.resetRaceParty();
+        if(result.hit)this.playRaceImpact(result.hit);
+        if(result.transition&&result.state.phase==='sanctuaryStop'){
+          const x=this.level.raceSpec.recovery.sanctuaryCheckpoint*TILE;
+          this.shared.checkpoint={x,y:this.groundAt(x)};
+          for(const player of this.players)
+            if(!player.assist)player.checkpoint={...this.shared.checkpoint};
+        }
+        this.updateRaceCamera();
+      }else if(this.palaceWorld)this.updatePalaceCamera();
+      else this.updatePartyCamera();
       const assistant=this.players[1];
       if(assistant?.assist){
         this.moveAssistPlayer(assistant,tickActions[assistant.id]);
@@ -1975,6 +2211,12 @@ class Wonderwood extends Phaser.Scene {
       }
     }
     if(this.stage<0)return;
+    if(this.templeArt)drawTempleScene(this.templeArt,this.level.templeSpec,
+      this.templeWorld,x=>this.groundAt(x),this.geometryOverlay.visible);
+    if(this.palaceScene)drawPalaceScene(this.palaceScene,
+      this.level.palaceSpec,this.palaceWorld,this.players);
+    if(this.raceScene)drawRaceScene(this.raceScene,
+      this.level.raceSpec,this.raceWorld,this.players);
     if(this.deckOverlay){
       this.deckOverlay.clear();
       if(this.geometryOverlay.visible){
@@ -1986,10 +2228,26 @@ class Wonderwood extends Phaser.Scene {
           this.deckOverlay.strokeRect(object.x-width/2,top,width,object.bottom-top);
         }
         for(const deck of this.walkableMachines){
+          if(deck.enabled===false)continue;
           const [x]=deck.position,half=deck.size[deck.kind==='gear'?1:0]/2;
           for(let px=x-half;px<x+half;px+=4){
             const end=Math.min(px+4,x+half);
             this.deckOverlay.lineBetween(px,deckTopAt(deck,px),end,deckTopAt(deck,end));
+          }
+        }
+        if(this.palaceWorld){
+          // Show the steep banks that cannot be walked up on ground, and
+          // the full effective player-center bounds of each closed door.
+          this.deckOverlay.lineStyle(4,0xffa36b,.9);
+          for(const bank of palaceSteepBanks(this.level.palaceSpec))
+            this.deckOverlay.lineBetween(bank.fromX,bank.fromY,
+              bank.toX,bank.toY);
+          this.deckOverlay.lineStyle(2,0xff7187,.9);
+          for(const gate of this.level.palaceSpec.beamGates){
+            if(this.palaceWorld.state.gates[gate.id])continue;
+            const [x,y]=gate.at.map(cell=>cell*TILE);
+            this.deckOverlay.strokeRect(x-gate.size[0]/2-10,y,
+              gate.size[0]+20,gate.size[1]);
           }
         }
       }
@@ -2016,7 +2274,46 @@ class Wonderwood extends Phaser.Scene {
     const jungleHint=lead.rope?
       'Up / Down · climb   ·   Tap ← / → low to swing higher   ·   Jump · let go':
       lead.x<1410?'Hold ↑ to grab a rope · P2 uses 8':'Find the key on the canopy shelf.';
-    const leadHint=lead.clouded?'P1 · Steer with the stick or direction keys · Jump to break free':
+    const templeCrate=this.templeWorld?.crates[0];
+    const templeState=this.templeWorld?.state;
+    const templeTailReady=this.templeWorld?.decks.find(d=>d.id==='wheel-bridge-b')?.enabled;
+    const templeHint=!this.templeWorld?'':lead.x<70*TILE?
+      'Board the raft in low water. High tide holds briefly for your jump to the dock.':
+      lead.x<107*TILE&&!templeState.gates['sluice-gate']?
+        templeCrate.x<87*TILE?
+          '↑ at the left valve to fill. Brace against the crate and push it over the stone weir.':
+        templeCrate.x<93*TILE-15?
+          'Push the floating crate right until it stops over the golden floor socket.':
+          'Ride the raft to the upper valve; ↑ cycles Fill → Hold → Drain. Drain the crate onto the socket.':
+      lead.x<107*TILE?'Socket latched! The sluice refills automatically. Ride up to the open door.':
+      lead.x<170*TILE&&!templeState.released?
+        'Fill the head reservoir, ride its raft to the high ledge, then ↑ to release the cascade.':
+      lead.x<170*TILE&&!templeState.wheelActive?
+        'Release armed! Fill the head water and watch the wheel charge.':
+      !templeTailReady?
+        'Bridge A is solid. Wait for the downstream raft and Bridge B to rise before crossing.':
+        'Both bridges are solid. Jump from A to the raft, then from the raft to B.';
+    // The optical devices themselves carry the teaching: reflected rays,
+    // receiver charge, bridge previews and a small prompt at the nearest dial.
+    // Avoid a screen-wide puzzle walkthrough that covers those devices.
+    const palaceHint=this.palaceWorld&&this.level.palaceSpec.controlStations
+      .some(station=>this.players.some(p=>!p.assist&&
+        Math.hypot(p.x-station.at[0]*TILE,p.y-24-station.at[1]*TILE)<45))?
+      '↑ / D-pad Up · Rotate the mirror or open the curtain':'';
+    const leadHint=this.templeWorld?templeHint:this.palaceWorld?palaceHint:
+      this.raceWorld?.state.phase==='crash'?
+      'Impact · Recovering at the last safe camp…':
+      this.raceWorld?.state.phase==='waitingForUnicorns'?
+      'Give a Unicorn two berry treats (F), then press T to ride. Both riders must mount.':
+      this.raceWorld?.state.phase==='waitingForPegasi'?
+      'Choose stars (E), give a Pegasus two treats (F), and press T to fly.':
+      this.raceWorld?.state.phase==='groundScroll'?
+      this.players.some(p=>!p.assist&&!p.mount)?
+        'Unicorn race still scrolling · Keep up on foot or press T / Y beside your Unicorn.':
+        'Jump to the highlighted upper platforms, or gallop below and time the obstacles.':
+      this.raceWorld?.state.phase==='flightScroll'?
+      'Pegasus · Flap between thunderclouds above and storm clouds below; dodge falling rocks!':
+      lead.clouded?'P1 · Steer with the stick or direction keys · Jump to break free':
       lead.sleep?'R / LB · revive at camp':
       this.isCavern?cavernHint(this.puzzleObjects,lead,this.animals,this.shared.relic):
       this.puzzleObjects.length?puzzleHint(this.puzzleObjects,lead,this.animals):

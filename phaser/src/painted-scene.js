@@ -47,7 +47,7 @@ export function makeGeometryOverlay(scene){
     g.fillRect(x,floor,8,h-floor);
     const water=level.waterBodies.find(p=>
       cx>=p.start*16&&cx<p.end*16);
-    if(water&&water.surface*16<floor){
+    if(!level.templeSpec&&water&&water.surface*16<floor){
       g.fillStyle(0x25b6d2,.31);
       g.fillRect(x,water.surface*16,8,floor-water.surface*16);
     }
@@ -63,7 +63,7 @@ export function makeGeometryOverlay(scene){
     }
     g.strokePath();
   }
-  for(const pool of level.waterBodies){
+  for(const pool of level.templeSpec?[]:level.waterBodies){
     g.lineStyle(2,0x5bf5e8,.95);
     g.lineBetween(pool.start*16,pool.surface*16,
       pool.end*16,pool.surface*16);
@@ -80,6 +80,33 @@ export function makeGeometryOverlay(scene){
     g.fillStyle(0xff9d63,.48);
     g.fillRect(wall.x*16-12,wall.top*16,24,
       (wall.bottom-wall.top)*16);
+  }
+  return g;
+}
+
+// The experimental Palace and Stampede have geometry but no approved
+// painting. Render their compiled physical ground and authored platform
+// tops in the standalone graybox without inventing collision from art.
+export function paintGrayboxGround(scene){
+  const g=scene.add.graphics().setDepth(-31);
+  const width=scene.level.width*16;
+  const height=scene.level.height*16;
+  g.fillStyle(0x435c65,1);
+  g.lineStyle(2,0xe4c894,.85);
+  for(let x=0;x<width;x+=8){
+    const ground=scene.groundAt(x+4);
+    if(ground<height)g.fillRect(x,ground,8,height-ground);
+  }
+  g.fillStyle(0xbdad8b,1);
+  g.lineStyle(2,0xe4c894,1);
+  for(const ledge of scene.level.platformSegments){
+    if(ledge.kind!=='platform')continue;
+    const y=ledge.y*16;
+    for(let x=ledge.x*16;x<(ledge.x+ledge.length)*16;x+=8){
+      if(y>=scene.groundAt(x+4)-2)continue;
+      g.fillRect(x,y,8,18);
+      g.lineBetween(x,y,x+8,y);
+    }
   }
   return g;
 }
