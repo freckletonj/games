@@ -63,7 +63,7 @@ test('ordinary water-jump can board the low raft, which carries its rider to the
   assert.ok(Math.abs(player.y-41.5*16)<.1);
   let jumpAt=-1,reached=false;
   for(let i=0;i<140;i++){
-    if(jumpAt<0&&player.x>=55.5*16)jumpAt=i;
+    if(jumpAt<0&&player.x>=54.9*16)jumpAt=i;
     const jump=jumpAt>=0&&i-jumpAt<22;
     step({right:true,jump,jumpPressed:i===jumpAt});
     if(player.x>=59*16&&player.y<=39*16+3){reached=true;break;}
@@ -542,7 +542,11 @@ test('one explorer travels from the actual spawn through every required mechanis
   reach('raft middle',100,()=>player.x>=199.85*16,
     ()=>({right:true}));
   reach('bridge B',180,()=>player.onPlatform==='wheel-bridge-b',
-    i=>({right:true,jump:i<26,jumpPressed:i===0}));
+    i=>{
+      if(i<85&&i%5===0)trace.push('tail hop '+i+' '+state()+
+        ' vy='+player.vy.toFixed(2));
+      return {right:true,jump:i<26,jumpPressed:i===0};
+    });
   reach('Temple Light',300,()=>player.x>=219*16,
     ()=>({right:true}));
   assert.ok(templeWorld.state.plates['sluice-plate']);
