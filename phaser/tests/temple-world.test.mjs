@@ -101,11 +101,15 @@ test('crate is blocked by the weir when low, clears it when floating, then latch
     if(crate.x>=93*16){crossed=true;break;}
   }
   assert.ok(crossed,'Player pushing must move a floating crate beyond the divider');
+  advance(step,45,()=>({right:true}));
+  assert.equal(crate.x,93*16,'The socket rim must prevent overshooting the plate');
   assert.equal(templeWorld.state.gates['sluice-gate'],false,
     'A crate floating over a floor socket is not a solved puzzle');
   templeWorld.state=setTempleValve(temple,templeWorld.state,'sluice-drain','drain');
   advance(step,270);
-  assert.equal(templeWorld.state.surfaces.sluice,55);
+  assert.equal(templeWorld.state.modes['sluice-valve'],'fill',
+    'The socket must start refilling the pool so the exit remains reachable');
+  assert.ok(templeWorld.state.surfaces.sluice<55);
   assert.equal(templeWorld.state.plates['sluice-plate'],true);
   assert.equal(templeWorld.state.gates['sluice-gate'],true);
   templeWorld.state=setTempleValve(temple,templeWorld.state,'sluice-handle','fill');
