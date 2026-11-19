@@ -1,4 +1,4 @@
 # Explicit CI trigger for Wonderwood regressions.
 # Only changes to this file (or a manual workflow_dispatch) launch the workflow.
 # Update the request line when an on-demand test run is needed.
-Request: Prove Courtyard, Head, Tail raft-only crossings after removing artificial stone lips, 2026-11-18
+Request: Exhaustive raft and gate bypass matrix plus grounded geometry audit, 2026-11-18
