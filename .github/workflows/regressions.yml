@@ -97,6 +97,18 @@ jobs:
           npm install --prefix phaser --no-audit --no-fund
           python -m pip install playwright pillow
           python -m playwright install --with-deps chromium
+      - name: Publish isolated gameplay sources for local collision replay
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experimental-gameplay-source
+          path: |
+            phaser/src/
+            phaser/levels/
+            phaser/tests/
+            phaser/package.json
+            src/platform/world-compiler.js
+          if-no-files-found: error
       - name: Test Phaser gameplay and cave geometry
         run: npm test --prefix phaser
       - name: Export and inspect three geometry-derived chapter guides

@@ -322,6 +322,7 @@ function runRoute(humans,operateControls=true){
   const center=o=>[(o.x+.5)*16,(o.y+.5)*16-12];
   const [rx,ry]=center(relic),[ex,ey]=center(exit);
   let farthest=players[0].x;
+  const trace=[];
   for(let tick=0;tick<6200;tick++){
     const driver=players[0];
     let action={right:true};
@@ -356,6 +357,9 @@ function runRoute(humans,operateControls=true){
     });
     step([action,...others]);
     farthest=Math.max(farthest,driver.x);
+    if(tick%50===0)trace.push([tick,Math.round(driver.x/16),
+      Math.round(driver.y/16),driver.onPlatform,index,
+      palaceWorld.state.gates['gallery-light-gate']]);
     if(players.some(p=>Math.abs(p.x-rx)<19&&
       Math.abs(p.y-ry)<26))light=true;
     for(const p of players)
@@ -363,16 +367,16 @@ function runRoute(humans,operateControls=true){
         visitedExit.add(p.id);
     if(light&&visitedExit.size===humans)
       return {completed:true,light,activated,tick,
-        players,visitedExit:[...visitedExit],farthest,palaceWorld};
+        players,visitedExit:[...visitedExit],farthest,trace,palaceWorld};
   }
   return {completed:false,light,activated,tick:6200,
-    players,visitedExit:[...visitedExit],farthest,palaceWorld};
+    players,visitedExit:[...visitedExit],farthest,trace,palaceWorld};
 }
 
 test('normal-spawn solo input traverses all six optical controls and reaches Light and exit',()=>{
   const r=runRoute(1,true);
   assert.ok(r.completed,JSON.stringify({
-    activated:r.activated,farthest:r.farthest/16,light:r.light,
+    activated:r.activated,farthest:r.farthest/16,light:r.light,trace:r.trace,
     players:r.players.map(p=>({x:p.x/16,y:p.y/16})),
     gates:r.palaceWorld.state.gates
   }));
