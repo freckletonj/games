@@ -168,6 +168,18 @@ test('solo inputs can unlock the second-basin door from the actual upstream valv
     'Real valve/drain operation must actually press the plate');
   assert.equal(templeWorld.state.gates['sluice-gate'],true);
   assert.equal(templeWorld.state.modes['sluice-valve'],'fill');
+  advance(step,270);
+  assert.equal(templeWorld.state.surfaces.sluice,45);
+  let crossed=false;
+  for(let i=0;i<420;i++){
+    const jump=i%55<25;
+    step({right:true,jump,jumpPressed:i%55===0});
+    if(player.x>107*16){crossed=true;break;}
+  }
+  assert.ok(crossed,'The open gate must be physically traversable: '+
+    JSON.stringify({player:[player.x,player.y],
+      crate:[crate.x,crate.y],gate:templeWorld.state.gates['sluice-gate'],
+      water:templeWorld.state.surfaces.sluice}));
 });
 
 test('crate is a real standable platform and floats upward under the player',()=>{
