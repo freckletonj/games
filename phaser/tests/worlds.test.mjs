@@ -16,9 +16,9 @@ const compiler=scope.WW.worldCompiler;
 const registry=JSON.parse(readFileSync(new URL(
   'phaser/assets/generated/approved-scene-art.json',root),'utf8'));
 
-test('all playable chapters compile; grayboxes intentionally have no approved art',()=>{
+test('all playable chapters compile; Palace and Stampede remain unpainted',()=>{
   assert.equal(chapters.length,15);
-  const painted=chapters.filter(chapter=>!['sunken-temple','mirror-palace',
+  const painted=chapters.filter(chapter=>!['mirror-palace',
     'skybound-stampede'].includes(chapter.id));
   assert.deepEqual(Object.keys(registry).sort(),painted.map(chapter=>chapter.id).sort());
   for(const chapter of chapters){
@@ -36,7 +36,7 @@ test('all playable chapters compile; grayboxes intentionally have no approved ar
 
 test('surface paintings cover each world with registered WebP textures',()=>{
   for(const chapter of chapters.filter(chapter=>
-    surfaceDesigns[chapter.id]&&registry[chapter.id])){
+    surfaceDesigns[chapter.id]&&registry[chapter.id]?.scene)){
     const level=compileChapter(chapter,compiler);
     let totalWidth=0;
     let stripHeight;
@@ -53,6 +53,32 @@ test('surface paintings cover each world with registered WebP textures',()=>{
       totalWidth+=width;
     }
     assert.equal(totalWidth*level.height,stripHeight*level.width,chapter.id);
+  }
+});
+
+
+test('Sunken Temple registers compiled-mask scenery and one cutout per moving object',()=>{
+  const id='sunken-temple';
+  const spec=compileChapter({id},compiler).templeSpec;
+  const art=registry[id];
+  assert.ok(art.background&&art.solid&&!art.water&&!art.scene);
+  const props=[...spec.buoyantObjects,...spec.valves,...spec.releases,
+    ...spec.gates,spec.waterwheel,...spec.linkedPlatforms];
+  assert.deepEqual(Object.keys(art.platforms).sort(),
+    props.map(prop=>prop.id).sort());
+  for(const file of [art.solid,...Object.values(art.platforms)]){
+    const image=readFileSync(new URL(file,root));
+    assert.equal(image.toString('ascii',8,16),'WEBPVP8X',file);
+    assert.ok(image[20]&16,file+' must have true alpha');
+  }
+  for(const file of [art.background,art.solid]){
+    const image=readFileSync(new URL(file,root));
+    const extended=image.toString('ascii',12,16)==='VP8X';
+    const width=extended?image.readUIntLE(24,3)+1:
+      (image.readUInt16LE(26)&0x3fff);
+    const height=extended?image.readUIntLE(27,3)+1:
+      (image.readUInt16LE(28)&0x3fff);
+    assert.deepEqual([width,height],[spec.width*16,spec.height*16],file);
   }
 });
 
