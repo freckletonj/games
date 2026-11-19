@@ -1,4 +1,4 @@
 # Explicit CI trigger for Wonderwood regressions.
 # Only changes to this file (or a manual workflow_dispatch) launch the workflow.
 # Update the request line when an on-demand test run is needed.
-Request: Sunken Temple missed-socket reversal timing and one-press drain, 2026-11-19
+Request: Sunken Temple geometry-aligned image-model handoff, state frames and transparent cutouts, 2026-11-19
