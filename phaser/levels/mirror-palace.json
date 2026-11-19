@@ -105,7 +105,7 @@
   "creatures": [
     [
       "glimmermoth",
-      18
+      210
     ]
   ],
   "checkpoints": [
@@ -449,11 +449,11 @@
       "id": "atrium-light-gate",
       "at": [
         75,
-        38
+        35
       ],
       "size": [
         24,
-        272
+        320
       ],
       "target": "atrium-target"
     },

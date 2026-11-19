@@ -219,6 +219,35 @@ test('closed colored doors resist ordinary jumps and swimming-form movement',()=
   }
 });
 
+test('Palace gates cannot be hopped from the real upper approach shelves',()=>{
+  const approach=[{gate:'atrium-light-gate',x:73.5,y:40},
+    {gate:'gallery-light-gate',x:134,y:39},
+    {gate:'observatory-light-gate',x:192,y:35}];
+  for(const {gate:gateId,x,y} of approach){
+    const gate=palace.beamGates.find(g=>g.id===gateId);
+    for(const period of [31,43,61]){
+      const player=explorer(0,x*16,y*16);
+      const {step,palaceWorld}=simulation([player]);
+      let farthest=player.x;
+      for(let tick=0;tick<650;tick++){
+        const jump=tick%period<24;
+        step([{right:true,jump,jumpPressed:tick%period===0}]);
+        farthest=Math.max(farthest,player.x);
+      }
+      assert.equal(palaceWorld.state.gates[gateId],false);
+      assert.ok(farthest<gate.at[0]*16,
+        gateId+' jumped from ledge with cycle '+period+
+        ' at '+(farthest/16).toFixed(2));
+    }
+  }
+});
+
+test('the flapping Palace creature is earned after the required optical doors',()=>{
+  const moth=palace.creatures.find(c=>c[0]==='glimmermoth');
+  assert.ok(moth[1]>Math.max(...palace.beamGates.map(g=>g.at[0])),
+    'Players cannot obtain flight before traversing all three relay-controlled doors');
+});
+
 test('closed optical gates prevent bypassing every unsolved puzzle',()=>{
   const route=runPalaceRoute(1,false);
   assert.equal(route.finished,false);
