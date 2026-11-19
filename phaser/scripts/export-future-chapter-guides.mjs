@@ -143,15 +143,20 @@ for(const spec of specs){
       surfaceMaterialColumn(level,x)(y));
     let atrium=setMirrorDetent(spec,initial,'atrium-mirror',-45);
     atrium=repeat(atrium,60,s=>stepPalace(spec,s,{solidAt}));
+    let vault=setMirrorDetent(spec,atrium,'atrium-mirror',45);
+    vault=repeat(vault,60,s=>stepPalace(spec,s,{solidAt}));
     let gallery=setMirrorDetent(spec,atrium,'gallery-mirror-a',-45);
     gallery=setMirrorDetent(spec,gallery,'gallery-mirror-b',-45);
     gallery=setPalaceShutter(spec,gallery,'gallery-shutter','open');
     gallery=repeat(gallery,60,s=>stepPalace(spec,s,{solidAt}));
-    let eclipse=setMirrorDetent(spec,gallery,'observatory-prism',-45);
-    eclipse=setPalaceShutter(spec,eclipse,'eclipse-shutter','open');
+    let ignition=setMirrorDetent(spec,gallery,'observatory-prism',45);
+    ignition=setPalaceShutter(spec,ignition,'eclipse-shutter','open');
+    ignition=repeat(ignition,90,s=>stepPalace(spec,s,{solidAt}));
+    let eclipse=setMirrorDetent(spec,ignition,'observatory-prism',-45);
     eclipse=repeat(eclipse,150,s=>stepPalace(spec,s,{solidAt}));
     for(const [name,state] of [['initial-shadow',initial],
-      ['lit-atrium',atrium],['gallery-redirect',gallery],
+      ['lit-atrium',atrium],['vault-detour',vault],
+      ['gallery-redirect',gallery],['gold-ignition',ignition],
       ['eclipse-observatory',eclipse]]){
       const light=tracePalaceBeams(spec,state,{solidAt});
       const phase=spec.phasePlatforms.map(p=>box(p.home[0]*16,
@@ -161,6 +166,7 @@ for(const spec of specs){
       frames.push(await sample(directory,level,name,[],[...phase,...gates],
         light.segments,{
           tick:state.tick,mirrors:state.mirrors,shutters:state.shutters,
+          charged:state.charged,chargeTicks:state.chargeTicks,
           phasePlatforms:state.platforms,gates:state.gates,
           gatePivots:spec.beamGates.map(g=>({id:g.id,
             at:g.at.map(v=>v*16),size:g.size,target:g.target})),

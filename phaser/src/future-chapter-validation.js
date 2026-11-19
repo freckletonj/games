@@ -93,6 +93,14 @@ export function validateFutureChapter(spec){
       if(!Number.isInteger(o.periodTicks)||o.periodTicks<=0)fail('invalid occluder');
     for(const t of spec.beamTargets){
       needs('lightSources',t.source);
+      // Each staged receiver must name an earlier receiver: no cyclic
+      // prerequisites or ambiguous within-tick charge order.
+      for(const required of t.requiresCharged??[]){
+        needs('beamTargets',required);
+        if(spec.beamTargets.indexOf(named.beamTargets.get(required))>=
+           spec.beamTargets.indexOf(t))
+          fail('invalid receiver charging order '+t.id);
+      }
       if(t.chargeTicks!==undefined&&
          (!Number.isInteger(t.chargeTicks)||t.chargeTicks<1))
         fail('invalid receiver charge time '+t.id);

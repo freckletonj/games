@@ -61,6 +61,17 @@ export function drawPalaceScene(art,spec,world,players=[]){
     }
   }
 
+  // A dotted energy conduit makes the gold prism's two-stage requirement
+  // legible without floating instructions. It only glows after the low
+  // receiver has been primed, and cannot be mistaken for a laser segment.
+  for(const target of spec.beamTargets){
+    for(const prerequisite of target.requiresCharged??[]){
+      const source=spec.beamTargets.find(t=>t.id===prerequisite);
+      controlWire(g,toPoint(source.at),toPoint(target.at),
+        state.charged[prerequisite]?COLORS.gold:0x637c90);
+    }
+  }
+
   // Actual collision-aware ray trace. When wrong, the illuminated endpoint
   // visibly stops at the obstructing rock, mirror, shutter or eclipse disc.
   for(const segment of segments){

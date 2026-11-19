@@ -88,7 +88,7 @@ def main():
                     "gallery-light-gate": False,
                     "observatory-light-gate": False,
                 }
-                assert len(state["palace"]["platforms"]) == 15
+                assert len(state["palace"]["platforms"]) == 18
                 # Actual P1 walking to the first dial, not teleporting.
                 page.keyboard.down("d")
                 page.wait_for_function(

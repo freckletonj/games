@@ -50,12 +50,14 @@ function operate(world,player,stationId){
 }
 function configuredState(){
   let s=createPalaceState(palace);
+  s=setMirrorDetent(palace,s,'observatory-prism',45);
+  s=setPalaceShutter(palace,s,'eclipse-shutter','open');
+  for(let i=0;i<22;i++)s=stepPalace(palace,s);
+  s=setMirrorDetent(palace,s,'observatory-prism',-45);
   s=setMirrorDetent(palace,s,'atrium-mirror',-45);
   s=setMirrorDetent(palace,s,'gallery-mirror-a',-45);
   s=setMirrorDetent(palace,s,'gallery-mirror-b',-45);
   s=setPalaceShutter(palace,s,'gallery-shutter','open');
-  s=setMirrorDetent(palace,s,'observatory-prism',-45);
-  s=setPalaceShutter(palace,s,'eclipse-shutter','open');
   return s;
 }
 
@@ -100,6 +102,71 @@ test('blue mirror teaches a single bounce and delayed physical bridge',()=>{
     .filter(s=>s.source==='atrium-sun');
   assert.ok(path.length>=2);
   assert.ok(path.some(segment=>segment.hit==='atrium-target'));
+});
+
+
+test('blue laser offers a real optional vault route, not another exit shortcut',()=>{
+  let state=createPalaceState(palace);
+  assert.ok(!state.charged['atrium-target']);
+  assert.ok(!tracePalaceBeams(palace,state).lit.includes('atrium-vault-target'));
+  state=setMirrorDetent(palace,state,'atrium-mirror',45);
+  for(let i=0;i<60;i++)state=stepPalace(palace,state);
+  assert.equal(state.charged['atrium-vault-target'],true);
+  assert.equal(state.charged['atrium-target'],undefined);
+  assert.equal(state.gates['atrium-light-gate'],false);
+  const optional=palace.phasePlatforms.filter(p=>
+    p.target==='atrium-vault-target');
+  assert.equal(optional.length,3);
+  assert.ok(optional.every(p=>state.platforms[p.id].solid));
+  state=setMirrorDetent(palace,state,'atrium-mirror',-45);
+  for(let i=0;i<75;i++)state=stepPalace(palace,state);
+  assert.equal(state.gates['atrium-light-gate'],true);
+  assert.ok(optional.every(p=>!state.platforms[p.id].solid),
+    'The side branch retracts when light is diverted, but the exit stays safe');
+  assert.equal(state.platforms['atrium-crystal'].solid,true);
+});
+
+test('a normal solo explorer can climb the optional light vault to its Stardrop',()=>{
+  const player=explorer(0,36*16),world=simulation([player]);
+  world.step([{upPressed:true}]);  // Main path, permanently stored.
+  world.step();
+  world.step([{upPressed:true}]);  // Redirect toward the vault.
+  const stops=[null,'atrium-vault-entrance',
+    'atrium-vault-mid','atrium-vault-perch'];
+  let stage=0,heldUntil=0,found=false;
+  for(let tick=0;tick<500;tick++){
+    const ready=player.x>=46*16&&player.grounded&&
+      (player.onPlatform??null)===stops[stage];
+    const jumpPressed=stage<3&&ready;
+    if(jumpPressed){stage++;heldUntil=tick+18;}
+    const action={right:player.x<46*16||stage>0,
+      jump:tick<heldUntil,jumpPressed};
+    world.step([action]);
+    if(Math.abs(player.x-62*16)<20&&
+       Math.abs(player.y-49*16)<30){found=true;break;}
+  }
+  assert.equal(found,true,
+    `Vault Stardrop must be physically reachable: x=${player.x/16}, y=${player.y/16}`);
+  assert.equal(world.palaceWorld.state.gates['atrium-light-gate'],true);
+});
+
+test('gold prism must power both independent receivers before the final ascent',()=>{
+  let state=createPalaceState(palace);
+  state=setPalaceShutter(palace,state,'eclipse-shutter','open');
+  state=setMirrorDetent(palace,state,'observatory-prism',-45);
+  for(let i=0;i<500;i++)state=stepPalace(palace,state);
+  assert.ok(state.light.segments.some(s=>s.source==='eclipse-sun'));
+  assert.equal(state.chargeTicks['observatory-target'],0,
+    'The upper capacitor must not charge without lower ignition');
+  assert.equal(state.gates['observatory-light-gate'],false);
+  state=setMirrorDetent(palace,state,'observatory-prism',45);
+  for(let i=0;i<22;i++)state=stepPalace(palace,state);
+  assert.equal(state.charged['observatory-ignition'],true);
+  assert.equal(state.gates['observatory-light-gate'],false);
+  state=setMirrorDetent(palace,state,'observatory-prism',-45);
+  for(let i=0;i<500&&!state.gates['observatory-light-gate'];i++)
+    state=stepPalace(palace,state);
+  assert.equal(state.gates['observatory-light-gate'],true);
 });
 
 test('gallery requires two actual reflections and an independently opened curtain',()=>{
@@ -180,13 +247,16 @@ test('three-position prism and eclipse shutter independently complete the gold s
   const player=explorer(0,164*16),world=simulation([player]);
   operate(world,player,'observatory-prism-dial');
   assert.equal(world.palaceWorld.state.mirrors['observatory-prism'],45);
-  world.step();
-  operate(world,player,'observatory-prism-dial');
-  assert.equal(world.palaceWorld.state.mirrors['observatory-prism'],-45);
   assert.equal(world.palaceWorld.state.shutters['eclipse-shutter'],'closed');
-  assert.equal(world.palaceWorld.state.gates['observatory-light-gate'],false);
   operate(world,player,'observatory-shutter');
   assert.equal(world.palaceWorld.state.shutters['eclipse-shutter'],'open');
+  for(let tick=0;tick<80&&!world.palaceWorld.state.charged[
+    'observatory-ignition'];tick++)world.step();
+  assert.equal(world.palaceWorld.state.charged['observatory-ignition'],true);
+  assert.equal(world.palaceWorld.state.gates['observatory-light-gate'],false,
+    'Priming the lower receiver alone does not build the exit stairs');
+  operate(world,player,'observatory-prism-dial');
+  assert.equal(world.palaceWorld.state.mirrors['observatory-prism'],-45);
   for(let tick=0;tick<500&&!world.palaceWorld.state.gates[
     'observatory-light-gate'];tick++)world.step();
   assert.equal(world.palaceWorld.state.gates['observatory-light-gate'],true);
@@ -199,8 +269,12 @@ test('three-position prism and eclipse shutter independently complete the gold s
 
 test('the eclipse capacitor needs accumulated clean light and remembers shadows',()=>{
   let state=createPalaceState(palace);
-  state=setMirrorDetent(palace,state,'observatory-prism',-45);
+  state=setMirrorDetent(palace,state,'observatory-prism',45);
   state=setPalaceShutter(palace,state,'eclipse-shutter','open');
+  for(let i=0;i<24;i++)state=stepPalace(palace,state);
+  assert.equal(state.charged['observatory-ignition'],true);
+  assert.equal(state.gates['observatory-light-gate'],false);
+  state=setMirrorDetent(palace,state,'observatory-prism',-45);
   const receiver=palace.beamTargets.find(t=>t.id==='observatory-target');
   const required=receiver.chargeTicks;
   assert.ok(required>=20);
@@ -230,8 +304,10 @@ test('the eclipse capacitor needs accumulated clean light and remembers shadows'
 
 test('stored eclipse light cannot retract the staircase during a later shadow',()=>{
   let state=createPalaceState(palace);
-  state=setMirrorDetent(palace,state,'observatory-prism',-45);
+  state=setMirrorDetent(palace,state,'observatory-prism',45);
   state=setPalaceShutter(palace,state,'eclipse-shutter','open');
+  for(let i=0;i<24;i++)state=stepPalace(palace,state);
+  state=setMirrorDetent(palace,state,'observatory-prism',-45);
   for(let tick=0;tick<500&&!state.charged['observatory-target'];tick++)
     state=stepPalace(palace,state);
   assert.equal(state.charged['observatory-target'],true,
@@ -346,7 +422,7 @@ test('checkpoint reset restores shutters, mirror detents and collision flags',()
   assert.equal(world.palaceWorld.state.gates['atrium-light-gate'],true);
   restorePalaceWorld(world.palaceWorld,checkpoint);
   assert.equal(world.palaceWorld.state.tick,0);
-  assert.equal(world.palaceWorld.state.mirrors['atrium-mirror'],45);
+  assert.equal(world.palaceWorld.state.mirrors['atrium-mirror'],0);
   assert.equal(world.palaceWorld.state.shutters['gallery-shutter'],'closed');
   assert.equal(world.palaceWorld.decks[0].enabled,false);
   world.step([{upPressed:true}]);
@@ -449,8 +525,12 @@ function runRoute(humans,operateControls=true){
   const players=Array.from({length:humans},(_,id)=>
     explorer(id,72+14*id));
   const simulationWorld=simulation(players),{palaceWorld,step}=simulationWorld;
-  const stations=palace.controlStations;
-  const required=stations.map(s=>s.id==='observatory-prism-dial'?2:1);
+  // Prime gold through the lower receiver, open the curtain, then revisit
+  // the prism to aim upward. This is real movement, not repeated Up spam.
+  const stations=[...palace.controlStations.slice(0,-2),
+    palace.controlStations[4],palace.controlStations[5],
+    palace.controlStations[4]];
+  const required=stations.map(()=>1);
   const activated=[];
   let index=0,pressed=0,light=false,lastUp=false;
   const visitedExit=new Set();
@@ -519,7 +599,7 @@ test('normal-spawn solo input traverses all six optical controls and reaches Lig
   }));
   assert.deepEqual(r.activated,[
     'atrium-dial','gallery-first','gallery-second','gallery-curtain',
-    'observatory-prism-dial','observatory-prism-dial','observatory-shutter'
+    'observatory-prism-dial','observatory-shutter','observatory-prism-dial'
   ]);
   assert.ok(Object.values(r.palaceWorld.state.gates).every(Boolean));
   assert.ok(r.tick<5000);

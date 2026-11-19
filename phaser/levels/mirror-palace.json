@@ -110,7 +110,7 @@
         76
       ],
       "challenge": "single-reflection",
-      "goal": "Rotate the blue mirror, illuminate the receiver and cross the first crystal bridge",
+      "goal": "Aim the blue laser upward to store the main bridge, or downward to explore the optional Stardrop vault on temporary light steps",
       "recovery": 76
     },
     {
@@ -130,7 +130,7 @@
         228
       ],
       "challenge": "prism-shutter-and-eclipse",
-      "goal": "Aim the prism, open the shutter, accumulate clear gold light between eclipse shadows, and climb the staged eight-step staircase",
+      "goal": "Open the curtain, aim the prism down to prime the lower receiver, then aim up to charge the eclipse receiver and climb the gold staircase",
       "recovery": 195
     }
   ],
@@ -175,9 +175,10 @@
       ],
       "angles": [
         -45,
-        45
+        45,
+        0
       ],
-      "initial": 45,
+      "initial": 0,
       "reach": 38,
       "controlAt": [
         36,
@@ -285,17 +286,17 @@
     {
       "id": "eclipse-disc",
       "center": [
-        169,
-        25
+        180,
+        36
       ],
       "radius": 1,
       "orbit": [
-        169,
-        33
+        180,
+        36
       ],
-      "orbitRadius": 10,
-      "periodTicks": 420,
-      "phaseTicks": 105
+      "orbitRadius": 4,
+      "periodTicks": 240,
+      "phaseTicks": 36
     }
   ],
   "beamTargets": [
@@ -309,6 +310,15 @@
       "source": "atrium-sun"
     },
     {
+      "id": "atrium-vault-target",
+      "at": [
+        54,
+        47
+      ],
+      "radius": 1,
+      "source": "atrium-sun"
+    },
+    {
       "id": "gallery-target",
       "at": [
         123,
@@ -318,6 +328,16 @@
       "source": "gallery-lantern"
     },
     {
+      "id": "observatory-ignition",
+      "at": [
+        180,
+        50
+      ],
+      "radius": 1,
+      "source": "eclipse-sun",
+      "chargeTicks": 18
+    },
+    {
       "id": "observatory-target",
       "at": [
         180,
@@ -325,7 +345,10 @@
       ],
       "radius": 3,
       "source": "eclipse-sun",
-      "chargeTicks": 30
+      "chargeTicks": 30,
+      "requiresCharged": [
+        "observatory-ignition"
+      ]
     }
   ],
   "phasePlatforms": [
@@ -343,6 +366,54 @@
       "target": "atrium-target",
       "previewTicks": 18,
       "latch": true
+    },
+    {
+      "id": "atrium-vault-entrance",
+      "home": [
+        48,
+        53
+      ],
+      "size": [
+        64,
+        20
+      ],
+      "rule": "lit",
+      "target": "atrium-vault-target",
+      "previewTicks": 12,
+      "latch": false,
+      "buildDelayTicks": 6
+    },
+    {
+      "id": "atrium-vault-mid",
+      "home": [
+        54,
+        51
+      ],
+      "size": [
+        64,
+        20
+      ],
+      "rule": "lit",
+      "target": "atrium-vault-target",
+      "previewTicks": 12,
+      "latch": false,
+      "buildDelayTicks": 12
+    },
+    {
+      "id": "atrium-vault-perch",
+      "home": [
+        58,
+        49
+      ],
+      "size": [
+        96,
+        20
+      ],
+      "rule": "lit",
+      "target": "atrium-vault-target",
+      "previewTicks": 12,
+      "latch": false,
+      "buildDelayTicks": 18
     },
     {
       "id": "gallery-near",
@@ -627,7 +698,7 @@
       "kind": "mirror",
       "control": "atrium-mirror",
       "color": "blue",
-      "hint": "Turn the blue mirror until the beam points at the receiver",
+      "hint": "Aim upward for the exit bridge or downward for a hidden vault route",
       "label": "BLUE MIRROR"
     },
     {
@@ -680,7 +751,7 @@
       "kind": "mirror",
       "control": "observatory-prism",
       "color": "gold",
-      "hint": "Rotate the three-position prism to aim upward",
+      "hint": "Aim the prism down to prime the receiver, then up past the eclipse",
       "label": "GOLD PRISM"
     },
     {
@@ -693,7 +764,7 @@
       "kind": "shutter",
       "control": "eclipse-shutter",
       "color": "gold",
-      "hint": "Open the eclipse curtain to expose the receiver",
+      "hint": "Open the curtain before charging either gold receiver",
       "labelOffsetY": 74,
       "label": "ECLIPSE CURTAIN"
     }
