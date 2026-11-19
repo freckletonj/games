@@ -294,7 +294,6 @@
       "controller": "sluice-valve",
       "modes": [
         "fill",
-        "hold",
         "drain"
       ],
       "reach": 48
