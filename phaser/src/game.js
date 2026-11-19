@@ -60,7 +60,7 @@ const PREVIEW_CHAPTERS=[
     key:'springKey',goals:[{kind:'springKey',name:'Temple Light',form:null}],
     signs:[],events:[]},
   {id:'mirror-palace',biome:'summit',name:'Mirror Palace',difficulty:'Puzzle',
-    tagline:'Aim colored light relays to activate bridges and doors.',
+    tagline:'Turn mirrors, raise curtains and build bridges from real sunlight.',
     key:'springKey',goals:[{kind:'springKey',name:'Palace Light',form:null}],
     signs:[],events:[]},
   {id:'skybound-stampede',biome:'summit',name:'Skybound Stampede',difficulty:'Race',
@@ -1501,7 +1501,7 @@ class Wonderwood extends Phaser.Scene {
       const next=orbStep(orb,floor,step,landing);
       Object.assign(orb,next);
       if(this.palaceWorld){
-        const hit=this.level.palaceSpec.circuitSwitches.find(control=>{
+        const hit=this.level.palaceSpec.controlStations.find(control=>{
           const [cx,cy]=control.at.map(n=>n*TILE);
           return Math.hypot(orb.x-cx,orb.y-cy)<44;
         });
@@ -2254,7 +2254,9 @@ class Wonderwood extends Phaser.Scene {
       'Fill the head reservoir, ride its raft to the high ledge, then press ↑ to release the cascade.':
       'The wheel powers two bridge sections. Ride the rising raft through the gap.';
     const leadHint=this.templeWorld?templeHint:this.palaceWorld?
-      'G / X · Shoot the big colored lamp. Follow its line to the matching bridge and door.':
+      lead.x<76*TILE?'↑ near blue dial / G shoots · Bend the ray up to the blue receiver.':
+      lead.x<145*TILE?'Pink gallery · Aim both mirrors upward and right, then open the light curtain.':
+      'Gold observatory · Rotate prism and open shutter; climb the four lit steps.':
       this.raceWorld?.state.phase==='waitingForUnicorns'?
       'Give a Unicorn two berry treats (F), then press T to ride. Both riders must mount.':
       this.raceWorld?.state.phase==='waitingForPegasi'?

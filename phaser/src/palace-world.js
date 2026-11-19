@@ -20,74 +20,35 @@ export function createPalaceWorld(spec,level=null){
 export function stepPalaceWorld(spec,world,players,actions){
   let state=world.state;
   const operated=new Set();
-  const controls=[...spec.mirrors.map(m=>({...m,kind:'mirror'})),
-    ...spec.shutters.map(s=>({...s,kind:'shutter'}))];
-  // One large relay per room powers the full visible circuit. It cannot
-  // accidentally turn an already solved bridge off.
-  const fireRelay=id=>{
-    const relay=spec.circuitSwitches?.find(item=>item.id===id);
-    if(!relay)return false;
-    if(id==='blue-relay')
-      state=setMirrorDetent(spec,state,'atrium-mirror',-45);
-    if(id==='pink-relay'){
-      state=setMirrorDetent(spec,state,'gallery-mirror-a',-45);
-      state=setMirrorDetent(spec,state,'gallery-mirror-b',-45);
-      state=setPalaceShutter(spec,state,'gallery-shutter','open');
-    }
-    if(id==='gold-relay'){
-      state=setMirrorDetent(spec,state,'observatory-prism',-45);
-      state=setPalaceShutter(spec,state,'eclipse-shutter','open');
-    }
-    operated.add(id);
-    return true;
+  const controls=spec.controlStations;
+  // Up and projectile hits operate one visible station at a time.
+  // The beams do the work: no single relay may silently solve a whole room.
+  const activate=station=>{
+    if(operated.has(station.id))return;
+    operated.add(station.id);
+    const mechanism=(station.kind==='mirror'?spec.mirrors:spec.shutters)
+      .find(item=>item.id===station.control);
+    const values=station.kind==='mirror'?mechanism.angles:mechanism.states;
+    const current=station.kind==='mirror'?
+      state.mirrors[mechanism.id]:state.shutters[mechanism.id];
+    const next=values[(values.indexOf(current)+1)%values.length];
+    state=station.kind==='mirror'?
+      setMirrorDetent(spec,state,mechanism.id,next):
+      setPalaceShutter(spec,state,mechanism.id,next);
   };
-  // Individual mirror detents remain available for testing and Up input.
-  // Projectile contact and Up use the same finite detents. Hits are
-  // consumed once, so an orb cannot turn a switch repeatedly.
-  const activate=control=>{
-    operated.add(control.id);
-    if(control.kind==='mirror'){
-      const detents=control.angles;
-      const current=state.mirrors[control.id];
-      state=setMirrorDetent(spec,state,control.id,
-        detents[(detents.indexOf(current)+1)%detents.length]);
-    }else{
-      const positions=control.states;
-      const current=state.shutters[control.id];
-      state=setPalaceShutter(spec,state,control.id,
-        positions[(positions.indexOf(current)+1)%positions.length]);
-    }
-  };
-  for(const id of world.orbHits.splice(0)){
-    if(spec.circuitSwitches?.length){
-      fireRelay(id);
-      continue;
-    }
-    const control=controls.find(item=>item.id===id);
-    if(control&&!operated.has(id))activate(control);
+  for(const id of new Set(world.orbHits.splice(0))){
+    const station=controls.find(control=>control.id===id);
+    if(station)activate(station);
   }
-  // Keep Up as an accessibility alternative to throwing an orb.
   for(const player of players){
     if(player.assist||player.sleep||player.bubble||player.clouded||
        !actions[player.id]?.upPressed)continue;
-    const relay=(spec.circuitSwitches??[]).find(control=>
+    const station=controls.map(control=>({...control,distance:
       Math.hypot(player.x-control.at[0]*TILE,
-        player.y-control.at[1]*TILE)<=40);
-    if(relay){
-      fireRelay(relay.id);
-      continue;
-    }
-    // In the redesigned Palace there are exactly three controls;
-    // hidden mirror/shutter detents are implementation details.
-    if(spec.circuitSwitches?.length)continue;
-    const candidate=controls.map(control=>({
-      ...control,distance:Math.hypot(
-        player.x-control.controlAt[0]*TILE,
-        player.y-control.controlAt[1]*TILE)}))
-      .filter(control=>control.distance<=control.reach&&
-        !operated.has(control.id))
+        player.y-control.at[1]*TILE)}))
+      .filter(control=>control.distance<=48)
       .sort((a,b)=>a.distance-b.distance)[0];
-    if(candidate)activate(candidate);
+    if(station)activate(station);
   }
   const occupied=spec.phasePlatforms.filter(platform=>{
     const [x,y]=platform.home.map(n=>n*TILE);
@@ -109,6 +70,15 @@ export function stepPalaceWorld(spec,world,players,actions){
 // as the terrain. A target must actually receive an unobstructed beam before
 // the corresponding door can be crossed.
 export function palaceBlockHorizontal(spec,world,fromX,toX,feet){
+  // The upslopes are sheer stone faces: stepping a few pixels at a time
+  // must not let ordinary movement climb through solid rock. A lit bridge
+  // supplies the height needed to leap each authored crest.
+  for(let index=1;index<spec.ridge.length;index++){
+    const [ax,ay]=spec.ridge[index-1], [bx,by]=spec.ridge[index];
+    if((ay-by)/(bx-ax)<2.5)continue;
+    const edge=bx*TILE-10;
+    if(feet>by*TILE+1&&fromX<=edge&&toX>edge)toX=edge;
+  }
   for(const gate of spec.beamGates??[]){
     if(world.state.gates[gate.id])continue;
     const [cx,cy]=gate.at;

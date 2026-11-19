@@ -145,6 +145,7 @@ for(const spec of specs){
     atrium=repeat(atrium,60,s=>stepPalace(spec,s,{solidAt}));
     let gallery=setMirrorDetent(spec,atrium,'gallery-mirror-a',-45);
     gallery=setMirrorDetent(spec,gallery,'gallery-mirror-b',-45);
+    gallery=setPalaceShutter(spec,gallery,'gallery-shutter','open');
     gallery=repeat(gallery,60,s=>stepPalace(spec,s,{solidAt}));
     let eclipse=setMirrorDetent(spec,gallery,'observatory-prism',-45);
     eclipse=setPalaceShutter(spec,eclipse,'eclipse-shutter','open');
@@ -163,8 +164,8 @@ for(const spec of specs){
           phasePlatforms:state.platforms,gates:state.gates,
           gatePivots:spec.beamGates.map(g=>({id:g.id,
             at:g.at.map(v=>v*16),size:g.size,target:g.target})),
-          controlPivots:[...spec.mirrors,...spec.shutters].map(c=>({
-            id:c.id,at:c.controlAt.map(v=>v*16)})),
+          controlPivots:spec.controlStations.map(c=>({
+            id:c.id,control:c.control,at:c.at.map(v=>v*16)})),
           beams:light.segments,litTargets:light.lit
         }));
     }

@@ -95,6 +95,27 @@ export function validateFutureChapter(spec){
       if(!['lit','shadow'].includes(p.rule)||!(p.previewTicks>0))
         fail('invalid phase platform');
     }
+    if(spec.id==='mirror-palace'){
+      if(!Array.isArray(spec.controlStations)||spec.controlStations.length!==6)
+        fail('the Palace needs six separate visible optical stations');
+      const names=new Set();
+      for(const station of spec.controlStations){
+        if(names.has(station.id))fail('duplicate station id');
+        names.add(station.id);
+        if(!['mirror','shutter'].includes(station.kind)||!station.color||
+           !Array.isArray(station.at)||station.at.length!==2||
+           station.at.some((n,i)=>!Number.isFinite(n)||n<0||
+             n>=(i===0?spec.width:spec.height))||
+           !(station.kind==='mirror'?spec.mirrors:spec.shutters)
+             .some(control=>control.id===station.control))
+          fail('invalid optical station '+station.id);
+      }
+      for(const c of [...spec.mirrors,...spec.shutters])
+        if(!spec.controlStations.some(s=>s.control===c.id))
+          fail('optical control has no station: '+c.id);
+      for(const platform of spec.phasePlatforms)
+        needs('beamTargets',platform.target);
+    }
     if(spec.circuitSwitches){
       if(spec.circuitSwitches.length!==3)
         fail('the redesigned Palace needs three room relays');
