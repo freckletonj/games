@@ -71,7 +71,11 @@ test('water tide, valve reversals and raft carry are fixed-tick and repeatable',
     assert.equal(templeCurrentAt(templeSpec,state,85*16,50*16),0);
     state=setTempleValve(templeSpec,state,'sluice-handle','drain');
     for(let tick=0;tick<400;tick++)state=stepTemple(templeSpec,state);
-    assert.equal(state.surfaces.sluice,55);
+    // Draining without placing the crate on its socket triggers a
+    // deterministic refill so a player cannot be stranded in the basin.
+    assert.equal(state.surfaces.sluice,45);
+    assert.equal(state.modes['sluice-valve'],'fill');
+    assert.equal(state.gates['sluice-gate'],false);
     return {state,high};
   };
   assert.deepEqual(run(),run());
