@@ -71,11 +71,11 @@
     ],
     [
       210,
-      39
+      38
     ],
     [
       224,
-      39
+      38
     ]
   ],
   "terrainFeatures": [],
@@ -109,7 +109,7 @@
     ],
     [
       159,
-      41,
+      40,
       8
     ],
     [
@@ -119,7 +119,7 @@
     ],
     [
       213,
-      39,
+      38,
       5
     ]
   ],
@@ -206,7 +206,7 @@
       "from": 32,
       "to": 55,
       "minSurface": 55,
-      "maxSurface": 42,
+      "maxSurface": 43,
       "startSurface": 55,
       "groundBottom": 57
     },
@@ -325,7 +325,7 @@
         112,
         20
       ],
-      "floatOffset": -16
+      "floatOffset": -24
     },
     {
       "id": "sluice-raft",
@@ -456,7 +456,7 @@
       "id": "wheel-bridge-b",
       "home": [
         209,
-        39
+        38
       ],
       "size": [
         192,
