@@ -913,9 +913,9 @@ class Wonderwood extends Phaser.Scene {
       groundAt:x=>this.groundAt(x),inWater:(x,y)=>this.inWater(x,y)};
     for(const m of this.mounts){
       if(m.rider!==null||m.clouded)continue;
-      // A dismounted, trusted Unicorn stays where its rider left it.
-      // Otherwise the paused ground course could strand the explorer while
-      // the wild-mount grazing AI wanders away from the frozen camera.
+      // Leave a dismounted, trusted Unicorn where its rider left it.
+      // The ground race keeps scrolling, so returning to the Unicorn is a
+      // player choice rather than a forced pause or an AI grazing detour.
       if(this.raceWorld?.state.phase==='groundScroll'&&
          m.kind==='unicorn'&&m.trust>=100&&m.grounded){
         this.animateMount(m,'idle',step/60);
@@ -2309,7 +2309,7 @@ class Wonderwood extends Phaser.Scene {
       'Choose stars (E), give a Pegasus two treats (F), and press T to fly.':
       this.raceWorld?.state.phase==='groundScroll'?
       this.players.some(p=>!p.assist&&!p.mount)?
-        'Unicorn course paused · Return to your Unicorn and press T / Y to resume.':
+        'Unicorn race still scrolling · Keep up on foot or press T / Y beside your Unicorn.':
         'Jump to the highlighted upper platforms, or gallop below and time the obstacles.':
       this.raceWorld?.state.phase==='flightScroll'?
       'Pegasus · Flap between thunderclouds above and storm clouds below; dodge falling rocks!':

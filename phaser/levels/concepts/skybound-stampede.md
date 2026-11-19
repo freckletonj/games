@@ -51,19 +51,21 @@ Describe all active patterns in the level JSON, not in painter output or ad hoc 
 ## Ground-race dismount recovery
 
 Unicorn riding keeps the normal T / gamepad Y dismount control. Stepping off a
-trusted Unicorn during the woodland race is a **voluntary stop, not death**:
-freeze the ground scroll anchor and hazard tick at the current position, and
-leave the Unicorn next to the explorer instead of letting its grazing AI walk
-away. Press T / Y beside that Unicorn to reboard, and resume at exactly the
-same anchor and obstacle timing. If either human dismounts, both riders share
-the pause. The in-game instruction names the stopped course and how to resume.
+trusted Unicorn during the woodland race is **not an automatic failure** and
+never pauses the auto-scroll. The player continues on foot with the same
+moving camera and animated hazards, while the dismounted Unicorn stays where
+it was left. Press T / Y beside the Unicorn to reboard if still in reach. In
+co-op, one player dismounting does not stop the other rider. Falling behind
+the camera's actual left edge for the normal grace period still triggers the
+usual checkpoint recovery. The in-game instruction emphasizes keeping up,
+not waiting for the Unicorn.
 
 Actual failures remain meaningful. Collision, knockout, bubble/trap,
 falling beyond the real camera's left edge, and a mid-scroll party change still
 use the chapter's checkpoint recovery. Pegasus dismount above the flight canyon
 is **not** treated like a safe ground-course stop. Fixed-tick tests exercise
-single-player and co-op dismount/reboard, frozen hazard poses and continued
-progress, plus offscreen failure and the original mounted routes.
+single-player and co-op dismount/reboard, advancing hazard poses and camera
+progress, eventual offscreen failure, and the original mounted routes.
 
 ## Deterministic co-op, camera and failure semantics
 

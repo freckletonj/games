@@ -61,18 +61,11 @@ export function stepRace(spec,state,players,{paused=false,failed=false,recall=fa
   if(state.phase==='groundScroll'||state.phase==='flightScroll'){
     if(activeIds.join(',')!==state.activeIds.join(','))
       return restartRace(spec,state);
-    const required=state.phase==='groundScroll'?'unicorn':'pegasus';
-    if(!raceReadiness(players,required).ready){
-      // A voluntary Unicorn dismount is not a crash. Hold the ground-course
-      // clock and camera until every healthy explorer boards again. Lost,
-      // stunned or wrongly mounted riders still use normal recovery.
-      if(state.phase==='groundScroll'&&humans.every(p=>
-        !p.sleep&&!p.bubble&&!p.clouded&&!p.trap&&
-        (!p.mount||p.mount.kind==='unicorn'&&
-          (p.mount.rider===undefined||p.mount.rider===p.id))))
-        return {...state,restarted:false};
+    // The Unicorns are needed to *start* the ground race, not to keep it
+    // running. On foot, the same scrolling camera and left-edge failure zone
+    // remain active; dismounting alone neither pauses nor resets the course.
+    if(state.phase==='flightScroll'&&!raceReadiness(players,'pegasus').ready)
       return restartRace(spec,state);
-    }
     const phase=spec.racePhases.find(phase=>phase.id===state.phase);
     // Accelerate gently after each mount gate and ease into the sanctuary
     // and finish instead of starting/stopping at full scroll speed.

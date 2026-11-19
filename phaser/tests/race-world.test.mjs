@@ -109,7 +109,7 @@ test('midpoint stays stopped until every human rides a Pegasus, not cloud assist
 });
 
 
-test('a voluntary Unicorn dismount holds scroll and hazards, then reboarding resumes',()=>{
+test('dismounting leaves the ground scroll and hazards moving; reboarding keeps progress',()=>{
   const player=rider(0,'unicorn',232),players=[player];
   const state=createRaceWorld(race);
   stepRaceWorld(race,state,players);
@@ -124,24 +124,29 @@ test('a voluntary Unicorn dismount holds scroll and hazards, then reboarding res
   const anchor=state.state.anchor,tick=state.state.tick;
   const hazards=state.hazards.map(h=>[h.id,h.x,h.y]);
   const camera=raceCameraFrame(race,state.state,players).x;
-  for(let i=0;i<200;i++){
+  for(let i=0;i<25;i++){
+    // The player can keep moving on foot rather than being frozen in place.
+    player.x+=2.6;
     const result=stepRaceWorld(race,state,players);
     assert.equal(result.state.phase,'groundScroll');
     assert.equal(result.restarted,false);
-    assert.equal(state.state.anchor,anchor);
-    assert.equal(state.state.tick,tick);
+    assert.ok(state.state.anchor>anchor);
+    assert.equal(state.state.tick,tick+i+1);
   }
-  assert.deepEqual(state.hazards.map(h=>[h.id,h.x,h.y]),hazards);
-  assert.equal(raceCameraFrame(race,state.state,players).x,camera);
+  assert.ok(raceCameraFrame(race,state.state,players).x>camera,
+    'The camera must keep auto-scrolling after a dismount');
+  assert.notDeepEqual(state.hazards.map(h=>[h.id,h.x,h.y]),hazards,
+    'Hazards must keep animating while the explorer is on foot');
+  assert.equal(state.offscreenTicks,0);
+  const beforeReboard=state.state.anchor;
   player.mount=mount;mount.rider=player.id;
   const resumed=stepRaceWorld(race,state,players);
   assert.equal(resumed.state.phase,'groundScroll');
   assert.equal(resumed.restarted,false);
-  assert.ok(resumed.state.anchor>anchor);
-  assert.equal(resumed.state.tick,tick+1);
+  assert.ok(resumed.state.anchor>beforeReboard);
 });
 
-test('two humans can wait for a dismounted Unicorn without losing their progress',()=>{
+test('one dismounted co-op player does not pause the other rider or the race',()=>{
   const players=[rider(0,'unicorn',232),rider(1,'unicorn',408)];
   const state=createRaceWorld(trainingRace);
   stepRaceWorld(trainingRace,state,players);
@@ -152,16 +157,53 @@ test('two humans can wait for a dismounted Unicorn without losing their progress
   const secondMount=players[1].mount;
   players[1].x=secondMount.x+28;
   players[1].mount=null;secondMount.rider=null;
-  const anchor=state.state.anchor;
-  for(let i=0;i<100;i++){
+  const anchor=state.state.anchor,tick=state.state.tick;
+  for(let i=0;i<24;i++){
+    stepMountedMotion(players[0].mount,actions,1,world);
+    players[0].x=players[0].mount.x;
+    players[1].x+=2.8;
     const current=stepRaceWorld(trainingRace,state,players);
     assert.equal(current.restarted,false);
     assert.equal(current.state.phase,'groundScroll');
-    assert.equal(current.state.anchor,anchor);
+    assert.ok(current.state.anchor>anchor);
+    assert.equal(current.state.tick,tick+i+1);
   }
   players[1].mount=secondMount;secondMount.rider=1;
+  const before=state.state.anchor;
   stepRaceWorld(trainingRace,state,players);
+  assert.ok(state.state.anchor>before);
+});
+
+test('staying on foot eventually fails only when the scrolling camera leaves you behind',()=>{
+  const player=rider(0,'unicorn',232),state=createRaceWorld(trainingRace);
+  stepRaceWorld(trainingRace,state,[player]);
+  for(let i=0;i<55;i++){
+    advanceMounted([player]);
+    stepRaceWorld(trainingRace,state,[player]);
+  }
+  const mount=player.mount;
+  mount.rider=null;player.mount=null;
+  player.x=mount.x+28;
+  const anchor=state.state.anchor;
+  let visibleTicks=0;
+  while(!raceRiderLeftBehind(trainingRace,state.state,[player])&&
+      visibleTicks<700){
+    const before=state.state.anchor;
+    const result=stepRaceWorld(trainingRace,state,[player]);
+    assert.equal(result.state.phase,'groundScroll');
+    assert.ok(state.state.anchor>before,
+      'Dismounting alone may not pause the auto-scroll');
+    visibleTicks++;
+  }
+  assert.ok(visibleTicks>0&&visibleTicks<700);
   assert.ok(state.state.anchor>anchor);
+  for(let i=0;i<39;i++){
+    const result=stepRaceWorld(trainingRace,state,[player]);
+    assert.equal(result.state.phase,'groundScroll');
+  }
+  const failed=stepRaceWorld(trainingRace,state,[player]);
+  assert.equal(failed.state.phase,'crash');
+  assert.equal(failed.state.crash.hit,'fell-behind');
 });
 
 test('voluntary dismount never bypasses a real offscreen failure',()=>{
