@@ -161,10 +161,15 @@ studies, pivot-registered transparent object silhouettes, and a machine-readable
 future image-model conditioning. The sample called *high tide* is now sampled
 **after** the initial low-water delay, at the actual upper surface.
 
-These vector studies are **not image-model artwork or approved painting**. No
-assets were added to `approved-scene-art.json`, and the production chapter
-continues to render its compiled graybox until properly conditioned,
-native-detail painted assets pass the art and browser acceptance gates.
+The vector studies remain **conditioning references**, not finished art.
+A separate image model has now produced a real illustrated panorama and
+moving-object source images. [The painted-candidate notes](../../assets/generated/sunken-temple/README.md)
+document their world-masked WebP layers, alpha cutouts, provenance and
+limitations. These assets are **registered and playable in the normal Phaser
+chapter** so the artwork can be reviewed against the V collision overlay.
+The model's first return is below native world resolution, and full real-input
+solo/co-op playthrough, Firefox acceptance and subjective art approval remain
+open. The chapter is still a release candidate, not signed-off final art.
 
 ## AI art and geometry handoff
 
