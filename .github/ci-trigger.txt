@@ -1,4 +1,4 @@
 # Explicit CI trigger for Wonderwood regressions.
 # Only changes to this file (or a manual workflow_dispatch) launch the workflow.
 # Update the request line when an on-demand test run is needed.
-Request: Verify Temple crate support, side pushes, gate socket, no passive drift, 2026-11-18
+Request: Test Temple crate side-only push, rideable top, socket gate and no water drift (2026-11-18)
