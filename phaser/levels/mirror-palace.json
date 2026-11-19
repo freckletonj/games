@@ -139,7 +139,7 @@
       "id": "atrium-sun",
       "at": [
         16,
-        30
+        43
       ],
       "direction": 0,
       "range": 60,
@@ -171,7 +171,7 @@
       "id": "atrium-mirror",
       "at": [
         54,
-        30
+        43
       ],
       "angles": [
         -45,
@@ -303,7 +303,7 @@
       "id": "atrium-target",
       "at": [
         54,
-        18
+        37
       ],
       "radius": 2,
       "source": "atrium-sun"

@@ -252,7 +252,7 @@ test('ray trace is physically blocked by a new rock obstruction',()=>{
   assert.ok(tracePalaceBeams(palace,active,{solidAt}).lit
     .includes('atrium-target'));
   const rock=(x,y)=>solidAt(x,y)||
-    (x>=31*16&&x<=32*16&&y>25*16&&y<33*16);
+    (x>=31*16&&x<=32*16&&y>42*16&&y<44*16);
   assert.equal(tracePalaceBeams(palace,active,{solidAt:rock}).lit
     .includes('atrium-target'),false);
 });
