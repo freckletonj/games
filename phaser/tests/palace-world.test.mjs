@@ -147,7 +147,7 @@ function runPalaceRoute(humans,operateMirrors){
     const material=level.materialColumn(x)(y);
     return material==='rock'||material==='shelf';
   };
-  const touched=new Set();
+  const touched=new Set(),visitedExit=new Set();
   const relic=level.objects.find(item=>item.kind==='springKey');
   const exit=level.objects.find(item=>item.kind==='exit');
   const center=item=>[(item.x+.5)*16,(item.y+.5)*16-12];
@@ -176,13 +176,20 @@ function runPalaceRoute(humans,operateMirrors){
     step(actions);
     if(players.some(player=>Math.abs(player.x-rx)<19&&
       Math.abs(player.y-ry)<26))light=true;
-    if(light&&players.every(player=>
-      Math.abs(player.x-ex)<28&&Math.abs(player.y-ey)<26)){
+    for(const player of players)
+      if(Math.abs(player.x-ex)<28&&Math.abs(player.y-ey)<26)
+        visitedExit.add(player.id);
+    // Co-op explorers need to traverse the real exit, not arrive on the
+    // identical simulation tick. The production game only needs one to
+    // enter after the shared Light is collected.
+    if(light&&visitedExit.size===players.length){
       finished=true;
-      return {players,palaceWorld,tick,light,finished,activated:[...touched]};
+      return {players,palaceWorld,tick,light,finished,
+        activated:[...touched],visitedExit:[...visitedExit]};
     }
   }
-  return {players,palaceWorld,tick:2900,light,finished,activated:[...touched]};
+  return {players,palaceWorld,tick:2900,light,finished,
+    activated:[...touched],visitedExit:[...visitedExit]};
 }
 
 test('compiled Palace doorways are human-scale and rooted in their rock bank',()=>{
@@ -274,7 +281,7 @@ test('two active explorers can both physically reach the Palace exit',()=>{
   assert.equal(result.finished,true,JSON.stringify({
     players:result.players.map(p=>({x:p.x,y:p.y,platform:p.onPlatform})),
     gates:result.palaceWorld.state.gates,activated:result.activated,
-    tick:result.tick
+    light:result.light,visitedExit:result.visitedExit,tick:result.tick
   }));
   assert.equal(result.light,true);
   assert.equal(result.players.length,2);
