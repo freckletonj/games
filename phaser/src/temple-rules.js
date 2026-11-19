@@ -94,6 +94,12 @@ export function stepTemple(spec,state,{cratePositions={}}={}){
       Math.abs(crate.y+object.size[1]-cellY*TILE)<2;
     return [plate.id,Boolean(state.plates[plate.id]||touching)];
   }));
+  // Seating the crate releases the gate ratchet and automatically refills
+  // the basin. Otherwise solving the floor socket strands the explorer below
+  // the high exit: the same drained tide that presses the socket also lowers
+  // the only raft that can reach the door.
+  const modes=plates['sluice-plate']&&!state.plates['sluice-plate']?
+    {...state.modes,'sluice-valve':'fill'}:state.modes;
   const wheel=spec.waterwheel;
   const head=spec.waterControllers.find(c=>c.id===wheel.upstream);
   const flowing=state.released&&surfaces[head.volume]<=wheel.engageSurface;
@@ -104,5 +110,5 @@ export function stepTemple(spec,state,{cratePositions={}}={}){
     [gate.id,gate.opensWhen===wheel.id?wheelActive:
       Boolean(plates[gate.opensWhen])]));
   const wheelAngle=(state.wheelAngle+(flowing?0.028:0))%(2*Math.PI);
-  return {...interim,plates,gates,chargeTicks,wheelActive,wheelAngle};
+  return {...interim,modes,plates,gates,chargeTicks,wheelActive,wheelAngle};
 }
