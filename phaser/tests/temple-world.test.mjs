@@ -177,7 +177,15 @@ test('missing the sluice socket refills the basin and permits a retry',()=>{
   assert.equal(templeWorld.state.surfaces.sluice,45);
   templeWorld.state=setTempleValve(temple,templeWorld.state,
     'sluice-drain','drain');
-  advance(step,270);
+  let reversed=false;
+  for(let tick=0;tick<270;tick++){
+    step();
+    if(templeWorld.state.modes['sluice-valve']==='fill'){
+      reversed=true;
+      break;
+    }
+  }
+  assert.ok(reversed,'A missed socket must trigger an automatic retry');
   assert.equal(templeWorld.state.surfaces.sluice,55);
   assert.equal(templeWorld.state.plates['sluice-plate'],false);
   assert.equal(templeWorld.state.gates['sluice-gate'],false);
