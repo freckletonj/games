@@ -99,11 +99,15 @@ export function stepTemple(spec,state,{cratePositions={}}={}){
       Math.abs(crate.y+object.size[1]-cellY*TILE)<2;
     return [plate.id,Boolean(state.plates[plate.id]||touching)];
   }));
-  // Seating the crate releases the gate ratchet and automatically refills
-  // the basin. Otherwise solving the floor socket strands the explorer below
-  // the high exit: the same drained tide that presses the socket also lowers
-  // the only raft that can reach the door.
-  const modes=plates['sluice-plate']&&!state.plates['sluice-plate']?
+  // The raft is the only way back to the upper control. A failed drain
+  // must refill too, or missing the socket permanently strands the player.
+  // Ignore the initially empty basin: this retry only follows a real drain.
+  const sluice=spec.waterVolumes.find(volume=>volume.id==='sluice');
+  const missedSocket=state.modes['sluice-valve']==='drain'&&
+    state.surfaces.sluice<sluice.minSurface&&
+    surfaces.sluice===sluice.minSurface&&!plates['sluice-plate'];
+  const modes=(plates['sluice-plate']&&!state.plates['sluice-plate']||
+    missedSocket)?
     {...state.modes,'sluice-valve':'fill'}:state.modes;
   const wheel=spec.waterwheel;
   const head=spec.waterControllers.find(c=>c.id===wheel.upstream);
