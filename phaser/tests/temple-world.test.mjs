@@ -466,6 +466,110 @@ test('checkpoint rewind replays rider carry and water state exactly',()=>{
   assert.deepEqual(trace(),expected);
 });
 
+test('authored Temple solids have no isolated pillars or gates painted through rock',()=>{
+  assert.deepEqual(temple.obstacles.map(w=>w.id),['sluice-weir']);
+  for(const wall of temple.obstacles){
+    const floor=groundAt((wall.left+wall.right)*8);
+    assert.ok(Math.abs(wall.bottom*16-floor)<.1,
+      wall.id+' must rest on the compiled basin floor');
+  }
+  for(const gate of temple.gates){
+    const x=gate.at[0]*16;
+    const opening=groundAt(x)-gate.at[1]*16;
+    assert.ok(opening>=64&&opening<=192,
+      gate.id+' must sit in a human-scale doorway, not tower into the sky');
+    assert.ok(gate.at[1]*16+gate.size[1]>=groundAt(x),
+      gate.id+' must remain physically sealed below the visible doorway');
+  }
+  for(const [x,y,length] of temple.ledges){
+    const left=Math.abs(groundAt(x*16)-y*16);
+    const right=Math.abs(groundAt((x+length)*16)-y*16);
+    assert.ok(Math.min(left,right)<=40,
+      'Shelf '+x+'..'+(x+length)+' is floating unanchored in the graybox');
+  }
+});
+
+test('water jumps, repeated jumps and Tidefox diving cannot replace required rafts',()=>{
+  const cases=[
+    {name:'courtyard',start:53,goal:59,raft:'courtyard-raft',fill:0},
+    {name:'courtyard high',start:53,goal:59,raft:'courtyard-raft',fill:420},
+    {name:'head filling',start:157,goal:164,raft:'head-raft',fill:90,
+      valve:'cascade-handle'},
+    {name:'head high',start:157,goal:164,raft:'head-raft',fill:280,
+      valve:'cascade-handle'}
+  ];
+  for(const challenge of cases){
+    for(const form of [null,'tideling']){
+      for(const period of [37,51,73]){
+        const world=createTempleWorld(temple);
+        if(challenge.valve)
+          world.state=setTempleValve(temple,world.state,challenge.valve,'fill');
+        advance(input=>stepTempleWorld(temple,world,[],[]),challenge.fill);
+        world.decks.find(deck=>deck.id===challenge.raft).enabled=false;
+        const x=challenge.start*16,player=explorer(x,groundAt(x));
+        player.form=form;player.coyote=0;player.grounded=false;
+        const {step}=simulation(player,world);
+        let farthest=player.x;
+        for(let tick=0;tick<780;tick++){
+          const jump=tick%period<24;
+          step({right:true,down:form==='tideling',
+            jump,jumpPressed:tick%period===0});
+          farthest=Math.max(farthest,player.x);
+        }
+        assert.ok(farthest<challenge.goal*16,
+          'Bypass: '+challenge.name+' with '+(form??'ordinary')+
+          ' jump cycle '+period+' reached '+(farthest/16).toFixed(2));
+      }
+    }
+  }
+});
+
+test('no current or jump pattern passes the final bridge without the middle raft',()=>{
+  for(const form of [null,'tideling']){
+    for(const period of [37,51,73]){
+      const world=poweredTemple();
+      world.decks.find(deck=>deck.id==='tail-raft').enabled=false;
+      const player=explorer(191*16,40*16);
+      player.form=form;player.onPlatform='wheel-bridge-a';
+      const {step}=simulation(player,world);
+      let farthest=player.x;
+      for(let tick=0;tick<950;tick++){
+        const jump=tick%period<24;
+        step({right:true,down:form==='tideling',
+          jump,jumpPressed:tick%period===0});
+        farthest=Math.max(farthest,player.x);
+      }
+      assert.ok(farthest<213*16,
+        'Bypass: '+(form??'ordinary')+' cycle '+period+
+        ' crossed last pool without raft at x '+(farthest/16).toFixed(2));
+    }
+  }
+});
+
+test('closed sluice and wheel doors resist multiple real jump patterns',()=>{
+  for(const [name,x,y,gateX] of [
+    ['sluice',104,42,106],['wheel',211,38,213]
+  ]){
+    for(const form of [null,'tideling']){
+      for(const period of [31,43,61]){
+        const player=explorer(x*16,y*16);
+        player.form=form;
+        const {step,templeWorld}=simulation(player);
+        for(let tick=0;tick<480;tick++){
+          const jump=tick%period<24;
+          step({right:true,jump,jumpPressed:tick%period===0,
+            down:form==='tideling'});
+        }
+        assert.equal(templeWorld.state.gates[
+          name==='sluice'?'sluice-gate':'wheel-gate'],false);
+        assert.ok(player.x<gateX*16,
+          name+' closed door bypass with '+(form??'ordinary')+
+          ' and jump cycle '+period+': x='+(player.x/16).toFixed(2));
+      }
+    }
+  }
+});
+
 test('runtime water masks are clipped to compiled physical ground at every level',()=>{
   const world=createTempleWorld(temple);
   const atStart=templeWaterColumns(world,groundAt);
