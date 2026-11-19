@@ -1,4 +1,4 @@
 # Explicit CI trigger for Wonderwood regressions.
 # Only changes to this file (or a manual workflow_dispatch) launch the workflow.
 # Update the request line when an on-demand test run is needed.
-Request: Verify Temple full route and Palace co-op exit after geometry and gate bypass fixes v7
+Request: Test six-station Mirror Palace overhaul, beam geometry, solo and co-op 2026-11-18
