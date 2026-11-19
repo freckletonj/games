@@ -90,6 +90,9 @@ test('mirror detents generate finite, geometric beam paths and target hits',()=>
   assert.ok(tracePalaceBeams(palaceSpec,state).lit.includes('atrium-target'));
   state=setMirrorDetent(palaceSpec,state,'gallery-mirror-a',-45);
   state=setMirrorDetent(palaceSpec,state,'gallery-mirror-b',-45);
+  assert.ok(!tracePalaceBeams(palaceSpec,state).lit.includes('gallery-target'),
+    'Both mirrors aligned still need the physical shutter opened');
+  state=setPalaceShutter(palaceSpec,state,'gallery-shutter','open');
   assert.ok(tracePalaceBeams(palaceSpec,state).lit.includes('gallery-target'));
   state=setPalaceShutter(palaceSpec,state,'gallery-shutter','closed');
   assert.ok(!tracePalaceBeams(palaceSpec,state).lit.includes('gallery-target'));

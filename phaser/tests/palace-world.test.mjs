@@ -315,7 +315,7 @@ function runRoute(humans,operateControls=true){
   const stations=palace.controlStations;
   const required=stations.map(s=>s.id==='observatory-prism-dial'?2:1);
   const activated=[];
-  let index=0,pressed=0,light=false;
+  let index=0,pressed=0,light=false,lastUp=false;
   const visitedExit=new Set();
   const relic=level.objects.find(o=>o.kind==='springKey');
   const exit=level.objects.find(o=>o.kind==='exit');
@@ -325,15 +325,17 @@ function runRoute(humans,operateControls=true){
   for(let tick=0;tick<6200;tick++){
     const driver=players[0];
     let action={right:true};
-    if(index<stations.length){
+    if(index<stations.length&&operateControls){
       const station=stations[index];
       const x=station.at[0]*16,y=station.at[1]*16;
       const distance=Math.hypot(driver.x-x,driver.y-y);
       if(distance<43&&operateControls){
         if(pressed<required[index]){
-          action={upPressed:true};
-          pressed++;
-          activated.push(station.id);
+          if(!lastUp){
+            action={upPressed:true};
+            pressed++;
+            activated.push(station.id);
+          }else action={};
         }else{
           index++;pressed=0;
           action={right:true};
@@ -342,6 +344,7 @@ function runRoute(humans,operateControls=true){
         action={right:driver.x<x+5,left:driver.x>x+5};
       }
     }
+    lastUp=Boolean(action.upPressed);
     const mustJump=index>0&&(driver.grounded&&tick%19===0||
       tick%31<19);
     if(!action.upPressed){
