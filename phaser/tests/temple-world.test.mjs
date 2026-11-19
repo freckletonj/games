@@ -114,6 +114,62 @@ test('crate is blocked by the weir when low, clears it when floating, then latch
     'A solved mechanical gate must not close after a valve reversal');
 });
 
+test('crate is a real standable platform and floats upward under the player',()=>{
+  const templeWorld=createTempleWorld(temple),crate=templeWorld.crates[0];
+  const player=explorer(crate.x,crate.y-66);
+  player.grounded=false;player.coyote=0;
+  const {step}=simulation(player,templeWorld);
+  let landed=false;
+  for(let i=0;i<70;i++){
+    step();
+    if(player.onPlatform===crate.id){landed=true;break;}
+  }
+  assert.ok(landed,
+    'Falling onto a crate must physically land on its top, not pass through');
+  assert.equal(player.y,crate.y);
+  assert.ok(player.grounded);
+  const initialY=player.y;
+  templeWorld.state=setTempleValve(temple,templeWorld.state,'sluice-handle','fill');
+  advance(step,75);
+  assert.equal(player.onPlatform,crate.id);
+  assert.ok(player.y<initialY-20,'The crate must lift a rider as the water fills');
+  assert.equal(player.y,crate.y);
+});
+
+test('crate pushes only from braced side contact, never from a jump or from on top',()=>{
+  const world=createTempleWorld(temple),crate=world.crates[0];
+  const player=explorer(crate.x-crate.size[0]/2-12,crate.y+20);
+  const first=crate.x;
+  for(let tick=0;tick<16;tick++){
+    player.y=crate.y+20;
+    player.grounded=false;player.floating=false;
+    stepTempleWorld(temple,world,[player],[{right:true,jump:true}]);
+  }
+  assert.equal(crate.x,first,'An airborne explorer may not remotely push the crate');
+  player.grounded=true;
+  stepTempleWorld(temple,world,[player],[{right:true}]);
+  assert.ok(crate.x>first,'Bracing against its side should push the crate');
+  player.x=crate.x;player.y=crate.y;
+  player.onPlatform=crate.id;
+  const held=crate.x;
+  stepTempleWorld(temple,world,[player],[{right:true}]);
+  assert.equal(crate.x,held,'Standing on a crate should not make it slide');
+});
+
+test('the gate collision disappears after the physical crate socket latches',()=>{
+  const world=createTempleWorld(temple);
+  const left=106*16-45,right=106*16+45,feet=42*16;
+  assert.ok(templeBlockHorizontal(temple,world,left,right,feet)<106*16);
+  const crate=world.crates[0];
+  crate.x=93*16;
+  crate.position=[crate.x,crate.y];
+  stepTempleWorld(temple,world,[],[]);
+  assert.equal(world.state.plates['sluice-plate'],true);
+  assert.equal(world.state.gates['sluice-gate'],true);
+  assert.equal(templeBlockHorizontal(temple,world,left,right,feet),right,
+    'The greenlit exit must no longer be blocked by an invisible gate');
+});
+
 test('the low weir has a Tidefox-only diving tunnel, not a normal swimming bypass',()=>{
   const ordinary=simulation(explorer(86*16,groundAt(86*16)));
   advance(ordinary.step,100,()=>({right:true,down:true}));
@@ -309,20 +365,18 @@ test('two explorers share one valve detent and one physical crate push per tick'
     'Two simultaneous players may not push the same crate twice');
 });
 
-test('Tidefox current changes with valves and stays deterministic',()=>{
+test('filling Temple water has no unannounced horizontal current',()=>{
   const {player,templeWorld,step}=simulation(explorer(85*16,50*16));
   templeWorld.state=setTempleValve(temple,templeWorld.state,'sluice-handle','fill');
   advance(step,270);
-  player.x=85*16;player.y=50*16;player.vx=0;player.vy=0;
-  player.grounded=false;player.coyote=0;player.form='tideling';
-  const initial=player.x;
-  advance(step,45);
-  assert.ok(player.x>initial+8);
-  templeWorld.state=setTempleValve(temple,templeWorld.state,'sluice-drain','hold');
-  player.vx=0;
-  const resting=player.x;
-  advance(step,45);
-  assert.ok(player.x-resting<1.5);
+  for(const form of [null,'tideling']){
+    player.x=85*16;player.y=50*16;player.vx=0;player.vy=0;
+    player.grounded=false;player.floating=false;player.coyote=0;player.form=form;
+    const initial=player.x;
+    advance(step,75);
+    assert.ok(Math.abs(player.x-initial)<.1,
+      'An idle '+(form??'ordinary')+' explorer must not drift on a filling tide');
+  }
 });
 
 test('checkpoint rewind replays rider carry and water state exactly',()=>{
