@@ -341,6 +341,10 @@ test('the upper sluice valve toggles draining and filling in one press',()=>{
   const {templeWorld,step}=simulation(explorer(70*16,39*16));
   step({upPressed:true});
   assert.equal(templeWorld.state.modes['sluice-valve'],'fill');
+  // Give the basin time to fill before testing the upper drain toggle.
+  // Reversing one tick below the empty state intentionally auto-refills
+  // a missed crate socket in the same frame.
+  advance(step,180);
   const upper=simulation(explorer(102*16,42*16),templeWorld);
   upper.step({upPressed:true});
   assert.equal(templeWorld.state.modes['sluice-valve'],'drain');
