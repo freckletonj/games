@@ -8,6 +8,7 @@ import palaceSpec from '../levels/mirror-palace.json' with {type:'json'};
 import raceSpec from '../levels/skybound-stampede.json' with {type:'json'};
 import {surfaceMaterialColumn} from '../src/surface-geometry.js';
 import {materialGuidePng} from './material-png.mjs';
+import {exportTempleArtStudy} from './export-temple-art-study.mjs';
 import {validateFutureChapter} from '../src/future-chapter-validation.js';
 import {createTempleState,stepTemple,setTempleValve,
   buoyantPosition,releaseTempleWheel} from '../src/temple-rules.js';
@@ -214,5 +215,7 @@ for(const spec of specs){
       'world-static-water.png'],
     frames
   },null,2)+'\n');
+  if(spec.id==='sunken-temple')
+    await exportTempleArtStudy(spec,level,frames,directory);
   console.log(spec.id+': '+frames.length+' deterministic geometry/context frames');
 }
