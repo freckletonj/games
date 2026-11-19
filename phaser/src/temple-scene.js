@@ -56,7 +56,7 @@ export function createTempleScene(scene,spec,world,approved){
       release.at[1]*TILE,38,38,-17,0xe2b9a0,.5);
   for(const gate of spec.gates)
     objects[gate.id]=makeVisual(gate.id,gate.at[0]*TILE,gate.at[1]*TILE,
-      ...gate.size,-18,0x986865);
+      ...gate.size,-18,0x9b9d92);
   const wheel=spec.waterwheel;
   objects[wheel.id]=makeVisual(wheel.id,wheel.at[0]*TILE,
     wheel.at[1]*TILE,wheel.radius*2,wheel.radius*2,-17,0x8fbbb6,.5);
@@ -85,6 +85,18 @@ export function createTempleScene(scene,spec,world,approved){
     structures.fillRect(plate.at[0]*TILE-plate.radius,plate.at[1]*TILE-5,
       plate.radius*2,5);
   }
+  const socketLabel=scene.add.text(
+    spec.pressurePlates[0].at[0]*TILE,49*TILE,
+    '↓  LOWER CRATE ON SOCKET',{
+      fontFamily:'system-ui',fontSize:'12px',fontStyle:'bold',
+      color:'#ffe6a1',backgroundColor:'#173541e8',padding:{x:7,y:5}
+    }).setOrigin(.5,1).setDepth(39);
+  const sluiceLabel=scene.add.text(
+    spec.gates[0].at[0]*TILE,39*TILE-45,
+    'SLUICE LOCKED · CRATE → SOCKET',{
+      fontFamily:'system-ui',fontSize:'12px',fontStyle:'bold',
+      color:'#fff0c2',backgroundColor:'#3c3033e8',padding:{x:7,y:5}
+    }).setOrigin(.5,1).setDepth(39);
   const controlLabels=[
     ...spec.valves.map(valve=>scene.add.text(valve.at[0]*TILE,
       valve.at[1]*TILE-33,'↑  '+valve.id.replaceAll('-', ' '),{
@@ -115,7 +127,8 @@ export function createTempleScene(scene,spec,world,approved){
     return {id:volume.id,water,left,right};
   });
   return {waterFills,waterline:scene.add.graphics().setDepth(-28),
-    guide,labels:{wheelLabel,bridgeLabel,controlLabels},structures,graybox,
+    guide,labels:{wheelLabel,bridgeLabel,controlLabels,
+      socketLabel,sluiceLabel},structures,graybox,
     debug:scene.add.graphics().setDepth(102),objects};
 }
 
@@ -147,12 +160,21 @@ export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
     art.objects[release.id].setRotation(world.state.released?.65:-.65);
   for(const gate of spec.gates)
     art.objects[gate.id].setVisible(!world.state.gates[gate.id]);
+  const plateActive=world.state.plates[spec.pressurePlates[0].id];
+  art.labels.socketLabel.setText(plateActive?
+    'SOCKET PRESSED ✓':'↓  LOWER CRATE ON SOCKET');
+  art.labels.sluiceLabel.setText(plateActive?
+    'SLUICE OPEN ✓':'SLUICE LOCKED · CRATE → SOCKET');
   art.objects[spec.waterwheel.id].setRotation(world.state.wheelAngle);
   // The wheel turns an actual gate/bridge but is not itself a blocking
   // collider. Open spokes and a mechanism label distinguish it from a wall.
   const wheel=spec.waterwheel,wx=wheel.at[0]*TILE,wy=wheel.at[1]*TILE;
   const active=world.state.wheelActive;
   art.guide.clear();
+  const plate=spec.pressurePlates[0],gate=spec.gates[0];
+  art.guide.lineStyle(3,plateActive?0xb4e5b1:0xe6bf81,.8)
+    .lineBetween(plate.at[0]*TILE,plate.at[1]*TILE-5,
+      gate.at[0]*TILE,39*TILE);
   art.guide.lineStyle(4,active?0xffda79:0xa5dae2,.9)
     .strokeCircle(wx,wy,wheel.radius);
   for(let index=0;index<8;index++){
