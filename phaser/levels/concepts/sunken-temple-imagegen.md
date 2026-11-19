@@ -35,4 +35,16 @@ Use explicit variants for valve drain/hold/fill and a released handle pose, a ga
 
 ## Integration and review boundary
 
-Only approved art belongs in `phaser/assets/generated/approved-scene-art.json`. The authored studies are **not** registered there; PR #19 continues to run the collision-faithful graybox. When actual image-model paintings are reviewed, extract masks with the compiler-derived materials, repair static holes behind the separate sprites, attach at the authored pivots, and verify V-overlay contacts at gameplay zoom in low tide, high tide, socket-open, and wheel-finale states. Validate the offline HTML in Chromium and Firefox before calling the painting complete. This handoff and the SVG/PNG studies do not satisfy those approval gates.
+The authored **vector** context studies are still only image-model inputs.
+A first actual image-model panorama and moving-object sheet were generated
+and registered as a **painted prototype** in `phaser/assets/generated/approved-scene-art.json`,
+with exact compiled alpha in `solid.webp`. See
+[the actual generated-asset README](../../assets/generated/sunken-temple/README.md).
+The registry now allows playtesting the painting in the offline game, **not**
+human approval of the art. The panorama has been resampled from a
+2172×724 model output and requires native-detail crop refinement. Its
+source-sheet cutouts should receive final edge cleanup. Verify V-overlay
+contacts at gameplay zoom in low tide, high tide, socket-open and
+wheel-finale states, and complete the offline Chromium/Firefox routes before
+calling the painting final. The geometry guides and AI-painted assets never
+determine collision or water timing.
