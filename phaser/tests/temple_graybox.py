@@ -83,10 +83,20 @@ def main():
                 assert water["surfaces"]["courtyard"] == 55, (
                     "Courtyard intentionally waits at low tide for first-time boarding", water
                 )
+                page.screenshot(path=str(
+                    CAPTURES / "sunken-temple-painted-low-tide.png"
+                ))
                 page.wait_for_function(
                     "window.__wonderwoodPhaser.snapshot().temple.surfaces.courtyard < 55",
                     timeout=20000,
                 )
+                page.wait_for_function(
+                    "window.__wonderwoodPhaser.snapshot().temple.surfaces.courtyard <= 42.5",
+                    timeout=30000,
+                )
+                page.screenshot(path=str(
+                    CAPTURES / "sunken-temple-painted-high-tide.png"
+                ))
             if chapter == "mirror-palace":
                 assert state["palace"]["gates"] == {
                     "atrium-light-gate": False,
