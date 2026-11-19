@@ -23,7 +23,11 @@ The route is no longer an unbroken rightward run:
    crate while the water is low. Push the crate over the weir while flooded.
    Move from the water to the sluice raft, then to the upper drain handle;
    select Hold, then Drain. Only the crate's **bottom** settling onto the
-   floor socket latches the closed arch gate open.
+   floor socket latches the closed arch gate open. Its rim catches and
+   centers the crate, and the solved socket automatically refills the basin
+   so the raft can lift the player to the open exit.
+   The crate is solid on top: a falling player can stand on it and ride it
+   upward; only deliberate braced side contact pushes it horizontally.
    A separate narrow bottom tunnel under the weir is passable by diving as
    Tidefox, but too short for the crate and too deep for normal floating.
 3. **Temple heart:** fill the head reservoir, take its raft to the wheel
@@ -41,6 +45,10 @@ Valve changes remain reversible; checkpoint snapshots retain the ratchets.
 The waterwheel and sluice mechanisms are independent of the rendered art.
 The pressure plate and weir use authored geometry, not proximity to a
 floating crate or a fake interaction flag.
+There is no automatic sideways current in the experimental build. The older
+sluice-flow force was not visually communicated and made unsteered explorers
+slide right during a fill; it has been removed until the current is an
+intentional, visibly signposted obstacle.
 
 Dedicated tests in `tests/temple-world.test.mjs` cover each isolated input
 sequence, low-crate obstruction, raised-crate passage, drain/socket contact,
