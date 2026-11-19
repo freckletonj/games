@@ -1,4 +1,4 @@
 # Explicit CI trigger for Wonderwood regressions.
 # Only changes to this file (or a manual workflow_dispatch) launch the workflow.
 # Update the request line when an on-demand test run is needed.
-Request: Produce Sunken Temple image-conditioning artifacts independently of unrelated gameplay failures, 2026-11-19
+Request: Validate image-model painted Sunken Temple, exact alpha masks, real-input chapter and offline build, 2026-11-19
