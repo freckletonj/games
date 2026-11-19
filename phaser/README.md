@@ -457,7 +457,7 @@ Run `node phaser/scripts/export-cave-guides.mjs` to produce
 scene**, not the old stretched prototype. The playable Skywell now uses the selected Ancient Sanctuary scene; the
 higher-resolution nine-crop vaulted study is still a future art pass.
 
-## Three playable graybox chapters in the main campaign
+## Three experimental chapters in the main campaign
 
 **Sunken Temple, Mirror Palace, and Skybound Stampede** appear at the end of
 the ordinary **Choose a level** menu alongside all existing chapters.
@@ -469,12 +469,21 @@ URL flag, or filename required. Direct fragments such as
 `#sunken-temple`, `#mirror-palace`, and `#skybound-stampede` merely preselect
 the corresponding normal menu card.
 
-These three levels have deliberately **not received approved scene artwork**.
-They render compiled terrain, live puzzle controls, and collision-aligned
-graybox effects. Press **V** to inspect the playable geometry. The chapters
-are selectable and completion progress can be recorded in the usual campaign
-ledger, but remain gameplay prototypes until hands-on solo/co-op difficulty
-review and eventual art approval.
+**Sunken Temple now has a registered AI-painted visual candidate:** an
+illustrated, world-locked background, compiler-masked static solid material,
+and separate true-alpha textures for rafts, crate, valves, waterwheel, gates
+and bridges. Its four water surfaces still follow the exact 60 Hz simulation;
+the painting never changes the collision geometry. See
+[the generated art notes](assets/generated/sunken-temple/README.md).
+The return was smaller than the 3584×1024 world, so the packed texture is
+not a final native-detail art approval. Human V-overlay alignment, solo/co-op
+difficulty and offline browser acceptance remain open.
+
+**Mirror Palace and Skybound Stampede remain unpainted grayboxes.** They still
+render compiled terrain and collision-aligned prototype effects. Press
+**V** in any experimental chapter to compare gameplay contacts with
+the visual treatment. All three remain playable and selectable through the
+ordinary campaign ledger.
 
 CI checks all three through the regular offline game and publishes the single
 playable HTML as `wonderwood-main-game-with-grayboxes`.
