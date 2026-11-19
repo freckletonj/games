@@ -88,13 +88,13 @@ def main():
                     timeout=15000,
                 )
                 page.keyboard.up("d")
-                page.keyboard.down("w")
+                page.keyboard.down("ArrowUp")
                 page.wait_for_function(
                     "window.__wonderwoodPhaser.snapshot().palace."
                     "mirrors['atrium-mirror'] === -45",
                     timeout=5000,
                 )
-                page.keyboard.up("w")
+                page.keyboard.up("ArrowUp")
                 page.wait_for_function(
                     "window.__wonderwoodPhaser.snapshot().palace."
                     "platforms['atrium-crystal'].solid",
