@@ -1,4 +1,4 @@
 # Explicit CI trigger for Wonderwood regressions.
 # Only changes to this file (or a manual workflow_dispatch) launch the workflow.
 # Update the request line when an on-demand test run is needed.
-Request: Full normal-input start-to-Light Temple route and adversarial bypass matrix, 2026-11-18
+Request: Physical cliff-face collision, full Temple solo input route and bypass attacks, 2026-11-18
