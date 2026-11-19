@@ -258,6 +258,12 @@ test('ray trace is physically blocked by a new rock obstruction',()=>{
 });
 
 test('cliff faces and physical gates are rooted into authored rock',()=>{
+  assert.equal(palace.ledges.length,0,
+    'No inherited floating shelf is allowed to impersonate a puzzle step');
+  for(const platform of palace.phasePlatforms){
+    assert.ok(platform.home[1]*16<groundAt(platform.home[0]*16),
+      'Light platform '+platform.id+' must be visibly above the physical ground');
+  }
   for(const gate of palace.beamGates){
     const x=gate.at[0]*16,top=gate.at[1]*16;
     const opening=groundAt(x)-top;

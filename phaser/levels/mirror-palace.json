@@ -65,28 +65,7 @@
   "terrainFeatures": [],
   "water": [],
   "bridges": [],
-  "ledges": [
-    [
-      35,
-      41,
-      10
-    ],
-    [
-      69,
-      40,
-      10
-    ],
-    [
-      141,
-      38,
-      10
-    ],
-    [
-      199,
-      34,
-      12
-    ]
-  ],
+  "ledges": [],
   "creatures": [
     [
       "glimmermoth",
