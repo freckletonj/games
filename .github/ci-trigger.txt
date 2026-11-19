@@ -1,4 +1,4 @@
 # Explicit CI trigger for Wonderwood regressions.
 # Only changes to this file (or a manual workflow_dispatch) launch the workflow.
 # Update the request line when an on-demand test run is needed.
-Request: Verify all three layouts with conditional-only Palace platforms and visible blue optics, 2026-11-18
+Request: Final Mirror Palace graybox: 260 Node tests, live blue mirror and overlay, 2026-11-18
