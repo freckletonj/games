@@ -112,6 +112,7 @@ jobs:
       - name: Test Phaser gameplay and cave geometry
         run: npm test --prefix phaser
       - name: Export and inspect three geometry-derived chapter guides
+        if: success() || failure()
         run: |
           node phaser/scripts/export-future-chapter-guides.mjs
           node --input-type=module -e '
@@ -157,6 +158,7 @@ jobs:
             }
           '
       - name: Render Temple geometry-registered composition, states and alpha sprites
+        if: success() || failure()
         run: |
           python phaser/scripts/render-temple-art-studies.py
           test -s dist/future-chapter-guides/sunken-temple/composition-study.png
