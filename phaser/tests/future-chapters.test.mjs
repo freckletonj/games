@@ -27,7 +27,10 @@ test('all three unregistered layouts compile with the production geometry compil
     const compiled=scope.WW.worldCompiler.compile(spec);
     assert.equal(compiled.width,spec.width);
     assert.equal(compiled.sections.length,spec.sections.length);
-    assert.ok(compiled.platformSegments.length>0);
+    // The Palace uses only conditional light-built platforms; its compiled
+    // ground intentionally has no stray permanent floating shelves.
+    assert.ok(compiled.platformSegments.length>0||
+      spec.phasePlatforms?.length>0);
     assert.equal(compiled.objects.find(object=>object.kind==='springKey').x,
       spec.relic[1]);
   }
