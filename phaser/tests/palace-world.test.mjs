@@ -168,7 +168,9 @@ function runPalaceRoute(humans,operateMirrors){
       }
       const jumpForRelic=!light&&player.x>rx-90&&
         player.x<rx-50&&player.grounded;
-      const jump=tick%18===0||jumpForRelic;
+      // The final terrace is flat; do not repeatedly hop past its
+      // important grounded Light and exit.
+      const jump=player.x<200*16&&(tick%18===0||jumpForRelic);
       return {...controls,right:true,jump,jumpPressed:jump};
     });
     step(actions);
