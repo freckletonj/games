@@ -466,6 +466,90 @@ test('checkpoint rewind replays rider carry and water state exactly',()=>{
   assert.deepEqual(trace(),expected);
 });
 
+test('one explorer travels from the actual spawn through every required mechanism to the Light',()=>{
+  const spawn=level.objects.find(o=>o.kind==='p1');
+  const x=(spawn.x+.5)*16,player=explorer(x,groundAt(x));
+  const {step,templeWorld}=simulation(player);
+  const crate=templeWorld.crates[0];
+  const trace=[];
+  const state=()=>{
+    const summary={x:Math.round(player.x),y:Math.round(player.y),
+      platform:player.onPlatform,tick:templeWorld.state.tick,
+      water:{...templeWorld.state.surfaces},
+      plate:templeWorld.state.plates['sluice-plate'],
+      wheel:templeWorld.state.wheelActive,
+      crateX:Math.round(crate.x)};
+    return JSON.stringify(summary);
+  };
+  const reach=(label,limit,ready,actions)=>{
+    for(let i=0;i<limit;i++){
+      step(actions(i));
+      if(ready()){trace.push(label+' '+state());return;}
+    }
+    assert.fail(label+' cannot be reached from normal input: '+state()+
+      '\nPreviously: '+trace.join('\n'));
+  };
+  const walkTo=cell=>({right:player.x<cell*16});
+  reach('first basin',550,()=>player.x>=53*16,()=>({right:true}));
+  reach('courtyard raft',650,()=>player.onPlatform==='courtyard-raft',
+    i=>({jump:i%48>=8&&i%48<30,jumpPressed:i%48===8}));
+  reach('high tide',900,()=>templeWorld.state.surfaces.courtyard<=43.1,
+    ()=>({}));
+  reach('courtyard dock',430,()=>player.x>=59*16,
+    i=>({right:true,jump:i%55<24,jumpPressed:i%55===0}));
+  reach('sluice valve',300,()=>player.x>=69.5*16,()=>walkTo(69.5));
+  step({upPressed:true});
+  assert.equal(templeWorld.state.modes['sluice-valve'],'fill');
+  reach('crate centered',800,()=>crate.x>=93*16,
+    ()=>({right:true}));
+  const drain=temple.valves.find(v=>v.id==='sluice-drain');
+  reach('drain valve',650,()=>
+    Math.hypot(player.x-drain.at[0]*16,
+      player.y-drain.at[1]*16)<=drain.reach-5,
+    i=>({right:true,jump:i%58<23,jumpPressed:i%58===0}));
+  step({upPressed:true});step();step({upPressed:true});
+  assert.equal(templeWorld.state.modes['sluice-valve'],'drain');
+  reach('socket latched',400,
+    ()=>templeWorld.state.gates['sluice-gate'],()=>({}));
+  assert.equal(templeWorld.state.plates['sluice-plate'],true);
+  reach('sluice refilled',400,
+    ()=>templeWorld.state.surfaces.sluice<=45.1,()=>({}));
+  reach('sluice exited',480,()=>player.x>=108*16,
+    i=>({right:true,jump:i%55<24,jumpPressed:i%55===0}));
+  reach('head valve',300,()=>player.x>=124.5*16,()=>({right:true}));
+  step({upPressed:true});
+  assert.equal(templeWorld.state.modes['head-flood'],'fill');
+  reach('head raft embarkation',450,()=>player.x>=157*16,
+    ()=>({right:true}));
+  reach('head raft',650,()=>player.onPlatform==='head-raft',
+    i=>({jump:i%48>=8&&i%48<30,jumpPressed:i%48===8}));
+  reach('head high',550,()=>templeWorld.state.surfaces['wheel-head']<=44.1,
+    ()=>({}));
+  const release=temple.releases[0];
+  reach('wheel release station',350,()=>
+    Math.hypot(player.x-release.at[0]*16,
+      player.y-release.at[1]*16)<=release.reach-3,
+    i=>({right:true,jump:i%58<23,jumpPressed:i%58===0}));
+  step({upPressed:true});
+  assert.equal(templeWorld.state.released,true);
+  reach('powered bridge',160,()=>templeWorld.state.wheelActive,()=>({}));
+  reach('bridge A',460,()=>player.x>=191*16,
+    i=>({right:true,jump:i%58<23,jumpPressed:i%58===0}));
+  reach('tail flooded',450,()=>templeWorld.state.surfaces['wheel-tail']<=42.1,
+    ()=>({}));
+  reach('tail raft',180,()=>player.onPlatform==='tail-raft',
+    i=>({right:true,jump:i<26,jumpPressed:i===0}));
+  reach('raft middle',100,()=>player.x>=199.85*16,
+    ()=>({right:true}));
+  reach('bridge B',180,()=>player.onPlatform==='wheel-bridge-b',
+    i=>({right:true,jump:i<26,jumpPressed:i===0}));
+  reach('Temple Light',300,()=>player.x>=219*16,
+    ()=>({right:true}));
+  assert.ok(templeWorld.state.plates['sluice-plate']);
+  assert.ok(templeWorld.state.wheelActive);
+  assert.ok(player.x>=219*16,'The real final Light and exit are reachable');
+});
+
 test('authored Temple solids have no isolated pillars or gates painted through rock',()=>{
   assert.deepEqual(temple.obstacles.map(w=>w.id),['sluice-weir']);
   for(const wall of temple.obstacles){
