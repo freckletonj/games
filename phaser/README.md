@@ -1,8 +1,10 @@
 # Wonderwood / Phaser 4
 
-An offline nine-chapter adventure built with Phaser 4. The surface
-chapters compile from declarative JSON and the two caves from declarative
-geometry in `src/cave-layout.js`. The campaign uses one painted-scene renderer.
+An offline fifteen-chapter adventure built with Phaser 4: twelve painted
+chapters and three gameplay-first graybox chapters. The surface chapters
+compile from declarative JSON and the caves from declarative geometry in
+`src/cave-layout.js`. Approved chapters use the painted-scene renderer;
+the new grayboxes display their compiled playable geometry.
 The original Canvas campaign remains independently playable.
 The self-contained game plays offline with no CDN, external images or fetches.
 
@@ -455,19 +457,24 @@ Run `node phaser/scripts/export-cave-guides.mjs` to produce
 scene**, not the old stretched prototype. The playable Skywell now uses the selected Ancient Sanctuary scene; the
 higher-resolution nine-crop vaulted study is still a future art pass.
 
-## Experimental graybox play (Sunken Temple, Mirror Palace, Skybound Stampede)
+## Three playable graybox chapters in the main campaign
 
-These three chapters are **not registered** in the normal campaign and
-have no approved scene paintings. Building Phaser produces a second playable
-artifact, `dist/wonderwood-phaser-graybox.html`. Open that file directly
-in Chromium or Firefox, choose an explorer, and choose one of the three
-experimental levels from the menu. Each level runs the real 60 Hz gameplay
-with geometry-derived ground and interactive mechanism overlays; press **V**
-to inspect collision.
+**Sunken Temple, Mirror Palace, and Skybound Stampede** appear at the end of
+the ordinary **Choose a level** menu alongside all existing chapters.
+Select a character, pick any of these levels, and play them using the normal
+controls and 60 Hz physics. The same single-file
+`dist/wonderwood-phaser.html` includes the original painted chapters and the
+three geometry-first experiments; there is no separate experimental build,
+URL flag, or filename required. Direct fragments such as
+`#sunken-temple`, `#mirror-palace`, and `#skybound-stampede` merely preselect
+the corresponding normal menu card.
 
-In the normal `wonderwood-phaser.html`, an explicit `#graybox` URL
-fragment opens the same three-level experimental menu. A specific fragment,
-such as `#sunken-temple`, `#mirror-palace`, or
-`#skybound-stampede`, preselects its level. The dedicated graybox HTML
-requires no fragment. CI uploads it under **experimental-graybox-play**,
-separately from the normal campaign build.
+These three levels have deliberately **not received approved scene artwork**.
+They render compiled terrain, live puzzle controls, and collision-aligned
+graybox effects. Press **V** to inspect the playable geometry. The chapters
+are selectable and completion progress can be recorded in the usual campaign
+ledger, but remain gameplay prototypes until hands-on solo/co-op difficulty
+review and eventual art approval.
+
+CI checks all three through the regular offline game and publishes the single
+playable HTML as `wonderwood-main-game-with-grayboxes`.

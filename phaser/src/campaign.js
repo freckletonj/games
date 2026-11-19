@@ -50,6 +50,24 @@ const cavernChapter={
   key:'springKey',goals:[{kind:'springKey',name:'Summit Light',form:null}],
   signs:[],events:[]
 };
+// The three new chapters currently render authored gameplay geometry rather
+// than commissioned scenery. They belong to the normal chapter selection so
+// graybox playtesting uses the same progression and input flow as every level.
+export const grayboxChapters=[
+  {id:sunkenTemple.id,biome:sunkenTemple.biome,name:'Sunken Temple',difficulty:'Puzzle',
+    tagline:'Tides, floating crates, sluices and the waterwheel.',
+    key:'springKey',goals:[{kind:'springKey',name:'Temple Light',form:null}],
+    signs:[],events:[]},
+  {id:mirrorPalace.id,biome:mirrorPalace.biome,name:'Mirror Palace',difficulty:'Puzzle',
+    tagline:'Turn mirrors, raise curtains and build bridges from real sunlight.',
+    key:'springKey',goals:[{kind:'springKey',name:'Palace Light',form:null}],
+    signs:[],events:[]},
+  {id:skyboundStampede.id,biome:skyboundStampede.biome,
+    name:'Skybound Stampede',difficulty:'Race',
+    tagline:'Ride Unicorns through the ground course, then Pegasi through the storm.',
+    key:'springKey',goals:[{kind:'springKey',name:'Sky Light',form:null}],
+    signs:[],events:[]}
+];
 const caves={
   [grottoChapter.id]:caveLayout,
   [skywellChapter.id]:skywellLayout,
@@ -57,7 +75,7 @@ const caves={
 };
 
 export function campaign(surfaceChapters){
-  return [...surfaceChapters,grottoChapter,skywellChapter,orchardChapter,brassworksChapter,stonewakeChapter,jungleChapter,cavernChapter];
+  return [...surfaceChapters,grottoChapter,skywellChapter,orchardChapter,brassworksChapter,stonewakeChapter,jungleChapter,cavernChapter,...grayboxChapters];
 }
 
 export function compileChapter(chapter,compiler){

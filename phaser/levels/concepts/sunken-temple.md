@@ -1,17 +1,16 @@
 # Level concept: The Sunken Temple
 
-**Status (Nov 17, 2026): geometry-route proven, not release-ready.** The unregistered [level spec](../sunken-temple.json), [fixed-tick rules](../../src/temple-rules.js), [production world adapter](../../src/temple-world.js), [runtime water/art adapter](../../src/temple-scene.js), [validator](../../src/future-chapter-validation.js), and [motion-level tests](../../tests/temple-world.test.mjs) exist. Production-rule **solo and two-explorer** simulations reach the Light and exit. This is **not** an end-to-end in-browser route or approved painting.
+**Status (Nov 17, 2026): geometry-route proven, not release-ready.** The campaign-registered [level spec](../sunken-temple.json), [fixed-tick rules](../../src/temple-rules.js), [production world adapter](../../src/temple-world.js), [runtime water/art adapter](../../src/temple-scene.js), [validator](../../src/future-chapter-validation.js), and [motion-level tests](../../tests/temple-world.test.mjs) exist. Production-rule **solo and two-explorer** simulations reach the Light and exit. This is **not** an end-to-end in-browser route or approved painting.
 
 ## Playable graybox puzzle iteration (PR #19)
 
-The candidate remains **outside the normal campaign**. To inspect the unfinished
-level with its authored terrain and plain mechanical blocks, build Phaser
-and open `dist/wonderwood-phaser-graybox.html`. Select Sunken Temple from
-the three-level experimental menu. In the normal game HTML, `#sunken-temple`
-opens the same preview. CI publishes the standalone graybox under the
-`experimental-graybox-play` artifact. This intentionally works without
-approved panorama or mechanism sprites. The art-free prototype
-uses the same water, gate, platform and player physics as the finished scene.
+Sunken Temple is now in the ordinary **Choose a level** campaign menu.
+Build Phaser and open `dist/wonderwood-phaser.html`, then select Sunken
+Temple alongside the existing painted chapters. The optional
+`#sunken-temple` fragment simply preselects its main-menu card. CI
+publishes the same main game with all three grayboxes. This intentionally
+works without approved panorama or mechanism sprites: the prototype uses
+the same water, gate, platform and player physics as the finished scene.
 
 The route is no longer an unbroken rightward run:
 

@@ -6,6 +6,7 @@ import templeSpec from '../levels/sunken-temple.json' with {type:'json'};
 import palaceSpec from '../levels/mirror-palace.json' with {type:'json'};
 import raceSpec from '../levels/skybound-stampede.json' with {type:'json'};
 import {validateFutureChapter} from '../src/future-chapter-validation.js';
+import {campaign,grayboxChapters,surfaceDesigns} from '../src/campaign.js';
 import {createTempleState,setTempleValve,stepTemple,buoyantPosition,
   buoyantCarry,templeCurrentAt} from '../src/temple-rules.js';
 import {createPalaceState,setMirrorDetent,setPalaceShutter,
@@ -19,7 +20,17 @@ vm.runInContext(readFileSync(new URL('../../src/platform/world-compiler.js',
   import.meta.url),'utf8'),scope);
 const specs=[templeSpec,palaceSpec,raceSpec];
 
-test('all three unregistered layouts compile with the production geometry compiler',()=>{
+test('the three grayboxes are ordinary campaign chapters, each with compiled geometry',()=>{
+  const main=campaign([]);
+  assert.deepEqual(main.slice(-3).map(chapter=>chapter.id),specs.map(spec=>spec.id));
+  assert.deepEqual(grayboxChapters.map(chapter=>chapter.id),specs.map(spec=>spec.id));
+  for(const chapter of grayboxChapters){
+    assert.equal(surfaceDesigns[chapter.id].id,chapter.id);
+    assert.equal(chapter.goals[0].kind,chapter.key);
+  }
+});
+
+test('all three registered layouts compile with the production geometry compiler',()=>{
   for(const spec of specs){
     assert.equal(validateFutureChapter(spec),true);
     const result=scope.WW.worldCompiler.analyze(spec);

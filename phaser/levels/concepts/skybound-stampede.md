@@ -1,6 +1,12 @@
 # Level concept: Unicorn Escape — Skybound Stampede
 
-**Status (Nov 17, 2026): both route halves geometry-proven, not release-ready.** The unregistered [level spec](../skybound-stampede.json), [fixed-tick race rules](../../src/race-rules.js), [production race/collision/camera adapter](../../src/race-world.js), [validator](../../src/future-chapter-validation.js) and separate [Unicorn corridor](../../tests/race-geometry-route.test.mjs) / [Pegasus flight](../../tests/race-flight-route.test.mjs) tests exist. Both phases have **solo and two-rider** production-motion proofs. A single browser journey including **befriending, switching mounts, setbacks and actual completion** has not yet been demonstrated.
+**Status (Nov 17, 2026): both route halves geometry-proven, not release-ready.** The campaign-registered [level spec](../skybound-stampede.json), [fixed-tick race rules](../../src/race-rules.js), [production race/collision/camera adapter](../../src/race-world.js), [validator](../../src/future-chapter-validation.js) and separate [Unicorn corridor](../../tests/race-geometry-route.test.mjs) / [Pegasus flight](../../tests/race-flight-route.test.mjs) tests exist. Both phases have **solo and two-rider** production-motion proofs. A single browser journey including **befriending, switching mounts, setbacks and actual completion** has not yet been demonstrated.
+
+**Playtesting:** Skybound Stampede is selectable in the ordinary
+`dist/wonderwood-phaser.html` chapter menu alongside the existing
+painted levels and the two other grayboxes. Campaign registration does
+not imply that uninterrupted human 1P/2P mount-transition playthroughs
+or commissioned artwork are complete.
 
 ## Player fantasy and non-negotiable flow
 

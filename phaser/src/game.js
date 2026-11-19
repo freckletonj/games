@@ -52,27 +52,9 @@ import {createRaceWorld,stepRaceWorld,raceCameraFrame} from './race-world.js';
 import {createRaceScene,drawRaceScene} from './race-scene.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
-// The separately downloadable graybox build exposes all three unfinished
-// chapters together. They never enter the normal painted campaign.
-const PREVIEW_CHAPTERS=[
-  {id:'sunken-temple',biome:'coast',name:'Sunken Temple',difficulty:'Puzzle',
-    tagline:'Tides, floating crates, sluices and the waterwheel.',
-    key:'springKey',goals:[{kind:'springKey',name:'Temple Light',form:null}],
-    signs:[],events:[]},
-  {id:'mirror-palace',biome:'summit',name:'Mirror Palace',difficulty:'Puzzle',
-    tagline:'Turn mirrors, raise curtains and build bridges from real sunlight.',
-    key:'springKey',goals:[{kind:'springKey',name:'Palace Light',form:null}],
-    signs:[],events:[]},
-  {id:'skybound-stampede',biome:'summit',name:'Skybound Stampede',difficulty:'Race',
-    tagline:'Ride Unicorns through the ground course, then Pegasi through the storm.',
-    key:'springKey',goals:[{kind:'springKey',name:'Sky Light',form:null}],
-    signs:[],events:[]}
-];
-const PREVIEW_IDS=PREVIEW_CHAPTERS.map(chapter=>chapter.id);
-const GRAYBOX_PREVIEW=location.pathname.endsWith('/wonderwood-phaser-graybox.html')||
-  location.hash==='#graybox'||PREVIEW_IDS.includes(location.hash.slice(1))||
-  new URLSearchParams(location.search).has('graybox');
-const CHAPTERS=GRAYBOX_PREVIEW?PREVIEW_CHAPTERS:campaign(WW.chapters);
+// Every chapter, including the three unpainted geometry-first levels, now
+// lives in the normal campaign. No filename, fragment or preview flag is needed.
+const CHAPTERS=campaign(WW.chapters);
 const APPROVED_SCENE_ART=__SCENE_ASSETS__;
 const TILE=16;
 const VIEW_W=480;
@@ -434,9 +416,6 @@ class Wonderwood extends Phaser.Scene {
       return {legend,buttons};
     });
     const grid=document.getElementById('ww-level-grid');
-    if(GRAYBOX_PREVIEW)
-      document.getElementById('ww-level-heading').textContent=
-        'Experimental grayboxes · Choose a level';
     this.levelButtons=CHAPTERS.map((chapter,index)=>{
       const button=document.createElement('button');
       button.type='button';
@@ -568,7 +547,8 @@ class Wonderwood extends Phaser.Scene {
     this.isCavern=this.chapter.id==='cavern-ascent';
     const approved=APPROVED_SCENE_ART[this.chapter.id];
     if(!approved){
-      if(!GRAYBOX_PREVIEW)throw Error('Missing approved art for '+this.chapter.id);
+      if(!this.templeWorld&&!this.palaceWorld&&!this.raceWorld)
+        throw Error('Missing approved art for '+this.chapter.id);
       this.sceneArt=[];
       if(!this.templeWorld)paintGrayboxGround(this);
     }else this.sceneArt=paintScene(this,approved);

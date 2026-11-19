@@ -1,4 +1,4 @@
-"""Open the three unregistered experimental chapters in the real offline game.
+"""Open the three registered graybox chapters from the normal offline game.
 
 The production Phaser engine and keyboard inputs run unchanged; only the
 offline test wrapper supplies a browser-compatible localStorage shim.
@@ -7,14 +7,13 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 GAME = Path(__file__).resolve().parents[2] / "dist/wonderwood-phaser.html"
-GRAYBOX = GAME.with_name("wonderwood-phaser-graybox.html")
 CHAPTERS = ["sunken-temple", "mirror-palace", "skybound-stampede"]
 CAPTURES = GAME.parents[1] / "dist" / "graybox-screenshots"
 WORLD_KEYS = ["temple", "palace", "race"]
 
 
 def main():
-    assert GRAYBOX.is_file() and GRAYBOX.stat().st_size > 500_000
+    assert GAME.is_file() and GAME.stat().st_size > 500_000
     CAPTURES.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(
@@ -24,8 +23,8 @@ def main():
             page = browser.new_page(viewport={"width": 960, "height": 540})
             errors = []
             page.on("pageerror", lambda error: errors.append(str(error)))
-            # The dedicated downloaded file enters preview mode automatically.
-            # A chapter hash selects the same mode in the offline test wrapper.
+            # A chapter hash preselects its card in the normal game; it does
+            # not enable a different or filename-dependent chapter list.
             page.goto(GAME.as_uri() + "#" + chapter, wait_until="load")
             page.wait_for_function(
                 "window.__wonderwoodPhaser?.snapshot().stage === -1",
@@ -35,13 +34,16 @@ def main():
             page.locator("#ww-menu-continue").click()
             buttons = page.locator("#ww-level-grid button")
             labels = buttons.all_inner_texts()
-            assert len(labels) == 3 and all(
-                expected.replace("-", " ").lower() in label.lower()
-                for expected, label in zip(CHAPTERS, labels)
-            ), ("Expected three experimental chapters", labels)
-            assert "Experimental grayboxes" in page.locator(
-                "#ww-level-heading"
-            ).inner_text()
+            assert len(labels) == 15, ("All normal and graybox chapters", labels)
+            assert all(
+                any(expected.replace("-", " ").lower() in label.lower()
+                    for label in labels)
+                for expected in CHAPTERS
+            ), ("Three grayboxes must be in the main chapter selection", labels)
+            assert page.locator("#ww-level-heading").inner_text() == "Choose a level"
+            assert page.locator("#ww-level-grid [aria-pressed=true]").inner_text().startswith(
+                chapter.replace("-", " ").title()
+            ), ("Chapter hash must preselect the normal menu card", chapter)
             buttons.filter(has_text=chapter.replace("-", " ").title()).click()
             page.locator("#ww-menu-play").click()
             page.wait_for_function(
@@ -126,7 +128,7 @@ def main():
             assert not errors, (chapter, errors)
             page.close()
         browser.close()
-    print("All three unpainted playable grayboxes, real movement and collision overlays: PASS")
+    print("All three grayboxes selected from the main game, played and V-overlaid: PASS")
 
 
 if __name__ == "__main__":

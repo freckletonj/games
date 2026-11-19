@@ -155,14 +155,9 @@ const html = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">' +
   bootErrors + '<script>'+javascript+'</script></body></html>';
 await mkdir(resolve(root,'dist'),{recursive:true});
 await writeFile(resolve(root,'dist/wonderwood-phaser.html'),html);
-// This second, self-contained HTML is the review artifact. Merely opening
-// it enables the three unfinished grayboxes; no URL fragment is required.
-const grayboxHtml=html.replace('<title>Wonderwood · Phaser</title>',
-  '<title>Wonderwood · Experimental Grayboxes</title>');
-await writeFile(resolve(root,'dist/wonderwood-phaser-graybox.html'),grayboxHtml);
 const shell=html.slice(0,html.indexOf('<script>'));
 if (/<script\\s+src=|<link\\s+[^>]*href=/i.test(shell)) {
   throw Error('Standalone HTML shell unexpectedly references external assets');
 }
-console.log('Built dist/wonderwood-phaser.html and dist/wonderwood-phaser-graybox.html ('+
-  Math.round(Buffer.byteLength(html)/1024)+' KiB each, self-contained)');
+console.log('Built dist/wonderwood-phaser.html ('+
+  Math.round(Buffer.byteLength(html)/1024)+' KiB, self-contained; includes all grayboxes)');

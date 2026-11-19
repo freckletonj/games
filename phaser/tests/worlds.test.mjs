@@ -16,21 +16,27 @@ const compiler=scope.WW.worldCompiler;
 const registry=JSON.parse(readFileSync(new URL(
   'phaser/assets/generated/approved-scene-art.json',root),'utf8'));
 
-test('every playable chapter compiles and has registered art',()=>{
-  assert.equal(chapters.length,12);
-  assert.deepEqual(Object.keys(registry).sort(),chapters.map(chapter=>chapter.id).sort());
+test('all playable chapters compile; grayboxes intentionally have no approved art',()=>{
+  assert.equal(chapters.length,15);
+  const painted=chapters.filter(chapter=>!['sunken-temple','mirror-palace',
+    'skybound-stampede'].includes(chapter.id));
+  assert.deepEqual(Object.keys(registry).sort(),painted.map(chapter=>chapter.id).sort());
   for(const chapter of chapters){
     const level=compileChapter(chapter,compiler);
     assert.equal(level.surface.length,level.width+1,chapter.id);
     assert.ok(level.objects.some(o=>o.kind==='p1'),chapter.id);
     assert.ok(level.objects.some(o=>o.kind===chapter.key),chapter.id);
     assert.ok(level.objects.some(o=>o.kind==='exit'),chapter.id);
-    assert.ok(level.platformSegments.length>0,chapter.id);
+    assert.ok(level.platformSegments.length>0||
+      level.palaceSpec?.phasePlatforms.length>0||
+      level.templeSpec?.buoyantObjects.length>0||
+      level.raceSpec?.racePhases.length>0,chapter.id);
   }
 });
 
 test('surface paintings cover each world with registered WebP textures',()=>{
-  for(const chapter of chapters.filter(chapter=>surfaceDesigns[chapter.id])){
+  for(const chapter of chapters.filter(chapter=>
+    surfaceDesigns[chapter.id]&&registry[chapter.id])){
     const level=compileChapter(chapter,compiler);
     let totalWidth=0;
     let stripHeight;

@@ -1,6 +1,6 @@
 # Mirror Palace — three-chamber optical puzzle overhaul
 
-**Status:** Unpainted standalone graybox; not in the normal campaign.
+**Status:** Unpainted, playable graybox in the main campaign menu; not art-approved or release-ready.
 
 The six visible, independently operated optical stations replace the previous three one-hit room relays. One key or projectile rotates/toggles **exactly one mechanism** per activation. Mirror detents and shutters persist while the player walks away. Actual deterministic, rock-aware beam tracing powers the receivers, phase-platform collision and latched doors.
 
