@@ -2241,7 +2241,7 @@ class Wonderwood extends Phaser.Scene {
       lead.x<1410?'Hold ↑ to grab a rope · P2 uses 8':'Find the key on the canopy shelf.';
     const templeCrate=this.templeWorld?.crates[0];
     const templeState=this.templeWorld?.state;
-    const templeHint=lead.x<70*TILE?
+    const templeHint=!this.templeWorld?'':lead.x<70*TILE?
       'Board the low-tide raft, ride it upward, and jump to the high dock.':
       lead.x<107*TILE&&!templeState.gates['sluice-gate']?
         templeCrate.x<87*TILE?
