@@ -168,6 +168,11 @@ export function stepTempleWorld(spec,world,players,actions){
       const half=crate.size[0]/2;
       let target=clamp(crate.x+move*1.8,
         volume.from*TILE+half,volume.to*TILE-half);
+      // The recessed socket has a lip that catches the crate's center.
+      // Players shouldn't have to release Right on an exact simulation tick.
+      const socket=spec.pressurePlates.find(plate=>plate.requires===crate.id);
+      if(socket&&move>0&&crate.x<=socket.at[0]*TILE)
+        target=Math.min(target,socket.at[0]*TILE);
       for(const wall of spec.obstacles??[]){
         if(crate.y+crate.size[1]<=wall.top*TILE||
            crate.y>=wall.bottom*TILE)continue;
