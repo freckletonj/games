@@ -118,7 +118,7 @@ jobs:
             import assert from "node:assert/strict";
             import {readFileSync} from "node:fs";
             const chapters=[
-              ["sunken-temple",4],["mirror-palace",4],["skybound-stampede",5]
+              ["sunken-temple",4],["mirror-palace",6],["skybound-stampede",5]
             ];
             for(const [chapter,count] of chapters){
               const directory="dist/future-chapter-guides/"+chapter+"/";
@@ -137,8 +137,11 @@ jobs:
               }else if(chapter==="mirror-palace"){
                 assert.equal(manifest.frames[0].gates["atrium-light-gate"],false);
                 assert.equal(manifest.frames[1].gates["atrium-light-gate"],true);
-                assert.equal(manifest.frames[2].gates["gallery-light-gate"],true);
-                assert.equal(manifest.frames[3].gates["observatory-light-gate"],true);
+                assert.equal(manifest.frames[2].phasePlatforms["atrium-vault-perch"].solid,true);
+                assert.equal(manifest.frames[3].gates["gallery-light-gate"],true);
+                assert.equal(manifest.frames[4].charged["observatory-ignition"],true);
+                assert.equal(manifest.frames[4].gates["observatory-light-gate"],false);
+                assert.equal(manifest.frames[5].gates["observatory-light-gate"],true);
               }else{
                 assert.equal(manifest.frames[0].phase,"waitingForUnicorns");
                 assert.equal(manifest.frames[2].phase,"waitingForPegasi");
