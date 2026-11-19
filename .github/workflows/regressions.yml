@@ -164,6 +164,9 @@ jobs:
           test -s dist/future-chapter-guides/sunken-temple/composition-study.png
           test -s dist/future-chapter-guides/sunken-temple/context-high-tide.png
           test -s dist/future-chapter-guides/sunken-temple/object-studies/timber-crate.png
+      - name: Verify registered Temple painting against compiled material masks
+        if: success() || failure()
+        run: python phaser/tests/temple_painted_art.py
       - name: Upload exact geometry guides for visual review
         if: always()
         uses: actions/upload-artifact@v4
@@ -172,12 +175,15 @@ jobs:
           path: dist/future-chapter-guides/
           if-no-files-found: ignore
       - name: Build standalone Phaser game
+        if: success() || failure()
         run: |
           npm run build --prefix phaser
           test -s dist/wonderwood-phaser.html
       - name: Verify chapter selection and painting in Chromium
+        if: success() || failure()
         run: python phaser/tests/chapters.py
-      - name: Exercise all three grayboxes with real Chromium input
+      - name: Exercise painted Temple and two grayboxes with real Chromium input
+        if: success() || failure()
         run: python phaser/scripts/run-playwright-inline.py phaser/tests/temple_graybox.py
       - name: Upload Chromium collision screenshots
         if: always()
