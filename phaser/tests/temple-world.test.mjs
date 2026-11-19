@@ -114,6 +114,24 @@ test('crate is blocked by the weir when low, clears it when floating, then latch
     'A solved mechanical gate must not close after a valve reversal');
 });
 
+test('starting at the real valve, solo walking and filling moves the crate over the weir',()=>{
+  const player=explorer(70*16,39*16),templeWorld=createTempleWorld(temple);
+  const {step}=simulation(player,templeWorld),crate=templeWorld.crates[0];
+  step({upPressed:true});
+  assert.equal(templeWorld.state.modes['sluice-valve'],'fill');
+  let pushed=false;
+  for(let i=0;i<800;i++){
+    step({right:true});
+    if(crate.x>=93*16){pushed=true;break;}
+  }
+  assert.ok(pushed,'Solo valve-to-crate route: '+JSON.stringify({
+    player:[player.x,player.y],crate:[crate.x,crate.y],
+    surface:templeWorld.state.surfaces.sluice,tick:templeWorld.state.tick
+  }));
+  assert.equal(templeWorld.state.gates['sluice-gate'],false,
+    'The gate should still require draining the crate onto its socket');
+});
+
 test('crate is a real standable platform and floats upward under the player',()=>{
   const templeWorld=createTempleWorld(temple),crate=templeWorld.crates[0];
   const player=explorer(crate.x,crate.y-66);
