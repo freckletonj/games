@@ -48,6 +48,23 @@ The chapter should be a versioned plan under phaser/levels/ and registered throu
 
 Describe all active patterns in the level JSON, not in painter output or ad hoc random spawners. Shared rule implementation should consume the schema and be testable without Phaser rendering.
 
+## Ground-race dismount recovery
+
+Unicorn riding keeps the normal T / gamepad Y dismount control. Stepping off a
+trusted Unicorn during the woodland race is a **voluntary stop, not death**:
+freeze the ground scroll anchor and hazard tick at the current position, and
+leave the Unicorn next to the explorer instead of letting its grazing AI walk
+away. Press T / Y beside that Unicorn to reboard, and resume at exactly the
+same anchor and obstacle timing. If either human dismounts, both riders share
+the pause. The in-game instruction names the stopped course and how to resume.
+
+Actual failures remain meaningful. Collision, knockout, bubble/trap,
+falling beyond the real camera's left edge, and a mid-scroll party change still
+use the chapter's checkpoint recovery. Pegasus dismount above the flight canyon
+is **not** treated like a safe ground-course stop. Fixed-tick tests exercise
+single-player and co-op dismount/reboard, frozen hazard poses and continued
+progress, plus offscreen failure and the original mounted routes.
+
 ## Deterministic co-op, camera and failure semantics
 
 - The **first readiness gate** checks each active explorer's mount kind is Unicorn. If player 2 joins during pre-start, require a second Unicorn. Handle a mid-race join explicitly: defer to the next stopped sanctuary or restart checkpoint; do not let them appear behind an unstoppable camera.

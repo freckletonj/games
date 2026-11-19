@@ -21,8 +21,8 @@ export function stepPalaceWorld(spec,world,players,actions){
   let state=world.state;
   const operated=new Set();
   const controls=spec.controlStations;
-  // Up and projectile hits operate one visible station at a time.
-  // The beams do the work: no single relay may silently solve a whole room.
+  // Up or an orb operates the *optical device itself*. The station anchor
+  // matches the mirror glass or shutter rail, never a distant proxy dial.
   const activate=station=>{
     if(operated.has(station.id))return;
     operated.add(station.id);
@@ -45,8 +45,8 @@ export function stepPalaceWorld(spec,world,players,actions){
        !actions[player.id]?.upPressed)continue;
     const station=controls.map(control=>({...control,distance:
       Math.hypot(player.x-control.at[0]*TILE,
-        player.y-control.at[1]*TILE)}))
-      .filter(control=>control.distance<=48)
+        player.y-24-control.at[1]*TILE)}))
+      .filter(control=>control.distance<=40)
       .sort((a,b)=>a.distance-b.distance)[0];
     if(station)activate(station);
   }

@@ -6,9 +6,8 @@ const toPoint=at=>at.map(n=>n*TILE);
 const sourceColor=id=>id==='atrium-sun'?COLORS.blue:
   id==='gallery-lantern'?COLORS.pink:COLORS.gold;
 
-// Thin, dotted *mechanical* links, deliberately unlike the bright laser.
-// Each hand dial points to the mirror or curtain it actually operates.
-function controlWire(g,from,to,color){
+// Thin receiver-to-bridge links, deliberately unlike a live laser ray.
+function receiverLink(g,from,to,color){
   const length=Math.hypot(to[0]-from[0],to[1]-from[1]);
   g.fillStyle(color,.43);
   for(let distance=8;distance<length-8;distance+=13){
@@ -34,16 +33,6 @@ export function drawPalaceScene(art,spec,world,players=[]){
   const segments=state.light?.segments??[];
   const targetColor=id=>sourceColor(spec.beamTargets.find(t=>t.id===id).source);
 
-  // First establish a causal relationship between the hand controls and
-  // their distant physical mechanisms. The wire is not a fake laser ray.
-  for(const station of spec.controlStations){
-    const mechanism=(station.kind==='mirror'?spec.mirrors:spec.shutters)
-      .find(item=>item.id===station.control);
-    const endpoint=station.kind==='mirror'?mechanism.at:mechanism.to;
-    controlWire(g,[station.at[0]*TILE,station.at[1]*TILE-15],
-      toPoint(endpoint),COLORS[station.color]);
-  }
-
   // Show destinations even before solving: crystal decks remain ghosted,
   // and receiver-to-bridge links brighten as the receiver stores energy.
   for(const target of spec.beamTargets){
@@ -53,7 +42,7 @@ export function drawPalaceScene(art,spec,world,players=[]){
     if(first){
       const color=targetColor(target.id);
       const [px,py]=toPoint(first.home);
-      controlWire(g,[tx,ty],[px,py],color);
+      receiverLink(g,[tx,ty],[px,py],color);
       if(state.charged[target.id]){
         g.fillStyle(color,.92).fillCircle(px,py,4);
         g.fillStyle(color,.8).fillCircle(tx,ty,5);
@@ -67,7 +56,7 @@ export function drawPalaceScene(art,spec,world,players=[]){
   for(const target of spec.beamTargets){
     for(const prerequisite of target.requiresCharged??[]){
       const source=spec.beamTargets.find(t=>t.id===prerequisite);
-      controlWire(g,toPoint(source.at),toPoint(target.at),
+      receiverLink(g,toPoint(source.at),toPoint(target.at),
         state.charged[prerequisite]?COLORS.gold:0x637c90);
     }
   }
@@ -102,6 +91,11 @@ export function drawPalaceScene(art,spec,world,players=[]){
       g.lineBetween(ax,ay,ax+22,ay-17);
       g.lineStyle(2,0x7ff6c6,.7).strokeCircle(ax,ay,9);
     }
+    // The control grip belongs to this same curtain at the reachable foot.
+    const [hx,hy]=toPoint(shutter.controlAt);
+    g.fillStyle(0x172c39,1).fillCircle(hx,hy,10);
+    g.lineStyle(3,closed?0xffa16e:0x7ff6c6,1).strokeCircle(hx,hy,10);
+    g.lineStyle(3,0xffffff,.9).lineBetween(hx-4,hy,hx+4,hy);
   }
   for(const occluder of spec.occluders){
     const phase=2*Math.PI*((state.tick+occluder.phaseTicks)%
@@ -137,22 +131,6 @@ export function drawPalaceScene(art,spec,world,players=[]){
       g.lineStyle(2,0xffffff,.55).strokeCircle(x,y,29);
     }
   }
-  for(const station of spec.controlStations){
-    const [x,y]=toPoint(station.at),color=COLORS[station.color];
-    const mechanism=(station.kind==='mirror'?spec.mirrors:spec.shutters)
-      .find(item=>item.id===station.control);
-    const current=station.kind==='mirror'?state.mirrors[mechanism.id]:
-      state.shutters[mechanism.id];
-    const angle=station.kind==='mirror'?current*Math.PI/180:
-      current==='closed'?Math.PI/2:0;
-    const dy=y-15;
-    g.fillStyle(0x162f40,1).fillCircle(x,dy,17);
-    g.lineStyle(3,color,1).strokeCircle(x,dy,17);
-    // The handle rotates to the same real detent as the remote optic.
-    g.lineStyle(4,0xffffff,.97).lineBetween(x,dy,
-      x+12*Math.cos(angle),dy+12*Math.sin(angle));
-    g.fillStyle(color,1).fillCircle(x,dy,4);
-  }
   for(const platform of spec.phasePlatforms){
     const [x,y]=toPoint(platform.home);
     const [width,height]=platform.size;
@@ -175,13 +153,13 @@ export function drawPalaceScene(art,spec,world,players=[]){
     g.lineStyle(4,color,.88).strokeRect(
       x-gate.size[0]/2,y,gate.size[0],visible);
   }
-  // One tiny input cue at the dial a human can presently reach. Neither
-  // solution text nor all-station billboards cover the optical mechanisms.
+  // One tiny input cue on the actual optic a human can touch. No proxy
+  // controls, floating switches or circuit wires obscure the traced laser.
   const nearby=spec.controlStations.map(station=>({station,
     distance:Math.min(...players.filter(p=>!p.assist&&!p.sleep).map(p=>
-      Math.hypot(p.x-station.at[0]*TILE,p.y-station.at[1]*TILE)))}))
-    .filter(item=>item.distance<48).sort((a,b)=>a.distance-b.distance)[0];
+      Math.hypot(p.x-station.at[0]*TILE,p.y-24-station.at[1]*TILE)))}))
+    .filter(item=>item.distance<40).sort((a,b)=>a.distance-b.distance)[0];
   art.prompt.setVisible(Boolean(nearby));
   if(nearby)art.prompt.setPosition(
-    nearby.station.at[0]*TILE,nearby.station.at[1]*TILE-38);
+    nearby.station.at[0]*TILE,nearby.station.at[1]*TILE-30);
 }

@@ -6,6 +6,17 @@ experimental chapters are unchanged.
 
 ## Design intent
 
+**Direct-manipulation rule:** the visible mirror *is* the switch. Walk up to its
+reflecting glass and press Up to rotate it, or throw an orb at the glass. There
+are no remotely wired dials or duplicate controls. Curtains similarly open from
+a grip on the actual shutter rail. The prompt appears at the reachable optic,
+not at a separate proxy switch. The first mirror is on the entry bank, the two
+Gallery reflectors are accessible on the floor and a short, genuinely walkable
+stone shelf, and the gold prism is within reach from the observatory floor.
+The laser source, bounced ray and destination are still determined by the real
+rock-aware solver; moving optics required aligning their emitters and receivers
+with those new positions.
+
 A good light level is about making a choice with a beam and then *going
 somewhere because of that choice*. The earlier version was physically correct,
 but all three rooms were effectively a fixed series of Up presses followed by
@@ -24,7 +35,7 @@ cannot feed the upper bridge and the lower steps at the same instant, but the
 upper bridge stores its first success, so the player can safely experiment
 later and never strand a partner.
 
-The lower receiver sits within the dial's camera view, the small vault steps
+The lower receiver sits within the mirror's camera view, the small vault steps
 rise with a near-to-far preview, and the reward must be reached through real
 jumping rather than from a remote toggle. Turning the beam away eventually
 retracts the optional steps, except under an occupied rider. A player who
@@ -37,7 +48,7 @@ repeating the Atrium's branch choice. A lower mirror redirects the lantern
 upward, an upper mirror turns it horizontally, and an independently controlled
 shutter blocks the final segment. The real beam terminates at each obstruction.
 Only the full two-bounce path lights the receiver and grows six successive
-steps into a balcony. Every control is separately reachable by one player;
+steps into a balcony. Each reflector can be touched directly (the upper one from its physical shelf);
 no simultaneous co-op inputs or automatic room relays are required. Solved
 stairs and door stay safe if another player later changes a detent.
 
@@ -47,8 +58,8 @@ The original gold climax could be completed by rotating one prism twice in
 place, opening a shutter, and waiting for a shadow to pass. The prism now has
 two *different productive* directions and two visibly connected receivers.
 
-The player first turns the prism to its **downward** detent, then opens the
-curtain, illuminating a lower gold receiver. It takes a short clean exposure
+The player first turns the prism itself to its **downward** detent, then opens the
+nearby curtain by touching its lower rail, illuminating a lower gold receiver. It takes a short clean exposure
 to store its ignition charge. The player must then return to the prism and aim
 **upward** toward the second receiver. The upper capacitor cannot charge until
 the lower one is primed; its required thirty ticks of clean light accumulate
@@ -74,7 +85,7 @@ optional detour cannot reach the far cliff without the main bridge.
 
 In-game graybox affordances are the three-position handles, true beam
 endpoints, visible receiver charge rings, preview/solid step outlines and
-thin dotted control/receiver links. The world remains unpainted; do not make
+thin dotted receiver-to-platform links; no remote control wires. The world remains unpainted; do not make
 art authoritatively determine reachability. Any later generated scenery must
 be aligned to the updated phase-platform and receiver pivots. Exported
 geometry snapshots should include *both* blue beam branches and *both* gold

@@ -43,9 +43,10 @@ function ticks(step,count){
 }
 function operate(world,player,stationId){
   const station=palace.controlStations.find(s=>s.id===stationId);
-  player.x=station.at[0]*16;
-  player.y=groundAt(player.x);
+  player.x=(stationId==='gallery-second'?88:station.at[0])*16;
+  player.y=stationId==='gallery-second'?41*16:groundAt(player.x);
   player.vx=0;player.vy=0;player.grounded=true;
+  player.onPlatform=null;
   world.step([{upPressed:true}]);
 }
 function configuredState(){
@@ -61,7 +62,7 @@ function configuredState(){
   return s;
 }
 
-test('the first visible emitter, its dial and the real mirror share one view',()=>{
+test('the first emitter and directly operable mirror share one view',()=>{
   const emitter=palace.lightSources.find(s=>s.id==='atrium-sun');
   const dial=palace.controlStations.find(s=>s.id==='atrium-dial');
   const mirror=palace.mirrors.find(m=>m.id==='atrium-mirror');
@@ -70,7 +71,7 @@ test('the first visible emitter, its dial and the real mirror share one view',()
     'First-time players need to see where the ray comes from');
   const ray=tracePalaceBeams(palace,createPalaceState(palace));
   assert.equal(ray.segments.find(segment=>segment.source==='atrium-sun').hit,
-    'atrium-mirror','The dial should visibly change the incoming beam');
+    'atrium-mirror','The mirror should visibly change the incoming beam');
 });
 
 test('all six visible control stations operate exactly one real mechanism',()=>{
@@ -79,13 +80,25 @@ test('all six visible control stations operate exactly one real mechanism',()=>{
   assert.equal(new Set(names).size,6);
   const mechanismNames=palace.controlStations.map(s=>s.control);
   assert.equal(new Set(mechanismNames).size,6);
-  assert.ok(palace.controlStations.every(s=>s.at.length===2));
+  for(const station of palace.controlStations){
+    const mechanism=(station.kind==='mirror'?palace.mirrors:palace.shutters)
+      .find(object=>object.id===station.control);
+    assert.deepEqual(station.at,mechanism.controlAt,
+      'Never put a proxy switch elsewhere in the room');
+    if(station.kind==='mirror')assert.deepEqual(station.at,mechanism.at,
+      'The visible glass itself must be the control');
+    else{
+      assert.equal(station.at[0],mechanism.to[0]);
+      assert.ok(Math.abs(station.at[1]-mechanism.to[1])<=1,
+        'A curtain is operated at its actual lower rail');
+    }
+  }
   assert.equal(palace.circuitSwitches,undefined,
     'One-hit auto-solving room relays have been eliminated');
 });
 
 test('blue mirror teaches a single bounce and delayed physical bridge',()=>{
-  const player=explorer(0,36*16);
+  const player=explorer(0,39*16);
   const world=simulation([player]);
   const bridge=world.palaceWorld.decks.find(d=>d.id==='atrium-crystal');
   assert.equal(bridge.enabled,false);
@@ -129,7 +142,7 @@ test('blue laser offers a real optional vault route, not another exit shortcut',
 });
 
 test('a normal solo explorer can climb the optional light vault to its Stardrop',()=>{
-  const player=explorer(0,36*16),world=simulation([player]);
+  const player=explorer(0,39*16),world=simulation([player]);
   world.step([{upPressed:true}]);  // Main path, permanently stored.
   world.step();
   world.step([{upPressed:true}]);  // Redirect toward the vault.
@@ -197,7 +210,7 @@ test('gallery requires two actual reflections and an independently opened curtai
 });
 
 test('the stored blue bridge survives a second exploratory dial turn',()=>{
-  const player=explorer(0,36*16),world=simulation([player]);
+  const player=explorer(0,39*16),world=simulation([player]);
   world.step([{upPressed:true}]);
   ticks(world.step,30);
   const bridge=world.palaceWorld.decks.find(d=>d.id==='atrium-crystal');
@@ -363,7 +376,7 @@ test('orb contact deduplicates hits and no other station changes',()=>{
 });
 
 test('two simultaneous explorers cannot rotate the same dial twice',()=>{
-  const x=36*16;
+  const x=39*16;
   const p0=explorer(0,x),p1=explorer(1,x+10);
   const world=simulation([p0,p1]);
   world.step([{upPressed:true},{upPressed:true}]);
@@ -417,7 +430,7 @@ test('a temporary unlatched practice deck stays solid under its rider',()=>{
 });
 
 test('checkpoint reset restores shutters, mirror detents and collision flags',()=>{
-  const player=explorer(0,36*16),world=simulation([player]);
+  const player=explorer(0,39*16),world=simulation([player]);
   const checkpoint=world.palaceWorld.state;
   world.step([{upPressed:true}]);
   ticks(world.step,30);
@@ -439,14 +452,14 @@ test('ray trace is physically blocked by a new rock obstruction',()=>{
   assert.ok(tracePalaceBeams(palace,active,{solidAt}).lit
     .includes('atrium-target'));
   const rock=(x,y)=>solidAt(x,y)||
-    (x>=31*16&&x<=32*16&&y>42*16&&y<44*16);
+    (x>=32*16&&x<=33*16&&y>42*16&&y<44*16);
   assert.equal(tracePalaceBeams(palace,active,{solidAt:rock}).lit
     .includes('atrium-target'),false);
 });
 
 test('cliff faces and physical gates are rooted into authored rock',()=>{
-  assert.equal(palace.ledges.length,0,
-    'No inherited floating shelf is allowed to impersonate a puzzle step');
+  assert.deepEqual(palace.ledges,[[87,41,7]],
+    'Only the physical upper-reflector perch may be a fixed shelf');
   for(const platform of palace.phasePlatforms){
     assert.ok(platform.home[1]*16<groundAt(platform.home[0]*16),
       'Light platform '+platform.id+' must be visibly above the physical ground');
@@ -534,7 +547,7 @@ function runRoute(humans,operateControls=true){
     palace.controlStations[4]];
   const required=stations.map(()=>1);
   const activated=[];
-  let index=0,pressed=0,light=false,lastUp=false;
+  let index=0,pressed=0,light=false,lastUp=false,upperJumpUntil=0;
   const visitedExit=new Set();
   const relic=level.objects.find(o=>o.kind==='springKey');
   const exit=level.objects.find(o=>o.kind==='exit');
@@ -547,9 +560,15 @@ function runRoute(humans,operateControls=true){
     let action={right:true};
     if(index<stations.length&&operateControls){
       const station=stations[index];
-      const x=station.at[0]*16,y=station.at[1]*16;
-      const distance=Math.hypot(driver.x-x,driver.y-y);
-      if(distance<43&&operateControls){
+      const upper=index===2;
+      const x=(upper?88:station.at[0])*16;
+      const y=station.at[1]*16;
+      const distance=Math.hypot(driver.x-station.at[0]*16,
+        driver.y-24-y);
+      // The upper Gallery mirror is reached on its actual physical shelf,
+      // not by pressing a proxy dial from the bottom of the ravine.
+      const onUpper=upper?Math.abs(driver.y-41*16)<8&&driver.grounded:true;
+      if(distance<38&&onUpper&&operateControls){
         if(pressed<required[index]){
           if(!lastUp){
             action={upPressed:true};
@@ -561,14 +580,21 @@ function runRoute(humans,operateControls=true){
           action={right:true};
         }
       }else{
-        action={right:driver.x<x+5,left:driver.x>x+5};
+        action={right:driver.x<x-8,left:driver.x>x+8};
       }
     }
     lastUp=Boolean(action.upPressed);
-    const mustJump=index>0&&(driver.grounded&&tick%19===0||
-      tick%31<19);
+    const nearStation=index<stations.length&&
+      Math.abs(driver.x-(index===2?88:stations[index].at[0])*16)<45;
+    const upper=index===2;
+    const needUpperJump=upper&&driver.grounded&&driver.y>41*16+10&&
+      driver.x>82*16&&driver.x<93*16;
+    const crossing=index>=stations.length||index>0&&!nearStation;
+    if(needUpperJump)upperJumpUntil=tick+16;
+    const mustJump=tick<upperJumpUntil||crossing&&(tick%31<19);
     if(!action.upPressed){
-      action.jump=mustJump;action.jumpPressed=mustJump&&tick%31===0;
+      action.jump=mustJump;
+      action.jumpPressed=needUpperJump||crossing&&tick%31===0;
     }
     const others=players.slice(1).map(p=>{
       const jump=tick%31<19;

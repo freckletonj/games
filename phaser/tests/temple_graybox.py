@@ -89,10 +89,10 @@ def main():
                     "observatory-light-gate": False,
                 }
                 assert len(state["palace"]["platforms"]) == 18
-                # Actual P1 walking to the first dial, not teleporting.
+                # Actual P1 walking to the blue mirror itself, not a remote dial.
                 page.keyboard.down("d")
                 page.wait_for_function(
-                    "window.__wonderwoodPhaser.snapshot().players[0].x > 545",
+                    "window.__wonderwoodPhaser.snapshot().players[0].x > 615",
                     timeout=15000,
                 )
                 page.keyboard.up("d")

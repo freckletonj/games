@@ -108,6 +108,72 @@ test('midpoint stays stopped until every human rides a Pegasus, not cloud assist
   assert.equal(solo.state.phase,'groundScroll');
 });
 
+
+test('a voluntary Unicorn dismount holds scroll and hazards, then reboarding resumes',()=>{
+  const player=rider(0,'unicorn',232),players=[player];
+  const state=createRaceWorld(race);
+  stepRaceWorld(race,state,players);
+  for(let i=0;i<50;i++){
+    advanceMounted(players);
+    stepRaceWorld(race,state,players);
+  }
+  const mount=player.mount;
+  mount.rider=null;
+  player.mount=null;
+  player.x=mount.x+28;player.y=mount.y-24;
+  const anchor=state.state.anchor,tick=state.state.tick;
+  const hazards=state.hazards.map(h=>[h.id,h.x,h.y]);
+  const camera=raceCameraFrame(race,state.state,players).x;
+  for(let i=0;i<200;i++){
+    const result=stepRaceWorld(race,state,players);
+    assert.equal(result.state.phase,'groundScroll');
+    assert.equal(result.restarted,false);
+    assert.equal(state.state.anchor,anchor);
+    assert.equal(state.state.tick,tick);
+  }
+  assert.deepEqual(state.hazards.map(h=>[h.id,h.x,h.y]),hazards);
+  assert.equal(raceCameraFrame(race,state.state,players).x,camera);
+  player.mount=mount;mount.rider=player.id;
+  const resumed=stepRaceWorld(race,state,players);
+  assert.equal(resumed.state.phase,'groundScroll');
+  assert.equal(resumed.restarted,false);
+  assert.ok(resumed.state.anchor>anchor);
+  assert.equal(resumed.state.tick,tick+1);
+});
+
+test('two humans can wait for a dismounted Unicorn without losing their progress',()=>{
+  const players=[rider(0,'unicorn',232),rider(1,'unicorn',408)];
+  const state=createRaceWorld(trainingRace);
+  stepRaceWorld(trainingRace,state,players);
+  for(let i=0;i<35;i++){
+    advanceMounted(players);
+    stepRaceWorld(trainingRace,state,players);
+  }
+  const secondMount=players[1].mount;
+  players[1].x=secondMount.x+28;
+  players[1].mount=null;secondMount.rider=null;
+  const anchor=state.state.anchor;
+  for(let i=0;i<100;i++){
+    const current=stepRaceWorld(trainingRace,state,players);
+    assert.equal(current.restarted,false);
+    assert.equal(current.state.phase,'groundScroll');
+    assert.equal(current.state.anchor,anchor);
+  }
+  players[1].mount=secondMount;secondMount.rider=1;
+  stepRaceWorld(trainingRace,state,players);
+  assert.ok(state.state.anchor>anchor);
+});
+
+test('voluntary dismount never bypasses a real offscreen failure',()=>{
+  const player=rider(0,'unicorn',232),state=createRaceWorld(trainingRace);
+  stepRaceWorld(trainingRace,state,[player]);
+  state.state={...state.state,anchor:1800};
+  player.mount.rider=null;player.mount=null;player.x=100;
+  assert.equal(raceRiderLeftBehind(trainingRace,state.state,[player]),true);
+  for(let i=0;i<40;i++)stepRaceWorld(trainingRace,state,[player]);
+  assert.equal(state.state.phase,'crash');
+});
+
 test('a missing rider is a joint restart instead of the follow-bubble shortcut',()=>{
   const p1=rider(0,'unicorn',232),p2=rider(1,'unicorn',408);
   const state=createRaceWorld(race);

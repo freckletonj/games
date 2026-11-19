@@ -913,6 +913,14 @@ class Wonderwood extends Phaser.Scene {
       groundAt:x=>this.groundAt(x),inWater:(x,y)=>this.inWater(x,y)};
     for(const m of this.mounts){
       if(m.rider!==null||m.clouded)continue;
+      // A dismounted, trusted Unicorn stays where its rider left it.
+      // Otherwise the paused ground course could strand the explorer while
+      // the wild-mount grazing AI wanders away from the frozen camera.
+      if(this.raceWorld?.state.phase==='groundScroll'&&
+         m.kind==='unicorn'&&m.trust>=100&&m.grounded){
+        this.animateMount(m,'idle',step/60);
+        continue;
+      }
       const near=this.players.filter(p=>!p.sleep&&!p.bubble&&!p.assist&&!p.clouded&&
         Math.abs(p.x-m.x)<80&&Math.abs(p.y-m.y)<48)
         .sort((a,b)=>Math.abs(a.x-m.x)-Math.abs(b.x-m.x))[0];
@@ -2290,8 +2298,8 @@ class Wonderwood extends Phaser.Scene {
     // Avoid a screen-wide puzzle walkthrough that covers those devices.
     const palaceHint=this.palaceWorld&&this.level.palaceSpec.controlStations
       .some(station=>this.players.some(p=>!p.assist&&
-        Math.hypot(p.x-station.at[0]*TILE,p.y-station.at[1]*TILE)<55))?
-      '↑ / D-pad Up · Turn nearby optic':'';
+        Math.hypot(p.x-station.at[0]*TILE,p.y-24-station.at[1]*TILE)<45))?
+      '↑ / D-pad Up · Rotate the mirror or open the curtain':'';
     const leadHint=this.templeWorld?templeHint:this.palaceWorld?palaceHint:
       this.raceWorld?.state.phase==='crash'?
       'Impact · Recovering at the last safe camp…':
@@ -2300,7 +2308,9 @@ class Wonderwood extends Phaser.Scene {
       this.raceWorld?.state.phase==='waitingForPegasi'?
       'Choose stars (E), give a Pegasus two treats (F), and press T to fly.':
       this.raceWorld?.state.phase==='groundScroll'?
-      'Jump to the highlighted upper platforms, or gallop below and time the obstacles.':
+      this.players.some(p=>!p.assist&&!p.mount)?
+        'Unicorn course paused · Return to your Unicorn and press T / Y to resume.':
+        'Jump to the highlighted upper platforms, or gallop below and time the obstacles.':
       this.raceWorld?.state.phase==='flightScroll'?
       'Pegasus · Flap between thunderclouds above and storm clouds below; dodge falling rocks!':
       lead.clouded?'P1 · Steer with the stick or direction keys · Jump to break free':

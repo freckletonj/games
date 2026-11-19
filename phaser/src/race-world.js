@@ -13,7 +13,8 @@ export function raceRiderLeftBehind(spec,state,players){
   const grace=48;
   return players.some(player=>!player.assist&&
     (player.sleep||player.bubble||player.clouded||
-      !player.mount||player.mount.x<leftEdge-grace));
+      (state.phase==='flightScroll'&&!player.mount)||
+      (player.mount?.x??player.x)<leftEdge-grace));
 }
 
 // The progress anchor runs independently of Phaser's camera and rendered
@@ -65,7 +66,8 @@ export function stepRaceWorld(spec,world,players,{paused=false,failed=false,reca
   // applies once the scrolling stage actually begins.
   const incapacitated=SCROLLING.has(world.state.phase)&&
     players.some(p=>!p.assist&&
-      (p.sleep||p.bubble||p.clouded||!p.mount));
+      (p.sleep||p.bubble||p.clouded||p.trap||
+        world.state.phase==='flightScroll'&&!p.mount));
   const leftBehind=incapacitated||world.offscreenTicks>=40;
   // No ground shortcut through the storm canyon. Falling below the
   // authored cloudline restarts both humans at their Pegasus sanctuary.

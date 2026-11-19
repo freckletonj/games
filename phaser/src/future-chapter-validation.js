@@ -129,13 +129,22 @@ export function validateFutureChapter(spec){
       for(const station of spec.controlStations){
         if(names.has(station.id))fail('duplicate station id');
         names.add(station.id);
+        const mechanism=(station.kind==='mirror'?spec.mirrors:spec.shutters)
+          .find(control=>control.id===station.control);
         if(!['mirror','shutter'].includes(station.kind)||!station.color||
            !Array.isArray(station.at)||station.at.length!==2||
            station.at.some((n,i)=>!Number.isFinite(n)||n<0||
-             n>=(i===0?spec.width:spec.height))||
-           !(station.kind==='mirror'?spec.mirrors:spec.shutters)
-             .some(control=>control.id===station.control))
+             n>=(i===0?spec.width:spec.height))||!mechanism)
           fail('invalid optical station '+station.id);
+        // A device is its own control; separate remote dials make the
+        // causality opaque. Curtains are grabbed on their lower rail.
+        if(station.at.some((n,i)=>n!==mechanism.controlAt[i])||
+           (station.kind==='mirror'&&
+             station.at.some((n,i)=>n!==mechanism.at[i]))||
+           (station.kind==='shutter'&&
+             (station.at[0]!==mechanism.to[0]||
+              Math.abs(station.at[1]-mechanism.to[1])>1)))
+          fail('remote optical control '+station.id);
       }
       for(const c of [...spec.mirrors,...spec.shutters])
         if(!spec.controlStations.some(s=>s.control===c.id))

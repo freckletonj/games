@@ -65,7 +65,13 @@
   "terrainFeatures": [],
   "water": [],
   "bridges": [],
-  "ledges": [],
+  "ledges": [
+    [
+      87,
+      41,
+      7
+    ]
+  ],
   "creatures": [
     [
       "glimmermoth",
@@ -120,7 +126,7 @@
         145
       ],
       "challenge": "two-reflections-and-shutter",
-      "goal": "Aim two reflections and open the shutter, then follow the permanently stored pink light up six forming crystal steps",
+      "goal": "Turn the lower mirror directly, hop to the upper reflector on its stone shelf, and open the curtain at its foot to build the six-step balcony",
       "recovery": 136
     },
     {
@@ -130,7 +136,7 @@
         228
       ],
       "challenge": "prism-shutter-and-eclipse",
-      "goal": "Open the curtain, aim the prism down to prime the lower receiver, then aim up to charge the eclipse receiver and climb the gold staircase",
+      "goal": "Turn the prism itself toward the ignition receiver, open the curtain on its frame, then turn the prism toward the eclipse capacitor",
       "recovery": 195
     }
   ],
@@ -158,8 +164,8 @@
     {
       "id": "eclipse-sun",
       "at": [
-        157,
-        43
+        152,
+        52
       ],
       "direction": 0,
       "range": 65,
@@ -170,7 +176,7 @@
     {
       "id": "atrium-mirror",
       "at": [
-        54,
+        39,
         43
       ],
       "angles": [
@@ -181,14 +187,14 @@
       "initial": 0,
       "reach": 38,
       "controlAt": [
-        36,
-        45
+        39,
+        43
       ]
     },
     {
       "id": "gallery-mirror-a",
       "at": [
-        93,
+        86,
         41
       ],
       "angles": [
@@ -198,15 +204,15 @@
       "initial": 45,
       "reach": 38,
       "controlAt": [
-        82,
-        42
+        86,
+        41
       ]
     },
     {
       "id": "gallery-mirror-b",
       "at": [
-        93,
-        35
+        86,
+        39
       ],
       "angles": [
         -45,
@@ -215,15 +221,15 @@
       "initial": 45,
       "reach": 38,
       "controlAt": [
-        88,
-        42
+        86,
+        39
       ]
     },
     {
       "id": "observatory-prism",
       "at": [
-        180,
-        43
+        165,
+        52
       ],
       "angles": [
         -45,
@@ -233,8 +239,8 @@
       "initial": 0,
       "reach": 40,
       "controlAt": [
-        172,
-        54
+        165,
+        52
       ]
     }
   ],
@@ -247,7 +253,7 @@
       ],
       "to": [
         108,
-        43
+        54
       ],
       "initial": "closed",
       "states": [
@@ -256,19 +262,19 @@
       ],
       "reach": 40,
       "controlAt": [
-        106,
-        54
+        108,
+        53
       ]
     },
     {
       "id": "eclipse-shutter",
       "from": [
-        175,
-        35
+        159,
+        47
       ],
       "to": [
-        175,
-        48
+        159,
+        54
       ],
       "initial": "closed",
       "states": [
@@ -277,8 +283,8 @@
       ],
       "reach": 40,
       "controlAt": [
-        180,
-        54
+        159,
+        53
       ]
     }
   ],
@@ -286,13 +292,13 @@
     {
       "id": "eclipse-disc",
       "center": [
-        180,
-        36
+        165,
+        42
       ],
       "radius": 1,
       "orbit": [
-        180,
-        36
+        165,
+        42
       ],
       "orbitRadius": 4,
       "periodTicks": 240,
@@ -303,7 +309,7 @@
     {
       "id": "atrium-target",
       "at": [
-        54,
+        39,
         37
       ],
       "radius": 2,
@@ -312,8 +318,8 @@
     {
       "id": "atrium-vault-target",
       "at": [
-        54,
-        47
+        39,
+        45
       ],
       "radius": 1,
       "source": "atrium-sun",
@@ -323,7 +329,7 @@
       "id": "gallery-target",
       "at": [
         123,
-        35
+        39
       ],
       "radius": 2,
       "source": "gallery-lantern"
@@ -331,8 +337,8 @@
     {
       "id": "observatory-ignition",
       "at": [
-        180,
-        50
+        165,
+        54
       ],
       "radius": 1,
       "source": "eclipse-sun",
@@ -341,7 +347,7 @@
     {
       "id": "observatory-target",
       "at": [
-        180,
+        165,
         34
       ],
       "radius": 3,
@@ -693,8 +699,8 @@
       "id": "atrium-dial",
       "room": "ATRIUM",
       "at": [
-        36,
-        45
+        39,
+        43
       ],
       "kind": "mirror",
       "control": "atrium-mirror",
@@ -706,8 +712,8 @@
       "id": "gallery-first",
       "room": "GALLERY",
       "at": [
-        83,
-        43
+        86,
+        41
       ],
       "kind": "mirror",
       "control": "gallery-mirror-a",
@@ -719,8 +725,8 @@
       "id": "gallery-second",
       "room": "GALLERY",
       "at": [
-        95,
-        54
+        86,
+        39
       ],
       "kind": "mirror",
       "control": "gallery-mirror-b",
@@ -732,8 +738,8 @@
       "id": "gallery-curtain",
       "room": "GALLERY",
       "at": [
-        106,
-        54
+        108,
+        53
       ],
       "kind": "shutter",
       "control": "gallery-shutter",
@@ -746,8 +752,8 @@
       "id": "observatory-prism-dial",
       "room": "OBSERVATORY",
       "at": [
-        153,
-        54
+        165,
+        52
       ],
       "kind": "mirror",
       "control": "observatory-prism",
@@ -759,8 +765,8 @@
       "id": "observatory-shutter",
       "room": "OBSERVATORY",
       "at": [
-        162,
-        54
+        159,
+        53
       ],
       "kind": "shutter",
       "control": "eclipse-shutter",
