@@ -367,11 +367,11 @@
     {
       "id": "atrium-crystal",
       "home": [
-        56,
+        58,
         45
       ],
       "size": [
-        448,
+        512,
         20
       ],
       "rule": "lit",
@@ -448,12 +448,12 @@
     {
       "id": "atrium-light-gate",
       "at": [
-        72,
-        25
+        75,
+        38
       ],
       "size": [
         24,
-        560
+        272
       ],
       "target": "atrium-target"
     },
@@ -461,11 +461,11 @@
       "id": "gallery-light-gate",
       "at": [
         136,
-        20
+        34
       ],
       "size": [
         24,
-        576
+        336
       ],
       "target": "gallery-target"
     },
@@ -473,11 +473,11 @@
       "id": "observatory-light-gate",
       "at": [
         194,
-        17
+        29
       ],
       "size": [
         24,
-        608
+        416
       ],
       "target": "observatory-target"
     }

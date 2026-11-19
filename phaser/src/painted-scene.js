@@ -97,10 +97,16 @@ export function paintGrayboxGround(scene){
     const ground=scene.groundAt(x+4);
     if(ground<height)g.fillRect(x,ground,8,height-ground);
   }
-  g.lineStyle(3,0xe4c894,1);
-  for(const ledge of scene.level.platformSegments)
-    if(ledge.kind==='platform')
-      g.lineBetween(ledge.x*16,ledge.y*16,
-        (ledge.x+ledge.length)*16,ledge.y*16);
+  g.fillStyle(0xbdad8b,1);
+  g.lineStyle(2,0xe4c894,1);
+  for(const ledge of scene.level.platformSegments){
+    if(ledge.kind!=='platform')continue;
+    const y=ledge.y*16;
+    for(let x=ledge.x*16;x<(ledge.x+ledge.length)*16;x+=8){
+      if(y>=scene.groundAt(x+4)-2)continue;
+      g.fillRect(x,y,8,18);
+      g.lineBetween(x,y,x+8,y);
+    }
+  }
   return g;
 }

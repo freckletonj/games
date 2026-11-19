@@ -183,11 +183,45 @@ function runPalaceRoute(humans,operateMirrors){
   return {players,palaceWorld,tick:2900,light,finished,activated:[...touched]};
 }
 
+test('compiled Palace doorways are human-scale and rooted in their rock bank',()=>{
+  for(const gate of palace.beamGates){
+    const x=gate.at[0]*16,top=gate.at[1]*16;
+    const visible=groundAt(x)-top;
+    assert.ok(visible>=64&&visible<=192,
+      gate.id+' is a misplaced sky-height gate, not a doorway');
+    assert.ok(top+gate.size[1]>=groundAt(x),
+      gate.id+' does not seal its physical bank');
+  }
+});
+
+test('closed colored doors resist ordinary jumps and swimming-form movement',()=>{
+  for(const gate of palace.beamGates){
+    for(const form of [null,'tideling']){
+      for(const period of [37,55,73]){
+        const x=(gate.at[0]-2.5)*16;
+        const player=explorer(0,x,groundAt(x));
+        player.form=form;
+        const {step,palaceWorld}=simulation([player]);
+        let farthest=player.x;
+        for(let tick=0;tick<650;tick++){
+          const jump=tick%period<24;
+          step([{right:true,jump,jumpPressed:tick%period===0}]);
+          farthest=Math.max(farthest,player.x);
+        }
+        assert.equal(palaceWorld.state.gates[gate.id],false);
+        assert.ok(farthest<gate.at[0]*16,
+          'Palace gate bypass '+gate.id+' '+(form??'ordinary')+
+          ' period '+period+' x='+(farthest/16).toFixed(2));
+      }
+    }
+  }
+});
+
 test('closed optical gates prevent bypassing every unsolved puzzle',()=>{
   const route=runPalaceRoute(1,false);
   assert.equal(route.finished,false);
   assert.equal(route.light,false);
-  assert.ok(route.players[0].x<72*16,
+  assert.ok(route.players[0].x<75*16,
     'The first glass door is a physical collision barrier');
   assert.ok(Object.values(route.palaceWorld.state.gates).every(open=>!open));
 });

@@ -29,7 +29,7 @@ export function createPalaceScene(scene,spec){
     }).setOrigin(.5,1).setDepth(45);
     labels[relay.id]={title,status,bridge};
   }
-  return {graphics,labels};
+  return {graphics,labels,groundAt:x=>scene.groundAt(x)};
 }
 
 export function drawPalaceScene(art,spec,world){
@@ -48,7 +48,10 @@ export function drawPalaceScene(art,spec,world){
     g.lineStyle(5,color,lit?.96:.5);
     g.lineBetween(x,y,px,py);
     const door=spec.beamGates.find(gate=>gate.id===relay.gate);
-    g.lineBetween(px,py,door.at[0]*TILE,door.at[1]*TILE+32);
+    const doorX=door.at[0]*TILE,doorTop=door.at[1]*TILE;
+    const doorwayHeight=Math.max(0,
+      Math.min(door.size[1],art.groundAt(doorX)-doorTop));
+    g.lineBetween(px,py,doorX,doorTop+doorwayHeight/2);
     // Large circular orb target, clearly distinct from scenery and mirrors.
     g.fillStyle(0x143046,1).fillCircle(x,y,29);
     g.lineStyle(5,color,1).strokeCircle(x,y,29);
@@ -69,10 +72,12 @@ export function drawPalaceScene(art,spec,world){
         .strokeRect(bx-width/2,by,width,height);
     }
     if(!gate){
-      g.fillStyle(0xc74f68,.18).fillRect(door.at[0]*TILE-door.size[0]/2,
-        door.at[1]*TILE,...door.size);
+      // The collision extends below the terrain, but the visible light
+      // curtain is only the opening above the compiled physical rock.
+      g.fillStyle(0xc74f68,.18).fillRect(
+        doorX-door.size[0]/2,doorTop,door.size[0],doorwayHeight);
       g.lineStyle(4,0xff8d99,.9).strokeRect(
-        door.at[0]*TILE-door.size[0]/2,door.at[1]*TILE,...door.size);
+        doorX-door.size[0]/2,doorTop,door.size[0],doorwayHeight);
     }
     labels.status.setText(lit?'LAMP ON ✓':'HIT WITH ORB');
     labels.bridge.setText(gate?'BRIDGE ON · DOOR OPEN':
