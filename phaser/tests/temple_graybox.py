@@ -1,4 +1,4 @@
-"""Open the three registered graybox chapters from the normal offline game.
+"""Open the three registered experimental chapters from the normal offline game.
 
 The production Phaser engine and keyboard inputs run unchanged; only the
 offline test wrapper supplies a browser-compatible localStorage shim.
@@ -52,9 +52,14 @@ def main():
             )
             state = page.evaluate("window.__wonderwoodPhaser.snapshot()")
             assert state[world_key], (chapter, state)
-            assert state["sceneArt"]["layers"] == [], (
-                chapter, "Graybox should not require approved scene art"
-            )
+            layers = state["sceneArt"]["layers"]
+            if chapter == "sunken-temple":
+                assert {layer["textureKey"] for layer in layers} == {
+                    "scene-sunken-temple-background",
+                    "scene-sunken-temple-solid",
+                }, ("Temple needs its separate world-locked layers", layers)
+            else:
+                assert layers == [], (chapter, "Unpainted chapter changed", layers)
             assert state["players"][0]["grounded"], (chapter, state)
             if chapter == "sunken-temple":
                 assert len(state["temple"]["rafts"]) == 6
@@ -128,7 +133,7 @@ def main():
             assert not errors, (chapter, errors)
             page.close()
         browser.close()
-    print("All three grayboxes selected from the main game, played and V-overlaid: PASS")
+    print("Painted Temple and two grayboxes selected, played and V-overlaid: PASS")
 
 
 if __name__ == "__main__":
