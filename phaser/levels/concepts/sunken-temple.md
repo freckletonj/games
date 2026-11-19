@@ -58,6 +58,60 @@ crossings. The browser playthrough and balance/difficulty review remain
 separate acceptance gates; deterministic tests alone do not make the
 chapter release-ready.
 
+## Focused graybox playability pass (Nov 18, 2026)
+
+This pass changes **Sunken Temple only**. No textures, backdrop or campaign
+registration changed. The criticisms below concern the playable puzzle contract,
+not the eventual scenery.
+
+**Courtyard — discovery versus waiting.** The original triangular tide began
+rising at spawn and immediately reversed at full height. A normal no-jump walk
+reached the basin with water already high, encouraging an unproductive wait for
+the next cycle. The tide now waits **420 ticks at the opening low-water state**,
+then rises over 300 ticks, holds high for 120 ticks, falls over 300 and holds
+low for 120; subsequent cycles have the same 840-tick period. The raft sits
+four pixels lower so the first boarding jump is more forgiving without
+making the high dock reachable without it. A live RISING / HIGH / FALLING /
+LOW readout with the flood percentage communicates that timing. The low-water
+Stardrop remains optional. The solo input test checks **arrival from spawn**
+and an actual raft-to-dock jump, not just an assumed phase.
+
+**Sluice — understanding before manipulating.** The crate-over-weir and
+crate-down-onto-socket sequence is a sound two-state puzzle, but several
+consecutive fills/drains, unlabeled valve detents and an unexplained automatic
+refill make it feel like trial-and-error or broken input. Basin changes now
+move at **0.06 tile/tick** instead of 0.04, preserving manual Hold and Drain
+without asking the player to stare at static water for as long. Both controls
+show the current setting and the *next* setting for Up; the socket indicates
+whether the crate is aligned and needs draining; the open gate explicitly
+explains the automatic refill. The original physical weir, socket latch,
+side-only crate push, and raised exit stay required, including for Tidefox.
+
+**Temple heart — causality and payoff.** Filling the head alone still cannot
+activate the wheel: the high release remains an independent, raft-gated
+control. The label now distinguishes release armed / waiting for head water,
+charging percentage, and latched wheel instead of promising charging whenever
+release is pulled. The faster head and tail fills reduce passive downtime.
+The tail flood and wheel latch still survive reversing a valve.
+
+**Final crossing — legibility and safety.** Previously both bridge segments
+solidified when the wheel charged, even while the downstream raft was too low
+for the second jump. Bridge A still comes on with the wheel; bridge B now
+solidifies only when the downstream surface is at **42.5 tiles or higher**
+(numerically at or below Y 42.5), near the raft's usable top height. Water
+progress, second-bridge readiness and the required A → raft → B movement are
+shown in world labels and the HUD. This remains a deliberate two-jump
+traversal rather than a timed vanishing-platform trap. Checkpoint rewind
+restores the correct intermediate stage.
+
+**Optional play and recovery.** Hidden Stardrops and Tidefox exploration remain
+optional; the player is never forced to capture a creature to complete this
+route. No untelegraphed current is reintroduced, and solved crate and wheel
+ratchets still persist. The next hands-on playtest should judge whether the
+optional underwater passages warrant a fuller mechanical reward, and whether
+the crate's new pacing removes its remaining backtracking friction. These are
+not claims of verified full browser playthroughs.
+
 ## Player fantasy
 
 Explore a warm, overgrown stone temple where water is the principal moving mechanism. The same room is traversed differently when it is empty, partly flooded, and full. The level combines *rising and falling water*, *buoyant platforms*, *swimmable passages*, *valves and gates*, *currents*, and a final *waterwheel chain reaction*. The drama comes from understanding a physical system, not from demanding twitch-perfect inputs.

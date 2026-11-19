@@ -84,6 +84,14 @@ export function createTempleScene(scene,spec,world,approved){
       color:'#ffe3a1',backgroundColor:'#293a4bdd',padding:{x:6,y:5}
     }).setOrigin(.5,1).setDepth(39);
 
+  const tideLabel=scene.add.text(43*TILE,38*TILE-70,'',{
+    fontFamily:'system-ui',fontSize:'12px',fontStyle:'bold',
+    color:'#e6faff',backgroundColor:'#173541dd',padding:{x:7,y:5}
+    }).setOrigin(.5,1).setDepth(39);
+  const tailLabel=scene.add.text(197*TILE,38*TILE-95,'',{
+    fontFamily:'system-ui',fontSize:'12px',fontStyle:'bold',
+    color:'#fff0c2',backgroundColor:'#173541dd',padding:{x:7,y:5}
+    }).setOrigin(.5,1).setDepth(39);
   const structures=scene.add.graphics().setDepth(-17);
   for(const wall of spec.obstacles??[]){
     structures.fillStyle(0x6e7d83,1);
@@ -137,7 +145,7 @@ export function createTempleScene(scene,spec,world,approved){
     return {id:volume.id,water,left,right};
   });
   return {waterFills,waterline:scene.add.graphics().setDepth(-28),
-    guide,labels:{wheelLabel,bridgeLabel,controlLabels,
+    guide,labels:{wheelLabel,bridgeLabel,tideLabel,tailLabel,controlLabels,
       socketLabel,sluiceLabel},structures,graybox,
     debug:scene.add.graphics().setDepth(102),objects};
 }
@@ -161,20 +169,45 @@ export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
     deck.visual?.setPosition(...deck.position).setVisible(deck.enabled!==false);
   for(const crate of world.crates)
     crate.visual?.setPosition(crate.x,crate.y);
-  for(const valve of spec.valves){
+  for(const [index,valve] of spec.valves.entries()){
     const mode=world.state.modes[valve.controller];
+    const next=valve.modes[(valve.modes.indexOf(mode)+1)%valve.modes.length];
     const angle={drain:-.5,hold:0,fill:.5}[mode];
     art.objects[valve.id].setRotation(angle);
+    art.labels.controlLabels[index].setText(
+      '↑ '+valve.id.replaceAll('-', ' ').toUpperCase()+
+      ' · '+mode.toUpperCase()+' (next '+next.toUpperCase()+')');
   }
-  for(const release of spec.releases)
+  for(const [index,release] of spec.releases.entries()){
     art.objects[release.id].setRotation(world.state.released?.65:-.65);
+    art.labels.controlLabels[spec.valves.length+index].setText(
+      world.state.released?'CASCADE RELEASED ✓':'↑ RELEASE CASCADE');
+  }
+  const tide=spec.waterControllers.find(c=>c.id==='courtyard-tide');
+  const elapsed=Math.max(0,world.state.tick-(tide.startDelayTicks??0));
+  const phase=elapsed%(2*(tide.halfPeriodTicks+(tide.holdTicks??0)));
+  const tideStatus=world.state.tick<=(tide.startDelayTicks??0)?'LOW · BOARD RAFT':
+    phase<tide.halfPeriodTicks?'RISING':
+    phase<tide.halfPeriodTicks+(tide.holdTicks??0)?'HIGH · JUMP TO DOCK':
+    phase<2*tide.halfPeriodTicks+(tide.holdTicks??0)?'FALLING':
+      'LOW · BOARD RAFT';
+  const courtyard=spec.waterVolumes.find(v=>v.id==='courtyard');
+  const tideFraction=(courtyard.minSurface-world.state.surfaces.courtyard)/
+    (courtyard.minSurface-courtyard.maxSurface);
+  art.labels.tideLabel.setText(
+    'TIDE '+tideStatus+' · '+Math.round(tideFraction*100)+'%');
   for(const gate of spec.gates)
     art.objects[gate.id].setVisible(!world.state.gates[gate.id]);
   const plateActive=world.state.plates[spec.pressurePlates[0].id];
-  art.labels.socketLabel.setText(plateActive?
-    'SOCKET PRESSED ✓':'↓  LOWER CRATE ON SOCKET');
+  const crate=world.crates.find(c=>c.id===spec.pressurePlates[0].requires);
+  const socketX=spec.pressurePlates[0].at[0]*TILE;
+  art.labels.socketLabel.setText(plateActive?'SOCKET LATCHED ✓':
+    Math.abs(crate.x-socketX)<=spec.pressurePlates[0].radius?
+      'CRATE ALIGNED ✓ · NOW DRAIN':'SOCKET · PUSH CRATE HERE →');
   art.labels.sluiceLabel.setText(plateActive?
-    'SLUICE OPEN ✓':'SLUICE LOCKED · CRATE → SOCKET');
+    world.state.surfaces.sluice<=45.1?'SLUICE OPEN ✓':
+      'SLUICE OPEN ✓ · BASIN REFILLING':
+    'SLUICE LOCKED · CRATE → SOCKET');
   art.objects[spec.waterwheel.id].setRotation(world.state.wheelAngle);
   // The wheel turns an actual gate/bridge but is not itself a blocking
   // collider. Open spokes and a mechanism label distinguish it from a wall.
@@ -204,11 +237,22 @@ export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
         art.guide.lineBetween(x,by,Math.min(x+10,bx+width/2),by);
     }
   }
-  art.labels.wheelLabel.setText(active?
-    'WHEEL LATCHED · CROSS ON RAFT':
-    world.state.released?'WHEEL CHARGING · WATCH THE FLOOD':
-      'WHEEL OFF · FILL THEN RELEASE');
-  art.labels.bridgeLabel.setText(active?'BRIDGE ON':'BRIDGE OFF');
+  const head=spec.waterControllers.find(c=>c.id===wheel.upstream);
+  const headReady=world.state.surfaces[head.volume]<=wheel.engageSurface;
+  const lastBridge=world.decks.find(d=>d.id===spec.linkedPlatforms.at(-1).id);
+  const tail=spec.waterVolumes.find(v=>v.id==='wheel-tail');
+  const tailFraction=(tail.minSurface-world.state.surfaces[tail.id])/
+    (tail.minSurface-tail.maxSurface);
+  art.labels.wheelLabel.setText(active?'WHEEL LATCHED ✓':
+    !world.state.released?'WHEEL OFF · FILL THEN RELEASE':
+    !headReady?'RELEASE SET · FILL THE HEAD':
+      'WHEEL CHARGING · '+Math.round(100*world.state.chargeTicks/wheel.chargeTicks)+'%');
+  art.labels.bridgeLabel.setText(lastBridge.enabled?
+    'BRIDGE B SOLID ✓':active?'BRIDGE A ON · B WAITING':'BRIDGES OFF');
+  art.labels.tailLabel.setText(lastBridge.enabled?
+    'TAIL RAFT HIGH ✓ · JUMP TO BRIDGE B':
+    active?'TAIL RAFT RISING · '+Math.round(tailFraction*100)+'%':
+      'TAIL RAFT LOW · POWER THE WHEEL');
   art.debug.clear();
   if(showOverlay){
     art.debug.fillStyle(0x20c0ec,.36);

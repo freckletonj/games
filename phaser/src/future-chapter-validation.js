@@ -27,7 +27,9 @@ export function validateFutureChapter(spec){
       if(c.kind==='linked'){needs('waterControllers',c.upstream);
         if(!(c.ratePerTick>0))fail('invalid linked rate')}
       else if(c.kind==='triangle'){
-        if(!Number.isInteger(c.halfPeriodTicks)||c.halfPeriodTicks<=0)
+        if(!Number.isInteger(c.halfPeriodTicks)||c.halfPeriodTicks<=0||
+           !Number.isInteger(c.holdTicks??0)||(c.holdTicks??0)<0||
+           !Number.isInteger(c.startDelayTicks??0)||(c.startDelayTicks??0)<0)
           fail('invalid tide period');
       }else if(c.kind==='valve'){
         if(!(c.ratePerTick>0)||!['fill','drain','hold'].includes(c.initial))
@@ -62,6 +64,14 @@ export function validateFutureChapter(spec){
          platform.home[0]*16+platform.size[0]/2>spec.width*16||
          platform.size[0]<=0||platform.size[1]<=0)
         fail('invalid wheel-linked platform '+platform.id);
+      if(platform.readyWhenSurface){
+        needs('waterVolumes',platform.readyWhenSurface.volume);
+        const volume=named.waterVolumes.get(platform.readyWhenSurface.volume);
+        if(!Number.isFinite(platform.readyWhenSurface.atMost)||
+           platform.readyWhenSurface.atMost<volume.maxSurface||
+           platform.readyWhenSurface.atMost>volume.minSurface)
+          fail('invalid bridge readiness level '+platform.id);
+      }
     }
   }
   if(spec.lightSources){

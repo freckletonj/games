@@ -45,6 +45,25 @@ function advance(step,ticks,actions=()=>({})){
   for(let i=0;i<ticks;i++)step(actions(i));
 }
 
+test('the opening tide is low on first arrival from the real spawn',()=>{
+  const spawn=level.objects.find(o=>o.kind==='p1');
+  const x=(spawn.x+.5)*16;
+  const {player,templeWorld,step}=simulation(explorer(x,groundAt(x)));
+  let waterOnEntry=null;
+  for(let tick=0;tick<650&&player.x<53*16;tick++){
+    step({right:true});
+    if(waterOnEntry===null&&player.x>=32*16)
+      waterOnEntry=templeWorld.state.surfaces.courtyard;
+  }
+  const basin=temple.waterVolumes.find(v=>v.id==='courtyard');
+  assert.equal(waterOnEntry,basin.minSurface,
+    'The player should first see the basin low and have time to inspect it');
+  assert.ok(player.x>=53*16);
+  assert.ok(templeWorld.state.surfaces.courtyard>=52,
+    'The raft should still be low enough to board on first approach: '+
+      JSON.stringify({tick:templeWorld.state.tick,x:player.x,water:templeWorld.state.surfaces.courtyard}));
+});
+
 test('ordinary water-jump can board the low raft, which carries its rider to the high dock',()=>{
   const {player,templeWorld,step}=simulation(explorer(53*16,groundAt(53*16)));
   let boarded=false;
@@ -57,10 +76,11 @@ test('ordinary water-jump can board the low raft, which carries its rider to the
     if(player.onPlatform==='courtyard-raft'){boarded=true;break;}
   }
   assert.ok(boarded,'Raft boarding trace '+JSON.stringify(trace));
-  while(templeWorld.state.tick<420)step();
+  const tide=temple.waterControllers.find(c=>c.id==='courtyard-tide');
+  while(templeWorld.state.tick<tide.startDelayTicks+tide.halfPeriodTicks+60)step();
   assert.equal(templeWorld.state.surfaces.courtyard,42.5);
   assert.equal(player.onPlatform,'courtyard-raft');
-  assert.ok(Math.abs(player.y-(42.5*16-28))<.1);
+  assert.ok(Math.abs(player.y-(42.5*16+temple.buoyantObjects[0].floatOffset))<.1);
   let jumpAt=-1,reached=false;
   const dockTrace=[];
   for(let i=0;i<140;i++){
@@ -73,6 +93,26 @@ test('ordinary water-jump can board the low raft, which carries its rider to the
     if(player.x>=59*16&&player.y<=39*16+3){reached=true;break;}
   }
   assert.ok(reached,'Raft-to-dock jump must work: '+JSON.stringify(dockTrace));
+});
+
+test('courtyard tide holds at the high and low positions for readable raft jumps',()=>{
+  const world=createTempleWorld(temple),player=explorer(4*16,39*16);
+  const step=()=>stepTempleWorld(temple,world,[player],[controls]);
+  const controller=temple.waterControllers.find(c=>c.id==='courtyard-tide');
+  const water=temple.waterVolumes.find(v=>v.id==='courtyard');
+  assert.ok(controller.holdTicks>=90,'The high dock needs a generous pause');
+  advance(step,controller.startDelayTicks);
+  assert.equal(world.state.surfaces.courtyard,water.minSurface);
+  advance(step,controller.halfPeriodTicks);
+  assert.equal(world.state.surfaces.courtyard,water.maxSurface);
+  advance(step,controller.holdTicks);
+  assert.equal(world.state.surfaces.courtyard,water.maxSurface);
+  step();
+  assert.ok(world.state.surfaces.courtyard>water.maxSurface);
+  advance(step,controller.halfPeriodTicks-1);
+  assert.equal(world.state.surfaces.courtyard,water.minSurface);
+  advance(step,controller.holdTicks);
+  assert.equal(world.state.surfaces.courtyard,water.minSurface);
 });
 
 test('jump-spamming through the courtyard without its raft cannot reach the dock',()=>{
@@ -373,6 +413,36 @@ function poweredTemple(){
   return world;
 }
 
+test('the second bridge becomes solid only when the tail raft is high enough',()=>{
+  const world=createTempleWorld(temple),player=explorer(165*16,39*16);
+  const step=()=>stepTempleWorld(temple,world,[player],[controls]);
+  world.state=setTempleValve(temple,world.state,'cascade-handle','fill');
+  advance(step,230);
+  world.state=releaseTempleWheel(temple,world.state,'wheel-release');
+  advance(step,temple.waterwheel.chargeTicks);
+  const first=world.decks.find(d=>d.id==='wheel-bridge-a');
+  const second=world.decks.find(d=>d.id==='wheel-bridge-b');
+  assert.equal(world.state.wheelActive,true);
+  assert.equal(first.enabled,true);
+  assert.equal(second.enabled,false,
+    'The second bridge must not falsely advertise a jump onto a low raft');
+  const before=snapshotTempleWorld(world);
+  const readiness=temple.linkedPlatforms.find(b=>b.id===second.id).readyWhenSurface;
+  let ticks=0;
+  while(world.state.surfaces[readiness.volume]>readiness.atMost&&ticks++<350){
+    step();
+    assert.equal(second.enabled,
+      world.state.surfaces[readiness.volume]<=readiness.atMost);
+  }
+  assert.ok(ticks<350,'Tail raft must finish rising in a generous interval');
+  assert.equal(second.enabled,true);
+  restoreTempleWorld(temple,world,before);
+  assert.equal(first.enabled,true);
+  assert.equal(second.enabled,false,'Recall restores the correct bridge stage');
+  advance(step,ticks);
+  assert.equal(second.enabled,true,'The latched wheel refills after recall');
+});
+
 test('two intentional jumps bridge A → downstream raft → bridge B',()=>{
   const templeWorld=poweredTemple();
   const player=explorer(191*16,40*16);
@@ -584,7 +654,7 @@ test('authored Temple solids have no isolated pillars or gates painted through r
 test('water jumps, repeated jumps and Tidefox diving cannot replace required rafts',()=>{
   const cases=[
     {name:'courtyard',start:53,goal:59,raft:'courtyard-raft',fill:0},
-    {name:'courtyard high',start:53,goal:59,raft:'courtyard-raft',fill:420},
+    {name:'courtyard high',start:53,goal:59,raft:'courtyard-raft',fill:750},
     {name:'head filling',start:157,goal:164,raft:'head-raft',fill:90,
       valve:'cascade-handle'},
     {name:'head high',start:157,goal:164,raft:'head-raft',fill:280,

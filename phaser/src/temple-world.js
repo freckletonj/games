@@ -4,6 +4,9 @@ import {templeShoreBounds} from './temple-shoreline.js';
 
 const TILE=16;
 const clamp=(value,lo,hi)=>Math.max(lo,Math.min(hi,value));
+const bridgeEnabled=(deck,state)=>state.wheelActive&&
+  (!deck.readyWhenSurface||
+    state.surfaces[deck.readyWhenSurface.volume]<=deck.readyWhenSurface.atMost);
 
 export function createTempleWorld(spec){
   const state=createTempleState(spec);
@@ -53,7 +56,7 @@ export function restoreTempleWorld(spec,world,snapshot){
       {x:deck.home[0]*TILE,y:deck.home[1]*TILE};
     deck.position=[position.x,position.y];
     deck.previous=deck.position;
-    if(deck.enabledWhen)deck.enabled=world.state.wheelActive;
+    if(deck.enabledWhen)deck.enabled=bridgeEnabled(deck,world.state);
   }
   return world;
 }
@@ -157,7 +160,7 @@ export function stepTempleWorld(spec,world,players,actions){
       const {x,y}=buoyantPosition(spec,state,deck.id);
       deck.position=[x,y];
     }
-    if(deck.enabledWhen)deck.enabled=state.wheelActive;
+    if(deck.enabledWhen)deck.enabled=bridgeEnabled(deck,state);
   }
   for(const crate of world.crates){
     crate.previous=crate.position;

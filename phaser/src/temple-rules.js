@@ -64,9 +64,14 @@ export function stepTemple(spec,state,{cratePositions={}}={}){
     const volume=spec.waterVolumes.find(v=>v.id===controller.volume);
     let next=surfaces[volume.id];
     if(controller.kind==='triangle'){
-      const period=controller.halfPeriodTicks*2;
-      const distance=Math.abs((tick%period)-controller.halfPeriodTicks);
-      const fill=(controller.halfPeriodTicks-distance)/controller.halfPeriodTicks;
+      // Give players a safe boarding and disembarking window at both
+      // extremes rather than reversing the raft on the exact peak tick.
+      const rise=controller.halfPeriodTicks,hold=controller.holdTicks??0;
+      const elapsed=Math.max(0,tick-(controller.startDelayTicks??0));
+      const phase=elapsed%(2*(rise+hold));
+      const fill=phase<rise?phase/rise:
+        phase<rise+hold?1:
+        phase<2*rise+hold?1-(phase-rise-hold)/rise:0;
       next=volume.minSurface+(volume.maxSurface-volume.minSurface)*fill;
     }else{
       const mode=controller.kind==='linked'?

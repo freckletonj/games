@@ -2258,18 +2258,23 @@ class Wonderwood extends Phaser.Scene {
       lead.x<1410?'Hold ↑ to grab a rope · P2 uses 8':'Find the key on the canopy shelf.';
     const templeCrate=this.templeWorld?.crates[0];
     const templeState=this.templeWorld?.state;
+    const templeTailReady=this.templeWorld?.decks.find(d=>d.id==='wheel-bridge-b')?.enabled;
     const templeHint=!this.templeWorld?'':lead.x<70*TILE?
-      'Board the low-tide raft, ride it upward, and jump to the high dock.':
+      'Board the raft in low water. High tide holds briefly for your jump to the dock.':
       lead.x<107*TILE&&!templeState.gates['sluice-gate']?
         templeCrate.x<87*TILE?
-          '↑ at the left valve to fill the basin. Push the crate from its side over the stone weir.':
+          '↑ at the left valve to fill. Brace against the crate and push it over the stone weir.':
         templeCrate.x<93*TILE-15?
-          'Keep pushing the floating crate right until it is above the golden floor socket.':
-          'Use the raft to reach the right valve. ↑ cycles Fill → Hold → Drain. Lower the crate onto the socket.':
-      lead.x<107*TILE?'Socket pressed · the sluice door is open. Continue right.':
-      lead.x<170*TILE?
-      'Fill the head reservoir, ride its raft to the high ledge, then press ↑ to release the cascade.':
-      'The wheel powers two bridge sections. Ride the rising raft through the gap.';
+          'Push the floating crate right until it stops over the golden floor socket.':
+          'Ride the raft to the upper valve; ↑ cycles Fill → Hold → Drain. Drain the crate onto the socket.':
+      lead.x<107*TILE?'Socket latched! The sluice refills automatically. Ride up to the open door.':
+      lead.x<170*TILE&&!templeState.released?
+        'Fill the head reservoir, ride its raft to the high ledge, then ↑ to release the cascade.':
+      lead.x<170*TILE&&!templeState.wheelActive?
+        'Release armed! Fill the head water and watch the wheel charge.':
+      !templeTailReady?
+        'Bridge A is solid. Wait for the downstream raft and Bridge B to rise before crossing.':
+        'Both bridges are solid. Jump from A to the raft, then from the raft to B.';
     const leadHint=this.templeWorld?templeHint:this.palaceWorld?
       lead.x<76*TILE?'↑ near blue dial / G shoots · Bend the ray up to the blue receiver.':
       lead.x<145*TILE?'Pink gallery · Aim both mirrors upward and right, then open the light curtain.':

@@ -243,27 +243,29 @@
       "id": "courtyard-tide",
       "kind": "triangle",
       "volume": "courtyard",
-      "halfPeriodTicks": 420
+      "halfPeriodTicks": 300,
+      "holdTicks": 120,
+      "startDelayTicks": 420
     },
     {
       "id": "sluice-valve",
       "kind": "valve",
       "volume": "sluice",
-      "ratePerTick": 0.04,
+      "ratePerTick": 0.06,
       "initial": "drain"
     },
     {
       "id": "head-flood",
       "kind": "valve",
       "volume": "wheel-head",
-      "ratePerTick": 0.04,
+      "ratePerTick": 0.06,
       "initial": "drain"
     },
     {
       "id": "tail-flood",
       "kind": "linked",
       "volume": "wheel-tail",
-      "ratePerTick": 0.04,
+      "ratePerTick": 0.06,
       "upstream": "head-flood",
       "threshold": 46
     }
@@ -325,7 +327,7 @@
         112,
         20
       ],
-      "floatOffset": -28
+      "floatOffset": -24
     },
     {
       "id": "sluice-raft",
@@ -462,7 +464,11 @@
         192,
         20
       ],
-      "enabledWhen": "temple-wheel"
+      "enabledWhen": "temple-wheel",
+      "readyWhenSurface": {
+        "volume": "wheel-tail",
+        "atMost": 42.5
+      }
     }
   ],
   "goalPolicy": "contact-only",

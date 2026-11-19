@@ -39,7 +39,9 @@ test('all three unregistered layouts compile with the production geometry compil
 test('water tide, valve reversals and raft carry are fixed-tick and repeatable',()=>{
   const run=()=>{
     let state=createTempleState(templeSpec);
-    for(let tick=0;tick<420;tick++)state=stepTemple(templeSpec,state);
+    const tide=templeSpec.waterControllers.find(c=>c.id==='courtyard-tide');
+    for(let tick=0;tick<tide.startDelayTicks+tide.halfPeriodTicks;tick++)
+      state=stepTemple(templeSpec,state);
     assert.equal(state.surfaces.courtyard,42.5);
     const high=state;
     for(let tick=0;tick<420;tick++)state=stepTemple(templeSpec,state);
