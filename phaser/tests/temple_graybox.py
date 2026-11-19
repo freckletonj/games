@@ -74,6 +74,39 @@ def main():
                     "window.__wonderwoodPhaser.snapshot().temple"
                 )
                 assert water["surfaces"]["courtyard"] < 55
+            if chapter == "mirror-palace":
+                assert state["palace"]["gates"] == {
+                    "atrium-light-gate": False,
+                    "gallery-light-gate": False,
+                    "observatory-light-gate": False,
+                }
+                assert len(state["palace"]["platforms"]) == 8
+                # Actual P1 walking to the first dial, not teleporting.
+                page.keyboard.down("d")
+                page.wait_for_function(
+                    "window.__wonderwoodPhaser.snapshot().players[0].x > 545",
+                    timeout=15000,
+                )
+                page.keyboard.up("d")
+                page.keyboard.down("w")
+                page.wait_for_function(
+                    "window.__wonderwoodPhaser.snapshot().palace."
+                    "mirrors['atrium-mirror'] === -45",
+                    timeout=5000,
+                )
+                page.keyboard.up("w")
+                page.wait_for_function(
+                    "window.__wonderwoodPhaser.snapshot().palace."
+                    "platforms['atrium-crystal'].solid",
+                    timeout=7000,
+                )
+                assert page.evaluate(
+                    "window.__wonderwoodPhaser.snapshot().palace."
+                    "gates['atrium-light-gate']"
+                ), "The real keyboard dial must open the physical first door"
+                page.screenshot(path=str(
+                    CAPTURES / "mirror-palace-first-reflection.png"
+                ))
             page.keyboard.down("v")
             page.wait_for_function(
                 "window.__wonderwoodPhaser.snapshot().sceneArt.geometryOverlay",

@@ -220,6 +220,8 @@ class Wonderwood extends Phaser.Scene {
         palace:this.palaceWorld?{tick:this.palaceWorld.state.tick,
           mirrors:{...this.palaceWorld.state.mirrors},
           shutters:{...this.palaceWorld.state.shutters},
+          gates:{...this.palaceWorld.state.gates},
+          lit:[...(this.palaceWorld.state.light?.lit??[])],
           platforms:{...this.palaceWorld.state.platforms}}:null,
         temple:this.templeWorld?{tick:this.templeWorld.state.tick,
           surfaces:{...this.templeWorld.state.surfaces},
