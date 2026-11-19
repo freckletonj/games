@@ -1,4 +1,4 @@
 # Explicit CI trigger for Wonderwood regressions.
 # Only changes to this file (or a manual workflow_dispatch) launch the workflow.
 # Update the request line when an on-demand test run is needed.
-Request: Audit Palace cliff-start collision, six controls and real keyboard smoke, 2026-11-18
+Request: Export test source and verify rebuilt Reflection Gallery stairs, 2026-11-18
