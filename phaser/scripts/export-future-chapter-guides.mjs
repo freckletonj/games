@@ -97,7 +97,9 @@ for(const spec of specs){
   const frames=[];
   if(spec.id==='sunken-temple'){
     const initial=createTempleState(spec);
-    let high=repeat(initial,420,s=>stepTemple(spec,s));
+    const tide=spec.waterControllers.find(c=>c.id==='courtyard-tide');
+    let high=repeat(initial,(tide.startDelayTicks??0)+tide.halfPeriodTicks,
+      s=>stepTemple(spec,s));
     let valve=setTempleValve(spec,high,'sluice-handle','fill');
     valve=repeat(valve,270,s=>stepTemple(spec,s));
     let finale=setTempleValve(spec,valve,'cascade-handle','fill');
@@ -113,8 +115,10 @@ for(const spec of specs){
       });
       const gates=spec.gates.filter(g=>!state.gates[g.id])
         .map(g=>box(g.at[0]*16,g.at[1]*16,...g.size,'gate'));
-      const walkway=state.wheelActive?spec.linkedPlatforms.map(p=>
-        box(p.home[0]*16,p.home[1]*16,...p.size,'moving')):[];
+      const walkway=spec.linkedPlatforms.filter(p=>state.wheelActive&&
+        (!p.readyWhenSurface||
+          state.surfaces[p.readyWhenSurface.volume]<=p.readyWhenSurface.atMost))
+        .map(p=>box(p.home[0]*16,p.home[1]*16,...p.size,'moving'));
       const objects=[...buoyant,...gates,...walkway];
       frames.push(await sample(directory,level,name,water,objects,[],{
         tick:state.tick,surfaces:state.surfaces,modes:state.modes,
@@ -135,7 +139,8 @@ for(const spec of specs){
           radius:spec.waterwheel.radius},
         linkedPlatforms:spec.linkedPlatforms.map(p=>({id:p.id,
           position:p.home.map(v=>v*16),size:p.size,
-          enabled:state.wheelActive}))
+          enabled:state.wheelActive&&(!p.readyWhenSurface||
+            state.surfaces[p.readyWhenSurface.volume]<=p.readyWhenSurface.atMost)}))
       }));
     }
   }else if(spec.id==='mirror-palace'){
