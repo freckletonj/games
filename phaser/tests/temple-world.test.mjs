@@ -143,16 +143,16 @@ test('crate pushes only from braced side contact, never from a jump or from on t
   for(let tick=0;tick<16;tick++){
     player.y=crate.y+20;
     player.grounded=false;player.floating=false;
-    stepTempleWorld(temple,world,[player],[{right:true,jump:true}]);
+    stepTempleWorld(temple,world,[player],[{left:false,right:true,jump:true}]);
   }
   assert.equal(crate.x,first,'An airborne explorer may not remotely push the crate');
   player.grounded=true;
-  stepTempleWorld(temple,world,[player],[{right:true}]);
+  stepTempleWorld(temple,world,[player],[{left:false,right:true}]);
   assert.ok(crate.x>first,'Bracing against its side should push the crate');
   player.x=crate.x;player.y=crate.y;
   player.onPlatform=crate.id;
   const held=crate.x;
-  stepTempleWorld(temple,world,[player],[{right:true}]);
+  stepTempleWorld(temple,world,[player],[{left:false,right:true}]);
   assert.equal(crate.x,held,'Standing on a crate should not make it slide');
 });
 
