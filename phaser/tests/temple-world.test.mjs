@@ -238,19 +238,17 @@ test('the gate collision disappears after the physical crate socket latches',()=
     'The greenlit exit must no longer be blocked by an invisible gate');
 });
 
-test('the low weir has a Tidefox-only diving tunnel, not a normal swimming bypass',()=>{
-  const ordinary=simulation(explorer(86*16,groundAt(86*16)));
-  advance(ordinary.step,100,()=>({right:true,down:true}));
-  assert.ok(ordinary.player.x<87*16,
-    'An untransformed explorer floats above the narrow underpass');
-  const fox=explorer(86*16,groundAt(86*16));
-  fox.form='tideling';fox.grounded=false;fox.coyote=0;
-  const diver=simulation(fox);
-  advance(diver.step,100,()=>({right:true,down:true}));
-  assert.ok(fox.x>89*16,
-    'Tidefox can descend through the two-tile floor tunnel');
-  assert.equal(diver.templeWorld.state.gates['sluice-gate'],false,
-    'The diving shortcut must not silently solve the crate puzzle');
+test('the grounded sluice weir blocks both an ordinary swimmer and diving Tidefox',()=>{
+  for(const form of [null,'tideling']){
+    const player=explorer(86*16,groundAt(86*16));
+    player.form=form;player.grounded=false;player.coyote=0;
+    const {step,templeWorld}=simulation(player);
+    advance(step,110,()=>({right:true,down:true}));
+    assert.ok(player.x<89*16,
+      'No route under the solid weir for '+(form??'ordinary')+
+        ': '+JSON.stringify({x:player.x,y:player.y}));
+    assert.equal(templeWorld.state.gates['sluice-gate'],false);
+  }
 });
 
 test('solo valve inputs independently select fill, hold and drain',()=>{

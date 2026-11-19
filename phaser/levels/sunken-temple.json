@@ -22,7 +22,7 @@
       57
     ],
     [
-      59,
+      56,
       39
     ],
     [
@@ -54,7 +54,7 @@
       57
     ],
     [
-      164,
+      161,
       39
     ],
     [
@@ -70,7 +70,7 @@
       57
     ],
     [
-      213,
+      210,
       39
     ],
     [
@@ -401,11 +401,11 @@
       "id": "sluice-gate",
       "at": [
         106,
-        22
+        34
       ],
       "size": [
         16,
-        560
+        368
       ],
       "default": "closed",
       "opensWhen": "sluice-plate"
@@ -414,11 +414,11 @@
       "id": "wheel-gate",
       "at": [
         213,
-        22
+        34
       ],
       "size": [
         16,
-        560
+        368
       ],
       "default": "closed",
       "opensWhen": "temple-wheel"
@@ -479,31 +479,10 @@
   ],
   "obstacles": [
     {
-      "id": "courtyard-dock-lip",
-      "left": 58,
-      "right": 58.75,
-      "top": 39,
-      "bottom": 57
-    },
-    {
       "id": "sluice-weir",
       "left": 87,
       "right": 89,
       "top": 51,
-      "bottom": 55
-    },
-    {
-      "id": "tail-dock-lip",
-      "left": 202,
-      "right": 202.5,
-      "top": 39,
-      "bottom": 57
-    },
-    {
-      "id": "head-dock-lip",
-      "left": 163,
-      "right": 163.75,
-      "top": 39,
       "bottom": 57
     }
   ]

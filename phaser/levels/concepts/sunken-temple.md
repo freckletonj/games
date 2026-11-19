@@ -28,8 +28,9 @@ The route is no longer an unbroken rightward run:
    so the raft can lift the player to the open exit.
    The crate is solid on top: a falling player can stand on it and ride it
    upward; only deliberate braced side contact pushes it horizontally.
-   A separate narrow bottom tunnel under the weir is passable by diving as
-   Tidefox, but too short for the crate and too deep for normal floating.
+   The weir is rooted in the floor, not an unexplained floating block.
+   Tidefox remains an optional swimming form, but has no bypass under
+   the critical crate divider.
 3. **Temple heart:** fill the head reservoir, take its raft to the wheel
    station, and operate the separate release. Only released water can
    charge the wheel. After the visible delay, the mechanism latches the
@@ -71,7 +72,7 @@ Tidefox is a natural companion for diving, but its acquisition should be introdu
 
 **Act III — The heart of the temple (combine).** The player releases a restrained flood through an ancient waterwheel. Water height changes sequentially across connected basins, raising two rafts and rotating a paddle mechanism that opens a high walkway. The route finishes on a sunlit observation terrace with the Temple Light and gate. The visual payoff should show a cascade from one chamber into the next, but the transition must be simulated deterministically and provide safe recovery if a jump is missed.
 
-**Optional discoveries.** Hidden shard on a draining lower shelf; Tidefox-accessible tunnel with a cache; advanced route across two rising rafts; an overlook containing the temple's pre-flood mural. None is required for the light to be collectible if reached.
+**Optional discoveries.** Hidden shard on a draining lower shelf; Tidefox-accessible tunnel with a cache (in a future art-approved pass); advanced route across two rising rafts; an overlook containing the temple's pre-flood mural. None is required for the light to be collectible if reached.
 
 ## Proposed declarative design (not existing schema)
 

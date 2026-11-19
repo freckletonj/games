@@ -55,7 +55,9 @@ function contextColumn(level,water=[],objects=[],rays=[]){
     return y=>{
       const base=staticColumn(y);
       const object=shapes.findLast(o=>y>=o.top&&y<o.bottom);
-      if(object)return object.material;
+      // A door extends down into stone in the collision model. The rock
+      // still owns its physical mask and should not be repainted as gate.
+      if(object&&base!=='rock')return object.material;
       if(lines.some(r=>{
         const [x1,y1]=r.from,[x2,y2]=r.to;
         const dx=x2-x1,dy=y2-y1;

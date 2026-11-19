@@ -35,9 +35,14 @@ export function createTempleScene(scene,spec,world,approved){
       const ground=scene.groundAt(x+4);
       graybox.fillRect(x,ground,8,scene.worldH-ground);
     }
-    graybox.lineStyle(4,0xd6bc86);
-    for(const [x,y,length] of spec.ledges)
+    // The one-way shelves have visible thickness; thin guide lines looked
+    // like arbitrary floating collision geometry in the graybox.
+    graybox.fillStyle(0xbdad8b,1);
+    graybox.lineStyle(2,0xe6d3a8,1);
+    for(const [x,y,length] of spec.ledges){
+      graybox.fillRect(x*TILE,y*TILE,length*TILE,14);
       graybox.lineBetween(x*TILE,y*TILE,(x+length)*TILE,y*TILE);
+    }
   }
   const objects={};
   for(const deck of world.decks){
@@ -54,9 +59,14 @@ export function createTempleScene(scene,spec,world,approved){
   for(const release of spec.releases)
     objects[release.id]=makeVisual(release.id,release.at[0]*TILE,
       release.at[1]*TILE,38,38,-17,0xe2b9a0,.5);
-  for(const gate of spec.gates)
-    objects[gate.id]=makeVisual(gate.id,gate.at[0]*TILE,gate.at[1]*TILE,
-      ...gate.size,-18,0x9b9d92);
+  for(const gate of spec.gates){
+    // Gate physics extend through the solid rock, but only the open doorway
+    // above the terrain should be painted. A 35-tile strip was misleading.
+    const x=gate.at[0]*TILE,top=gate.at[1]*TILE;
+    const opening=Math.max(0,Math.min(gate.size[1],scene.groundAt(x)-top));
+    objects[gate.id]=makeVisual(gate.id,x,top,
+      gate.size[0],opening,-18,0x9b9d92);
+  }
   const wheel=spec.waterwheel;
   objects[wheel.id]=makeVisual(wheel.id,wheel.at[0]*TILE,
     wheel.at[1]*TILE,wheel.radius*2,wheel.radius*2,-17,0x8fbbb6,.5);
@@ -232,8 +242,9 @@ export function drawTempleScene(art,spec,world,groundAt,showOverlay=false){
         plate.at[1]*TILE,plate.at[0]*TILE+plate.radius,plate.at[1]*TILE);
     for(const gate of spec.gates){
       if(world.state.gates[gate.id])continue;
-      art.debug.strokeRect(gate.at[0]*TILE-gate.size[0]/2,
-        gate.at[1]*TILE,...gate.size);
+      const x=gate.at[0]*TILE,top=gate.at[1]*TILE;
+      const opening=Math.max(0,Math.min(gate.size[1],groundAt(x)-top));
+      art.debug.strokeRect(x-gate.size[0]/2,top,gate.size[0],opening);
     }
   }
 }
