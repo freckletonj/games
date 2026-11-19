@@ -162,6 +162,42 @@ test('crate is blocked by the weir when low, clears it when floating, then latch
     'A solved mechanical gate must not close after a valve reversal');
 });
 
+test('missing the sluice socket refills the basin and permits a retry',()=>{
+  const templeWorld=createTempleWorld(temple);
+  const player=explorer(100*16,55*16+11);
+  player.grounded=false;
+  const {step}=simulation(player,templeWorld),crate=templeWorld.crates[0];
+
+  // The crate cleared the weir but was not pushed far enough onto the socket.
+  crate.x=91*16;
+  crate.position=[crate.x,crate.y];
+  templeWorld.state=setTempleValve(temple,templeWorld.state,
+    'sluice-handle','fill');
+  advance(step,270);
+  assert.equal(templeWorld.state.surfaces.sluice,45);
+  templeWorld.state=setTempleValve(temple,templeWorld.state,
+    'sluice-drain','drain');
+  advance(step,270);
+  assert.equal(templeWorld.state.surfaces.sluice,55);
+  assert.equal(templeWorld.state.plates['sluice-plate'],false);
+  assert.equal(templeWorld.state.gates['sluice-gate'],false);
+  assert.equal(templeWorld.state.modes['sluice-valve'],'fill',
+    'A failed drain must reverse before the player is stranded below');
+  advance(step,270);
+  assert.equal(templeWorld.state.surfaces.sluice,45,
+    'The rising raft must become available for another try');
+
+  // The same socket and gate still work on the next drain.
+  crate.x=93*16;
+  crate.position=[crate.x,crate.y];
+  const upper=simulation(explorer(102*16,42*16),templeWorld);
+  upper.step({upPressed:true});
+  assert.equal(templeWorld.state.modes['sluice-valve'],'drain');
+  advance(upper.step,270);
+  assert.equal(templeWorld.state.plates['sluice-plate'],true);
+  assert.equal(templeWorld.state.gates['sluice-gate'],true);
+});
+
 test('starting at the real valve, solo walking and filling moves the crate over the weir',()=>{
   const player=explorer(70*16,39*16),templeWorld=createTempleWorld(temple);
   const {step}=simulation(player,templeWorld),crate=templeWorld.crates[0];
@@ -203,10 +239,8 @@ test('solo inputs can unlock the second-basin door from the actual upstream valv
     JSON.stringify({player:[player.x,player.y],
       crate:[crate.x,crate.y],surface:templeWorld.state.surfaces.sluice}));
   step({upPressed:true});
-  assert.equal(templeWorld.state.modes['sluice-valve'],'hold');
-  step();
-  step({upPressed:true});
-  assert.equal(templeWorld.state.modes['sluice-valve'],'drain');
+  assert.equal(templeWorld.state.modes['sluice-valve'],'drain',
+    'A single upper-valve press must start draining');
   advance(step,280);
   assert.equal(templeWorld.state.plates['sluice-plate'],true,
     'Real valve/drain operation must actually press the plate');
@@ -295,16 +329,16 @@ test('the grounded sluice weir blocks both an ordinary swimmer and diving Tidefo
   }
 });
 
-test('solo valve inputs independently select fill, hold and drain',()=>{
+test('the upper sluice valve toggles draining and filling in one press',()=>{
   const {templeWorld,step}=simulation(explorer(70*16,39*16));
   step({upPressed:true});
   assert.equal(templeWorld.state.modes['sluice-valve'],'fill');
   const upper=simulation(explorer(102*16,42*16),templeWorld);
   upper.step({upPressed:true});
-  assert.equal(templeWorld.state.modes['sluice-valve'],'hold');
+  assert.equal(templeWorld.state.modes['sluice-valve'],'drain');
   upper.step();
   upper.step({upPressed:true});
-  assert.equal(templeWorld.state.modes['sluice-valve'],'drain');
+  assert.equal(templeWorld.state.modes['sluice-valve'],'fill');
 });
 
 test('sluice raft is boardable from water and can deliver the explorer to its upper control',()=>{
@@ -329,7 +363,7 @@ test('sluice raft is boardable from water and can deliver the explorer to its up
   }
   assert.ok(ledge,'Riding the raft must make the drain-control balcony reachable');
   step({upPressed:true});
-  assert.equal(templeWorld.state.modes['sluice-valve'],'hold');
+  assert.equal(templeWorld.state.modes['sluice-valve'],'drain');
 });
 
 test('head raft can be boarded and delivers the player to the cascade release ledge',()=>{
@@ -581,7 +615,7 @@ test('one explorer travels from the actual spawn through every required mechanis
     Math.hypot(player.x-drain.at[0]*16,
       player.y-drain.at[1]*16)<=drain.reach-5,
     i=>({right:true,jump:i%58<23,jumpPressed:i%58===0}));
-  step({upPressed:true});step();step({upPressed:true});
+  step({upPressed:true});
   assert.equal(templeWorld.state.modes['sluice-valve'],'drain');
   reach('socket latched',400,
     ()=>templeWorld.state.gates['sluice-gate'],()=>({}));
