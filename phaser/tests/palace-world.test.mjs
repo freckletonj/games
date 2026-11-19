@@ -59,6 +59,18 @@ function configuredState(){
   return s;
 }
 
+test('the first visible emitter, its dial and the real mirror share one view',()=>{
+  const emitter=palace.lightSources.find(s=>s.id==='atrium-sun');
+  const dial=palace.controlStations.find(s=>s.id==='atrium-dial');
+  const mirror=palace.mirrors.find(m=>m.id==='atrium-mirror');
+  const x=[emitter.at[0],dial.at[0],mirror.at[0]];
+  assert.ok(Math.max(...x)-Math.min(...x)<30,
+    'First-time players need to see where the ray comes from');
+  const ray=tracePalaceBeams(palace,createPalaceState(palace));
+  assert.equal(ray.segments.find(segment=>segment.source==='atrium-sun').hit,
+    'atrium-mirror','The dial should visibly change the incoming beam');
+});
+
 test('all six visible control stations operate exactly one real mechanism',()=>{
   assert.equal(palace.controlStations.length,6);
   const names=palace.controlStations.map(s=>s.id);

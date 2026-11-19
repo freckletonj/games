@@ -28,7 +28,7 @@ function groundRoute(jump,humanCount=1){
   const state=createRaceWorld(race);
   stepRaceWorld(race,state,players);
   assert.equal(state.state.phase,'groundScroll');
-  for(let tick=0;tick<1100;tick++){
+  for(let tick=0;tick<1200;tick++){
     for(const player of players){
       const mount=player.mount;
       const near=state.hazards.some(hazard=>{
@@ -41,12 +41,15 @@ function groundRoute(jump,humanCount=1){
         return distance>=from&&distance<=to;
       });
       const jumpPressed=jump&&mount.grounded&&near;
+      if(jumpPressed)player.jumpHold=14;
+      const holding=(player.jumpHold??0)>0;
+      player.jumpHold=Math.max(0,(player.jumpHold??0)-1);
       stepMountedMotion(mount,{right:true,left:false,down:false,
-        jump:jumpPressed,jumpPressed},1,world);
+        jump:holding,jumpPressed},1,world);
       player.x=mount.x;player.y=mount.y;
     }
     const result=stepRaceWorld(race,state,players);
-    if(result.restarted)
+    if(result.hit)
       return {status:'collision',hazard:result.hit,tick,players,state};
     if(state.state.phase==='sanctuaryStop')
       return {status:'sanctuary',tick,players,state};
@@ -58,8 +61,8 @@ test('a no-jump Unicorn run hits an authored obstacle and resets the stage',()=>
   const failed=groundRoute(false);
   assert.equal(failed.status,'collision');
   assert.ok(failed.hazard==='root-trainer'||failed.hazard==='bridge-gap');
-  assert.equal(failed.state.state.phase,'waitingForUnicorns');
-  assert.equal(failed.state.state.anchor,512);
+  assert.equal(failed.state.state.phase,'crash');
+  assert.equal(failed.state.state.crash.hit,failed.hazard);
 });
 
 test('one Unicorn can jump the compiled ground corridor to the Pegasus sanctuary',()=>{
@@ -70,7 +73,7 @@ test('one Unicorn can jump the compiled ground corridor to the Pegasus sanctuary
   assert.ok(passed.players[0].mount.x>race.hazards.find(h=>
     h.id==='crossing-cart').home[0]*16);
   assert.equal(passed.state.state.checkpoint,'sanctuary');
-  assert.ok(passed.tick<1100);
+  assert.ok(passed.tick<1200);
   const repeated=groundRoute(true);
   assert.equal(repeated.status,'sanctuary');
   assert.equal(repeated.tick,passed.tick);

@@ -27,6 +27,29 @@ test('unicorn accelerates on ground and its jump remains single-launch',()=>{
   assert.equal(result.launch,null,'unicorn should not air-jump');
 });
 
+test('Unicorn hop height varies with how long Jump is held',()=>{
+  const jumps=[1,3,6,9,12,20].map(hold=>{
+    const m=horse('unicorn');
+    let apex=m.y,landed=false;
+    for(let tick=0;tick<90;tick++){
+      stepMountedMotion(m,{...idle,jumpPressed:tick===0,
+        jump:tick<hold},1,{...world,jumpScale:1.15});
+      apex=Math.min(apex,m.y);
+      if(tick>0&&m.grounded){landed=true;break;}
+    }
+    assert.equal(landed,true,'All jump arcs should recover onto the ground');
+    return 500-apex;
+  });
+  assert.ok(jumps[0]>=20&&jumps[0]<35,'A tap should clear a small root');
+  assert.ok(jumps[4]>90&&jumps[4]<105,
+    'A full hold should reach the upper woodland route');
+  for(let i=1;i<jumps.length;i++)
+    assert.ok(jumps[i]>=jumps[i-1],
+      'More hold time must never create a shorter jump');
+  assert.ok(new Set(jumps.map(n=>Math.round(n))).size>=5,
+    'The animal needs intermediate heights, not just short/full impulses');
+});
+
 test('Pegasus takes off, wingbeats on cooldown and descends on Down',()=>{
   const m=horse('pegasus');
   let result=stepMountedMotion(m,{...idle,jumpPressed:true},1,world);

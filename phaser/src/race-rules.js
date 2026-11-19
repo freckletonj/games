@@ -27,6 +27,8 @@ export function raceHazardPose(hazard,tick){
   return pose;
 }
 
+export const CRASH_TICKS=54; // 0.9 seconds to see the impact before recall
+
 export function createRaceState(spec){
   return {phase:'waitingForUnicorns',anchor:spec.racePhases[0].anchor,
     tick:0,checkpoint:'corral',activeIds:[],restarted:false};
@@ -43,7 +45,16 @@ export function restartRace(spec,state){
 
 export function stepRace(spec,state,players,{paused=false,failed=false,recall=false}={}){
   if(paused)return state;
-  if(failed||recall)return restartRace(spec,state);
+  if(recall)return restartRace(spec,state);
+  if(state.phase==='crash'){
+    if(state.crash.remaining<=1)return restartRace(spec,state);
+    return {...state,crash:{...state.crash,
+      remaining:state.crash.remaining-1},restarted:false};
+  }
+  if(failed)return {...state,phase:'crash',crash:{
+    fromPhase:state.phase,hit:failed.id??null,
+    x:failed.x??null,y:failed.y??null,
+    remaining:CRASH_TICKS},restarted:false};
   const humans=players.filter(player=>!player.assist);
   const activeIds=humans.map(player=>player.id).sort((a,b)=>a-b);
   // A mid-scroll join/drop-out resets the whole party at its safe stop.
@@ -57,7 +68,7 @@ export function stepRace(spec,state,players,{paused=false,failed=false,recall=fa
     // and finish instead of starting/stopping at full scroll speed.
     const smooth=t=>t*t*(3-2*t);
     const enter=.55+.45*smooth(Math.min(1,(state.tick+1)/145));
-    const leave=.55+.45*smooth(Math.min(1,(phase.to-state.anchor)/260));
+    const leave=.22+.78*smooth(Math.min(1,(phase.to-state.anchor)/180));
     const anchor=Math.min(phase.to,state.anchor+phase.speed*enter*leave);
     if(anchor===phase.to){
       const next=phase.next;

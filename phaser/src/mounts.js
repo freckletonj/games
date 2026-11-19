@@ -36,11 +36,20 @@ export function stepMountedMotion(m,actions,step,world){
   if(actions.jumpPressed){
     if(m.grounded){
       m.vy=settings.jump*(world.jumpScale??1);m.grounded=false;m.flaps=1;m.flapWait=8;
+      m.jumpCut=false;
       launch='takeoff';
     }else if(settings.kind==='flight'&&m.flapWait===0){
       m.vy=Math.min(m.vy,-5.4);m.flapWait=8;m.flaps++;
       launch='wingbeat';
     }
+  }
+  // A Unicorn has a controllable jump arc: tap for a low clearance hop,
+  // hold for the full vault. The cut applies on release, not at takeoff,
+  // so buffered one-tick button edges still launch normally.
+  if(settings.kind==='ground'&&!m.grounded&&!m.jumpCut&&
+     !actions.jump&&!actions.jumpPressed&&m.vy< -3.8){
+    m.vy=-3.8;
+    m.jumpCut=true;
   }
   m.vy+=(settings.kind==='flight'?.28:.43)*step;
   if(settings.kind==='flight'&&!m.grounded){
@@ -70,7 +79,7 @@ export function stepMountedMotion(m,actions,step,world){
   const landing=landingY(prior,m.y,m.vy,m.grounded,m.x,
     world.groundAt(m.x),world.platformSegments,world.tile);
   if(landing!==null){
-    m.y=landing;m.vy=0;m.grounded=true;m.flaps=0;
+    m.y=landing;m.vy=0;m.grounded=true;m.flaps=0;m.jumpCut=false;
   }else m.grounded=false;
   const action=m.grounded?(dx?'run':'idle'):
     m.kind==='pegasus'&&m.vy<0?'flap':m.vy<0?'jump':'glide';

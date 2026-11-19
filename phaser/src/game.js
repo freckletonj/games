@@ -48,7 +48,7 @@ import {createTempleScene,drawTempleScene} from './temple-scene.js';
 import {createPalaceWorld,stepPalaceWorld,restorePalaceWorld,
   palaceBlockHorizontal,palaceSteepBanks} from './palace-world.js';
 import {createPalaceScene,drawPalaceScene} from './palace-scene.js';
-import {createRaceWorld,stepRaceWorld,raceCameraFrame} from './race-world.js';
+import {createRaceWorld,stepRaceWorld,raceCameraFrame,raceHazardContact} from './race-world.js';
 import {createRaceScene,drawRaceScene} from './race-scene.js';
 import {readProgress,playChapter,completeChapter,writeProgress,browserProgressStorage} from './progress.js';
 
@@ -1539,8 +1539,9 @@ class Wonderwood extends Phaser.Scene {
       if(mount.kind!==candidates[0].kind)continue;
       mount.x=mount.homeX;
       mount.y=this.groundAt(mount.x);
-      mount.vx=0;mount.vy=0;mount.grounded=true;
+      mount.vx=0;mount.vy=0;mount.grounded=true;mount.jumpCut=false;
       mount.flaps=0;mount.flapWait=0;mount.rider=null;
+      mount.visual.clearTint().setAlpha(1).setRotation(0);
     }
     for(const player of this.players){
       if(player.assist)continue;
@@ -1549,7 +1550,23 @@ class Wonderwood extends Phaser.Scene {
       player.checkpoint={x,y:this.groundAt(x)};
       this.recall(player);
     }
+    for(const player of this.players)
+      player.visual.clearTint().setAlpha(1).setRotation(0);
     this.raceRecalling=false;
+  }
+
+  playRaceImpact(hit){
+    const hazard=this.raceWorld.hazards.find(h=>h.id===hit);
+    const player=this.players.find(p=>p.mount&&hazard&&
+      raceHazardContact(hazard,p.mount));
+    this.cameras.main.shake(150,.004);
+    if(!player)return;
+    const mount=player.mount;
+    mount.visual.setTint(0xffc0ac);
+    player.visual.setTint(0xffc0ac);
+    this.tweens.add({targets:[mount.visual,player.visual],
+      y:'-=13',angle:-15*mount.face,duration:210,hold:150,yoyo:true,
+      ease:'Cubic.easeOut'});
   }
 
   recall(p){
@@ -2099,6 +2116,16 @@ class Wonderwood extends Phaser.Scene {
         if(this.walkThroughGate())return;
         continue;
       }
+      // Preserve the exact obstacle, rider pose and camera for the impact
+      // animation. Do not advance mounts or detect a second collision while
+      // the party is waiting to be safely recalled.
+      if(this.raceWorld?.state.phase==='crash'){
+        const crash=stepRaceWorld(this.level.raceSpec,
+          this.raceWorld,this.players);
+        if(crash.restarted)this.resetRaceParty();
+        this.updateRaceCamera();
+        continue;
+      }
       for(const item of this.items){
         if(item.kind==='snack'&&item.used){
           item.respawn-=step/60;
@@ -2148,6 +2175,7 @@ class Wonderwood extends Phaser.Scene {
         const result=stepRaceWorld(this.level.raceSpec,
           this.raceWorld,this.players);
         if(result.restarted)this.resetRaceParty();
+        if(result.hit)this.playRaceImpact(result.hit);
         if(result.transition&&result.state.phase==='sanctuaryStop'){
           const x=this.level.raceSpec.recovery.sanctuaryCheckpoint*TILE;
           this.shared.checkpoint={x,y:this.groundAt(x)};
@@ -2178,7 +2206,7 @@ class Wonderwood extends Phaser.Scene {
     if(this.templeArt)drawTempleScene(this.templeArt,this.level.templeSpec,
       this.templeWorld,x=>this.groundAt(x),this.geometryOverlay.visible);
     if(this.palaceScene)drawPalaceScene(this.palaceScene,
-      this.level.palaceSpec,this.palaceWorld);
+      this.level.palaceSpec,this.palaceWorld,this.players);
     if(this.raceScene)drawRaceScene(this.raceScene,
       this.level.raceSpec,this.raceWorld,this.players);
     if(this.deckOverlay){
@@ -2257,33 +2285,16 @@ class Wonderwood extends Phaser.Scene {
       !templeTailReady?
         'Bridge A is solid. Wait for the downstream raft and Bridge B to rise before crossing.':
         'Both bridges are solid. Jump from A to the raft, then from the raft to B.';
-    const palaceState=this.palaceWorld?.state;
-    const palaceCharge=palaceState?.chargeTicks['observatory-target']??0;
-    const palaceCap=this.level.palaceSpec?.beamTargets.find(t=>
-      t.id==='observatory-target')?.chargeTicks??1;
-    const palaceHint=!palaceState?'':lead.x<76*TILE?
-      palaceState.charged['atrium-target']?
-        'Blue receiver saved ✓ · Cross the solid bridge to the next room.':
-        'Follow the blue ray. Turn the dial (↑) or hit it with an orb (G) to reach the receiver.':
-      lead.x<145*TILE?
-        palaceState.charged['gallery-target']?
-          'Pink light saved ✓ · Ascend all six crystal steps; the path will stay solid.':
-        palaceState.mirrors['gallery-mirror-a']!==-45?
-          'Pink ray · Try the first mirror and watch where the beam stops.':
-        palaceState.mirrors['gallery-mirror-b']!==-45?
-          'First bounce aligned · Redirect the second reflection toward the receiver.':
-        palaceState.shutters['gallery-shutter']==='closed'?
-          'Two bounces aligned · The curtain blocks the beam. Open it.':
-          'Pink receiver awaits light · Watch the traced beam and emerging stair.':
-      palaceState.charged['observatory-target']?
-        'Gold light saved ✓ · Follow all eight solid crystal steps up to the Light.':
-      palaceState.mirrors['observatory-prism']!==-45?
-        'Gold prism · Cycle its three detents to aim sunlight upward.':
-      palaceState.shutters['eclipse-shutter']==='closed'?
-        'Gold beam aligned · Open the eclipse curtain with ↑.':
-        'Capacitor '+Math.round(100*palaceCharge/palaceCap)+
-          '% · The moving eclipse casts a shadow. Clear light adds charge; progress is saved.';
+    // The optical devices themselves carry the teaching: reflected rays,
+    // receiver charge, bridge previews and a small prompt at the nearest dial.
+    // Avoid a screen-wide puzzle walkthrough that covers those devices.
+    const palaceHint=this.palaceWorld&&this.level.palaceSpec.controlStations
+      .some(station=>this.players.some(p=>!p.assist&&
+        Math.hypot(p.x-station.at[0]*TILE,p.y-station.at[1]*TILE)<55))?
+      '↑ / D-pad Up · Turn nearby optic':'';
     const leadHint=this.templeWorld?templeHint:this.palaceWorld?palaceHint:
+      this.raceWorld?.state.phase==='crash'?
+      'Impact · Recovering at the last safe camp…':
       this.raceWorld?.state.phase==='waitingForUnicorns'?
       'Give a Unicorn two berry treats (F), then press T to ride. Both riders must mount.':
       this.raceWorld?.state.phase==='waitingForPegasi'?

@@ -160,7 +160,7 @@ test('race stops at sanctuary and requires every Pegasus for the second stage',(
   let state=createRaceState(raceSpec);
   state=stepRace(raceSpec,state,players);
   assert.equal(state.phase,'groundScroll');
-  for(let i=0;i<1000&&state.phase==='groundScroll';i++)
+  for(let i=0;i<1200&&state.phase==='groundScroll';i++)
     state=stepRace(raceSpec,state,players);
   assert.equal(state.phase,'sanctuaryStop');
   assert.equal(state.anchor,184*16);
@@ -202,6 +202,11 @@ test('hazards and race recovery replay exactly and reset both riders together',(
   assert.equal(state.restarted,true);
   assert.equal(state.anchor,32*16);
   state=stepRace(raceSpec,route(),players,{failed:true});
+  assert.equal(state.phase,'crash');
+  assert.equal(state.crash.remaining,54);
+  assert.equal(state.restarted,false);
+  for(let i=0;i<54;i++)state=stepRace(raceSpec,state,players);
+  assert.equal(state.phase,'waitingForUnicorns');
   assert.equal(state.anchor,32*16);
   assert.equal(state.tick,0);
   assert.deepEqual(state,stepRace(raceSpec,route(),players,{recall:true}));

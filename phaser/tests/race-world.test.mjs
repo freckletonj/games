@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import race from '../levels/skybound-stampede.json' with {type:'json'};
-import {stepRace} from '../src/race-rules.js';
+import {stepRace,createRaceState,CRASH_TICKS,raceHazardPose} from '../src/race-rules.js';
 import {stepMountedMotion,MOUNTS} from '../src/mounts.js';
 import {createRaceWorld,stepRaceWorld,raceRiderLeftBehind,
   raceCameraFrame,raceHazardContact} from '../src/race-world.js';
@@ -55,12 +55,13 @@ test('mount acceleration and 60 Hz progress retain both riders in camera limits'
   const state=createRaceWorld(trainingRace);
   stepRaceWorld(trainingRace,state,riders);
   let observedHazard=false,observedClamp=false;
-  for(let tick=0;tick<1000&&state.state.phase==='groundScroll';tick++){
+  for(let tick=0;tick<1200&&state.state.phase==='groundScroll';tick++){
     advanceMounted(riders);
     const next=stepRaceWorld(trainingRace,state,riders);
     assert.equal(next.restarted,false,'Both riders stay inside progress window');
     assert.ok(state.state.anchor>=512&&state.state.anchor<=2944);
-    assert.ok(riders.every(p=>p.mount.x<=state.state.anchor+race.camera.ahead+.01));
+    if(state.state.phase==='groundScroll')
+      assert.ok(riders.every(p=>p.mount.x<=state.state.anchor+race.camera.ahead+.01));
     observedHazard||=state.hazards.length>0;
     observedClamp||=riders.some(p=>Math.abs(
       p.mount.x-(state.state.anchor+race.camera.ahead))<.001);
@@ -79,7 +80,7 @@ test('midpoint stays stopped until every human rides a Pegasus, not cloud assist
   const p1=rider(0,'unicorn',232),p2=rider(1,'unicorn',408);
   const state=createRaceWorld(trainingRace);
   stepRaceWorld(trainingRace,state,[p1,p2]);
-  for(let i=0;i<1000&&state.state.phase==='groundScroll';i++){
+  for(let i=0;i<1200&&state.state.phase==='groundScroll';i++){
     advanceMounted([p1,p2]);
     stepRaceWorld(trainingRace,state,[p1,p2]);
   }
@@ -117,16 +118,19 @@ test('a missing rider is a joint restart instead of the follow-bubble shortcut',
   }
   p2.bubble={};
   const result=stepRaceWorld(race,state,[p1,p2]);
-  assert.equal(result.restarted,true);
-  assert.equal(result.state.phase,'waitingForUnicorns');
-  assert.equal(result.state.anchor,512);
+  assert.equal(result.restarted,false);
+  assert.equal(result.state.phase,'crash');
+  assert.equal(result.state.crash.fromPhase,'groundScroll');
+  for(let i=0;i<CRASH_TICKS;i++)stepRaceWorld(race,state,[p1,p2]);
+  assert.equal(state.state.phase,'waitingForUnicorns');
+  assert.equal(state.state.anchor,512);
   assert.deepEqual(state.hazards,[]);
   const again=createRaceWorld(race);
   stepRaceWorld(race,again,[p1,{...p2,bubble:null}]);
   again.state={...again.state,anchor:1000};
   assert.equal(raceRiderLeftBehind(race,again.state,[p1,p2]),true);
   const back=stepRaceWorld(race,again,[p1,p2]);
-  assert.equal(back.restarted,true);
+  assert.equal(back.state.phase,'crash');
 });
 
 test('moving hazards use reproducible world-space poses independent of sprites',()=>{
@@ -177,6 +181,46 @@ test('camera framing is continuous at corral, sanctuary and finish stops',()=>{
   assert.equal(beforeFinish.x,atFinish.x);
 });
 
+test('the ground camera slows at the sanctuary instead of rushing to catch up',()=>{
+  const player=rider(0,'unicorn',232);
+  let state=stepRace(race,createRaceState(race),[player]);
+  const samples=[];
+  for(let tick=0;tick<1200&&state.phase==='groundScroll';tick++){
+    const before=raceCameraFrame(race,state,[player]).x;
+    state=stepRace(race,state,[player]);
+    const after=raceCameraFrame(race,state,[player]).x;
+    samples.push(after-before);
+  }
+  assert.equal(state.phase,'sanctuaryStop');
+  const early=samples.slice(780,810).reduce((a,b)=>a+b,0)/30;
+  const late=samples.slice(-25).reduce((a,b)=>a+b,0)/25;
+  assert.ok(early>late*2,
+    'Late camera velocity should fall substantially, not accelerate');
+  assert.ok(samples.slice(-50).every(delta=>delta>=0&&delta<2),
+    'The final approach cannot include a last-minute camera warp');
+});
+
+test('the old woodland stage remains visible at the Pegasus sanctuary',()=>{
+  const player=rider(0,'unicorn',184*16-25);
+  const world=createRaceWorld(race);
+  stepRaceWorld(race,world,[player]);
+  world.state={...world.state,phase:'groundScroll',anchor:2944-.2,
+    tick:950,activeIds:[0]};
+  world.hazards=race.hazards.filter(h=>h.stage==='groundScroll').map(h=>({
+    id:h.id,kind:h.kind,size:h.size,warningDistance:h.warningDistance,
+    ...raceHazardPose(h,950)}));
+  const course=world.hazards.map(h=>({id:h.id,x:h.x,y:h.y}));
+  stepRaceWorld(race,world,[player]);
+  assert.equal(world.state.phase,'sanctuaryStop');
+  assert.deepEqual(world.hazards,[],
+    'Completed obstacles cannot still collide during Pegasus selection');
+  assert.deepEqual(world.retiredHazards.map(h=>({id:h.id,x:h.x,y:h.y})),course);
+  stepRaceWorld(race,world,[player]);
+  assert.equal(world.state.phase,'waitingForPegasi');
+  assert.deepEqual(world.retiredHazards.map(h=>({id:h.id,x:h.x,y:h.y})),course,
+    'The previous course must not disappear between stages');
+});
+
 test('authored race hazards distinguish a grounded hit from a cleared jump',()=>{
   const root=race.hazards.find(h=>h.id==='root-trainer');
   const gap=race.hazards.find(h=>h.id==='bridge-gap');
@@ -195,7 +239,7 @@ test('authored race hazards distinguish a grounded hit from a cleared jump',()=>
     {x:flying.x,y:flying.y+150,grounded:false}),false);
 });
 
-test('an actual rider touching an authored obstacle resets the whole race',()=>{
+test('an actual obstacle remains visible during a brief crash before camp reset',()=>{
   const root=race.hazards.find(h=>h.id==='root-trainer');
   const player=rider(0,'unicorn',232);
   const state=createRaceWorld(race);
@@ -207,7 +251,20 @@ test('an actual rider touching an authored obstacle resets the whole race',()=>{
   player.x=player.mount.x;
   const hit=stepRaceWorld(race,state,[player]);
   assert.equal(hit.hit,'root-trainer');
-  assert.equal(hit.restarted,true);
+  assert.equal(hit.restarted,false);
+  assert.equal(state.state.phase,'crash');
+  assert.equal(state.state.crash.remaining,CRASH_TICKS);
+  assert.ok(state.hazards.some(h=>h.id==='root-trainer'),
+    'The object that caused the failure must remain visible');
+  const frozenAnchor=state.state.anchor;
+  for(let i=1;i<CRASH_TICKS;i++){
+    const frame=stepRaceWorld(race,state,[player]);
+    assert.equal(frame.restarted,false);
+    assert.equal(frame.state.anchor,frozenAnchor);
+    assert.ok(state.hazards.some(h=>h.id==='root-trainer'));
+  }
+  const reset=stepRaceWorld(race,state,[player]);
+  assert.equal(reset.restarted,true);
   assert.equal(state.state.phase,'waitingForUnicorns');
   assert.equal(state.state.anchor,512);
   assert.deepEqual(state.hazards,[]);
@@ -252,9 +309,11 @@ test('open-air Pegasus route recalls the party instead of allowing a ground shor
   player.mount.y=(race.flightVoid.fallY+.25)*16;
   player.y=player.mount.y;
   const result=stepRaceWorld(race,state,[player]);
-  assert.equal(result.restarted,true);
-  assert.equal(result.state.phase,'waitingForPegasi');
-  assert.equal(result.state.checkpoint,'sanctuary');
+  assert.equal(result.restarted,false);
+  assert.equal(result.state.phase,'crash');
+  for(let i=0;i<CRASH_TICKS;i++)stepRaceWorld(race,state,[player]);
+  assert.equal(state.state.phase,'waitingForPegasi');
+  assert.equal(state.state.checkpoint,'sanctuary');
 });
 
 test('the storm canyon specifies a void below the flight path',()=>{
@@ -285,7 +344,8 @@ test('the chaser waits until the rider is genuinely offscreen, then allows recov
     const result=stepRaceWorld(race,world,[player]);
     assert.equal(result.restarted,false,'The rider has time to recover');
   }
-  assert.equal(stepRaceWorld(race,world,[player]).restarted,true);
+  assert.equal(stepRaceWorld(race,world,[player]).state.phase,'crash');
+  for(let i=0;i<CRASH_TICKS;i++)stepRaceWorld(race,world,[player]);
   assert.equal(world.state.phase,'waitingForUnicorns');
 });
 
@@ -337,8 +397,9 @@ test('both Pegasus storm cloud edges recall a rider at the real authored boundar
     world.state={...world.state,phase:'flightScroll',anchor:4100,
       checkpoint:'sanctuary',activeIds:[0],tick:140};
     const result=stepRaceWorld(race,world,[player]);
-    assert.equal(result.restarted,true,edge+' clouds must physically fail');
-    assert.equal(result.state.phase,'waitingForPegasi');
+    assert.equal(result.state.phase,'crash',edge+' clouds must physically fail');
+    for(let i=0;i<CRASH_TICKS;i++)stepRaceWorld(race,world,[player]);
+    assert.equal(world.state.phase,'waitingForPegasi');
   }
 });
 

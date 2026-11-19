@@ -3,7 +3,7 @@ import {createRaceState,raceHazardPose,stepRace} from './race-rules.js';
 const SCROLLING=new Set(['groundScroll','flightScroll']);
 
 export function createRaceWorld(spec){
-  return {state:createRaceState(spec),hazards:[],offscreenTicks:0};
+  return {state:createRaceState(spec),hazards:[],retiredHazards:[],offscreenTicks:0};
 }
 
 export function raceRiderLeftBehind(spec,state,players){
@@ -48,6 +48,15 @@ export function raceHazardContact(hazard,mount){
 
 export function stepRaceWorld(spec,world,players,{paused=false,failed=false,recall=false}={}){
   const previous=world.state.phase;
+  if(previous==='crash'){
+    world.state=stepRace(spec,world.state,players,{paused,recall});
+    if(world.state.restarted){
+      world.hazards=[];world.offscreenTicks=0;
+      if(world.state.checkpoint!=='sanctuary')world.retiredHazards=[];
+    }
+    return {state:world.state,transition:previous!==world.state.phase,
+      restarted:world.state.restarted,hit:null};
+  }
   const offscreen=raceRiderLeftBehind(spec,world.state,players);
   // The rescue zone is beyond the visible left edge, not the abstract
   // progress anchor. Let a rider recover from a momentary camera straggle.
@@ -66,10 +75,17 @@ export function stepRaceWorld(spec,world,players,{paused=false,failed=false,reca
     p.mount.x>=voidArea.from*16&&p.mount.x<voidArea.to*16&&
     (p.mount.y>=voidArea.fallY*16||
       p.mount.y<=voidArea.ceilingY*16));
+  const impact=failed?{id:'course-failure'}:leftBehind?
+    {id:'fell-behind'}:fell?{id:'storm-clouds'}:false;
   world.state=stepRace(spec,world.state,players,{
-    paused,failed:failed||leftBehind||fell,recall
+    paused,failed:impact,recall
   });
-  if(world.state.restarted)world.offscreenTicks=0;
+  if(previous==='groundScroll'&&world.state.phase==='sanctuaryStop')
+    world.retiredHazards=world.hazards.map(h=>({...h}));
+  if(world.state.restarted){
+    world.offscreenTicks=0;
+    if(world.state.checkpoint!=='sanctuary')world.retiredHazards=[];
+  }
   if(!paused&&!world.state.restarted)constrainRaceRiders(spec,world.state,players);
   const scrolling=SCROLLING.has(world.state.phase);
   world.hazards=scrolling?spec.hazards.filter(h=>h.stage===world.state.phase)
@@ -82,8 +98,8 @@ export function stepRaceWorld(spec,world,players,{paused=false,failed=false,reca
     !player.assist&&player.mount&&
     raceHazardContact(hazard,player.mount)));
   if(collision){
-    world.state=stepRace(spec,world.state,players,{failed:true});
-    world.hazards=[];
+    world.state=stepRace(spec,world.state,players,{failed:collision});
+    // Keep the collider on screen throughout the short crash animation.
   }
   return {state:world.state,transition:previous!==world.state.phase,
     restarted:world.state.restarted,hit:collision?.id??null};
@@ -100,17 +116,22 @@ export function raceCameraFrame(spec,state,players,viewport={width:960,height:54
   const flight=spec.racePhases.find(phase=>phase.id==='flightScroll');
   const finish=spec.racePhases.find(phase=>phase.id==='finished').anchor+32;
   let x=corral;
-  if(state.phase==='groundScroll'){
+  const phase=state.phase==='crash'?state.crash.fromPhase:state.phase;
+  if(phase==='groundScroll'){
     const progress=(state.anchor-ground.from)/(ground.to-ground.from);
     const plain=corral+state.anchor-ground.from;
-    const blend=Math.max(0,Math.min(1,(progress-.75)/.25));
+    // Spread camera alignment over the whole run, not the last quarter.
+    // A late correction previously *accelerated* the viewport at the gate
+    // while the race itself decelerated.
+    const t=Math.max(0,Math.min(1,progress));
+    const blend=t*t*t*(t*(t*6-15)+10);
     x=plain+blend*(sanctuary-(corral+ground.to-ground.from));
-  }else if(state.phase==='flightScroll'){
+  }else if(phase==='flightScroll'){
     const progress=(state.anchor-flight.from)/(flight.to-flight.from);
     x=sanctuary+(finish-sanctuary)*progress;
-  }else if(state.phase==='sanctuaryStop'||state.phase==='waitingForPegasi')
+  }else if(phase==='sanctuaryStop'||phase==='waitingForPegasi')
     x=sanctuary;
-  else if(state.phase==='finished')x=finish;
+  else if(phase==='finished')x=finish;
   const human=players.filter(player=>!player.assist);
   const feet=human.map(player=>player.mount??player);
   const average=feet.length?
@@ -124,5 +145,5 @@ export function raceCameraFrame(spec,state,players,viewport={width:960,height:54
       viewport.width/(spread+150)));
   // In flight, keep the dangerous lower cloudline near the viewport bottom
   // rather than framing an empty sky above the rider.
-  return {x,y:average-(state.phase==='flightScroll'?0:70),zoom};
+  return {x,y:average-(phase==='flightScroll'?0:70),zoom};
 }

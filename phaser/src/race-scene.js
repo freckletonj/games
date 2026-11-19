@@ -1,3 +1,4 @@
+import {CRASH_TICKS} from './race-rules.js';
 // Temporary geometry-first course guides; hazards and ledges are drawn from
 // exactly the same world-space data that collision uses.
 const TILE=16;
@@ -59,8 +60,8 @@ export function drawRaceScene(art,spec,world,players){
   const g=art.graphics;
   g.clear();
   const voidArea=spec.flightVoid;
-  if(voidArea&&(world.state.phase==='flightScroll'||
-      world.state.phase==='waitingForPegasi')){
+  const phase=world.state.phase==='crash'?world.state.crash.fromPhase:world.state.phase;
+  if(voidArea&&(phase==='flightScroll'||phase==='waitingForPegasi')){
     const left=voidArea.from*TILE,width=(voidArea.to-voidArea.from)*TILE;
     const ceiling=voidArea.ceilingY*TILE,clouds=voidArea.fallY*TILE;
     // World-space cloud banks: the visible edges ARE the fail thresholds.
@@ -80,20 +81,17 @@ export function drawRaceScene(art,spec,world,players){
       g.fillStyle(0xd5b6e8,.33).fillCircle(x+36,ceiling-34+wave,47);
     }
   }
-  const flightPhase=world.state.phase==='flightScroll'||
-    world.state.phase==='waitingForPegasi';
+  const flightPhase=phase==='flightScroll'||phase==='waitingForPegasi';
   for(const label of art.dangerLabels)label.setVisible(flightPhase);
-  const groundPhase=world.state.phase==='groundScroll';
-  if(groundPhase||world.state.phase==='waitingForUnicorns'){
-    // Clearly mark the alternate high path even when V debugging is off.
-    g.fillStyle(0x8de8f3,.30).lineStyle(3,0xa2f3ff,.95);
-    for(const [x,y,length] of spec.ledges){
-      if(x>174)continue;
-      g.fillRect(x*TILE,y*TILE,length*TILE,15);
-      g.strokeRect(x*TILE,y*TILE,length*TILE,15);
-    }
+  const groundPhase=phase==='groundScroll';
+  // Static route geometry does not vanish at the Pegasus checkpoint.
+  g.fillStyle(0x8de8f3,.30).lineStyle(3,0xa2f3ff,.95);
+  for(const [x,y,length] of spec.ledges){
+    if(x>174)continue;
+    g.fillRect(x*TILE,y*TILE,length*TILE,15);
+    g.strokeRect(x*TILE,y*TILE,length*TILE,15);
   }
-  for(const hazard of world.hazards){
+  for(const hazard of [...world.retiredHazards,...world.hazards]){
     const [w,h]=hazard.size;
     if(['falling-boulder','storm-shelf','storm-gate'].includes(hazard.kind)){
       g.fillStyle(hazard.kind==='falling-boulder'?0x9a6d65:0x524c68,.97);
@@ -117,8 +115,7 @@ export function drawRaceScene(art,spec,world,players){
     g.lineStyle(3,0xffd591).lineBetween(warnX+4,warnY-17,warnX+4,warnY-9);
     g.fillStyle(0xffd591).fillCircle(warnX+4,warnY-4,2);
   }
-  if(voidArea&&(world.state.phase==='flightScroll'||
-      world.state.phase==='waitingForPegasi')){
+  if(voidArea&&(phase==='flightScroll'||phase==='waitingForPegasi')){
     g.lineStyle(3,0xffb890,.95);
     for(let x=voidArea.from*TILE+50;x<voidArea.to*TILE;x+=390){
       g.lineBetween(x,voidArea.fallY*TILE-42,x,voidArea.fallY*TILE-11);
@@ -131,7 +128,21 @@ export function drawRaceScene(art,spec,world,players){
     sign.setVisible(groundPhase&&world.state.anchor/TILE<
       choice.to+15&&world.state.anchor/TILE>choice.from-28);
   });
-  if(groundPhase||world.state.phase==='flightScroll'){
+  if(world.state.phase==='crash'){
+    const impact=world.state.crash;
+    const passed=CRASH_TICKS-impact.remaining;
+    const hazard=world.hazards.find(h=>h.id===impact.hit);
+    if(hazard){
+      const radius=18+Math.min(passed,25)*1.6;
+      g.lineStyle(5,0xffe3a6,Math.max(.08,1-passed/40))
+        .strokeCircle(hazard.x,hazard.y,radius);
+      g.lineStyle(3,0xff736d,.92)
+        .strokeRect(hazard.x-hazard.size[0]/2-5,
+          hazard.y-hazard.size[1]/2-5,
+          hazard.size[0]+10,hazard.size[1]+10);
+    }
+    art.notice.setVisible(false);
+  }else if(groundPhase||phase==='flightScroll'){
     const rider=players.find(p=>!p.assist&&p.mount);
     const next=world.hazards.filter(h=>rider&&h.x>rider.mount.x)
       .sort((a,b)=>a.x-b.x)[0];
