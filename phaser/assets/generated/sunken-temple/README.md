@@ -36,6 +36,19 @@ was originally an image-model presentation sheet with a light background;
 its sprites were independently cropped and alpha-matted before registration.
 Fine edge cleanup and final human aesthetic approval are still required.
 
+## Editable image-model source
+
+The original model-generated imagery is retained in
+`sources/painting-source.webp` and
+`sources/mechanism-source-sheet.webp` (both 2172 × 724).
+These are **source references only**, not game textures. The second image
+contains the model's visual layout and object examples; only isolated,
+manually matted object cutouts are registered at runtime. Keep the sources
+for future overlap-conditioned painting refinement, sprite-edge cleanup and
+repacking. The scene input/state guide and precise world-coordinate crop
+plan remain in `dist/future-chapter-guides/sunken-temple/` after running
+the exporter.
+
 ## Validation
 
 Run:
