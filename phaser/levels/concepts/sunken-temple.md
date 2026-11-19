@@ -150,6 +150,22 @@ The exact property names are suggestions, not claims that the current compiler s
 - Give valve operation a large, immediate visual state change; show rising water and current direction with consistent animation. Keep cycle timing generous rather than forcing exact-frame jumps.
 - Two co-op players can operate independently. The player-two follow bubble does not trigger plates, collect objects, or hold a valve; a single active explorer must be able to reproduce the required states.
 
+## Image-model handoff pack (Nov 19, 2026)
+
+The geometry and 60 Hz state now drive a reproducible **image-conditioning pack**:
+[Sunken Temple generation brief](sunken-temple-imagegen.md). The existing
+`export-future-chapter-guides.mjs sunken-temple` export additionally writes
+a full-world vector composition study, low/high/sluice/finale visual context
+studies, pivot-registered transparent object silhouettes, and a machine-readable
+`imagegen-handoff.json`. CI renders SVGs to native-size PNGs for review and
+future image-model conditioning. The sample called *high tide* is now sampled
+**after** the initial low-water delay, at the actual upper surface.
+
+These vector studies are **not image-model artwork or approved painting**. No
+assets were added to `approved-scene-art.json`, and the production chapter
+continues to render its compiled graybox until properly conditioned,
+native-detail painted assets pass the art and browser acceptance gates.
+
 ## AI art and geometry handoff
 
 Follow [AGENTS.md](../../../AGENTS.md), [STATIC-ART-CONTRACT.md](../../STATIC-ART-CONTRACT.md), and [CAVE-ART-PIPELINE.md](../../CAVE-ART-PIPELINE.md).
