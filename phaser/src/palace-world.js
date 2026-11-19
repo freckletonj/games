@@ -66,18 +66,36 @@ export function stepPalaceWorld(spec,world,players,actions){
   return world;
 }
 
+// Share the authored steep-bank geometry with physics and the V-key overlay.
+export function palaceSteepBanks(spec){
+  return spec.ridge.slice(1).flatMap(([bx,by],index)=>{
+    const [ax,ay]=spec.ridge[index];
+    return (ay-by)/(bx-ax)<2.5?[]:[{
+      fromX:ax*TILE,fromY:ay*TILE,toX:bx*TILE,toY:by*TILE
+    }];
+  });
+}
+
 // Crystal doors have the same 16 px authored collision coordinate system
 // as the terrain. A target must actually receive an unobstructed beam before
 // the corresponding door can be crossed.
-export function palaceBlockHorizontal(spec,world,fromX,toX,feet){
-  // The upslopes are sheer stone faces: stepping a few pixels at a time
-  // must not let ordinary movement climb through solid rock. A lit bridge
-  // supplies the height needed to leap each authored crest.
-  for(let index=1;index<spec.ridge.length;index++){
-    const [ax,ay]=spec.ridge[index-1], [bx,by]=spec.ridge[index];
-    if((ay-by)/(bx-ax)<2.5)continue;
-    const edge=ax*TILE-10;
-    if(feet>by*TILE+1&&fromX<=edge&&toX>edge)toX=edge;
+export function palaceBlockHorizontal(spec,world,fromX,toX,feet,onTerrain=false){
+  // Prevent microsurfing up near-vertical banks while walking on ground.
+  // A rider already supported by a crystal deck (or jumping above the bank)
+  // must instead meet the actual sloped terrain, not an invisible full-height
+  // wall at the bank's starting x coordinate.
+  if(toX>fromX){
+    for(const bank of palaceSteepBanks(spec)){
+      const edge=bank.fromX-10;
+      if(feet<=bank.toY+1||fromX>=bank.toX||toX<=edge)continue;
+      const bridge=world.decks.some(deck=>deck.enabled&&
+        deck.position[1]<bank.fromY&&
+        Math.abs(deck.position[0]-bank.fromX)<=deck.size[0]/2);
+      // Without a solid crystal bridge, airborne jump spam must not allow
+      // ascending the unwalkable bank. With one, its own deck supports normal
+      // lateral motion; only walking directly up steep ground is forbidden.
+      if(!bridge||onTerrain)toX=Math.max(fromX,edge);
+    }
   }
   for(const gate of spec.beamGates??[]){
     if(world.state.gates[gate.id])continue;

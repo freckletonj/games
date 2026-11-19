@@ -46,7 +46,7 @@ import {createTempleWorld,stepTempleWorld,templeInWater,templeBasinAt,
   restoreTempleWorld} from './temple-world.js';
 import {createTempleScene,drawTempleScene} from './temple-scene.js';
 import {createPalaceWorld,stepPalaceWorld,restorePalaceWorld,
-  palaceBlockHorizontal} from './palace-world.js';
+  palaceBlockHorizontal,palaceSteepBanks} from './palace-world.js';
 import {createPalaceScene,drawPalaceScene} from './palace-scene.js';
 import {createRaceWorld,stepRaceWorld,raceCameraFrame} from './race-world.js';
 import {createRaceScene,drawRaceScene} from './race-scene.js';
@@ -1969,13 +1969,13 @@ class Wonderwood extends Phaser.Scene {
       ropes:this.ropes,
       pushSpeed,
       blockHorizontal:this.puzzleObjects.length||this.templeWorld||this.palaceWorld?
-        (from,to,feet)=>{
+        (from,to,feet,onTerrain)=>{
           const puzzle=this.puzzleObjects.length?
             blockPuzzleX(this.puzzleObjects,from,to,feet):to;
           const temple=this.templeWorld?templeBlockHorizontal(
             this.level.templeSpec,this.templeWorld,from,puzzle,feet):puzzle;
           return this.palaceWorld?palaceBlockHorizontal(
-            this.level.palaceSpec,this.palaceWorld,from,temple,feet):temple;
+            this.level.palaceSpec,this.palaceWorld,from,temple,feet,onTerrain):temple;
         }:null
     });
   }
@@ -2215,6 +2215,21 @@ class Wonderwood extends Phaser.Scene {
           for(let px=x-half;px<x+half;px+=4){
             const end=Math.min(px+4,x+half);
             this.deckOverlay.lineBetween(px,deckTopAt(deck,px),end,deckTopAt(deck,end));
+          }
+        }
+        if(this.palaceWorld){
+          // Show the steep banks that cannot be walked up on ground, and
+          // the full effective player-center bounds of each closed door.
+          this.deckOverlay.lineStyle(4,0xffa36b,.9);
+          for(const bank of palaceSteepBanks(this.level.palaceSpec))
+            this.deckOverlay.lineBetween(bank.fromX,bank.fromY,
+              bank.toX,bank.toY);
+          this.deckOverlay.lineStyle(2,0xff7187,.9);
+          for(const gate of this.level.palaceSpec.beamGates){
+            if(this.palaceWorld.state.gates[gate.id])continue;
+            const [x,y]=gate.at.map(cell=>cell*TILE);
+            this.deckOverlay.strokeRect(x-gate.size[0]/2-10,y,
+              gate.size[0]+20,gate.size[1]);
           }
         }
       }

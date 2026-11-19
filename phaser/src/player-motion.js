@@ -185,7 +185,7 @@ export function stepPlayerMotion(p,actions,step,world){
     }else if(edges.length){
       safeX=sweepRockEdges(edges,p.x,p.y,safeX,p.y).x;
     }
-    if(world.blockHorizontal) safeX=world.blockHorizontal(p.x,safeX,p.y);
+    if(world.blockHorizontal) safeX=world.blockHorizontal(p.x,safeX,p.y,onTerrain);
     if(Math.abs(safeX-nextX)>.2)p.vx=0;
     const dx=safeX-p.x;
     if(dx||direction)p.face=Math.sign(dx||direction);

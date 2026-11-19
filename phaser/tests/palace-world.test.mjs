@@ -6,7 +6,7 @@ import palace from '../levels/mirror-palace.json' with {type:'json'};
 import {stepPlayerMotion} from '../src/player-motion.js';
 import {surfaceGroundAt,surfaceMaterialColumn} from '../src/surface-geometry.js';
 import {createPalaceWorld,stepPalaceWorld,restorePalaceWorld,
-  palaceBlockHorizontal} from '../src/palace-world.js';
+  palaceBlockHorizontal,palaceSteepBanks} from '../src/palace-world.js';
 import {tracePalaceBeams,setMirrorDetent,setPalaceShutter,
   createPalaceState,occluderPosition,stepPalace} from '../src/palace-rules.js';
 import {deckTopAt} from '../src/moving-platforms.js';
@@ -28,8 +28,8 @@ function simulation(players){
   const world={width:level.width*16,height:level.height*16,tile:16,
     groundAt,inWater:()=>false,waterBodies:[],thermalVolumes:[],
     platformSegments:level.platformSegments,movingPlatforms:palaceWorld.decks,
-    blockHorizontal:(from,to,feet)=>palaceBlockHorizontal(
-      palace,palaceWorld,from,to,feet)};
+    blockHorizontal:(from,to,feet,onTerrain)=>palaceBlockHorizontal(
+      palace,palaceWorld,from,to,feet,onTerrain)};
   function step(actions=[]){
     const inputs=players.map(p=>({...controls,...actions[p.id]}));
     stepPalaceWorld(palace,palaceWorld,players,inputs);
@@ -436,4 +436,29 @@ test('two human explorers can reach the Light and exit without simultaneous swit
   }));
   assert.equal(r.visitedExit.length,2);
   assert.ok(r.palaceWorld.state.gates['observatory-light-gate']);
+});
+
+test('walking on a lit crystal bridge reaches its visible far-bank lip without an invisible stop',()=>{
+  for(const {id,start,minX} of [
+    {id:'atrium-crystal',start:67,minX:73},
+    {id:'gallery-far',start:128.5,minX:132},
+    {id:'eclipse-step-eight',start:188.5,minX:192}
+  ]){
+    const deck=palace.phasePlatforms.find(platform=>platform.id===id);
+    const player=explorer(0,start*16,deck.home[1]*16);
+    player.onPlatform=id;
+    const {world,palaceWorld}=simulation([player]);
+    palaceWorld.decks.find(platform=>platform.id===id).enabled=true;
+    for(let tick=0;tick<280;tick++)
+      stepPlayerMotion(player,{...controls,right:true},1,world);
+    assert.ok(player.x>minX*16,
+      `${id}: walking stopped at tile ${player.x/16}, before visible far bank ${minX}`);
+  }
+});
+
+
+test('V-overlay bank geometry matches all three authored steep collision slopes',()=>{
+  assert.deepEqual(palaceSteepBanks(palace).map(bank=>[
+    bank.fromX/16,bank.fromY/16,bank.toX/16,bank.toY/16
+  ]),[[72,55,76,43],[130,55,134,42],[190,55,194,37]]);
 });
