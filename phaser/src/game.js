@@ -2239,10 +2239,17 @@ class Wonderwood extends Phaser.Scene {
     const jungleHint=lead.rope?
       'Up / Down · climb   ·   Tap ← / → low to swing higher   ·   Jump · let go':
       lead.x<1410?'Hold ↑ to grab a rope · P2 uses 8':'Find the key on the canopy shelf.';
+    const templeCrate=this.templeWorld?.crates[0];
+    const templeState=this.templeWorld?.state;
     const templeHint=lead.x<70*TILE?
       'Board the low-tide raft, ride it upward, and jump to the high dock.':
-      lead.x<107*TILE?
-      '↑ at valves · Raise the crate over the weir, push it right, then drain it onto the floor socket.':
+      lead.x<107*TILE&&!templeState.gates['sluice-gate']?
+        templeCrate.x<87*TILE?
+          '↑ at the left valve to fill the basin. Push the crate from its side over the stone weir.':
+        templeCrate.x<93*TILE-15?
+          'Keep pushing the floating crate right until it is above the golden floor socket.':
+          'Use the raft to reach the right valve. ↑ cycles Fill → Hold → Drain. Lower the crate onto the socket.':
+      lead.x<107*TILE?'Socket pressed · the sluice door is open. Continue right.':
       lead.x<170*TILE?
       'Fill the head reservoir, ride its raft to the high ledge, then press ↑ to release the cascade.':
       'The wheel powers two bridge sections. Ride the rising raft through the gap.';
