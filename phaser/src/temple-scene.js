@@ -26,8 +26,8 @@ export function createTempleScene(scene,spec,world,approved){
     return scene.add.rectangle(x,y,width,height,color,.95)
       .setOrigin(.5,originY).setDepth(depth);
   };
-  // The candidate chapter intentionally has no registered painting.
-  // Build its physical ground and shelving directly from authored geometry.
+  // The geometry-first graybox remains available when Temple art is absent.
+  // Approved static rock and shelves are rendered by paintScene instead.
   const graybox=approved?null:scene.add.graphics().setDepth(-31);
   if(graybox){
     graybox.fillStyle(0x435c65);
@@ -93,7 +93,9 @@ export function createTempleScene(scene,spec,world,approved){
     color:'#fff0c2',backgroundColor:'#173541dd',padding:{x:7,y:5}
     }).setOrigin(.5,1).setDepth(39);
   const structures=scene.add.graphics().setDepth(-17);
-  for(const wall of spec.obstacles??[]){
+  // Authored walls are already part of the compiler-masked painted solid.
+  // The old flat gray fill is only for art-free testing, never over painting.
+  if(!approved)for(const wall of spec.obstacles??[]){
     structures.fillStyle(0x6e7d83,1);
     structures.fillRect(wall.left*TILE,wall.top*TILE,
       (wall.right-wall.left)*TILE,(wall.bottom-wall.top)*TILE);
