@@ -1,4 +1,4 @@
 # Explicit CI trigger for Wonderwood regressions.
 # Only changes to this file (or a manual workflow_dispatch) launch the workflow.
 # Update the request line when an on-demand test run is needed.
-Request: Trace final raft hop and verify high-dock jump with terrain face, 2026-11-18
+Request: Validate all three levels, Palace grounded curtains, final Temple dock/bridge landings, 2026-11-18
