@@ -316,7 +316,8 @@
         47
       ],
       "radius": 1,
-      "source": "atrium-sun"
+      "source": "atrium-sun",
+      "store": false
     },
     {
       "id": "gallery-target",

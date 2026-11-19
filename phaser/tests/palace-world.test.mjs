@@ -111,7 +111,8 @@ test('blue laser offers a real optional vault route, not another exit shortcut',
   assert.ok(!tracePalaceBeams(palace,state).lit.includes('atrium-vault-target'));
   state=setMirrorDetent(palace,state,'atrium-mirror',45);
   for(let i=0;i<60;i++)state=stepPalace(palace,state);
-  assert.equal(state.charged['atrium-vault-target'],true);
+  assert.equal(state.charged['atrium-vault-target'],undefined);
+  assert.ok(state.light.lit.includes('atrium-vault-target'));
   assert.equal(state.charged['atrium-target'],undefined);
   assert.equal(state.gates['atrium-light-gate'],false);
   const optional=palace.phasePlatforms.filter(p=>
@@ -121,6 +122,7 @@ test('blue laser offers a real optional vault route, not another exit shortcut',
   state=setMirrorDetent(palace,state,'atrium-mirror',-45);
   for(let i=0;i<75;i++)state=stepPalace(palace,state);
   assert.equal(state.gates['atrium-light-gate'],true);
+  assert.ok(!state.light.lit.includes('atrium-vault-target'));
   assert.ok(optional.every(p=>!state.platforms[p.id].solid),
     'The side branch retracts when light is diverted, but the exit stays safe');
   assert.equal(state.platforms['atrium-crystal'].solid,true);

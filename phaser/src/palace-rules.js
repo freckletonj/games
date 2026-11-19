@@ -135,7 +135,7 @@ export function stepPalace(spec,state,{occupiedPlatformIds=[],solidAt=null}={}){
   const charged={...state.charged};
   const chargeTicks={...state.chargeTicks};
   for(const target of spec.beamTargets){
-    if(charged[target.id]||!light.lit.includes(target.id)||
+    if(target.store===false||charged[target.id]||!light.lit.includes(target.id)||
        !(target.requiresCharged??[]).every(id=>charged[id]))continue;
     chargeTicks[target.id]=Math.min(target.chargeTicks??1,
       (chargeTicks[target.id]??0)+1);

@@ -93,6 +93,8 @@ export function validateFutureChapter(spec){
       if(!Number.isInteger(o.periodTicks)||o.periodTicks<=0)fail('invalid occluder');
     for(const t of spec.beamTargets){
       needs('lightSources',t.source);
+      if(t.store!==undefined&&typeof t.store!=='boolean')
+        fail('invalid receiver storage '+t.id);
       // Each staged receiver must name an earlier receiver: no cyclic
       // prerequisites or ambiguous within-tick charge order.
       for(const required of t.requiresCharged??[]){

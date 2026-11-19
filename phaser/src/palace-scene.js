@@ -125,8 +125,8 @@ export function drawPalaceScene(art,spec,world,players=[]){
     const stored=Boolean(state.charged[target.id]),on=lit.includes(target.id);
     const color=targetColor(target.id);
     const count=state.chargeTicks[target.id]??0,needed=target.chargeTicks??1;
-    const progress=stored?1:count/needed;
-    g.fillStyle(stored?color:0x203746,stored?.95:.95).fillCircle(x,y,12);
+    const progress=target.store===false?Number(on):stored?1:count/needed;
+    g.fillStyle(stored||on?color:0x203746,.95).fillCircle(x,y,12);
     g.lineStyle(3,color,stored||on?1:.5).strokeCircle(x,y,17);
     // A moving radial capacitor gauge replaces all status instructions.
     g.lineStyle(5,color,.9).beginPath();
