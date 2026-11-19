@@ -101,7 +101,8 @@ test('mirror detents generate finite, geometric beam paths and target hits',()=>
     (palaceSpec.opticalRules.maxBounces+1));
   assert.ok(beams.every(beam=>[...beam.from,...beam.to].every(Number.isFinite)));
   assert.deepEqual(occluderPosition(palaceSpec.occluders[0],0),
-    occluderPosition(palaceSpec.occluders[0],600));
+    occluderPosition(palaceSpec.occluders[0],
+      palaceSpec.occluders[0].periodTicks));
   assert.throws(()=>setMirrorDetent(palaceSpec,state,'atrium-mirror',17));
 });
 

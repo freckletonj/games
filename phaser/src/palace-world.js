@@ -76,7 +76,7 @@ export function palaceBlockHorizontal(spec,world,fromX,toX,feet){
   for(let index=1;index<spec.ridge.length;index++){
     const [ax,ay]=spec.ridge[index-1], [bx,by]=spec.ridge[index];
     if((ay-by)/(bx-ax)<2.5)continue;
-    const edge=bx*TILE-10;
+    const edge=ax*TILE-10;
     if(feet>by*TILE+1&&fromX<=edge&&toX>edge)toX=edge;
   }
   for(const gate of spec.beamGates??[]){
