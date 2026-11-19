@@ -62,13 +62,17 @@ test('ordinary water-jump can board the low raft, which carries its rider to the
   assert.equal(player.onPlatform,'courtyard-raft');
   assert.ok(Math.abs(player.y-41.5*16)<.1);
   let jumpAt=-1,reached=false;
+  const dockTrace=[];
   for(let i=0;i<140;i++){
     if(jumpAt<0&&player.x>=54.9*16)jumpAt=i;
     const jump=jumpAt>=0&&i-jumpAt<22;
     step({right:true,jump,jumpPressed:i===jumpAt});
+    if(i%7===0)dockTrace.push([
+      i,Math.round(player.x),Math.round(player.y),
+      player.onPlatform,Math.round(player.vy)]);
     if(player.x>=59*16&&player.y<=39*16+3){reached=true;break;}
   }
-  assert.ok(reached,'Riding high and jumping from the raft must reach the right dock');
+  assert.ok(reached,'Raft-to-dock jump must work: '+JSON.stringify(dockTrace));
 });
 
 test('jump-spamming through the courtyard without its raft cannot reach the dock',()=>{
