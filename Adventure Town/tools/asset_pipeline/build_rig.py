@@ -9,6 +9,7 @@ from geometry.reconstruct import surface, project
 from rig import skin_weights, create_clips, matrices, deform, export_glb
 from validate_rig import check
 from preview import raster
+import quadruped
 
 
 def main(build, config):
@@ -26,8 +27,12 @@ def main(build, config):
     parents=np.array([names.index(specs[n]['parent']) if specs[n]['parent'] else -1 for n in names])
     height=float(positions[:,1].max()); joints=np.array([specs[n]['position'] for n in names])*height
     # Identical weights on coincident vertices, including material seams.
-    ids,w=skin_weights(positions,names,joints,height,cfg['gates'],cfg.get('arm_gap'))
-    clips=create_clips(names,parents,joints,data,ids,w)
+    if cfg.get('type', 'humanoid') == 'quadruped':
+        ids,w=quadruped.skin_weights(positions,names,joints,height,cfg['gates'])
+        clips=create_clips(names,parents,joints,data,ids,w,pose=quadruped.pose_angles,durations=[('idle',2.4),('walk',.7)])
+    else:
+        ids,w=skin_weights(positions,names,joints,height,cfg['gates'],cfg.get('arm_gap'))
+        clips=create_clips(names,parents,joints,data,ids,w)
     rest,_=matrices(joints,parents,Rotation.identity(len(joints)).as_quat()); p,_=deform(positions,normals,ids,w,rest)
     _,unique,inverse=np.unique(positions,axis=0,return_index=True,return_inverse=True)
     assert np.array_equal(ids,ids[unique][inverse]); assert np.allclose(w,w[unique][inverse])

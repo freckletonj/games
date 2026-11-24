@@ -1,0 +1,57 @@
+# Ginger Cat
+
+A small ginger tabby sidekick, reconstructed from AI-generated transparent
+multiview art. Cream paws and muzzle, green eyes, dark orange stripes and an
+upright hooked tail keep the silhouette readable beside the adventurer.
+
+The game loads `generated/character_animated.glb` at 45% scale (about 0.88 world
+units tall). The cat trots toward the adventurer when separated by more than
+1.5 units and rests at 1.1 units. This is a companion for the open test ground;
+there is no obstacle navigation or combat behavior.
+
+## Source and rebuild
+
+`source/turntable.png` is the unmodified generated RGBA 4×4 sheet. The actual
+submitted prompt and acquisition settings are in `source/PROMPT.md`. The views
+are fixed standing poses, with visually estimated camera angles recorded in
+`character.json`. No interpolated images were counted as extra observations.
+
+From `Adventure Town/`, with the pipeline requirements installed:
+
+```sh
+python tools/asset_pipeline/build_character.py characters/cat
+python tools/asset_pipeline/validate_rig.py characters/cat/generated
+python tools/asset_pipeline/assess_quadruped.py characters/cat/generated --scale .45 --speed 2.2 --out experiments/cat-motion.json
+```
+
+The repository keeps the source, animated runtime GLB, static preview,
+reconstruction/rig caches and numerical reports. Rebuilding also produces a
+static GLB, segmentation/rig sheets and motion GIFs for local inspection;
+these reproducible cat inspection exports are ignored by Git.
+
+`source/rig.json` selects the quadruped rig: pelvis, chest, head, two tail
+joints and three joints per leg. Anatomical weight gates keep the head and tail
+separate from the four legs. `idle` and `walk` are procedural clips; the source
+sheet does not contain motion. The walk clip uses alternating diagonal paws.
+
+## Baseline and limitations
+
+The 64-voxel build contains 63,487 occupied voxels and 36,592 triangles. Mean
+source-view silhouette IoU is 0.899, and 95.5% of surface colors are sampled
+directly from the source. The welded surface is watertight with consistent
+winding. Rest-pose error is below 5e-8 and the exported animation palette error
+is below 4e-8; all indices are in range and weights sum to one within 1.2e-7.
+
+The source views vary slightly in markings, framing and tail shape. The visual
+hull softens the cubic source details, particularly the tail curl and underside,
+and single-elevation acquisition cannot recover hidden concavities. Preview
+and motion sheets were inspected, but the rig audit does not establish
+collision-free poses or planted feet. The trot can slide on the ground; it is
+a procedural companion animation, not motion capture or foot IK.
+
+The [motion assessment](generated/motion_metrics.json) finds stance-forward
+drift of about 0.65–0.72 world units at reference travel speed 2.2, compared with
+a paw length of about 0.10 units. The sampled 99th-percentile edge stretch
+ratio is 1.256. This is a prototype rig with significant sliding and local
+stretching. Reconstruction research and its follow-up are summarized in the
+[local asset-service ticket](../../../asset-tools/README.md#existing-research).

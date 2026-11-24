@@ -1,6 +1,6 @@
 # Creating a character
 
-The pipeline is image-driven: generate transparent multiview art, reconstruct a static voxel volume, assign a humanoid skeleton and skin weights, export animation clips and inspect the resulting mesh. It currently requires human or LLM-guided per-character rig configuration; it is not automatic skeletal inference.
+The pipeline is image-driven: generate transparent multiview art, reconstruct a static voxel volume, assign a skeleton and skin weights, export animation clips and inspect the resulting mesh. Humanoid and quadruped rigs are supported. It currently requires human or LLM-guided per-character rig configuration; it is not automatic skeletal inference.
 
 ## 1. Create the source
 
@@ -35,6 +35,17 @@ Omit `angles` only for evenly spaced observations starting at the front. Otherwi
 `source/rig.json` defines the shared 15-joint humanoid naming scheme, parent relationships, normalized rest joint positions, anatomical weight gates, and an optional `arm_gap` correction. Keep parent joints before children in JSON order. The runtime expects `idle`, `walk` and `attack` clip names.
 
 Joint coordinates are fractions of actual reconstructed height: X is horizontal (positive toward the character's left), Y points up from the floor, Z points forward. Inspect front and side images and the reconstruction to place hips, knees, ankles, shoulders, elbows, wrists, chest and head. Adjust the `gates` ranges to match the new silhouette: head/upper/leg are height ranges; arm_x measures absolute horizontal distance from center; arm_bottom/arm_top limit the arm region vertically. The weight function also includes a fixed rear-body exclusion to reduce backpack/arm mixing; inspect that behavior for different characters.
+
+For a four-legged character, use `characters/cat/source/rig.json` as the rig
+template and set `type` to `quadruped`. Keep the configured 17-joint naming
+scheme and refit every joint and weight gate. `head_y`/`head_z` isolate the
+head; `tail_y`/`tail_z` isolate the rear raised tail; `tail_tip` blends its two
+joints; `leg_y` separates legs from trunk; `chest_z` separates front and rear
+regions. These ranges are fractions of reconstructed height, with smooth
+transitions between their two endpoints. Quadrupeds export `idle` and `walk`,
+which are the clips used by the companion runtime. The humanoid player also
+requires `attack`. Adapt the acquisition rest pose to a fixed four-paw stance
+with visible leg clearance rather than using a humanoid A-pose.
 
 The adventurer's optional `arm_gap` cuts small bilateral slits through the visual hull at the specified normalized heights and X offsets; its values are not universal anatomy. Remove this field when the new source already has good arm clearance. If retained, refit it to the new silhouette. It is a heuristic, not recovered hidden geometry.
 

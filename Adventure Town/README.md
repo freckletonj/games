@@ -2,7 +2,7 @@
 
 A small 3D game project and an image-driven voxel character pipeline. The game currently consists of a playable character test ground; there is no story, combat system, or level progression yet. The canonical character is the orange-haired adventurer with goggles, a scarf and a backpack.
 
-The aim is to scale asset creation by using image/video generation for art, deterministic reconstruction and rigging for game assets, and LLMs for orchestration, inspection and targeted refinement. Do not hand-author voxel sculptures as the default workflow.
+The aim is to scale asset creation by using image/video generation for art, deterministic reconstruction and rigging for game assets, and LLMs for orchestration, inspection and targeted refinement. Do not hand-author voxel sculptures as the default workflow. A [ginger cat sidekick](characters/cat/README.md) follows the adventurer around the test ground, with its own reconstructed model and quadruped idle/walk animations.
 
 ## Run the game
 
@@ -16,6 +16,11 @@ npm run dev
 
 Open the local URL printed by Vite. Use WASD or arrow keys to move, and Space to play the attack animation. The game loads the committed rigged GLB; Python and image generation are not needed to play. `npm run build` creates a deployable `dist/` directory; `npm run preview` serves that build.
 
+`npm test` loads both real GLBs and exercises the runtime movement and animation
+code in Node with a fixed frame clock and a rendering/DOM stub. It checks cat
+catch-up, stopping, turns, arena edges and the existing player controls. It
+does not test WebGL rendering; use the browser for a visual play test.
+
 Three.js is used as a lightweight runtime for the test scene. The assets themselves are standard glTF 2.0 GLBs and are not tied to Three.js. No engine-specific asset data is required by the Python pipeline.
 
 ## Repository layout
@@ -27,6 +32,7 @@ characters/
     README.md            # identity, baseline metrics, known limitations
     source/              # canonical GIF, contact sheet, rig configuration, prompt
     generated/           # static and animated GLBs, previews and numerical reports
+  cat/                   # transparent source, quadruped rig and companion GLB
   <new-character>/       # same layout, independent source and configuration
 tools/asset_pipeline/    # shared Python reconstruction, skinning, export, validation
 game/                    # browser game code and UI

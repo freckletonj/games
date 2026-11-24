@@ -11,3 +11,10 @@ Thumbs.db
 # Asset experiments stay out of canonical character directories
 experiments/
 # Canonical characters/*/generated outputs are intentionally tracked.
+# Rebuildable cat inspection exports; retain its runtime GLB and audit caches.
+/characters/cat/generated/character.glb
+/characters/cat/generated/idle.gif
+/characters/cat/generated/walk.gif
+/characters/cat/generated/reconstruction.gif
+/characters/cat/generated/rig_preview.png
+/characters/cat/generated/segmentation.png
