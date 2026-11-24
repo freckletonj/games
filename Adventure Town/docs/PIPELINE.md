@@ -3,7 +3,7 @@
 The reusable compiler in `tools/asset_pipeline/` has four stages:
 
 1. `geometry/reconstruct.py`: decode transparent frames, segment alpha, estimate orthographic camera scale/translation from silhouette and boots, carve a supported voxel volume, repair edge-only contacts and fuse surface colors. The result is a vertex-colored, unlit static GLB. The color source is already lit, so the unlit export avoids double lighting.
-2. `build_rig.py` and `rig.py`: consume the occupancy and color arrays, construct a shared 15-joint humanoid rig from character settings, calculate four skin weights per vertex, generate procedural test clips and export a skinned GLB. The mesh uses +Y up and +Z forward. The exported character is approximately 2 units tall.
+2. `build_rig.py` and `rig.py`: consume the occupancy and color arrays, construct a 15-joint humanoid rig or a 17-joint quadruped rig (`quadruped.py`) from character settings, calculate four skin weights per vertex, generate procedural test clips and export a skinned GLB. The mesh uses +Y up and +Z forward. The exported character is approximately 2 units tall; the runtime scales the cat to companion size.
 3. `validate_rig.py`: compare exported accessors, inverse-bind matrices, sampled transforms and weights with the offline rig data. Build metrics additionally check the position-welded topology and rest pose.
 4. `preview.py` and the build scripts: render static and animated inspection images from the real geometry. The game consumes only the animated GLB, never the source GIF or NPZ caches.
 
@@ -12,8 +12,8 @@ The reusable compiler in `tools/asset_pipeline/` has four stages:
 - The visual hull cannot recover fully occluded concavities. Dense single-elevation views help but do not eliminate ambiguity.
 - Camera angles are annotated estimates. Per-frame scale and translation are heuristic, not a full calibration. The pipeline does not yet combine different elevations.
 - Color fusion can blur eyes and clothing details; alpha fringes and inconsistent generated art can contaminate color.
-- Joint locations and skinning gates are configured per character. Arm clearance is optional and can distort the geometry. The skinning model is humanoid-specific.
-- Idle, walk and attack are procedural tests, not motion inferred from AI-generated GIFs. The older GIF motion extraction system has not been ported into the current exporter. There is no hit detection, physics, inventory, navigation or enemy AI in the game.
+- Joint locations and skinning gates are configured per character. Arm clearance is optional and can distort the geometry. The quadruped skinning model assumes four separated legs and a raised rear tail; other anatomies need a different rig configuration or model.
+- Idle, walk and the humanoid attack are procedural tests, not motion inferred from AI-generated GIFs. The older GIF motion extraction system has not been ported into the current exporter. The cat follows directly in the open test ground; there is no hit detection, physics, inventory, obstacle navigation or enemy AI in the game.
 - Silhouette IoU is image-space agreement, not ground-truth 3D accuracy. The rig audit does not check all continuous interpolated poses or detect collisions.
 
 ## Development priorities
@@ -31,3 +31,26 @@ The reorganized build was run from the game root into a separate output director
 The imported project now lives in `Adventure Town/`. Its production Vite build
 passes after dependency installation; `package-lock.json` records the resolved
 versions. Run all asset-pipeline commands from the game directory.
+
+## Cat companion verification (2026-11-24)
+
+The cat was built from a new transparent 16-view sheet using a configured
+17-joint quadruped rig. Its static reconstruction, rig and procedural motion
+previews were inspected, and its independent rig audit passed. See
+`characters/cat/README.md` for metrics and visual limitations.
+
+The adventurer was rebuilt into `experiments/adventurer-benchmark` after the
+shared clip-export change. Occupancy/color cache, reconstruction report,
+rig metrics, rig preview and all three motion GIFs match the committed baseline
+byte-for-byte. The animated GLB has identical structure, geometry, weights and
+animation accessors; the only accessor difference is at most 5.96e-8 in vertex
+colors under the installed numerical dependencies. The committed adventurer
+assets and source were not replaced.
+
+`npm test`, `node --check game/main.js`, and `npm run build` pass. The runtime
+test parses both committed GLBs with Three.js and runs the actual companion
+and player update code with a fixed clock, substituting only rendering and
+DOM APIs. A browser play test remains unverified: this workspace's local
+Chromium executable was unavailable, its download was blocked, and the remote
+browser could not reach the local server. Numerical tests and mesh previews
+do not establish browser rendering or artistic approval.

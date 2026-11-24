@@ -1,0 +1,15 @@
+{
+  "joints": 17,
+  "vertices": 73184,
+  "triangles": 36592,
+  "rest_max_error": 4.866160452365875e-08,
+  "weight_sum_max_error": 1.1920928955078125e-07,
+  "welded_watertight": true,
+  "winding_consistent": true,
+  "glb_bytes": 4869972,
+  "palette_max_error": 3.727383737772705e-08,
+  "minimum_floor_y": -2.9198138664703486e-08,
+  "maximum_floor_y": 2.603287188637742e-08,
+  "animated_clips": 2,
+  "all_indices_in_range": true
+}

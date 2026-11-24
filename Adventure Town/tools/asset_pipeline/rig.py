@@ -86,12 +86,12 @@ def deform(p,n,ids,w,m):
     return pos,norm
 
 
-def create_clips(names,parents,joints,data,ids,w):
+def create_clips(names,parents,joints,data,ids,w,pose=pose_angles,durations=None):
     clips={}
-    for name,duration in [('idle',2.4),('walk',.9),('attack',1.1)]:
+    for name,duration in (durations if durations is not None else [('idle',2.4),('walk',.9),('attack',1.1)]):
         ts=np.linspace(0,duration,round(duration*30)+1,dtype=np.float32); qs=[];offsets=[];palettes=[];worlds=[]
         for t in ts:
-            q=Rotation.from_euler('xyz',pose_angles(names,name,float(t/duration))).as_quat();m,world=matrices(joints,parents,q)
+            q=Rotation.from_euler('xyz',pose(names,name,float(t/duration))).as_quat();m,world=matrices(joints,parents,q)
             p,_=deform(data['positions'],data['normals'],ids,w,m); dy=-float(p[:,1].min());m,world=matrices(joints,parents,q,dy)
             qs.append(q);offsets.append(dy);palettes.append(m);worlds.append(world[:,:3,3])
         clips[name]=dict(times=ts,quats=np.array(qs,np.float32),offsets=np.array(offsets,np.float32),palettes=np.array(palettes,np.float32),worlds=np.array(worlds,np.float32))

@@ -1,0 +1,14 @@
+{
+  "id": "cat",
+  "name": "Ginger Cat",
+  "source": "source/turntable.png",
+  "rig": "source/rig.json",
+  "reconstruction": {
+    "height": 64,
+    "agreement": 0.90,
+    "elevation": 5,
+    "rows": 4,
+    "cols": 4,
+    "angles": [0, 25, 45, 68, 90, 120, 145, 165, 180, 210, 235, 255, 270, 300, 320, 340]
+  }
+}
