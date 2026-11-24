@@ -1,0 +1,13 @@
+{
+  "model": "DA3-SMALL",
+  "device": "cpu-float32",
+  "resolution": 378,
+  "semantics": "negative camera distance; larger nearer",
+  "camera_conditioned": false,
+  "source_sha256": "c2e21786f2af63086277f89f499b724f3b061073100d58c562a90e0a445c8bf3",
+  "checkpoint_sha256": "364492e38a3a06d221ac75da7f6621ada3f2361cd24fde11ba79091e9f40efcf",
+  "groups": [
+    {"views":[0,1,2,3],"seconds":2.28249369699995},
+    {"views":[4,5,6,7],"seconds":1.5167868869999666}
+  ]
+}
