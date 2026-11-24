@@ -21,7 +21,13 @@ From `Adventure Town/`, with the pipeline requirements installed:
 ```sh
 python tools/asset_pipeline/build_character.py characters/cat
 python tools/asset_pipeline/validate_rig.py characters/cat/generated
+python tools/asset_pipeline/assess_quadruped.py characters/cat/generated --scale .45 --speed 2.2 --out experiments/cat-motion.json
 ```
+
+The repository keeps the source, animated runtime GLB, static preview,
+reconstruction/rig caches and numerical reports. Rebuilding also produces a
+static GLB, segmentation/rig sheets and motion GIFs for local inspection;
+these reproducible cat inspection exports are ignored by Git.
 
 `source/rig.json` selects the quadruped rig: pelvis, chest, head, two tail
 joints and three joints per leg. Anatomical weight gates keep the head and tail
@@ -43,7 +49,9 @@ and motion sheets were inspected, but the rig audit does not establish
 collision-free poses or planted feet. The trot can slide on the ground; it is
 a procedural companion animation, not motion capture or foot IK.
 
-The [depth trial and expanded rig assessment](../../docs/depth-trial-20261124/README.md)
-find significant stance drift and local mesh stretching. This is a prototype
-rig, not a polished animation rig. Generated depth did not fix the tail in
-that trial; the shipping model has not been replaced by those worse candidates.
+The [motion assessment](generated/motion_metrics.json) finds stance-forward
+drift of about 0.65–0.72 world units at reference travel speed 2.2, compared with
+a paw length of about 0.10 units. The sampled 99th-percentile edge stretch
+ratio is 1.256. This is a prototype rig with significant sliding and local
+stretching. Reconstruction research and its follow-up are summarized in the
+[local asset-service ticket](../../../asset-tools/README.md#existing-research).

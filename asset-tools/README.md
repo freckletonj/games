@@ -237,8 +237,24 @@ been run on the user's machines.
 - [Spark renderer](https://github.com/sparkjsdev/spark)
 - [Cloudflare service-token authentication](https://developers.cloudflare.com/cloudflare-one/access-controls/service-credentials/service-tokens/)
 - [GitHub large-file limits](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github)
-- [Adventure Town's measured reconstruction trials](../Adventure%20Town/docs/reconstruction-options-20261124/README.md)
 
-The existing trials found useful matching/calibration signals and a cleaner
-TripoSR cat, but neither better mesh appearance nor a numerical rig audit solved
-animation quality. Carry those distinctions into this service's reports.
+## Existing research
+
+The exploratory scripts, generated depth images, full result dumps and
+comparison sheets are preserved in the
+[pre-cleanup research snapshot](https://github.com/freckletonj/games/tree/1a688b4bf81d3e5f1047793a83eefad8e452a218/Adventure%20Town).
+They are historical experiments, not dependencies of the game or this service.
+
+Generated depth maps damaged the cat's tail. Depth Anything V2 and DA3 produced
+small gains on known geometry but no consistent improvement on the original
+generated cat views. SIFT/LightGlue and camera refinement provided useful
+calibration signals. Poisson worked with exact depths and fragmented estimated
+depths; marching cubes smoothed the hull without fixing its shape. TripoSR
+produced a cleaner tail from an oblique image, while a front-only input changed
+the tail. Reusing the old rig still stretched and slid. Gaussian splatting,
+HY-World and UniRig have not yet been benchmarked on the user's hardware.
+
+Carry these lessons into acceptance: compare known rigid controls and unseen
+views, preserve thin parts and source identity, and assess rig deformation
+separately from mesh appearance or GLB validity. The shipping cat keeps its
+motion-assessment report beside its rig audit.

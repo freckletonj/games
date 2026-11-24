@@ -22,65 +22,26 @@ Keep the adventurer fixed as a reproducible benchmark while improving color corr
 
 The runtime is intentionally small and separable from asset tooling. New gameplay code belongs in `game/`; assets and source art belong in `characters/`. No live AI service or Python process is needed at game runtime.
 
-## Conditioned depth trial
+## Research follow-up
 
-The [2026-11-24 depth trial](depth-trial-20261124/README.md) compares three
-asset-conditioned depth generations, withheld cat views, known cat/adventurer
-geometry and exact-depth controls. Correct depth improves reconstruction, but
-the generated estimates degrade it and fragment the tail. Depth remains an
-explicit experiment in `depth_trial.py` and `depth_control.py`; it is not part
-of the standard manifest or compiler. The report includes the source maps,
-prompts, numerical results and reproduction commands.
+Depth, correspondence and alternative-meshing experiments did not establish a
+robust replacement for the compiler. Their conclusions, archived evidence and
+planned local service live in [asset-tools](../../asset-tools/README.md#existing-research).
+The game has no learned-model dependencies.
 
-The expanded quadruped assessment also finds severe stance drift and local
-stretching in the current cat walk. GLB validity is not an animation-quality
-approval. Use `assess_quadruped.py` and inspect motion when evaluating a refit.
+## Verification
 
-The [monocular/multiview follow-up](monocular-depth-20261124/README.md) actually
-runs Depth Anything V2 Small and DA3 Small on CPU, including silhouette-derived
-scale calibration, camera conditioning and inferred-pose trials. Learned depth
-improves the known cat-volume control modestly, but source-turntable results
-remain inconsistent and the tail is over-thinned. These optional research
-tools do not change the standard compiler or its dependencies.
+Both committed characters pass the independent rig audit. The cat's
+`generated/motion_metrics.json` additionally records substantial stance drift
+and local stretching; use `assess_quadruped.py` and inspect rebuilt motion GIFs
+when evaluating a refit. A valid GLB is not animation-quality approval.
 
-The [reconstruction library trials](reconstruction-options-20261124/README.md)
-run SIFT, SuperPoint/LightGlue, bounded camera bundle adjustment, Open3D
-Poisson, scikit-image marching cubes and official TripoSR on CPU. TripoSR's
-oblique cat has a cleaner tail and exports through the existing rig, but a
-front-only input changes the tail and reused weights still deform poorly.
-These remain optional research tools; the report distinguishes mesh validity,
-cross-view agreement and animation quality, and records which GPU-only options
-were assessed but not run.
+The canonical adventurer rebuild reproduces the committed occupancy/color
+cache, reports, rig preview and three motion GIFs byte-for-byte. Rig arrays
+differ only by at most 5.96e-8 in linear colors under the installed numerical
+dependencies. Her source art and committed outputs are unchanged.
 
-## Repository migration validation
-
-The reorganized build was run from the game root into a separate output directory using Python 3.13.5. The static GLB, animated GLB, reconstruction report and rig metrics matched the prior v12 baseline byte-for-byte, and the separate rig audit completed successfully. The source GIF also matches the original archive byte-for-byte. The game JavaScript passed `node --check game/main.js`; the browser runtime and Vite build were not tested because the npm registry was unreachable in the packaging environment. Run `npm install`, `npm run dev` and `npm run build` locally before treating the runtime as verified. Commit the resulting npm lockfile after the first successful install.
-
-## Monorepo integration verification
-
-The imported project now lives in `Adventure Town/`. Its production Vite build
-passes after dependency installation; `package-lock.json` records the resolved
-versions. Run all asset-pipeline commands from the game directory.
-
-## Cat companion verification (2026-11-24)
-
-The cat was built from a new transparent 16-view sheet using a configured
-17-joint quadruped rig. Its static reconstruction, rig and procedural motion
-previews were inspected, and its independent rig audit passed. See
-`characters/cat/README.md` for metrics and visual limitations.
-
-The adventurer was rebuilt into `experiments/adventurer-benchmark` after the
-shared clip-export change. Occupancy/color cache, reconstruction report,
-rig metrics, rig preview and all three motion GIFs match the committed baseline
-byte-for-byte. The animated GLB has identical structure, geometry, weights and
-animation accessors; the only accessor difference is at most 5.96e-8 in vertex
-colors under the installed numerical dependencies. The committed adventurer
-assets and source were not replaced.
-
-`npm test`, `node --check game/main.js`, and `npm run build` pass. The runtime
-test parses both committed GLBs with Three.js and runs the actual companion
-and player update code with a fixed clock, substituting only rendering and
-DOM APIs. A browser play test remains unverified: this workspace's local
-Chromium executable was unavailable, its download was blocked, and the remote
-browser could not reach the local server. Numerical tests and mesh previews
-do not establish browser rendering or artistic approval.
+`npm test` exercises the actual runtime movement and animation code and loads
+both GLBs with Three.js, replacing only rendering, DOM APIs and the clock.
+It and `npm run build` pass. Browser rendering and continuous collision/contact
+validation remain unverified.
