@@ -1,0 +1,43 @@
+{
+  "date": "2026-11-24",
+  "generator": "Built-in image generation tool",
+  "transparent_background": true,
+  "model_version": null,
+  "seed": null,
+  "note": "Model version and seed were not exposed. Original generated PNG bytes preserved. This is estimated visible camera-space depth, not measured ground truth.",
+  "inputs": {
+    "cat_gray": "characters/cat/source/turntable.png",
+    "cat_color": "source/cat-fit-views.png",
+    "control": "source/control-render.png"
+  },
+  "depth_encoding": {
+    "range_heights": [
+      -0.6,
+      0.6
+    ],
+    "gray": "black far, white near",
+    "hue": "blue far, cyan, green zero, yellow, red near"
+  },
+  "files": {
+    "cat-depth-color.png": {
+      "bytes": 1003668,
+      "sha256": "902f278d35dcf91e19fe53a30f18a3075bb53a44e4535b70fc5f34e2476902b8"
+    },
+    "cat-depth-gray.png": {
+      "bytes": 1194939,
+      "sha256": "262f21f87f2221c547d5137a06fbe4c19a9cf65413c2b56fb41a495f4e855b48"
+    },
+    "cat-fit-views.png": {
+      "bytes": 486468,
+      "sha256": "5245fd2618af92d2d7135a0c9cf80f5d02379fe43dc2a4d465152dc9e64532eb"
+    },
+    "control-depth-color.png": {
+      "bytes": 868126,
+      "sha256": "e4cb86d51b2c31dab322abc40edce8833421f090dbe066eb8e4ce247f5f90075"
+    },
+    "control-render.png": {
+      "bytes": 99100,
+      "sha256": "c2e21786f2af63086277f89f499b724f3b061073100d58c562a90e0a445c8bf3"
+    }
+  }
+}

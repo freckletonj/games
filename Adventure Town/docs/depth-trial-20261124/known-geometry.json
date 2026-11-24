@@ -1,0 +1,108 @@
+{
+  "encoding": "hue",
+  "units": "character heights",
+  "depth_tolerance_heights": 0.08,
+  "required_free_space_views": 2,
+  "views": [
+    {
+      "character": "characters/cat",
+      "angle_degrees": 0,
+      "registration_iou": 0.9794118905962419,
+      "valid_fraction": 0.9438054054054054,
+      "raw_rmse": 0.21991455852280573,
+      "affine_rmse": 0.11164632904187323,
+      "constant_rmse": 0.12319372638897813,
+      "affine_scale": 0.3290754378465691,
+      "affine_shift": 0.3378800468489754
+    },
+    {
+      "character": "characters/cat",
+      "angle_degrees": 90,
+      "registration_iou": 0.9765475665343332,
+      "valid_fraction": 0.928816878510198,
+      "raw_rmse": 0.2761957442370406,
+      "affine_rmse": 0.08324454944195847,
+      "constant_rmse": 0.08347750856362285,
+      "affine_scale": -0.039432757962361294,
+      "affine_shift": 0.2773838424836204
+    },
+    {
+      "character": "characters/cat",
+      "angle_degrees": 180,
+      "registration_iou": 0.9811107388172223,
+      "valid_fraction": 0.9438150093887799,
+      "raw_rmse": 0.43852878292161473,
+      "affine_rmse": 0.22392548412120492,
+      "constant_rmse": 0.23351450524493475,
+      "affine_scale": 0.1554713601727192,
+      "affine_shift": 0.30606483659687356
+    },
+    {
+      "character": "characters/cat",
+      "angle_degrees": 270,
+      "registration_iou": 0.9697602432368079,
+      "valid_fraction": 0.9230158437049895,
+      "raw_rmse": 0.28638709955043956,
+      "affine_rmse": 0.09111643204504839,
+      "constant_rmse": 0.09393050922849151,
+      "affine_scale": -0.1295472807508259,
+      "affine_shift": 0.2799918674577782
+    },
+    {
+      "character": "characters/adventurer",
+      "angle_degrees": 0,
+      "registration_iou": 0.9538139474028523,
+      "valid_fraction": 0.889241988358868,
+      "raw_rmse": 0.15718551214994658,
+      "affine_rmse": 0.05333765108349944,
+      "constant_rmse": 0.055210283759486695,
+      "affine_scale": 0.12299836488786993,
+      "affine_shift": 0.11061928882224237
+    },
+    {
+      "character": "characters/adventurer",
+      "angle_degrees": 90,
+      "registration_iou": 0.9650131633642788,
+      "valid_fraction": 0.9015908378877014,
+      "raw_rmse": 0.28276401753810837,
+      "affine_rmse": 0.05218222023125218,
+      "constant_rmse": 0.05415574664990307,
+      "affine_scale": 0.024740571301975656,
+      "affine_shift": 0.20098590213095094
+    },
+    {
+      "character": "characters/adventurer",
+      "angle_degrees": 180,
+      "registration_iou": 0.9617722015291119,
+      "valid_fraction": 0.8972071502280217,
+      "raw_rmse": 0.23162827512372025,
+      "affine_rmse": 0.12566244181862493,
+      "constant_rmse": 0.12885682672926124,
+      "affine_scale": -0.09720696877342076,
+      "affine_shift": 0.2572132048065792
+    },
+    {
+      "character": "characters/adventurer",
+      "angle_degrees": 270,
+      "registration_iou": 0.9608196664470718,
+      "valid_fraction": 0.8981539533263672,
+      "raw_rmse": 0.2902840069664921,
+      "affine_rmse": 0.05491486987702148,
+      "constant_rmse": 0.05610004110306827,
+      "affine_scale": 0.04432604256088533,
+      "affine_shift": 0.20346081364956134
+    }
+  ],
+  "reconstructions": {
+    "characters/cat": {
+      "silhouette_iou": 0.7823991915606823,
+      "generated_depth_iou": 0.48822298000078995,
+      "exact_depth_iou": 0.8137063905052421
+    },
+    "characters/adventurer": {
+      "silhouette_iou": 0.7831088664421998,
+      "generated_depth_iou": 0.583505549177191,
+      "exact_depth_iou": 0.7902877570523484
+    }
+  }
+}

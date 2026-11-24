@@ -22,6 +22,20 @@ Keep the adventurer fixed as a reproducible benchmark while improving color corr
 
 The runtime is intentionally small and separable from asset tooling. New gameplay code belongs in `game/`; assets and source art belong in `characters/`. No live AI service or Python process is needed at game runtime.
 
+## Conditioned depth trial
+
+The [2026-11-24 depth trial](depth-trial-20261124/README.md) compares three
+asset-conditioned depth generations, withheld cat views, known cat/adventurer
+geometry and exact-depth controls. Correct depth improves reconstruction, but
+the generated estimates degrade it and fragment the tail. Depth remains an
+explicit experiment in `depth_trial.py` and `depth_control.py`; it is not part
+of the standard manifest or compiler. The report includes the source maps,
+prompts, numerical results and reproduction commands.
+
+The expanded quadruped assessment also finds severe stance drift and local
+stretching in the current cat walk. GLB validity is not an animation-quality
+approval. Use `assess_quadruped.py` and inspect motion when evaluating a refit.
+
 ## Repository migration validation
 
 The reorganized build was run from the game root into a separate output directory using Python 3.13.5. The static GLB, animated GLB, reconstruction report and rig metrics matched the prior v12 baseline byte-for-byte, and the separate rig audit completed successfully. The source GIF also matches the original archive byte-for-byte. The game JavaScript passed `node --check game/main.js`; the browser runtime and Vite build were not tested because the npm registry was unreachable in the packaging environment. Run `npm install`, `npm run dev` and `npm run build` locally before treating the runtime as verified. Commit the resulting npm lockfile after the first successful install.

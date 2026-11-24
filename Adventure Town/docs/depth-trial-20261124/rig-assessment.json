@@ -1,0 +1,28 @@
+{
+  "walk_edge_length_ratio_p99": 1.2558929920196533,
+  "walk_edge_length_ratio_max": 8.651472091674805,
+  "scale": 0.45,
+  "travel_speed": 2.2,
+  "paws": {
+    "frontPawL": {
+      "stance_forward_drift": 0.720505765080452,
+      "stance_floor_gap_max": 0.0020109249744564295,
+      "rest_paw_length": 0.09843749552965164
+    },
+    "frontPawR": {
+      "stance_forward_drift": 0.6474197953939438,
+      "stance_floor_gap_max": 0.0011457345681264997,
+      "rest_paw_length": 0.09843749552965164
+    },
+    "rearPawL": {
+      "stance_forward_drift": 0.6475431174039842,
+      "stance_floor_gap_max": 0.014062498696148396,
+      "rest_paw_length": 0.09843749552965164
+    },
+    "rearPawR": {
+      "stance_forward_drift": 0.7206302046775819,
+      "stance_floor_gap_max": 0.0018706315895542502,
+      "rest_paw_length": 0.09843749552965164
+    }
+  }
+}

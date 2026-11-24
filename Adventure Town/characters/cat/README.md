@@ -42,3 +42,8 @@ and single-elevation acquisition cannot recover hidden concavities. Preview
 and motion sheets were inspected, but the rig audit does not establish
 collision-free poses or planted feet. The trot can slide on the ground; it is
 a procedural companion animation, not motion capture or foot IK.
+
+The [depth trial and expanded rig assessment](../../docs/depth-trial-20261124/README.md)
+find significant stance drift and local mesh stretching. This is a prototype
+rig, not a polished animation rig. Generated depth did not fix the tail in
+that trial; the shipping model has not been replaced by those worse candidates.
