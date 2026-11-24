@@ -43,6 +43,15 @@ improves the known cat-volume control modestly, but source-turntable results
 remain inconsistent and the tail is over-thinned. These optional research
 tools do not change the standard compiler or its dependencies.
 
+The [reconstruction library trials](reconstruction-options-20261124/README.md)
+run SIFT, SuperPoint/LightGlue, bounded camera bundle adjustment, Open3D
+Poisson, scikit-image marching cubes and official TripoSR on CPU. TripoSR's
+oblique cat has a cleaner tail and exports through the existing rig, but a
+front-only input changes the tail and reused weights still deform poorly.
+These remain optional research tools; the report distinguishes mesh validity,
+cross-view agreement and animation quality, and records which GPU-only options
+were assessed but not run.
+
 ## Repository migration validation
 
 The reorganized build was run from the game root into a separate output directory using Python 3.13.5. The static GLB, animated GLB, reconstruction report and rig metrics matched the prior v12 baseline byte-for-byte, and the separate rig audit completed successfully. The source GIF also matches the original archive byte-for-byte. The game JavaScript passed `node --check game/main.js`; the browser runtime and Vite build were not tested because the npm registry was unreachable in the packaging environment. Run `npm install`, `npm run dev` and `npm run build` locally before treating the runtime as verified. Commit the resulting npm lockfile after the first successful install.

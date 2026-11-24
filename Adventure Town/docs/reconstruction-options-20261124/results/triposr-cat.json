@@ -1,0 +1,30 @@
+{
+  "character": "characters/cat",
+  "input_view": 2,
+  "input_angle": 45,
+  "torch": "2.5.1+cpu",
+  "device": "cpu",
+  "resolution": 128,
+  "density_threshold": 25,
+  "model_load_seconds": 16.72981840600005,
+  "inference_seconds": 15.055080493000332,
+  "extraction_seconds": 2.4361897239996324,
+  "peak_rss_mib": 3984.18359375,
+  "vertices": 21065,
+  "triangles": 41996,
+  "watertight": false,
+  "winding_consistent": true,
+  "components": 4,
+  "native_bounds": [
+    [
+      -0.3206801414489746,
+      -0.4912758767604828,
+      -0.4996529519557953
+    ],
+    [
+      0.40223169326782227,
+      0.5271273851394653,
+      0.485950231552124
+    ]
+  ]
+}

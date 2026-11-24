@@ -1,0 +1,30 @@
+{
+  "character": "characters/adventurer",
+  "input_view": 2,
+  "input_angle": 36,
+  "torch": "2.5.1+cpu",
+  "device": "cpu",
+  "resolution": 128,
+  "density_threshold": 25,
+  "model_load_seconds": 18.638636677999784,
+  "inference_seconds": 12.42387094600008,
+  "extraction_seconds": 2.4440842119997797,
+  "peak_rss_mib": 3698.43359375,
+  "vertices": 15042,
+  "triangles": 29984,
+  "watertight": false,
+  "winding_consistent": true,
+  "components": 5,
+  "native_bounds": [
+    [
+      -0.27956002950668335,
+      -0.3192487955093384,
+      -0.5127695202827454
+    ],
+    [
+      0.32888996601104736,
+      0.2935919761657715,
+      0.4998750686645508
+    ]
+  ]
+}

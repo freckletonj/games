@@ -1,0 +1,223 @@
+{
+  "character": "characters/cat",
+  "rigid_control": false,
+  "method": "sift",
+  "features_per_view": [
+    209,
+    257,
+    249,
+    214,
+    198,
+    168,
+    171,
+    164,
+    121,
+    172,
+    180,
+    179,
+    166,
+    247,
+    248,
+    231
+  ],
+  "adjacent_matches": 520,
+  "cycle_consistent": 80,
+  "cycle_testable": 80,
+  "cycle_fraction": 1.0,
+  "triangulated_tracks": 76,
+  "track_reprojection_median": 2.8491438370559914,
+  "pairs": [
+    {
+      "first": 0,
+      "second": 1,
+      "matches": 38,
+      "seconds": 0.0009620410000934498
+    },
+    {
+      "first": 1,
+      "second": 2,
+      "matches": 50,
+      "seconds": 0.0011419190000196977
+    },
+    {
+      "first": 2,
+      "second": 3,
+      "matches": 42,
+      "seconds": 0.0005672329998560599
+    },
+    {
+      "first": 3,
+      "second": 4,
+      "matches": 42,
+      "seconds": 0.0005313289998412074
+    },
+    {
+      "first": 4,
+      "second": 5,
+      "matches": 10,
+      "seconds": 0.00048365200018452015
+    },
+    {
+      "first": 5,
+      "second": 6,
+      "matches": 31,
+      "seconds": 0.0005794570001853572
+    },
+    {
+      "first": 6,
+      "second": 7,
+      "matches": 24,
+      "seconds": 0.0003145089999634365
+    },
+    {
+      "first": 7,
+      "second": 8,
+      "matches": 10,
+      "seconds": 0.00032978500030367286
+    },
+    {
+      "first": 8,
+      "second": 9,
+      "matches": 3,
+      "seconds": 0.00027964299988525454
+    },
+    {
+      "first": 9,
+      "second": 10,
+      "matches": 44,
+      "seconds": 0.0005193050001253141
+    },
+    {
+      "first": 10,
+      "second": 11,
+      "matches": 24,
+      "seconds": 0.0003786249999393476
+    },
+    {
+      "first": 11,
+      "second": 12,
+      "matches": 38,
+      "seconds": 0.0003866550000566349
+    },
+    {
+      "first": 12,
+      "second": 13,
+      "matches": 25,
+      "seconds": 0.001391256999795587
+    },
+    {
+      "first": 13,
+      "second": 14,
+      "matches": 40,
+      "seconds": 0.001537364999876445
+    },
+    {
+      "first": 14,
+      "second": 15,
+      "matches": 57,
+      "seconds": 0.0006987559995650372
+    },
+    {
+      "first": 15,
+      "second": 0,
+      "matches": 42,
+      "seconds": 0.000819852000404353
+    },
+    {
+      "first": 0,
+      "second": 2,
+      "matches": 17,
+      "seconds": 0.000578801999836287
+    },
+    {
+      "first": 1,
+      "second": 3,
+      "matches": 12,
+      "seconds": 0.0012554600002658844
+    },
+    {
+      "first": 2,
+      "second": 4,
+      "matches": 17,
+      "seconds": 0.0007454589999724703
+    },
+    {
+      "first": 3,
+      "second": 5,
+      "matches": 8,
+      "seconds": 0.0007739210000181629
+    },
+    {
+      "first": 4,
+      "second": 6,
+      "matches": 10,
+      "seconds": 0.0004266930000085267
+    },
+    {
+      "first": 5,
+      "second": 7,
+      "matches": 9,
+      "seconds": 0.00035801300009552506
+    },
+    {
+      "first": 6,
+      "second": 8,
+      "matches": 0,
+      "seconds": 0.00023215000010168296
+    },
+    {
+      "first": 7,
+      "second": 9,
+      "matches": 2,
+      "seconds": 0.0002959449998343189
+    },
+    {
+      "first": 8,
+      "second": 10,
+      "matches": 2,
+      "seconds": 0.000699272000019846
+    },
+    {
+      "first": 9,
+      "second": 11,
+      "matches": 11,
+      "seconds": 0.0003200400001333037
+    },
+    {
+      "first": 10,
+      "second": 12,
+      "matches": 19,
+      "seconds": 0.0005521279999811668
+    },
+    {
+      "first": 11,
+      "second": 13,
+      "matches": 7,
+      "seconds": 0.0004360109996923711
+    },
+    {
+      "first": 12,
+      "second": 14,
+      "matches": 1,
+      "seconds": 0.0005749030001425126
+    },
+    {
+      "first": 13,
+      "second": 15,
+      "matches": 20,
+      "seconds": 0.001079808999747911
+    },
+    {
+      "first": 14,
+      "second": 0,
+      "matches": 24,
+      "seconds": 0.0006719390003127046
+    },
+    {
+      "first": 15,
+      "second": 1,
+      "matches": 14,
+      "seconds": 0.000679375000345317
+    }
+  ]
+}

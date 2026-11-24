@@ -1,0 +1,37 @@
+{
+  "input_view": 2,
+  "assumed_input_yaw_degrees": 36,
+  "native_axis_permutation": [
+    1,
+    2,
+    0
+  ],
+  "translation_anchor": "bounding midpoint of vertices in lowest 12 percent of height",
+  "raw_components": 5,
+  "discarded_component_triangles": 40,
+  "triangles_added_by_small_hole_fill": 108,
+  "watertight": true,
+  "winding_consistent": true,
+  "vertices": 15014,
+  "triangles": 30052,
+  "input_silhouette_iou": 0.85620048885355,
+  "other_view_silhouette_iou": 0.8138221450493752,
+  "per_view_iou": [
+    0.7631809168319141,
+    0.8217171423588909,
+    0.85620048885355,
+    0.8629153605015674,
+    0.8116604067268974,
+    0.8135271807838179,
+    0.8203071083505866,
+    0.7971976182717658,
+    0.7898593898951383,
+    0.8670926132425183,
+    0.8568042475191202,
+    0.8067464050530843,
+    0.796167889324356,
+    0.8173446124310055,
+    0.7963618847930184,
+    0.7864493996569468
+  ]
+}
