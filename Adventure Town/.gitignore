@@ -1,0 +1,13 @@
+# Local dependencies and generated game bundles
+node_modules/
+dist/
+.venv/
+__pycache__/
+*.py[cod]
+*.nb[ci]
+.pytest_cache/
+.DS_Store
+Thumbs.db
+# Asset experiments stay out of canonical character directories
+experiments/
+# Canonical characters/*/generated outputs are intentionally tracked.

@@ -4,7 +4,7 @@ The source of truth is [sunken-temple.json](../../levels/sunken-temple.json) and
 
 ## Reproduce conditioning images
 
-From the repository root:
+From the `Wonderwood/` directory:
 
 ```sh
 node phaser/scripts/export-future-chapter-guides.mjs sunken-temple

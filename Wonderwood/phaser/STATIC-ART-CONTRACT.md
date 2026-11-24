@@ -17,7 +17,7 @@ with collision at the top only), and solid climbable walls (orange).
 It contains **no players, creatures, pickups, UI, exit markers or dynamic
 items**. The guide and all alpha masks are derived from `compileCave`.
 
-Run from the repository root:
+Run from the `Wonderwood/` directory:
 
 ```sh
 node phaser/scripts/export-cave-guides.mjs

@@ -14,7 +14,7 @@ and the recovery shelf below the boulder gallery.
 
 ## Artwork
 
-Run `node phaser/scripts/export-cave-guides.mjs` from the repository root.
+Run `node phaser/scripts/export-cave-guides.mjs` from the `Wonderwood/` directory.
 Use `dist/cave-guides/cavern-ascent/world-physical-rock.png` as the image model's
 full-height composition reference. The static rock mask comes from the same
 platforms and rock polygons as gameplay. Use `painted-scene-context.png`

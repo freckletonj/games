@@ -9,7 +9,7 @@ their home as horizontal center and bottom edge in world pixels. The log's
 
 ## Scene and props
 
-Run `node phaser/scripts/export-art-guides.mjs` from the repo root. The
+Run `node phaser/scripts/export-art-guides.mjs` from the `Wonderwood/` directory. The
 layout reference is
 `dist/art-guides/stonewake-hollow/painted-scene-context.png`. The first
 painting used a side-on sandstone and pine gorge, distant waterfalls,

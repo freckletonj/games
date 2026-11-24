@@ -8,6 +8,10 @@ on:
     paths:
       - .github/ci-trigger.txt
 
+defaults:
+  run:
+    working-directory: Wonderwood
+
 jobs:
   browser:
     runs-on: ubuntu-latest
@@ -63,7 +67,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wonderwood-playable-preview
-          path: dist/wonderwood.html
+          path: Wonderwood/dist/wonderwood.html
           if-no-files-found: error
       - name: Upload visual previews
         if: always()
@@ -71,14 +75,14 @@ jobs:
         with:
           name: wonderwood-previews
           path: |
-            dist/preview-*.png
-            dist/preview-levels.svg
-            dist/level-diagnostics.json
-            dist/route-probes.json
-            dist/preview-route-probes.svg
-            dist/art-jobs.json
-            dist/art-guides/*.svg
-            dist/performance-report.json
+            Wonderwood/dist/preview-*.png
+            Wonderwood/dist/preview-levels.svg
+            Wonderwood/dist/level-diagnostics.json
+            Wonderwood/dist/route-probes.json
+            Wonderwood/dist/preview-route-probes.svg
+            Wonderwood/dist/art-jobs.json
+            Wonderwood/dist/art-guides/*.svg
+            Wonderwood/dist/performance-report.json
           if-no-files-found: ignore
 
   phaser:
@@ -103,11 +107,11 @@ jobs:
         with:
           name: experimental-gameplay-source
           path: |
-            phaser/src/
-            phaser/levels/
-            phaser/tests/
-            phaser/package.json
-            src/platform/world-compiler.js
+            Wonderwood/phaser/src/
+            Wonderwood/phaser/levels/
+            Wonderwood/phaser/tests/
+            Wonderwood/phaser/package.json
+            Wonderwood/src/platform/world-compiler.js
           if-no-files-found: error
       - name: Test Phaser gameplay and cave geometry
         run: npm test --prefix phaser
@@ -172,7 +176,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: experimental-geometry-review
-          path: dist/future-chapter-guides/
+          path: Wonderwood/dist/future-chapter-guides/
           if-no-files-found: ignore
       - name: Build standalone Phaser game
         if: success() || failure()
@@ -190,14 +194,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: experimental-collision-captures
-          path: dist/graybox-screenshots/*.png
+          path: Wonderwood/dist/graybox-screenshots/*.png
           if-no-files-found: ignore
       - name: Upload complete playable game (including three grayboxes)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: wonderwood-main-game-with-grayboxes
-          path: dist/wonderwood-phaser.html
+          path: Wonderwood/dist/wonderwood-phaser.html
           if-no-files-found: error
       - name: Upload playable Phaser and Cavern Ascent preview
         if: always()
@@ -205,6 +209,6 @@ jobs:
         with:
           name: cavern-ascent-phaser-preview
           path: |
-            dist/wonderwood-phaser.html
-            dist/phaser-chapter-cavern-ascent.png
+            Wonderwood/dist/wonderwood-phaser.html
+            Wonderwood/dist/phaser-chapter-cavern-ascent.png
           if-no-files-found: ignore
