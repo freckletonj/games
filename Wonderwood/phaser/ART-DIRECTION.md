@@ -7,7 +7,7 @@ separate gameplay elements.
 
 ## Export the material guide
 
-Run from the repository root:
+Run from the `Wonderwood/` directory:
 
 ```sh
 node phaser/scripts/export-art-guides.mjs

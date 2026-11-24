@@ -10,7 +10,7 @@ The standalone HTML needs no Node runtime, network, or third-party libraries.
 
 ## Fast feedback loop
 
-From the repository root:
+From the `Wonderwood/` directory:
 
 1. Edit src/games/animal-adventure/designs.json (declarative JSON).
 2. Run: node tests/level-designs.mjs

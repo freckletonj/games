@@ -2,7 +2,7 @@
 
 The pose plans in `assets/poses/` define the shared explorer gait, mount
 gaits and wing positions, seated rider poses, and creature motion. Export
-guides from the repo root with Pillow installed.
+guides from the `Wonderwood/` directory with Pillow installed.
 
 ```sh
 python phaser/scripts/character-pose-art.py hero hero-guide.png

@@ -1,0 +1,14 @@
+{
+  "id": "adventurer",
+  "name": "Adventurer",
+  "source": "source/turntable.gif",
+  "rig": "source/rig.json",
+  "reconstruction": {
+    "height": 64,
+    "agreement": 0.94,
+    "elevation": 5,
+    "rows": 4,
+    "cols": 4,
+    "angles": [0, 18, 36, 60, 90, 120, 150, 175, 185, 210, 240, 265, 285, 310, 330, 345]
+  }
+}

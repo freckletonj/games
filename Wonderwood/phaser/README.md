@@ -121,7 +121,7 @@ Monkeys crouch before pouncing and can ride on your head until you jump.
 
 The terrain and rope anchors are authored in
 `levels/monkey-jungle.json`. Export the terrain mask with
-`node phaser/scripts/export-art-guides.mjs` from the repository root.
+`node phaser/scripts/export-art-guides.mjs` from the `Wonderwood/` directory.
 Supply the mask and a Wonderwood style reference to the image model, then
 pack the panorama, monkey atlas, and rope with
 `python phaser/scripts/monkey-jungle-art.py PAINTING MONKEY_ATLAS ROPE`.
@@ -388,7 +388,7 @@ watching actual gameplay.
 
 ## Verify locally
 
-From the repository root with Node.js and Python installed:
+From the `Wonderwood/` directory with Node.js and Python installed:
 
 ```sh
 npm install --prefix phaser

@@ -1,0 +1,9 @@
+:root { color-scheme: dark; font-family: system-ui, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; overflow: hidden; background: #243538; color: #f1eee2; }
+canvas { display: block; }
+#hud { position: absolute; top: 1rem; left: 1rem; padding: 1rem 1.25rem; background: #172326ed; border: 1px solid #657771; border-radius: .5rem; pointer-events: none; }
+h1 { font-size: 1.1rem; margin: 0; }
+p { font-size: .85rem; margin: .6rem 0 0; line-height: 1.6; color: #d6dfd7; }
+kbd { background: #41534e; border-radius: .2rem; padding: .1rem .3rem; }
+#status { color: #eac785; }
