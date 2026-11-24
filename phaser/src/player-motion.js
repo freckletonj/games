@@ -19,7 +19,8 @@ export function stepPlayerMotion(p,actions,step,world){
   const terrainX=(from,to,feet,swimming=false)=>world.floorSegments?
     sweepContourX(world.floorSegments,from,to,feet,swimming?7:11):
     safeHorizontalX(from,to,feet,world.groundAt,swimming);
-  const support=p.grounded?decks.find(deck=>deck.id===p.onPlatform):null;
+  const support=p.grounded?decks.find(deck=>
+    deck.id===p.onPlatform&&deck.enabled!==false):null;
   if(support){
     const [x,y]=support.position;
     const [previousX,previousY]=support.previous;
@@ -57,11 +58,12 @@ export function stepPlayerMotion(p,actions,step,world){
     const swimmer=p.form==='tideling'&&inWater;
     const canFlap=FLAPPING_FORMS.has(p.form);
     p.floatTime=(p.floatTime??0)+step;
-    const basin=world.waterBodies?.find(b=>
-      p.x>=b.start*world.tile&&p.x<=b.end*world.tile);
+    const basin=world.basinAt?
+      world.basinAt(p.x):world.waterBodies?.find(b=>
+        p.x>=b.start*world.tile&&p.x<=b.end*world.tile);
     const waterline=basin?basin.surface*world.tile:null;
     const floating=p.form!=='tideling'&&basin&&
-      p.y>=waterline+9&&(inWater||p.floating&&world.inWater(p.x,waterline+1));
+      p.y>=waterline+5&&(inWater||p.floating&&world.inWater(p.x,waterline+1));
     p.floating=Boolean(floating);
     let floatJump=false;
     const direction=Number(actions.right)-Number(actions.left);
@@ -73,6 +75,9 @@ export function stepPlayerMotion(p,actions,step,world){
     const icy=p.iceWater>0&&p.grounded&&!inWater&&world.pushSpeed==null;
     const traction=icy?(direction?.055:.025):p.grounded?.22:.14;
     p.vx+=(desired-p.vx)*Math.min(1,traction*step);
+    // A chapter may provide a deterministic water current. Its force is
+    // applied on the same simulation tick as steering and collision.
+    if(inWater&&world.currentAt)p.vx+=world.currentAt(p.x,p.y-8)*step;
     if(!direction&&Math.abs(p.vx)<.06)p.vx=0;
     if(swimmer){
       p.vy+=((actions.jump?-.23:actions.down?.24:.046)-p.vy*.035)*step;
@@ -180,7 +185,7 @@ export function stepPlayerMotion(p,actions,step,world){
     }else if(edges.length){
       safeX=sweepRockEdges(edges,p.x,p.y,safeX,p.y).x;
     }
-    if(world.blockHorizontal) safeX=world.blockHorizontal(p.x,safeX,p.y);
+    if(world.blockHorizontal) safeX=world.blockHorizontal(p.x,safeX,p.y,onTerrain);
     if(Math.abs(safeX-nextX)>.2)p.vx=0;
     const dx=safeX-p.x;
     if(dx||direction)p.face=Math.sign(dx||direction);

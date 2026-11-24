@@ -50,7 +50,9 @@ def main():
         page.keyboard.down("Space")
         page.wait_for_function("window.__wonderwoodPhaser.snapshot().menu === 'levels'")
         page.keyboard.up("Space")
-        assert page.locator("#ww-level-grid button").count() == 11
+        assert page.locator("#ww-level-grid button").count() == 15
+        for title in ("Sunken Temple", "Mirror Palace", "Skybound Stampede"):
+            assert page.get_by_role("button", name=title).count() == 1, title
         page.keyboard.down("ArrowDown")
         page.wait_for_function("window.__wonderwoodPhaser.snapshot().choice === 3")
         page.keyboard.up("ArrowDown")

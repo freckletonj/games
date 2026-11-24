@@ -1,0 +1,669 @@
+{
+  "version": 1,
+  "id": "skybound-stampede",
+  "biome": "summit",
+  "width": 360,
+  "height": 72,
+  "ridge": [
+    [
+      0,
+      55
+    ],
+    [
+      39,
+      55
+    ],
+    [
+      45,
+      57
+    ],
+    [
+      72,
+      57
+    ],
+    [
+      76,
+      58
+    ],
+    [
+      90,
+      58
+    ],
+    [
+      94,
+      53
+    ],
+    [
+      115,
+      53
+    ],
+    [
+      119,
+      57
+    ],
+    [
+      148,
+      57
+    ],
+    [
+      154,
+      52
+    ],
+    [
+      172,
+      52
+    ],
+    [
+      176,
+      51
+    ],
+    [
+      205,
+      51
+    ],
+    [
+      213,
+      71
+    ],
+    [
+      339,
+      71
+    ],
+    [
+      341,
+      43
+    ],
+    [
+      360,
+      43
+    ]
+  ],
+  "terrainFeatures": [],
+  "water": [],
+  "bridges": [],
+  "ledges": [
+    [
+      40,
+      52,
+      10
+    ],
+    [
+      48,
+      53,
+      12
+    ],
+    [
+      62,
+      52,
+      12
+    ],
+    [
+      76,
+      53,
+      12
+    ],
+    [
+      89,
+      54,
+      11
+    ],
+    [
+      109,
+      50,
+      10
+    ],
+    [
+      117,
+      50,
+      12
+    ],
+    [
+      131,
+      52,
+      12
+    ],
+    [
+      145,
+      53,
+      12
+    ],
+    [
+      159,
+      49,
+      10
+    ],
+    [
+      174,
+      48,
+      8
+    ],
+    [
+      204,
+      47,
+      12
+    ]
+  ],
+  "creatures": [],
+  "checkpoints": [
+    28,
+    184,
+    346
+  ],
+  "snacks": [
+    11,
+    23,
+    180,
+    189,
+    197,
+    205,
+    343
+  ],
+  "stars": [
+    [
+      74,
+      46
+    ],
+    [
+      133,
+      48
+    ],
+    [
+      247,
+      39
+    ],
+    [
+      315,
+      37
+    ]
+  ],
+  "relic": [
+    "springKey",
+    353,
+    41
+  ],
+  "landmarks": [],
+  "sections": [
+    {
+      "id": "unicorn-corral",
+      "range": [
+        0,
+        36
+      ],
+      "challenge": "befriend-and-mount-unicorns",
+      "goal": "One Unicorn per active human rider before scrolling begins",
+      "recovery": 28
+    },
+    {
+      "id": "woodland-stampede",
+      "range": [
+        36,
+        174
+      ],
+      "challenge": "gallop-jump-and-moving-obstacles",
+      "goal": "Gallop through the woodland obstacle course without leaving another rider behind",
+      "recovery": 28
+    },
+    {
+      "id": "pegasus-sanctuary",
+      "range": [
+        174,
+        205
+      ],
+      "challenge": "stationary-pegasus-befriending",
+      "goal": "Stop fully, dismount, and prepare one Pegasus per active rider",
+      "recovery": 184
+    },
+    {
+      "id": "storm-flight",
+      "range": [
+        205,
+        360
+      ],
+      "challenge": "wingbeats-gusts-and-air-hazards",
+      "goal": "Fly between upper and lower storm clouds, dodge falling boulders and rock shelves, then collect the Escape Light",
+      "recovery": 184
+    }
+  ],
+  "racePhases": [
+    {
+      "id": "waitingForUnicorns",
+      "anchor": 512,
+      "requireMount": "unicorn",
+      "next": "groundScroll"
+    },
+    {
+      "id": "groundScroll",
+      "from": 512,
+      "to": 2944,
+      "speed": 2.8,
+      "next": "sanctuaryStop"
+    },
+    {
+      "id": "sanctuaryStop",
+      "anchor": 2944,
+      "next": "waitingForPegasi"
+    },
+    {
+      "id": "waitingForPegasi",
+      "anchor": 2944,
+      "requireMount": "pegasus",
+      "next": "flightScroll"
+    },
+    {
+      "id": "flightScroll",
+      "from": 2944,
+      "to": 5504,
+      "speed": 3.1,
+      "next": "finished"
+    },
+    {
+      "id": "finished",
+      "anchor": 5504
+    }
+  ],
+  "mountEncounters": [
+    {
+      "id": "unicorn-one",
+      "kind": "unicorn",
+      "at": [
+        14,
+        55
+      ],
+      "favorite": "berry",
+      "treatsToBefriend": 2
+    },
+    {
+      "id": "unicorn-two",
+      "kind": "unicorn",
+      "at": [
+        25,
+        55
+      ],
+      "favorite": "berry",
+      "treatsToBefriend": 2
+    },
+    {
+      "id": "pegasus-one",
+      "kind": "pegasus",
+      "at": [
+        186,
+        51
+      ],
+      "favorite": "star",
+      "treatsToBefriend": 2
+    },
+    {
+      "id": "pegasus-two",
+      "kind": "pegasus",
+      "at": [
+        198,
+        51
+      ],
+      "favorite": "star",
+      "treatsToBefriend": 2
+    }
+  ],
+  "hazards": [
+    {
+      "id": "root-trainer",
+      "stage": "groundScroll",
+      "kind": "log",
+      "home": [
+        57,
+        56
+      ],
+      "size": [
+        28,
+        12
+      ],
+      "warningDistance": 195
+    },
+    {
+      "id": "bridge-gap",
+      "stage": "groundScroll",
+      "kind": "gap",
+      "home": [
+        84,
+        57
+      ],
+      "size": [
+        44,
+        22
+      ],
+      "warningDistance": 235
+    },
+    {
+      "id": "boulder-run",
+      "stage": "groundScroll",
+      "kind": "rolling-boulder",
+      "home": [
+        108,
+        52
+      ],
+      "size": [
+        32,
+        32
+      ],
+      "motion": {
+        "axis": "x",
+        "amplitude": 40,
+        "periodTicks": 180,
+        "phaseTicks": 80
+      },
+      "warningDistance": 275
+    },
+    {
+      "id": "branch-swing",
+      "stage": "groundScroll",
+      "kind": "swinging-branch",
+      "home": [
+        136,
+        43
+      ],
+      "size": [
+        18,
+        52
+      ],
+      "motion": {
+        "axis": "x",
+        "amplitude": 46,
+        "periodTicks": 210,
+        "phaseTicks": 44
+      },
+      "warningDistance": 285
+    },
+    {
+      "id": "crossing-cart",
+      "stage": "groundScroll",
+      "kind": "crossing-cart",
+      "home": [
+        163,
+        52
+      ],
+      "size": [
+        28,
+        20
+      ],
+      "motion": {
+        "axis": "x",
+        "amplitude": 36,
+        "periodTicks": 240,
+        "phaseTicks": 0
+      },
+      "warningDistance": 305
+    },
+    {
+      "id": "high-arch",
+      "stage": "flightScroll",
+      "kind": "arch",
+      "home": [
+        224,
+        37
+      ],
+      "size": [
+        112,
+        38
+      ],
+      "warningDistance": 180
+    },
+    {
+      "id": "low-tunnel",
+      "stage": "flightScroll",
+      "kind": "arch",
+      "home": [
+        247,
+        55
+      ],
+      "size": [
+        96,
+        32
+      ],
+      "warningDistance": 180
+    },
+    {
+      "id": "cloud-shutter",
+      "stage": "flightScroll",
+      "kind": "moving-shutter",
+      "home": [
+        273,
+        42
+      ],
+      "size": [
+        32,
+        106
+      ],
+      "motion": {
+        "axis": "y",
+        "amplitude": 32,
+        "periodTicks": 240,
+        "phaseTicks": 20
+      },
+      "warningDistance": 220
+    },
+    {
+      "id": "rotating-fan",
+      "stage": "flightScroll",
+      "kind": "fan",
+      "home": [
+        294,
+        43
+      ],
+      "size": [
+        72,
+        72
+      ],
+      "motion": {
+        "axis": "rotation",
+        "periodTicks": 180,
+        "phaseTicks": 0
+      },
+      "warningDistance": 230
+    },
+    {
+      "id": "falling-crystal",
+      "stage": "flightScroll",
+      "kind": "crystal",
+      "home": [
+        316,
+        30
+      ],
+      "size": [
+        44,
+        72
+      ],
+      "motion": {
+        "axis": "y",
+        "amplitude": 70,
+        "periodTicks": 225,
+        "phaseTicks": 100
+      },
+      "warningDistance": 250
+    },
+    {
+      "id": "crossing-flyer",
+      "stage": "flightScroll",
+      "kind": "flyer",
+      "home": [
+        328,
+        37
+      ],
+      "size": [
+        44,
+        26
+      ],
+      "motion": {
+        "axis": "x",
+        "amplitude": 78,
+        "periodTicks": 240,
+        "phaseTicks": 60
+      },
+      "warningDistance": 270
+    },
+    {
+      "id": "first-hanging-rock",
+      "stage": "flightScroll",
+      "kind": "storm-shelf",
+      "home": [
+        231,
+        39
+      ],
+      "size": [
+        100,
+        120
+      ],
+      "warningDistance": 245
+    },
+    {
+      "id": "falling-boulder-one",
+      "stage": "flightScroll",
+      "kind": "falling-boulder",
+      "home": [
+        252,
+        38
+      ],
+      "size": [
+        48,
+        62
+      ],
+      "motion": {
+        "axis": "fall",
+        "amplitude": 205,
+        "periodTicks": 168,
+        "phaseTicks": 112
+      },
+      "warningDistance": 250
+    },
+    {
+      "id": "thunder-gate",
+      "stage": "flightScroll",
+      "kind": "storm-gate",
+      "home": [
+        283,
+        46
+      ],
+      "size": [
+        60,
+        160
+      ],
+      "warningDistance": 270
+    },
+    {
+      "id": "falling-boulder-two",
+      "stage": "flightScroll",
+      "kind": "falling-boulder",
+      "home": [
+        302,
+        40
+      ],
+      "size": [
+        54,
+        72
+      ],
+      "motion": {
+        "axis": "fall",
+        "amplitude": 235,
+        "periodTicks": 143,
+        "phaseTicks": 36
+      },
+      "warningDistance": 280
+    },
+    {
+      "id": "low-rock-shelf",
+      "stage": "flightScroll",
+      "kind": "storm-shelf",
+      "home": [
+        317,
+        59
+      ],
+      "size": [
+        96,
+        100
+      ],
+      "warningDistance": 270
+    },
+    {
+      "id": "last-hanging-rock",
+      "stage": "flightScroll",
+      "kind": "storm-shelf",
+      "home": [
+        334,
+        34
+      ],
+      "size": [
+        56,
+        86
+      ],
+      "warningDistance": 210
+    }
+  ],
+  "flightVolumes": [
+    {
+      "id": "rising-wind",
+      "bounds": [
+        233,
+        30,
+        253,
+        60
+      ],
+      "forceY": -0.16
+    },
+    {
+      "id": "downward-gust",
+      "bounds": [
+        274,
+        26,
+        292,
+        58
+      ],
+      "forceY": 0.13
+    },
+    {
+      "id": "last-updraft",
+      "bounds": [
+        307,
+        28,
+        325,
+        62
+      ],
+      "forceY": -0.11
+    }
+  ],
+  "recovery": {
+    "initialCheckpoint": 28,
+    "sanctuaryCheckpoint": 184,
+    "allRidersTogether": true,
+    "freezeHazardsAtStops": true,
+    "lateJoin": "at-next-stop",
+    "cloudAssistCountsAsRider": false
+  },
+  "camera": {
+    "behind": 320,
+    "ahead": 240,
+    "verticalPadding": 100,
+    "leftGrace": 48,
+    "recoveryTicks": 40
+  },
+  "goalPolicy": "contact-only",
+  "flightVoid": {
+    "from": 213,
+    "to": 340,
+    "fallY": 61,
+    "ceilingY": 24
+  },
+  "routeChoices": [
+    {
+      "id": "woodland-fork",
+      "from": 47,
+      "to": 99,
+      "upper": "Hop onto blue stepping stones",
+      "lower": "Gallop below and jump the fallen log"
+    },
+    {
+      "id": "high-canopy",
+      "from": 113,
+      "to": 170,
+      "upper": "Leap between the high canopy decks",
+      "lower": "Stay low, time the boulder and cart"
+    }
+  ]
+}

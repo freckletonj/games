@@ -1,0 +1,779 @@
+{
+  "version": 1,
+  "id": "mirror-palace",
+  "biome": "summit",
+  "width": 228,
+  "height": 64,
+  "ridge": [
+    [
+      0,
+      46
+    ],
+    [
+      40,
+      46
+    ],
+    [
+      44,
+      55
+    ],
+    [
+      72,
+      55
+    ],
+    [
+      76,
+      43
+    ],
+    [
+      88,
+      43
+    ],
+    [
+      92,
+      55
+    ],
+    [
+      130,
+      55
+    ],
+    [
+      134,
+      42
+    ],
+    [
+      145,
+      42
+    ],
+    [
+      150,
+      55
+    ],
+    [
+      190,
+      55
+    ],
+    [
+      194,
+      37
+    ],
+    [
+      228,
+      37
+    ]
+  ],
+  "terrainFeatures": [],
+  "water": [],
+  "bridges": [],
+  "ledges": [
+    [
+      87,
+      41,
+      7
+    ]
+  ],
+  "creatures": [
+    [
+      "glimmermoth",
+      210
+    ]
+  ],
+  "checkpoints": [
+    76,
+    136,
+    195
+  ],
+  "snacks": [
+    14,
+    83,
+    144
+  ],
+  "stars": [
+    [
+      62,
+      49
+    ],
+    [
+      120,
+      51
+    ],
+    [
+      171,
+      49
+    ]
+  ],
+  "relic": [
+    "springKey",
+    219,
+    36
+  ],
+  "landmarks": [],
+  "sections": [
+    {
+      "id": "reflection-atrium",
+      "range": [
+        0,
+        76
+      ],
+      "challenge": "single-reflection",
+      "goal": "Aim the blue laser upward to store the main bridge, or downward to explore the optional Stardrop vault on temporary light steps",
+      "recovery": 76
+    },
+    {
+      "id": "three-part-gallery",
+      "range": [
+        76,
+        145
+      ],
+      "challenge": "two-reflections-and-shutter",
+      "goal": "Turn the lower mirror directly, hop to the upper reflector on its stone shelf, and open the curtain at its foot to build the six-step balcony",
+      "recovery": 136
+    },
+    {
+      "id": "eclipse-observatory",
+      "range": [
+        145,
+        228
+      ],
+      "challenge": "prism-shutter-and-eclipse",
+      "goal": "Turn the prism itself toward the ignition receiver, open the curtain on its frame, then turn the prism toward the eclipse capacitor",
+      "recovery": 195
+    }
+  ],
+  "lightSources": [
+    {
+      "id": "atrium-sun",
+      "at": [
+        29,
+        43
+      ],
+      "direction": 0,
+      "range": 60,
+      "enabled": true
+    },
+    {
+      "id": "gallery-lantern",
+      "at": [
+        82,
+        41
+      ],
+      "direction": 0,
+      "range": 75,
+      "enabled": true
+    },
+    {
+      "id": "eclipse-sun",
+      "at": [
+        152,
+        52
+      ],
+      "direction": 0,
+      "range": 65,
+      "enabled": true
+    }
+  ],
+  "mirrors": [
+    {
+      "id": "atrium-mirror",
+      "at": [
+        39,
+        43
+      ],
+      "angles": [
+        -45,
+        45,
+        0
+      ],
+      "initial": 0,
+      "reach": 38,
+      "controlAt": [
+        39,
+        43
+      ]
+    },
+    {
+      "id": "gallery-mirror-a",
+      "at": [
+        86,
+        41
+      ],
+      "angles": [
+        -45,
+        45
+      ],
+      "initial": 45,
+      "reach": 38,
+      "controlAt": [
+        86,
+        41
+      ]
+    },
+    {
+      "id": "gallery-mirror-b",
+      "at": [
+        86,
+        39
+      ],
+      "angles": [
+        -45,
+        45
+      ],
+      "initial": 45,
+      "reach": 38,
+      "controlAt": [
+        86,
+        39
+      ]
+    },
+    {
+      "id": "observatory-prism",
+      "at": [
+        165,
+        52
+      ],
+      "angles": [
+        -45,
+        0,
+        45
+      ],
+      "initial": 0,
+      "reach": 40,
+      "controlAt": [
+        165,
+        52
+      ]
+    }
+  ],
+  "shutters": [
+    {
+      "id": "gallery-shutter",
+      "from": [
+        108,
+        28
+      ],
+      "to": [
+        108,
+        54
+      ],
+      "initial": "closed",
+      "states": [
+        "open",
+        "closed"
+      ],
+      "reach": 40,
+      "controlAt": [
+        108,
+        53
+      ]
+    },
+    {
+      "id": "eclipse-shutter",
+      "from": [
+        159,
+        47
+      ],
+      "to": [
+        159,
+        54
+      ],
+      "initial": "closed",
+      "states": [
+        "open",
+        "closed"
+      ],
+      "reach": 40,
+      "controlAt": [
+        159,
+        53
+      ]
+    }
+  ],
+  "occluders": [
+    {
+      "id": "eclipse-disc",
+      "center": [
+        165,
+        42
+      ],
+      "radius": 1,
+      "orbit": [
+        165,
+        42
+      ],
+      "orbitRadius": 4,
+      "periodTicks": 240,
+      "phaseTicks": 36
+    }
+  ],
+  "beamTargets": [
+    {
+      "id": "atrium-target",
+      "at": [
+        39,
+        37
+      ],
+      "radius": 2,
+      "source": "atrium-sun"
+    },
+    {
+      "id": "atrium-vault-target",
+      "at": [
+        39,
+        45
+      ],
+      "radius": 1,
+      "source": "atrium-sun",
+      "store": false
+    },
+    {
+      "id": "gallery-target",
+      "at": [
+        123,
+        39
+      ],
+      "radius": 2,
+      "source": "gallery-lantern"
+    },
+    {
+      "id": "observatory-ignition",
+      "at": [
+        165,
+        54
+      ],
+      "radius": 1,
+      "source": "eclipse-sun",
+      "chargeTicks": 18
+    },
+    {
+      "id": "observatory-target",
+      "at": [
+        165,
+        34
+      ],
+      "radius": 3,
+      "source": "eclipse-sun",
+      "chargeTicks": 30,
+      "requiresCharged": [
+        "observatory-ignition"
+      ]
+    }
+  ],
+  "phasePlatforms": [
+    {
+      "id": "atrium-crystal",
+      "home": [
+        58,
+        45
+      ],
+      "size": [
+        512,
+        20
+      ],
+      "rule": "lit",
+      "target": "atrium-target",
+      "previewTicks": 18,
+      "latch": true
+    },
+    {
+      "id": "atrium-vault-entrance",
+      "home": [
+        48,
+        53
+      ],
+      "size": [
+        64,
+        20
+      ],
+      "rule": "lit",
+      "target": "atrium-vault-target",
+      "previewTicks": 12,
+      "latch": false,
+      "buildDelayTicks": 6
+    },
+    {
+      "id": "atrium-vault-mid",
+      "home": [
+        54,
+        51
+      ],
+      "size": [
+        64,
+        20
+      ],
+      "rule": "lit",
+      "target": "atrium-vault-target",
+      "previewTicks": 12,
+      "latch": false,
+      "buildDelayTicks": 12
+    },
+    {
+      "id": "atrium-vault-perch",
+      "home": [
+        58,
+        49
+      ],
+      "size": [
+        96,
+        20
+      ],
+      "rule": "lit",
+      "target": "atrium-vault-target",
+      "previewTicks": 12,
+      "latch": false,
+      "buildDelayTicks": 18
+    },
+    {
+      "id": "gallery-near",
+      "home": [
+        114,
+        53
+      ],
+      "size": [
+        128,
+        20
+      ],
+      "rule": "lit",
+      "target": "gallery-target",
+      "previewTicks": 18,
+      "latch": true,
+      "buildDelayTicks": 0
+    },
+    {
+      "id": "gallery-step-two",
+      "home": [
+        118,
+        51
+      ],
+      "size": [
+        128,
+        20
+      ],
+      "rule": "lit",
+      "target": "gallery-target",
+      "previewTicks": 18,
+      "latch": true,
+      "buildDelayTicks": 5
+    },
+    {
+      "id": "gallery-step-three",
+      "home": [
+        122,
+        49
+      ],
+      "size": [
+        128,
+        20
+      ],
+      "rule": "lit",
+      "target": "gallery-target",
+      "previewTicks": 18,
+      "latch": true,
+      "buildDelayTicks": 10
+    },
+    {
+      "id": "gallery-step-four",
+      "home": [
+        126,
+        47
+      ],
+      "size": [
+        128,
+        20
+      ],
+      "rule": "lit",
+      "target": "gallery-target",
+      "previewTicks": 18,
+      "latch": true,
+      "buildDelayTicks": 15
+    },
+    {
+      "id": "gallery-step-five",
+      "home": [
+        129,
+        45
+      ],
+      "size": [
+        128,
+        20
+      ],
+      "rule": "lit",
+      "target": "gallery-target",
+      "previewTicks": 18,
+      "latch": true,
+      "buildDelayTicks": 20
+    },
+    {
+      "id": "gallery-far",
+      "home": [
+        132,
+        43
+      ],
+      "size": [
+        128,
+        20
+      ],
+      "rule": "lit",
+      "target": "gallery-target",
+      "previewTicks": 18,
+      "latch": true,
+      "buildDelayTicks": 25
+    },
+    {
+      "id": "eclipse-step-one",
+      "home": [
+        174,
+        53
+      ],
+      "size": [
+        224,
+        20
+      ],
+      "rule": "lit",
+      "target": "observatory-target",
+      "previewTicks": 25,
+      "latch": true,
+      "buildDelayTicks": 0
+    },
+    {
+      "id": "eclipse-step-two",
+      "home": [
+        176,
+        51
+      ],
+      "size": [
+        192,
+        20
+      ],
+      "rule": "lit",
+      "target": "observatory-target",
+      "previewTicks": 25,
+      "latch": true,
+      "buildDelayTicks": 4
+    },
+    {
+      "id": "eclipse-step-three",
+      "home": [
+        180,
+        49
+      ],
+      "size": [
+        160,
+        20
+      ],
+      "rule": "lit",
+      "target": "observatory-target",
+      "previewTicks": 25,
+      "latch": true,
+      "buildDelayTicks": 8
+    },
+    {
+      "id": "eclipse-step-four",
+      "home": [
+        184,
+        47
+      ],
+      "size": [
+        160,
+        20
+      ],
+      "rule": "lit",
+      "target": "observatory-target",
+      "previewTicks": 25,
+      "latch": true,
+      "buildDelayTicks": 12
+    },
+    {
+      "id": "eclipse-step-five",
+      "home": [
+        187,
+        45
+      ],
+      "size": [
+        128,
+        20
+      ],
+      "rule": "lit",
+      "target": "observatory-target",
+      "previewTicks": 25,
+      "latch": true,
+      "buildDelayTicks": 16
+    },
+    {
+      "id": "eclipse-step-six",
+      "home": [
+        189,
+        43
+      ],
+      "size": [
+        128,
+        20
+      ],
+      "rule": "lit",
+      "target": "observatory-target",
+      "previewTicks": 25,
+      "latch": true,
+      "buildDelayTicks": 20
+    },
+    {
+      "id": "eclipse-step-seven",
+      "home": [
+        190,
+        41
+      ],
+      "size": [
+        112,
+        20
+      ],
+      "rule": "lit",
+      "target": "observatory-target",
+      "previewTicks": 25,
+      "latch": true,
+      "buildDelayTicks": 24
+    },
+    {
+      "id": "eclipse-step-eight",
+      "home": [
+        191,
+        39
+      ],
+      "size": [
+        96,
+        20
+      ],
+      "rule": "lit",
+      "target": "observatory-target",
+      "previewTicks": 25,
+      "latch": true,
+      "buildDelayTicks": 28
+    }
+  ],
+  "opticalRules": {
+    "maxBounces": 6,
+    "rayWidth": 2,
+    "hitTolerance": 4,
+    "rayUpdate": "before-collision",
+    "riderGraceTicks": 30
+  },
+  "goalPolicy": "contact-only",
+  "resetPolicy": "mirror-detents-and-occluder-phase",
+  "beamGates": [
+    {
+      "id": "atrium-light-gate",
+      "at": [
+        75,
+        35
+      ],
+      "size": [
+        24,
+        320
+      ],
+      "target": "atrium-target"
+    },
+    {
+      "id": "gallery-light-gate",
+      "at": [
+        136,
+        34
+      ],
+      "size": [
+        24,
+        336
+      ],
+      "target": "gallery-target"
+    },
+    {
+      "id": "observatory-light-gate",
+      "at": [
+        194,
+        29
+      ],
+      "size": [
+        24,
+        416
+      ],
+      "target": "observatory-target"
+    }
+  ],
+  "controlStations": [
+    {
+      "id": "atrium-dial",
+      "room": "ATRIUM",
+      "at": [
+        39,
+        43
+      ],
+      "kind": "mirror",
+      "control": "atrium-mirror",
+      "color": "blue",
+      "hint": "Aim upward for the exit bridge or downward for a hidden vault route",
+      "label": "BLUE MIRROR"
+    },
+    {
+      "id": "gallery-first",
+      "room": "GALLERY",
+      "at": [
+        86,
+        41
+      ],
+      "kind": "mirror",
+      "control": "gallery-mirror-a",
+      "color": "pink",
+      "hint": "First reflection: aim the beam upward",
+      "label": "LOWER MIRROR"
+    },
+    {
+      "id": "gallery-second",
+      "room": "GALLERY",
+      "at": [
+        86,
+        39
+      ],
+      "kind": "mirror",
+      "control": "gallery-mirror-b",
+      "color": "pink",
+      "hint": "Second reflection: send the beam horizontally",
+      "label": "UPPER MIRROR"
+    },
+    {
+      "id": "gallery-curtain",
+      "room": "GALLERY",
+      "at": [
+        108,
+        53
+      ],
+      "kind": "shutter",
+      "control": "gallery-shutter",
+      "color": "pink",
+      "hint": "Open the curtain blocking the pink beam",
+      "label": "PINK CURTAIN",
+      "labelOffsetY": 76
+    },
+    {
+      "id": "observatory-prism-dial",
+      "room": "OBSERVATORY",
+      "at": [
+        165,
+        52
+      ],
+      "kind": "mirror",
+      "control": "observatory-prism",
+      "color": "gold",
+      "hint": "Aim the prism down to prime the receiver, then up past the eclipse",
+      "label": "GOLD PRISM"
+    },
+    {
+      "id": "observatory-shutter",
+      "room": "OBSERVATORY",
+      "at": [
+        159,
+        53
+      ],
+      "kind": "shutter",
+      "control": "eclipse-shutter",
+      "color": "gold",
+      "hint": "Open the curtain before charging either gold receiver",
+      "labelOffsetY": 74,
+      "label": "ECLIPSE CURTAIN"
+    }
+  ]
+}

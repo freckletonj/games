@@ -92,5 +92,25 @@
       "spinning-boulder-3": "phaser/assets/generated/cavern-ascent/spinning-boulder.png",
       "spinning-boulder-4": "phaser/assets/generated/cavern-ascent/spinning-boulder.png"
     }
+  },
+  "sunken-temple": {
+    "background": "phaser/assets/generated/sunken-temple/background.webp",
+    "solid": "phaser/assets/generated/sunken-temple/solid.webp",
+    "platforms": {
+      "courtyard-raft": "phaser/assets/generated/sunken-temple/raft.webp",
+      "sluice-raft": "phaser/assets/generated/sunken-temple/raft.webp",
+      "head-raft": "phaser/assets/generated/sunken-temple/raft.webp",
+      "tail-raft": "phaser/assets/generated/sunken-temple/raft.webp",
+      "timber-crate": "phaser/assets/generated/sunken-temple/crate.webp",
+      "sluice-handle": "phaser/assets/generated/sunken-temple/valve.webp",
+      "sluice-drain": "phaser/assets/generated/sunken-temple/valve.webp",
+      "cascade-handle": "phaser/assets/generated/sunken-temple/valve.webp",
+      "wheel-release": "phaser/assets/generated/sunken-temple/valve.webp",
+      "sluice-gate": "phaser/assets/generated/sunken-temple/sluice-gate.webp",
+      "wheel-gate": "phaser/assets/generated/sunken-temple/wheel-gate.webp",
+      "temple-wheel": "phaser/assets/generated/sunken-temple/waterwheel.webp",
+      "wheel-bridge-a": "phaser/assets/generated/sunken-temple/bridge.webp",
+      "wheel-bridge-b": "phaser/assets/generated/sunken-temple/bridge.webp"
+    }
   }
 }

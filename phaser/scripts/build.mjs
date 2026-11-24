@@ -159,4 +159,5 @@ const shell=html.slice(0,html.indexOf('<script>'));
 if (/<script\\s+src=|<link\\s+[^>]*href=/i.test(shell)) {
   throw Error('Standalone HTML shell unexpectedly references external assets');
 }
-console.log('Built dist/wonderwood-phaser.html ('+Math.round(Buffer.byteLength(html)/1024)+' KiB, self-contained)');
+console.log('Built dist/wonderwood-phaser.html ('+
+  Math.round(Buffer.byteLength(html)/1024)+' KiB, self-contained; includes all grayboxes)');

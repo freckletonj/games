@@ -22,6 +22,7 @@ export function stepPlatforms(platforms,seconds){
 }
 
 export function deckTopAt(platform,x,position=platform.position){
+  if(platform.enabled===false)return null;
   const [center,top]=position;
   const offset=x-center;
   if(platform.kind==='gear'){
@@ -37,6 +38,7 @@ export function deckTopAt(platform,x,position=platform.position){
 export function movingLanding(platforms,rider,fromX,fromY,toX,toY){
   let landing=null,landingY=Infinity;
   for(const deck of platforms){
+    if(deck.enabled===false)continue;
     const y=deckTopAt(deck,toX);
     if(y===null||y>=landingY)continue;
     const walkingOntoDeck=(deck.kind==='conveyor'||deck.kind==='puzzle-bridge')&&

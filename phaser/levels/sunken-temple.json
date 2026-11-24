@@ -1,0 +1,494 @@
+{
+  "version": 1,
+  "id": "sunken-temple",
+  "biome": "coast",
+  "width": 224,
+  "height": 64,
+  "ridge": [
+    [
+      0,
+      39
+    ],
+    [
+      28,
+      39
+    ],
+    [
+      32,
+      57
+    ],
+    [
+      55,
+      57
+    ],
+    [
+      56,
+      39
+    ],
+    [
+      70,
+      39
+    ],
+    [
+      74,
+      57
+    ],
+    [
+      103,
+      57
+    ],
+    [
+      107,
+      40
+    ],
+    [
+      125,
+      40
+    ],
+    [
+      130,
+      57
+    ],
+    [
+      160,
+      57
+    ],
+    [
+      161,
+      39
+    ],
+    [
+      179,
+      39
+    ],
+    [
+      185,
+      57
+    ],
+    [
+      209,
+      57
+    ],
+    [
+      210,
+      38
+    ],
+    [
+      224,
+      38
+    ]
+  ],
+  "terrainFeatures": [],
+  "water": [],
+  "bridges": [],
+  "ledges": [
+    [
+      56,
+      39,
+      8
+    ],
+    [
+      68,
+      39,
+      8
+    ],
+    [
+      101,
+      42,
+      5
+    ],
+    [
+      107,
+      40,
+      9
+    ],
+    [
+      119,
+      39,
+      10
+    ],
+    [
+      159,
+      40,
+      8
+    ],
+    [
+      177,
+      39,
+      7
+    ],
+    [
+      213,
+      38,
+      5
+    ]
+  ],
+  "creatures": [
+    [
+      "tideling",
+      20
+    ],
+    [
+      "tideling",
+      120
+    ]
+  ],
+  "checkpoints": [
+    65,
+    124,
+    176
+  ],
+  "snacks": [
+    16,
+    65,
+    122,
+    177
+  ],
+  "stars": [
+    [
+      47,
+      54
+    ],
+    [
+      90,
+      52
+    ],
+    [
+      145,
+      51
+    ],
+    [
+      196,
+      53
+    ]
+  ],
+  "relic": [
+    "springKey",
+    218,
+    37
+  ],
+  "landmarks": [],
+  "sections": [
+    {
+      "id": "tidal-courtyard",
+      "range": [
+        0,
+        70
+      ],
+      "challenge": "tide-and-raft",
+      "goal": "Board the raft at low tide; ride it up to the high dock (swimming alone cannot reach it)",
+      "recovery": 65
+    },
+    {
+      "id": "sluice-hall",
+      "range": [
+        70,
+        130
+      ],
+      "challenge": "valve-current-and-crate",
+      "goal": "Float the crate across the stone weir, then drain it onto the floor socket to latch the gate",
+      "recovery": 124
+    },
+    {
+      "id": "wheel-cascade",
+      "range": [
+        130,
+        224
+      ],
+      "challenge": "linked-flood-and-waterwheel",
+      "goal": "Ride the head raft, release the cascade, then use the downstream raft between two wheel-powered bridges",
+      "recovery": 176
+    }
+  ],
+  "waterVolumes": [
+    {
+      "id": "courtyard",
+      "from": 32,
+      "to": 55,
+      "minSurface": 55,
+      "maxSurface": 42.5,
+      "startSurface": 55,
+      "groundBottom": 57
+    },
+    {
+      "id": "sluice",
+      "from": 74,
+      "to": 103,
+      "minSurface": 55,
+      "maxSurface": 45,
+      "startSurface": 55,
+      "groundBottom": 57
+    },
+    {
+      "id": "wheel-head",
+      "from": 130,
+      "to": 160,
+      "minSurface": 55,
+      "maxSurface": 44,
+      "startSurface": 55,
+      "groundBottom": 57
+    },
+    {
+      "id": "wheel-tail",
+      "from": 185,
+      "to": 209,
+      "minSurface": 55,
+      "maxSurface": 42,
+      "startSurface": 55,
+      "groundBottom": 57
+    }
+  ],
+  "waterControllers": [
+    {
+      "id": "courtyard-tide",
+      "kind": "triangle",
+      "volume": "courtyard",
+      "halfPeriodTicks": 300,
+      "holdTicks": 120,
+      "startDelayTicks": 420
+    },
+    {
+      "id": "sluice-valve",
+      "kind": "valve",
+      "volume": "sluice",
+      "ratePerTick": 0.06,
+      "initial": "drain"
+    },
+    {
+      "id": "head-flood",
+      "kind": "valve",
+      "volume": "wheel-head",
+      "ratePerTick": 0.06,
+      "initial": "drain"
+    },
+    {
+      "id": "tail-flood",
+      "kind": "linked",
+      "volume": "wheel-tail",
+      "ratePerTick": 0.06,
+      "upstream": "head-flood",
+      "threshold": 46
+    }
+  ],
+  "valves": [
+    {
+      "id": "sluice-handle",
+      "at": [
+        70,
+        39
+      ],
+      "controller": "sluice-valve",
+      "modes": [
+        "drain",
+        "fill",
+        "hold"
+      ],
+      "reach": 48
+    },
+    {
+      "id": "sluice-drain",
+      "at": [
+        102,
+        42
+      ],
+      "controller": "sluice-valve",
+      "modes": [
+        "fill",
+        "drain"
+      ],
+      "reach": 48
+    },
+    {
+      "id": "cascade-handle",
+      "at": [
+        125,
+        40
+      ],
+      "controller": "head-flood",
+      "modes": [
+        "drain",
+        "fill",
+        "hold"
+      ],
+      "reach": 48
+    }
+  ],
+  "buoyantObjects": [
+    {
+      "id": "courtyard-raft",
+      "kind": "raft",
+      "volume": "courtyard",
+      "home": [
+        53,
+        54
+      ],
+      "size": [
+        112,
+        20
+      ],
+      "floatOffset": -24
+    },
+    {
+      "id": "sluice-raft",
+      "kind": "raft",
+      "volume": "sluice",
+      "home": [
+        100,
+        54
+      ],
+      "size": [
+        112,
+        20
+      ],
+      "floatOffset": -24
+    },
+    {
+      "id": "timber-crate",
+      "kind": "crate",
+      "volume": "sluice",
+      "home": [
+        85,
+        54
+      ],
+      "size": [
+        36,
+        36
+      ],
+      "floatOffset": 0
+    },
+    {
+      "id": "head-raft",
+      "kind": "raft",
+      "volume": "wheel-head",
+      "home": [
+        157,
+        54
+      ],
+      "size": [
+        112,
+        20
+      ],
+      "floatOffset": -24
+    },
+    {
+      "id": "tail-raft",
+      "kind": "raft",
+      "volume": "wheel-tail",
+      "home": [
+        197,
+        54
+      ],
+      "size": [
+        96,
+        20
+      ],
+      "floatOffset": -24
+    }
+  ],
+  "pressurePlates": [
+    {
+      "id": "sluice-plate",
+      "at": [
+        93,
+        57
+      ],
+      "radius": 24,
+      "requires": "timber-crate",
+      "opens": "sluice-gate"
+    }
+  ],
+  "gates": [
+    {
+      "id": "sluice-gate",
+      "at": [
+        106,
+        34
+      ],
+      "size": [
+        16,
+        368
+      ],
+      "default": "closed",
+      "opensWhen": "sluice-plate"
+    },
+    {
+      "id": "wheel-gate",
+      "at": [
+        213,
+        34
+      ],
+      "size": [
+        16,
+        368
+      ],
+      "default": "closed",
+      "opensWhen": "temple-wheel"
+    }
+  ],
+  "currents": [],
+  "waterwheel": {
+    "id": "temple-wheel",
+    "at": [
+      165,
+      45
+    ],
+    "radius": 58,
+    "upstream": "head-flood",
+    "downstream": "tail-flood",
+    "engageSurface": 45,
+    "opens": "wheel-walkway",
+    "chargeTicks": 90,
+    "release": "wheel-release"
+  },
+  "linkedPlatforms": [
+    {
+      "id": "wheel-bridge-a",
+      "home": [
+        185,
+        40
+      ],
+      "size": [
+        224,
+        20
+      ],
+      "enabledWhen": "temple-wheel"
+    },
+    {
+      "id": "wheel-bridge-b",
+      "home": [
+        208,
+        38
+      ],
+      "size": [
+        192,
+        20
+      ],
+      "enabledWhen": "temple-wheel",
+      "readyWhenSurface": {
+        "volume": "wheel-tail",
+        "atMost": 42.5
+      }
+    }
+  ],
+  "goalPolicy": "contact-only",
+  "resetPolicy": "controllers-return-to-checkpoint",
+  "releases": [
+    {
+      "id": "wheel-release",
+      "at": [
+        165,
+        39
+      ],
+      "reach": 52
+    }
+  ],
+  "obstacles": [
+    {
+      "id": "sluice-weir",
+      "left": 87,
+      "right": 89,
+      "top": 51,
+      "bottom": 57
+    }
+  ]
+}
