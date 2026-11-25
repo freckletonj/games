@@ -1,0 +1,19 @@
+# Paths are absolute, or relative to the process working directory; ~ is expanded.
+state_dir = "~/.local/share/game-asset-service"
+repository_url = "https://github.com/freckletonj/games.git"
+git_name = "Asset service"
+git_email = "assets@localhost"
+# All repository paths and other branch names are available to the Git harness.
+# Change this locally if you explicitly want direct publication to main.
+protected_branches = ["main"]
+gpu_ids = ["0", "1"]
+# Complete setup-hyworld before enabling either experimental GPU task.
+enable_reconstruction = false
+enable_environment = false
+reconstruction_size = 518
+train_steps = 4000
+vlm_port = 18080
+vlm_memory_fraction = 0.45
+vlm_start_timeout = 600
+max_upload_bytes = 4294967296
+chunk_bytes = 8388608

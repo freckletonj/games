@@ -1,9 +1,9 @@
 # Ticket: Local asset processing and publication API
 
-**Status:** Planned; implementation will happen separately. This directory is
-the home for shared asset-service code, setup scripts and tests. This PR adds
-only this ticket. Keep game runtime code and approved assets in their existing
-game directories.
+**Status:** Implementation in progress in PR #26. The Python service, CPU/Git
+integration tests and HY-World host setup live here. CUDA model execution still
+requires qualification on the deployment machine. Keep game runtime code and
+approved assets in their existing game directories.
 
 ## Goal
 
