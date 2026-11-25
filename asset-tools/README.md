@@ -21,7 +21,7 @@ version is the driver's compatibility level, not proof the toolkit is installed.
 
 ```sh
 sudo apt-get update
-sudo apt-get install -y build-essential cmake ninja-build pkg-config git gh \
+sudo apt-get install -y build-essential cmake ninja-build pkg-config git git-lfs gh \
   ffmpeg libgl1 libegl1 libopengl0 libglib2.0-0 libgomp1
 nvidia-smi
 nvcc --version
@@ -82,13 +82,14 @@ set -a
 set +a
 python scripts/smoke.py
 python scripts/smoke.py --publish
+python scripts/smoke.py --publish --lfs
 ```
 
 The first command uploads a PNG, runs a CPU transfer job, downloads the result
 and checks its SHA256. `--publish` additionally creates an `assets/smoke-*`
 branch, publishes `asset-tools/probes/probe.png` and verifies the committed bytes.
-It does not merge the branch. This is an actual byte-transfer test, not synthetic
-3D output.
+It does not merge the branch. `--lfs` additionally exercises Git LFS upload and
+resolved download. This is an actual byte-transfer test, not synthetic 3D output.
 
 ## Install the HY-World components
 
@@ -227,9 +228,12 @@ Job/publication retries reuse their original keys. Failed or interrupted
 publication requests must be inspected before choosing a new key. Original
 uploads can be published directly; failed-job artifacts cannot.
 
-This first harness deliberately rejects Git LFS destinations and files above
-100 MiB. They remain downloadable on the server; the GitHub size limit is not
-bypassed. Large-asset LFS publication is follow-up work. Do not commit weights,
+For large outputs, set `lfs: true` on the selected file mapping. The publisher
+adds an exact-filename `.gitattributes` rule, verifies the pointer and raw object
+hash, uploads the LFS object, then pushes the Git commit. Existing LFS rules are
+also honored. Ordinary Git files above 100 MiB are rejected. GitHub account LFS
+storage/bandwidth and per-file limits still apply. `enable_lfs` is on in the
+example configuration and requires `git-lfs` at `repo-init`. Do not commit weights,
 private configuration, rejected candidates or scene caches.
 
 ## Verification and remaining work
@@ -237,7 +241,8 @@ private configuration, rejected candidates or scene caches.
 `python -m unittest discover -s tests -v` covers actual local Git commits/pushes,
 byte equality, upload resume across API instances, Range downloads, checksums,
 request idempotency, job cancellation/failure/restart, protected branches,
-symlink/path confinement and stale heads. CPU CI runs on Python 3.11 and 3.12 and
+symlink/path confinement, stale heads and LFS publication of a real 101 MiB file
+plus cache-empty LFS retrieval. CPU CI runs on Python 3.11 and 3.12 and
 checks generated command options against the pinned upstream AST. Setup runs
 CLI/import checks on the actual GPU host. The HTTP smoke script exercises the
 live API and worker together.
@@ -252,7 +257,7 @@ collision geometry and visual approval are separate work.
 Next qualification: rigid known-view WorldMirror control, one small panorama,
 two-GPU memory/timing measurements, held-out views and engine inspection. Stage
 intermediates are retained for diagnosis, but automatic stage resume, camera/depth
-prior uploads, object generation, rigging and LFS are not implemented here.
+prior uploads, object generation and rigging are not implemented here.
 
 ## Existing research
 

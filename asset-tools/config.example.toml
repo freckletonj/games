@@ -6,6 +6,7 @@ git_email = "assets@localhost"
 # All repository paths and other branch names are available to the Git harness.
 # Change this locally if you explicitly want direct publication to main.
 protected_branches = ["main"]
+enable_lfs = true
 gpu_ids = ["0", "1"]
 # Complete setup-hyworld before enabling either experimental GPU task.
 enable_reconstruction = false

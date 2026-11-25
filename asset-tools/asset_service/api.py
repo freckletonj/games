@@ -37,6 +37,7 @@ class Job(Payload):
 class PublicationFile(Payload):
     artifact_id: str
     path: str
+    lfs: bool = False
 
 
 class Publication(Payload):
@@ -111,7 +112,7 @@ def create_app(config):
                 'hyworld': installation_status(config), 'gpus': gpu_inventory(),
                 'quantization': 'No int8/fp8 worker implemented; upstream BF16/FSDP only',
                 'git': {'initialized': (config['state_dir'] / 'repository.git').exists(),
-                        'protected_branches': config['protected_branches'], 'lfs': False}}
+                        'protected_branches': config['protected_branches'], 'lfs': config.get('enable_lfs', False)}}
 
     @app.post('/v1/uploads', status_code=201)
     def begin_upload(spec: Upload):
@@ -273,12 +274,19 @@ def create_app(config):
             return {'sha': sha, 'files': [entry.decode('utf-8') for entry in entries if entry]}
 
     @app.get('/v1/repo/file')
-    def read_file(ref: str, path: str):
+    def read_file(ref: str, path: str, resolve_lfs: bool = False):
         git_ops.repo_path(path)
         with store.lock(config, 'git'):
             git_ops.refresh(config)
             sha = git_ops.revision(config, ref)
             data = git_ops.git(config, 'show', f'{sha}:{path}', binary=True)
+            if resolve_lfs and git_ops.lfs_pointer(data):
+                if not config.get('enable_lfs', False):
+                    raise ValueError('Enable LFS and initialize its local filters before resolving objects')
+                git_ops.git(config, 'lfs', 'fetch', f'--include={path}', '--exclude=', 'origin', sha)
+                pointer = git_ops.lfs_pointer(data)
+                location = git_ops.lfs_location(config, pointer['sha256'])
+                return FileResponse(location, media_type='application/octet-stream')
             return Response(data, media_type='application/octet-stream')
 
     @app.get('/v1/repo/diff')

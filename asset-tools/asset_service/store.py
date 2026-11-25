@@ -29,6 +29,7 @@ def load_config(path):
     config.setdefault('max_upload_bytes', 4 * 1024**3)
     config.setdefault('chunk_bytes', 8 * 1024**2)
     config.setdefault('gpu_ids', ['0', '1'])
+    config.setdefault('enable_lfs', True)
     config.setdefault('enable_reconstruction', False)
     config.setdefault('enable_environment', False)
     return config

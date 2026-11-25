@@ -23,7 +23,7 @@ there are no arbitrary model flags, commands or filesystem paths in job requests
 | `POST /v1/jobs/{id}/cancel` | Cancel queued work or stop the active process group |
 | `GET /v1/repo` | Remote branches/heads and local protected-branch policy |
 | `GET /v1/repo/tree?ref=...` | Recursive tree at a resolved commit |
-| `GET /v1/repo/file?ref=...&path=...` | Exact blob bytes |
+| `GET /v1/repo/file?ref=...&path=...` | Exact blob bytes; `resolve_lfs=true` downloads the LFS payload |
 | `GET /v1/repo/diff?base=...&head=...` | Stat and patch |
 | `POST /v1/repo/branches` | Create/push a new branch from a resolved base |
 | `POST /v1/publications` | Commit and push explicit file mappings/deletions |
@@ -112,7 +112,7 @@ Use the returned SHA as `expected_head`. Explicitly select artifacts to commit:
   "expected_head": "40_CHARACTER_COMMIT_SHA",
   "message": "Add reviewed town-square candidate",
   "files": [
-    {"artifact_id":"OUTPUT_ARTIFACT_ID","path":"Adventure Town/environments/town-square/scene.spz"},
+    {"artifact_id":"OUTPUT_ARTIFACT_ID","path":"Adventure Town/environments/town-square/scene.spz","lfs":true},
     {"artifact_id":"MANIFEST_ARTIFACT_ID","path":"Adventure Town/environments/town-square/manifest.json"}
   ],
   "delete": []
@@ -121,8 +121,11 @@ Use the returned SHA as `expected_head`. Explicitly select artifacts to commit:
 
 The response includes `commit_sha`, branch, changed paths and file hashes. The
 publisher validates actual Git blob bytes before pushing. Destination symlinks,
-path traversal, `.git`, stale heads, duplicate destinations, oversized regular
-Git blobs and LFS destinations are rejected. Byte-changing Git attributes are
+path traversal, `.git`, stale heads, duplicate destinations and oversized regular
+Git blobs are rejected. Set `lfs: true` for a large file; existing LFS attributes
+are honored too. Explicit LFS tracking also commits the resulting root
+`.gitattributes` change and includes it in the receipt. Publish an uploaded
+`.gitattributes` file separately from mappings with `lfs: true`. Byte-changing Git attributes are
 rejected rather than silently publishing altered files. Use repository-relative
 paths for any code/assets/docs you intend to change; no assets-only root is
 required. Deletions require existing regular files.
@@ -133,3 +136,7 @@ an attempt, inspect `/v1/repo` and the host publication record before using a ne
 key. The service does not automatically overwrite/rebase concurrent work.
 There is no merge, force-reset, remote shell or remote setup endpoint. Use the
 GitHub connector for PR review and merge.
+
+`GET /v1/repo/file` returns the committed pointer for LFS files by default.
+Add `resolve_lfs=true` to fetch the object from the configured remote and stream
+the original payload. The response supports HTTP Range.

@@ -33,9 +33,13 @@ def initialize_repo(config):
     git(config, 'config', 'commit.gpgsign', 'false')
     git(config, 'config', 'remote.origin.fetch', '+refs/heads/*:refs/remotes/origin/*')
     git(config, 'fetch', 'origin')
+    if config.get('enable_lfs', False):
+        git(config, 'lfs', 'install', '--local', '--skip-smudge', '--skip-repo')
 
 
 def refresh(config):
+    if git(config, 'remote', 'get-url', 'origin') != config['repository_url']:
+        raise ValueError('Repository URL differs from repo-init; use a separate state directory for a different repository')
     git(config, 'fetch', '--prune', 'origin')
 
 
@@ -131,8 +135,6 @@ def publish(config, spec):
                     raise ValueError('Only successful job outputs may be published')
             if store.digest(artifact['path']) != artifact['sha256']:
                 raise ValueError('Artifact checksum changed on disk')
-            if artifact['size'] > 100 * 1024**2:
-                raise ValueError('This harness supports regular Git files up to 100 MiB; large outputs stay on the server')
             artifacts.append(artifact)
         with store.database(config) as db:
             db.execute('INSERT INTO publications VALUES (?,?,?,NULL)', (key, encoded, 'running'))
@@ -141,6 +143,8 @@ def publish(config, spec):
         try:
             for item, artifact in zip(files, artifacts):
                 target = destination(worktree, item['path'])
+                if target.is_dir():
+                    raise ValueError('File publication cannot replace a directory')
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(artifact['path'], target)
             for path in deletes:
@@ -148,23 +152,46 @@ def publish(config, spec):
                 if not target.is_file():
                     raise ValueError('Deletion requires an existing regular file')
                 target.unlink()
+            # Explicit LFS requests add exact filename rules, not broad extension patterns.
+            use_lfs = any(item.get('lfs', False) for item in files)
+            if use_lfs:
+                if not config.get('enable_lfs', False):
+                    raise ValueError('LFS is disabled in the host configuration')
+                if '.gitattributes' in paths:
+                    raise ValueError('Publish .gitattributes separately from lfs=true file requests')
+                destination(worktree, '.gitattributes')
+                for item in files:
+                    if item.get('lfs', False):
+                        git(config, 'lfs', 'track', '--filename', '--', item['path'], cwd=worktree)
+                paths.append('.gitattributes')
+            lfs_paths = set()
+            for item, artifact in zip(files, artifacts):
+                attribute = git(config, 'check-attr', 'filter', '--', item['path'], cwd=worktree)
+                if attribute.endswith(': lfs'):
+                    lfs_paths.add(item['path'])
+                    if not config.get('enable_lfs', False):
+                        raise ValueError('Destination uses LFS but the host has it disabled')
+                elif item.get('lfs', False):
+                    raise ValueError('A nested .gitattributes rule overrides the requested LFS tracking')
+                if artifact['size'] > 100 * 1024**2 and item['path'] not in lfs_paths:
+                    raise ValueError('Files above 100 MiB require lfs=true or existing LFS tracking')
             # Force-add only explicitly selected paths (experiments may be ignored).
             git(config, 'add', '-f', '--', *paths, cwd=worktree)
             if not git(config, 'diff', '--cached', '--name-only', cwd=worktree):
                 raise ValueError('Publication has no changes')
-            # Fail before commit if the destination repository uses LFS: do not accidentally commit raw large data.
-            attrs = git(config, 'check-attr', 'filter', '--', *paths, cwd=worktree)
-            if any(line.endswith(': lfs') for line in attrs.splitlines()):
-                raise ValueError('LFS destinations are not supported in this first harness')
             git(config, 'commit', '-m', spec['message'], cwd=worktree)
             commit = git(config, 'rev-parse', 'HEAD', cwd=worktree)
             receipt = {'commit_sha': commit, 'branch': branch, 'paths': paths,
-                       'files': [{'path': item['path'], 'sha256': artifact['sha256']} for item, artifact in zip(files, artifacts)]}
+                       'files': [{'path': item['path'], 'sha256': artifact['sha256'], 'size': artifact['size'], 'lfs': item['path'] in lfs_paths} for item, artifact in zip(files, artifacts)]}
             # Verify Git attribute conversions before publishing any bytes.
             verify_receipt(config, receipt)
             # Persist the intended commit before pushing, so a crash never invites a blind retry.
             with store.database(config) as db:
                 db.execute('UPDATE publications SET receipt=? WHERE request_key=?', (json.dumps(receipt), key))
+            if lfs_paths:
+                # Hooks are disabled; upload selected LFS objects explicitly before the ref moves.
+                git(config, 'lfs', 'push', '--object-id', 'origin',
+                    *[entry['sha256'] for entry in receipt['files'] if entry['lfs']])
             # Normal push rejects remote divergence. The lease also rejects a concurrent fast-forward.
             git(config, 'push', f'--force-with-lease=refs/heads/{branch}:{head}', 'origin', f'{commit}:refs/heads/{branch}')
             with store.database(config) as db:
@@ -178,7 +205,14 @@ def verify_receipt(config, receipt):
     # Verify actual blob bytes, including any Git attribute conversions.
     for item in receipt['files']:
         data = git(config, 'show', f"{receipt['commit_sha']}:{item['path']}", binary=True)
-        if hashlib.sha256(data).hexdigest() != item['sha256']:
+        if item.get('lfs', False):
+            pointer = lfs_pointer(data)
+            if pointer != {'sha256': item['sha256'], 'size': item['size']}:
+                raise ValueError('Committed LFS pointer differs from the selected artifact')
+            location = lfs_location(config, item['sha256'])
+            if store.digest(location) != item['sha256']:
+                raise ValueError('LFS object bytes differ from the selected artifact')
+        elif hashlib.sha256(data).hexdigest() != item['sha256']:
             raise ValueError('Committed bytes differ from the selected artifact')
 
 
@@ -188,3 +222,12 @@ def finish_receipt(config, key, receipt):
         db.execute('UPDATE publications SET status=?,receipt=? WHERE request_key=?',
                    ('succeeded', json.dumps(receipt), key))
     return receipt
+
+
+def lfs_pointer(data):
+    match = re.fullmatch(rb'version https://git-lfs.github.com/spec/v1\noid sha256:([a-f0-9]{64})\nsize ([0-9]+)\n', data)
+    return {'sha256': match[1].decode(), 'size': int(match[2])} if match else None
+
+
+def lfs_location(config, sha):
+    return config['state_dir'] / 'repository.git/lfs/objects' / sha[:2] / sha[2:4] / sha

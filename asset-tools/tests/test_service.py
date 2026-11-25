@@ -39,7 +39,7 @@ class ServiceTests(unittest.TestCase):
         run('git', 'remote', 'add', 'origin', str(self.remote), cwd=self.seed)
         run('git', 'push', 'origin', 'main', cwd=self.seed)
         self.config = {'state_dir': self.root / 'state', 'repository_url': str(self.remote),
-                       'protected_branches': ['main'], 'chunk_bytes': 32, 'max_upload_bytes': 1024 * 1024,
+                       'protected_branches': ['main'], 'enable_lfs': True, 'chunk_bytes': 32, 'max_upload_bytes': 1024 * 1024,
                        'gpu_ids': ['0', '1'], 'enable_reconstruction': False, 'enable_environment': False}
         store.initialize(self.config)
         git_ops.initialize_repo(self.config)
@@ -281,6 +281,62 @@ class ServiceTests(unittest.TestCase):
         job = self.client.get(f'/v1/jobs/{identity}').json()
         self.assertEqual(job['status'], 'failed')
         self.assertIn('expected outputs', job['error'])
+
+
+    def test_lfs_publication_uploads_and_resolves_exact_object(self):
+        data = bytes(range(200))
+        artifact, head = self.upload(data), self.branch()
+        spec = self.publication(artifact, head, path='Adventure Town/assets/large object.bin')
+        spec['files'][0]['lfs'] = True
+        response = self.client.post('/v1/publications', json=spec)
+        self.assertEqual(response.status_code, 200, response.text)
+        receipt = response.json()
+        self.assertTrue(receipt['files'][0]['lfs'])
+        self.assertIn('.gitattributes', receipt['paths'])
+        pointer = subprocess.check_output(['git', '--git-dir', str(self.remote), 'show', f'{receipt["commit_sha"]}:{spec["files"][0]["path"]}'])
+        self.assertEqual(git_ops.lfs_pointer(pointer), {'sha256': artifact['sha256'], 'size': len(data)})
+        remote_objects = list((self.remote / 'lfs/objects').rglob(artifact['sha256']))
+        self.assertEqual(len(remote_objects), 1)
+        self.assertEqual(remote_objects[0].read_bytes(), data)
+        git_ops.lfs_location(self.config, artifact['sha256']).unlink()
+        result = self.client.get('/v1/repo/file', params={'ref': receipt['commit_sha'], 'path': spec['files'][0]['path'], 'resolve_lfs': True})
+        self.assertEqual(result.status_code, 200, result.text)
+        self.assertEqual(result.content, data)
+
+
+
+    def test_lfs_tracking_does_not_follow_attribute_symlink(self):
+        outside = self.root / 'outside-attributes'
+        outside.write_text('unchanged\n')
+        (self.seed / '.gitattributes').symlink_to(outside)
+        run('git', 'add', '.gitattributes', cwd=self.seed)
+        run('git', 'commit', '-m', 'attribute symlink', cwd=self.seed)
+        run('git', 'push', 'origin', 'main', cwd=self.seed)
+        artifact, head = self.upload(), self.branch()
+        spec = self.publication(artifact, head)
+        spec['files'][0]['lfs'] = True
+        response = self.client.post('/v1/publications', json=spec)
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(outside.read_text(), 'unchanged\n')
+
+    def test_lfs_file_above_regular_git_limit(self):
+        path = self.root / 'large.bin'
+        with path.open('wb') as handle:
+            block = b'asset-probe-0123!' * 65536
+            for index in range(101):
+                handle.write(block)
+        self.assertGreater(path.stat().st_size, 100 * 1024**2)
+        artifact = store.record_artifact(self.config, path, 'large.bin')
+        head = self.branch()
+        spec = self.publication(artifact, head, key='large-regular', path='large.bin')
+        self.assertEqual(self.client.post('/v1/publications', json=spec).status_code, 409)
+        spec['request_key'] = 'large-lfs'
+        spec['files'][0]['lfs'] = True
+        response = self.client.post('/v1/publications', json=spec)
+        self.assertEqual(response.status_code, 200, response.text)
+        remote = next((self.remote / 'lfs/objects').rglob(artifact['sha256']))
+        self.assertEqual(store.digest(remote), artifact['sha256'])
+        self.assertEqual(remote.stat().st_size, path.stat().st_size)
 
     def test_model_snapshot_revisions_are_reused(self):
         import types
