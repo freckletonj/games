@@ -40,8 +40,9 @@ def check_installation(config, task):
 
 def environment(config):
     root = runtime(config)
-    return {**{key: value for key, value in os.environ.items() if key not in ('ASSET_API_TOKEN', 'CF_ACCESS_CLIENT_ID', 'CF_ACCESS_CLIENT_SECRET')}, 'HF_HOME': str(root / 'hf'), 'HF_HUB_CACHE': str(root / 'hf/hub'),
+    return {**{key: value for key, value in os.environ.items() if key not in ('ASSET_API_TOKEN', 'CF_ACCESS_CLIENT_ID', 'CF_ACCESS_CLIENT_SECRET', 'HF_TOKEN', 'HUGGING_FACE_HUB_TOKEN')}, 'HF_HOME': str(root / 'hf'), 'HF_HUB_CACHE': str(root / 'hf/hub'),
             'TORCH_HOME': str(root / 'torch'), 'HF_HUB_OFFLINE': '1', 'TRANSFORMERS_OFFLINE': '1',
+            'PATH': str(root / 'hyworld-venv/bin') + os.pathsep + os.environ['PATH'],
             'PYTHONPATH': str(root / 'HY-World-2.0'), 'PYTHONUNBUFFERED': '1',
             'CUDA_VISIBLE_DEVICES': ','.join(config['gpu_ids']),
             'TOKENIZERS_PARALLELISM': 'false', 'WANDB_MODE': 'disabled'}
@@ -94,14 +95,14 @@ def plan(config, spec, directory):
         stage('gaussian_training', [python, '-m', 'world_gs_trainer', 'default',
               '--data_dir', scene / 'gs_data', '--result_dir', output,
               '--max_steps', steps, '--save_steps', steps, '--eval_steps', steps, '--ply_steps', steps,
-              '--save_ply', '--convert_to_spz', '--disable_video', '--export_mesh',
+              '--save_ply', '--convert_to_spz', '--disable_video', '--disable_viewer', '--export_mesh',
               '--use_scale_regularization', '--antialiased', '--depth_loss', '--normal_loss',
               '--sky_depth_from_pcd', '--use_mask_gaussian', '--mask_export_stochastic',
               '--no-mask-export-anchor-protection', '--use_anchor_protection',
               '--strategy.refine-start-iter', int(steps * .1), '--strategy.refine-stop-iter', int(steps * .5),
               '--strategy.refine-every', '100', '--strategy.refine-scale2d-stop-iter', int(steps * .5),
               '--strategy.reset-every', '99990', '--strategy.grow-grad2d', '0.0001', '--strategy.prune-scale3d', '0.1'],
-              worldgen, gpus),
+              worldgen, gpus, expected=[output / f'ply/point_cloud_{steps - 1}.ply']),
     ]
 
 

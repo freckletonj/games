@@ -51,6 +51,8 @@ def branch_name(config, name, writable=False):
 def revision(config, ref):
     if not ref or ref.startswith('-') or ':' in ref:
         raise ValueError('Invalid revision')
+    if not ref.startswith('refs/') and not re.fullmatch(r'[a-f0-9]{40}', ref):
+        ref = f'refs/remotes/origin/{ref}'
     return git(config, 'rev-parse', '--verify', '--end-of-options', f'{ref}^{{commit}}')
 
 

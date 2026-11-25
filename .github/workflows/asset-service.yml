@@ -1,0 +1,30 @@
+name: Asset service
+on:
+  pull_request:
+    paths: ['asset-tools/**', '.github/workflows/asset-service.yml']
+  push:
+    branches: [main]
+    paths: ['asset-tools/**', '.github/workflows/asset-service.yml']
+permissions:
+  contents: read
+jobs:
+  cpu:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '${{ matrix.python }}'
+      - run: python -m pip install -e ./asset-tools
+      - run: python -m unittest discover -s tests -v
+        working-directory: asset-tools
+      - uses: actions/checkout@v4
+        with:
+          repository: Tencent-Hunyuan/HY-World-2.0
+          ref: df9988efb87bfc0f4947eb3889411cf957478b06
+          path: upstream-contract
+          lfs: false
+      - run: python -c 'from asset_service.contracts import check; print(check("upstream-contract"))'

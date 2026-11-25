@@ -92,7 +92,7 @@ def doctor(config, profile=None):
         if profile == 'worldgen':
             for script in ['traj_generate.py', 'traj_render.py', 'video_gen.py', 'gen_gs_data.py', 'world_gs_trainer.py']:
                 command([python, script, '--help'], cwd=upstream / 'hyworld2/worldgen', env=hyworld.environment(config))
-            command([root / 'vlm-venv/bin/python', '-c', 'import vllm; print(vllm.__version__)'])
+            command([root / 'vlm-venv/bin/python', '-c', 'import vllm, torch; assert torch.cuda.is_available(); print(vllm.__version__, torch.version.cuda)'])
     return inventory
 
 
@@ -101,14 +101,23 @@ def setup(config, profile):
         raise ValueError('Run setup-hyworld with Python 3.11 (the API can use Python 3.11+)')
     if not shutil.which('nvcc') or not shutil.which('nvidia-smi'):
         raise ValueError('Install the NVIDIA driver and CUDA 12.8 toolkit first; nvcc and nvidia-smi must be on PATH')
+    nvcc = subprocess.check_output(['nvcc', '--version'], text=True)
+    if 'release 12.8,' not in nvcc:
+        raise ValueError('This pinned profile requires the CUDA 12.8 toolkit; select it on PATH before setup')
     root = hyworld.runtime(config)
     root.mkdir(parents=True, exist_ok=True)
     with store.lock(config, 'worker'), store.lock(config, 'setup'):
+        if profile == 'worldgen':
+            from huggingface_hub import HfApi
+            HfApi().auth_check('facebook/sam3', repo_type='model')
+        store.write_json(root / 'installation.json', {'installed': False, 'setup_started': store.now()})
         upstream = root / 'HY-World-2.0'
         if not upstream.exists():
             command(['git', 'clone', 'https://github.com/Tencent-Hunyuan/HY-World-2.0.git', upstream])
         command(['git', 'checkout', '--detach', hyworld.UPSTREAM_REVISION], cwd=upstream)
         command(['git', 'submodule', 'update', '--init', '--recursive'], cwd=upstream)
+        from .contracts import check
+        check(upstream)
         # Upstream hardcodes this one cache location. Use the service-private cache instead.
         source = upstream / 'hyworld2/worldgen/traj_generate.py'
         original = source.read_text()
@@ -136,7 +145,14 @@ def setup(config, profile):
             command(argv, cwd=cwd, env=env)
         # Run the downloader in the service environment; it does not import any CUDA packages.
         models = download_models(root, profile)
+        if profile == 'worldgen':
+            # LPIPS otherwise downloads VGG weights during the first training job.
+            command([root / 'hyworld-venv/bin/python', '-c',
+                     'from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity; LearnedPerceptualImagePatchSimilarity(net_type="vgg", normalize=False)'],
+                    env={**os.environ, 'TORCH_HOME': str(root / 'torch')})
         doctor(config, profile)
+        for name in ['hyworld'] + (['vlm'] if profile == 'worldgen' else []):
+            command([root / f'{name}-venv/bin/python', '-m', 'pip', 'check'])
         freezes = {}
         for name in ['hyworld'] + (['vlm'] if profile == 'worldgen' else []):
             freeze = subprocess.check_output([root / f'{name}-venv/bin/python', '-m', 'pip', 'freeze'], text=True)

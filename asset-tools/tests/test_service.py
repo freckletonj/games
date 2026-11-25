@@ -226,5 +226,120 @@ class ServiceTests(unittest.TestCase):
         self.assertFalse(any('HY-Pano' in str(argv) for argv, cwd in commands))
 
 
+    def test_git_attributes_cannot_change_published_bytes(self):
+        (self.seed / '.gitattributes').write_text('normalize.txt text eol=lf\n')
+        run('git', 'add', '.gitattributes', cwd=self.seed)
+        run('git', 'commit', '-m', 'attributes', cwd=self.seed)
+        run('git', 'push', 'origin', 'main', cwd=self.seed)
+        head = self.branch()
+        artifact = self.upload(b'one\r\ntwo\r\n', 'normalize.txt')
+        response = self.client.post('/v1/publications', json=self.publication(artifact, head, path='normalize.txt'))
+        self.assertEqual(response.status_code, 409, response.text)
+        self.assertIn('bytes differ', response.text)
+        remote = run('git', '--git-dir', str(self.remote), 'rev-parse', 'refs/heads/assets/test')
+        self.assertEqual(remote, head)
+
+    def test_concurrent_remote_change_is_not_overwritten(self):
+        artifact, head = self.upload(), self.branch()
+        original = git_ops.git
+        advanced = []
+        def race(config, *args, **kwargs):
+            if args[0] == 'push' and args[1].startswith('--force-with-lease'):
+                run('git', 'fetch', 'origin', cwd=self.seed)
+                run('git', 'checkout', '-b', 'assets/test', 'origin/assets/test', cwd=self.seed)
+                (self.seed / 'concurrent.txt').write_text('someone else\n')
+                run('git', 'add', 'concurrent.txt', cwd=self.seed)
+                run('git', 'commit', '-m', 'concurrent', cwd=self.seed)
+                run('git', 'push', 'origin', 'assets/test', cwd=self.seed)
+                advanced.append(run('git', 'rev-parse', 'HEAD', cwd=self.seed))
+            return original(config, *args, **kwargs)
+        with patch('asset_service.git_ops.git', side_effect=race):
+            response = self.client.post('/v1/publications', json=self.publication(artifact, head))
+        self.assertEqual(response.status_code, 409)
+        remote = run('git', '--git-dir', str(self.remote), 'rev-parse', 'refs/heads/assets/test')
+        self.assertEqual(remote, advanced[0])
+
+    def test_panorama_validation(self):
+        self.config['enable_environment'] = True
+        image = BytesIO()
+        Image.new('RGB', (16, 8), 'orange').save(image, format='PNG')
+        artifact = self.upload(image.getvalue(), 'panorama.png')
+        with patch('asset_service.hyworld.check_installation'):
+            self.assertEqual(self.submit(artifact, task='environment').status_code, 422)
+            response = self.submit(artifact, task='environment', panorama_confirmed=True)
+            self.assertEqual(response.status_code, 202, response.text)
+            invalid = self.upload(b'invalid', 'invalid.png')
+            self.assertEqual(self.submit(invalid, key='invalid', task='environment', panorama_confirmed=True).status_code, 422)
+
+    def test_success_exit_without_expected_output_is_failure(self):
+        identity = self.submit(self.upload()).json()['id']
+        store.update_job(self.config, identity, status='running')
+        directory = self.config['state_dir'] / 'jobs' / identity
+        stage = hyworld.stage('empty', [sys.executable, '-c', 'print("no asset")'], directory, [], expected=[directory / 'output/required.ply'])
+        with patch('asset_service.hyworld.plan', return_value=[stage]):
+            worker.execute_job(self.config, store.one(self.config, 'jobs', identity))
+        job = self.client.get(f'/v1/jobs/{identity}').json()
+        self.assertEqual(job['status'], 'failed')
+        self.assertIn('expected outputs', job['error'])
+
+    def test_model_snapshot_revisions_are_reused(self):
+        import types
+        fake = types.ModuleType('huggingface_hub')
+        calls = []
+        api = unittest.mock.Mock()
+        api.model_info.return_value.sha = 'a' * 40
+        fake.HfApi = lambda: api
+        def download(repo, revision, allow_patterns, cache_dir):
+            calls.append((repo, revision, allow_patterns))
+            path = Path(cache_dir) / 'models--test--model' / 'snapshots' / revision
+            path.mkdir(parents=True, exist_ok=True)
+            return str(path)
+        fake.snapshot_download = download
+        lock = {}
+        with patch.dict(sys.modules, {'huggingface_hub': fake}):
+            path = deploy.cache_model(self.root, 'test/model', ['one/*'], lock)
+            deploy.cache_model(self.root, 'test/model', ['two/*'], lock)
+        self.assertEqual(api.model_info.call_count, 1)
+        self.assertEqual(calls[-1][2], ['one/*', 'two/*'])
+        self.assertEqual((path.parent.parent / 'refs/main').read_text(), 'a' * 40)
+
+
+    def test_restart_stops_only_owned_orphan_and_retains_partial_files(self):
+        identity = self.submit(self.upload()).json()['id']
+        store.update_job(self.config, identity, status='running')
+        directory = self.config['state_dir'] / 'jobs' / identity
+        directory.mkdir()
+        (directory / 'partial.txt').write_text('useful diagnostics')
+        process = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'],
+                                   start_new_session=True, env={**os.environ, 'ASSET_JOB_ID': identity})
+        try:
+            worker.recover_interrupted(self.config)
+            process.wait(timeout=3)
+            self.assertNotEqual(process.returncode, 0)
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.wait()
+        self.assertEqual(self.client.get(f'/v1/jobs/{identity}').json()['status'], 'failed')
+        files = self.client.get(f'/v1/jobs/{identity}/artifacts').json()
+        self.assertIn('partial.txt', [item['filename'] for item in files])
+        self.assertIn('interruption.json', [item['filename'] for item in files])
+
+    def test_remote_upload_client_resumes(self):
+        from asset_service.client import upload
+        data = bytes(range(200))
+        path = self.root / 'client.bin'
+        path.write_bytes(data)
+        identity = self.client.post('/v1/uploads', json={'filename': path.name, 'size': len(data), 'sha256': hashlib.sha256(data).hexdigest()}).json()['id']
+        self.client.patch(f'/v1/uploads/{identity}', headers={'Upload-Offset': '0'}, content=data[:32])
+        result = upload(self.client, path, identity)
+        self.assertEqual(self.client.get(f'/v1/artifacts/{result["id"]}').content, data)
+
+    @unittest.skipUnless(os.environ.get('HYWORLD_SOURCE'), 'Set HYWORLD_SOURCE for pinned-source contract validation')
+    def test_pinned_upstream_contract(self):
+        from asset_service.contracts import check
+        self.assertEqual(len(check(os.environ['HYWORLD_SOURCE'])), 6)
+
+
 if __name__ == '__main__':
     unittest.main()

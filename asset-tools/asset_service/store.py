@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 import fcntl
 import hashlib
 import json
-import os
 from pathlib import Path
 import sqlite3
 import tomllib

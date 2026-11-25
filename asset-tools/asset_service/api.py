@@ -1,5 +1,4 @@
 """Authenticated HTTP API. GPU work runs in the separate worker process."""
-import hashlib
 import json
 import os
 from pathlib import Path
