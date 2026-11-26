@@ -1,0 +1,18 @@
+# Replace /home/YOU/games and YOU, then install as a user unit.
+[Unit]
+Description=Game asset API and worker
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/YOU/games/asset-tools
+EnvironmentFile=/home/YOU/.config/game-asset-service.env
+ExecStart=/home/YOU/games/asset-tools/.venv/bin/asset-service --config /home/YOU/games/asset-tools/config.toml serve
+Restart=on-failure
+RestartSec=5
+KillMode=control-group
+TimeoutStopSec=45
+UMask=0077
+
+[Install]
+WantedBy=default.target
