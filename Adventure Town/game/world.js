@@ -260,7 +260,7 @@ export const buildings = [
     x: -5.5,
     z: -3.45,
     w: 2.65,
-    d: 2.15,
+    d: 2.6,
     h: 1.67,
     color: "#e4ca9e",
     roof: "#a65a42",
@@ -272,7 +272,7 @@ export const buildings = [
     x: -10.2,
     z: -3.75,
     w: 2.95,
-    d: 2.45,
+    d: 2.9,
     h: 1.8,
     color: "#d8bd92",
     roof: "#6c8581",
@@ -284,7 +284,7 @@ export const buildings = [
     x: 11,
     z: -1.9,
     w: 2.45,
-    d: 2.1,
+    d: 2.4,
     h: 1.55,
     color: "#d9cba9",
     roof: "#805e83",
@@ -296,7 +296,7 @@ export const buildings = [
     x: -8,
     z: 4.15,
     w: 2.8,
-    d: 2.3,
+    d: 2.6,
     h: 1.65,
     color: "#e0c3a1",
     roof: "#9b6448",
@@ -308,19 +308,19 @@ export const buildings = [
     x: -12.2,
     z: 3.6,
     w: 2.45,
-    d: 2.15,
+    d: 2.6,
     h: 1.5,
     color: "#d5c29e",
     roof: "#78855d",
   },
 ];
-export const steppingStones = [
-  { x: -1.45, z: -5.7, w: 0.7, d: 0.78, top: 0.14 },
-  { x: -0.73, z: -5.8, w: 0.64, d: 0.74, top: 0.34 },
-  { x: 0, z: -5.65, w: 0.68, d: 0.78, top: 0.52 },
-  { x: 0.73, z: -5.8, w: 0.64, d: 0.74, top: 0.34 },
-  { x: 1.45, z: -5.7, w: 0.7, d: 0.78, top: 0.14 },
-];
+export const steppingStones = [-1.3, 0, 1.3].map((x) => ({
+  x,
+  z: -5.7,
+  w: 0.78,
+  d: 0.65,
+  top: -0.12,
+}));
 // Terrain and river: ground is two solid banks, with a lower riverbed.
 box(-8.85, -0.58, 0, 14.3, 0.58, 24, "#756247", true);
 box(8.85, -0.58, 0, 14.3, 0.58, 24, "#756247", true);
@@ -421,33 +421,27 @@ for (const b of buildings) {
 }
 // A second river crossing rewards jumping, with swimming as an alternate route.
 for (const stone of steppingStones) {
-  assetShape(
-    "river-boulder",
-    [stone.x, -0.42, stone.z],
-    () => {
-      box(
-        stone.x,
-        -0.42,
-        stone.z,
-        stone.w,
-        stone.top + 0.42,
-        stone.d,
-        "#869486",
-        true,
-      );
-      box(
-        stone.x,
-        stone.top - 0.035,
-        stone.z,
-        stone.w * 0.85,
-        0.04,
-        stone.d * 0.82,
-        "#9dac89",
-      );
-    },
-    0,
-    (stone.top + 0.42) / 0.6,
-  );
+  assetShape("river-boulder", [stone.x, -0.42, stone.z], () => {
+    box(
+      stone.x,
+      -0.42,
+      stone.z,
+      stone.w,
+      stone.top + 0.42,
+      stone.d,
+      "#869486",
+      true,
+    );
+    box(
+      stone.x,
+      stone.top - 0.035,
+      stone.z,
+      stone.w * 0.85,
+      0.04,
+      stone.d * 0.82,
+      "#9dac89",
+    );
+  });
 }
 // Sandy banks make swim entry and exit easy to spot.
 for (const side of [-1, 1]) tile(side * 2.15, 7.8, 0.95, 2.2, "#c5ba8f", 0.015);
@@ -637,7 +631,7 @@ function interior(kind) {
   if (kind === "grocery") {
     for (const x of [-2, 2])
       assetShape("produce-shelf", [x, 0, -1.5], () => {
-        box(x, 0, -1.5, 1.1, 1.1, 0.8, "#8d623c", true);
+        box(x, 0, -1.5, 1.45, 1.4, 1.1, "#8d623c", true);
         for (const y of [0.55, 1.05])
           for (let k = 0; k < 3; k++)
             box(
@@ -654,7 +648,7 @@ function interior(kind) {
     box(-1.3, 0.65, 1.0, 1.2, 0.08, 0.7, "#d6b585");
   } else if (kind === "potions") {
     assetShape("potion-workbench", [0, 0, -1.6], () => {
-      box(0, 0, -1.6, 2.1, 0.8, 0.85, "#7b5741", true);
+      box(0, 0, -1.6, 1.2, 0.8, 1.05, "#7b5741", true);
       box(0, 0.8, -1.6, 2.2, 0.09, 0.95, "#aa845e");
       for (const [x, c] of [
         [-0.75, "#78b5a4"],
@@ -685,10 +679,10 @@ function interior(kind) {
     assetShape("cottage-table", [1.25, 0, 0.25], () => {
       for (const x of [0.85, 1.65])
         for (const z of [-0.15, 0.65]) box(x, 0, z, 0.1, 0.6, 0.1, "#7c5639");
-      box(1.25, 0.6, 0.25, 1.05, 0.08, 1.05, "#ac8253", true);
+      box(1.25, 0.6, 0.25, 0.76, 0.08, 0.76, "#ac8253", true);
     });
     assetShape("cottage-hearth", [0, 0, -2.5], () => {
-      box(0, 0, -2.5, 1.2, 1.4, 0.65, "#90998b", true);
+      box(0, 0, -2.5, 1.3, 1.55, 1.0, "#90998b", true);
       box(0, 0.1, -2.14, 0.65, 0.65, 0.025, "#453d35");
       box(0, 0.13, -2.1, 0.42, 0.15, 0.08, "#d99b51");
     });

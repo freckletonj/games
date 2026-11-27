@@ -1,0 +1,33 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65472,
+  "grid": [
+    38,
+    37,
+    38
+  ],
+  "occupied_voxels": 17765,
+  "asset": "willow-cottage",
+  "source_sha256": "d3a24857690bb3c726632471f116a71cfeba52ff75523b5c0fa98a9f3ec9c966",
+  "config_sha256": "b7569dad12f54801c98a8badf6307f7c9df86d5fee8cdead5b1daff6076f9839",
+  "rig_sha256": null,
+  "vertices": 50952,
+  "triangles": 25476,
+  "clips": [],
+  "status": "ready-for-test-drive",
+  "method": "max-gaussian-density; exposed voxel faces; density-weighted DC colors; world-space scale",
+  "kind": "static",
+  "bounds": {
+    "min": [
+      -1.4926470588235292,
+      0.0,
+      -1.5352941176470587
+    ],
+    "max": [
+      1.4926470588235292,
+      2.9,
+      1.5352941176470587
+    ]
+  },
+  "runtime_sha256": "1b9ff020454d9b5ca386d0988a10de7c6f2de23d3fba0db33061312a09fff4bf"
+}

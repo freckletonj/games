@@ -247,7 +247,7 @@ function step(dt) {
     moveAxis("x", sx * speed * dt);
     moveAxis("z", sz * speed * dt);
   }
-  if (player.swimming && groundAt(player.x, player.z, 0.08) >= -0.05) {
+  if (player.swimming && groundAt(player.x, player.z, 0.08) > -0.3) {
     player.swimming = false;
     player.grounded = true;
     player.y = groundAt(player.x, player.z, 0.08);
@@ -577,11 +577,11 @@ function effects(t) {
       }
     if (sceneId === "potions" && potionBubbles > 0)
       for (let i = 0; i < 7; i++) {
-        const y = 1.25 + ((t * 0.5 + i * 0.17) % 1) * 0.65;
+        const y = 0.8 + ((t * 0.5 + i * 0.17) % 1) * 0.65;
         box(
           Math.sin(i * 8 + t) * 0.22,
           y,
-          -1.48,
+          -1.25,
           0.06,
           0.06,
           0.06,

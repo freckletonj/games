@@ -38,6 +38,34 @@ with tempfile.TemporaryDirectory() as temp:
         # Same inputs produce the exact same GLB bytes.
         again=temp/'again.glb';write_glb(again,p,n,c,idx,rig)
         assert again.read_bytes()==output.read_bytes()
+    # Real TripoSplat alpha endpoints are infinite logits, valid in both encodings.
+    for encoding in ['ascii','binary_little_endian']:
+        endpoints=rows.copy();endpoints[0,6]=np.inf;endpoints[1,6]=-np.inf
+        header='ply\nformat '+encoding+' 1.0\nelement vertex 12\n'+''.join('property float '+field+'\n' for field in fields)+'end_header\n'
+        endpoint_path=temp/'endpoints.ply'
+        if encoding=='ascii':endpoint_path.write_text(header+'\n'.join(' '.join(str(float(v)) for v in row) for row in endpoints)+'\n')
+        else:endpoint_path.write_bytes(header.encode()+endpoints.tobytes())
+        actual=read_ply(endpoint_path)
+        assert np.isposinf(actual['opacity'][0]) and np.isneginf(actual['opacity'][1])
+        filtered_config={**config,'voxel_filter_sigma':.5}
+        occ,cols,r=voxelize(actual,filtered_config)
+        assert occ.any() and np.isfinite(cols).all() and r['retained_splats']==11
+    # Equal overlapping red/blue Gaussians blend, rather than select a winner.
+    from convert_splat import SH_C0
+    blend_rows=rows[:3].copy();blend_rows[:,1]=[0,0,1]
+    blend_rows[:,3:6]=(np.array([[1,0,0],[0,0,1],[0,1,0]])-.5)/SH_C0
+    blend_path=temp/'blend.ply';blend_path.write_bytes(header.replace('12','3').encode()+blend_rows.tobytes())
+    occ,cols,_=voxelize(read_ply(blend_path),{**config,'color_levels':3,'voxel_filter_sigma':.5})
+    bottom=cols[occ & (np.indices(occ.shape)[1] < occ.shape[1]//3)]
+    assert len(bottom)>0 and (bottom[:,0]>0).all()
+    assert np.allclose(bottom[:,0],bottom[:,2]) and np.allclose(bottom[:,1],0)
+    import unittest
+    for field,value in [('opacity',np.nan),('x',np.inf),('scale_0',np.inf)]:
+        invalid=rows.copy();invalid[0,fields.index(field)]=value
+        invalid_path=temp/'invalid.ply'
+        invalid_path.write_bytes(header.replace('ascii','binary_little_endian').encode()+invalid.tobytes())
+        with unittest.TestCase().assertRaisesRegex(ValueError,'Non-finite Gaussian properties'):
+            read_ply(invalid_path)
     # Verify that a newly exported Uint32-index GLB plays through the same runtime.
     subprocess.run(['node',str(root/'tests/runtime.mjs'),str(output)],check=True)
     # Static town assets retain configured game scale and have no invented rig.
@@ -64,7 +92,7 @@ with tempfile.TemporaryDirectory() as temp:
     shutil.copy(root/'assets/emberbrook-adventurer/runtime/asset.glb',character/'asset.glb')
     (isolated/'runtime').mkdir();shutil.copy(built/'asset.glb',isolated/'runtime/fixture.glb')
     catalog=isolated/'game/town-assets.js'
-    catalog.write_text(catalog.read_text().replace('runtime: null','runtime: "runtime/fixture.glb"',1))
+    catalog.write_text('export const townAssets = [{id: "produce-shelf", runtime: "runtime/fixture.glb"}];\n')
     subprocess.run(['node',str(isolated/'tools/build.mjs')],check=True)
     subprocess.run(['node',str(isolated/'tests/runtime.mjs')],check=True)
     # A single occupied cube has six exposed faces, outward winding, and no internals.

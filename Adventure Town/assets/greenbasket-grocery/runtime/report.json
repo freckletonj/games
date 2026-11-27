@@ -1,0 +1,33 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65492,
+  "grid": [
+    44,
+    37,
+    40
+  ],
+  "occupied_voxels": 10354,
+  "asset": "greenbasket-grocery",
+  "source_sha256": "20a7a7f40b5b81d74e96d8c880251c9c96fe677f0c434bd3688afb0537c35423",
+  "config_sha256": "65924d4908b7f51d7ece30bce44fbcf686beb0bd6369a6414d91426c4c9a182e",
+  "rig_sha256": null,
+  "vertices": 36680,
+  "triangles": 18340,
+  "clips": [],
+  "status": "ready-for-test-drive",
+  "method": "max-gaussian-density; exposed voxel faces; density-weighted DC colors; world-space scale",
+  "kind": "static",
+  "bounds": {
+    "min": [
+      -1.8691176470588236,
+      0.0,
+      -1.686764705882353
+    ],
+    "max": [
+      1.8691176470588236,
+      3.1,
+      1.686764705882353
+    ]
+  },
+  "runtime_sha256": "643c94d6ff313b8e892ae7d9268e28f7b5c2f82b1eb7277fc08046e90a10b37e"
+}

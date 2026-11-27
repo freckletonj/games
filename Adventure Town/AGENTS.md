@@ -24,19 +24,27 @@ assets follow the image/splat workflow below.
 
 | Stage | Owner | Files and exit condition |
 | --- | --- | --- |
-| Reference | Agent | Create `assets/<id>/source/reference.png`, real RGBA transparency, one isolated object; save the actual prompt in `source/PROMPT.md` and describe silhouette/pose in the asset README. |
-| Splat | User | Run the accepted image through TripoSplat and commit `assets/<id>/incoming/model.ply`, retaining the original Gaussian properties. Record export settings if available. |
+| Reference | Agent | Create `assets/<id>/source/reference.png`, real RGBA transparency, one isolated object; deliver a repository-path ZIP for the user to commit the PNGs; save the actual prompt in `source/PROMPT.md` and describe silhouette/pose in the asset README. |
+| Splat | User | Unzip the reference-image handoff at the repository root, run each accepted image through TripoSplat and commit `assets/<id>/incoming/model.ply`, retaining the original Gaussian properties. Record export settings if available. |
 | Conversion | Agent | Inspect the actual PLY, fit `asset.json` (and `rig.json` for humanoids), build into a new `experiments/<id>-<attempt>/`, and audit the candidate GLB. |
 | Review | Agent and user | Compare image, splat, voxel mesh, and animation. Inspect multiple angles, then move/run/jump in the real game. Record what was tested and what remains wrong. |
-| Promotion | Agent | Put the reviewed GLB in the asset's `runtime/asset.glb`, commit source/config/report together, and select its path in `game/town-assets.js` for scenery or `defaultModelPath` in `game/model.js` for the player. Rebuild the offline game. |
+| Promotion | Agent, then user | Stage the reviewed GLB in `runtime/asset.glb`; commit small code/config/reports and select its runtime path. Deliver GLBs and binary review images in a uniquely named ZIP with repository-relative paths. The user extracts and commits those blobs. Also deliver a standalone offline HTML for immediate play. |
 
-The current handoff is the eight static objects in `docs/TOWN_ASSETS.md`.
-Keep the imported Emberbrook adventurer; `next-adventurer` is deferred at the
-user's request and is not blocking town work. Each reference PNG is delivered in
-a separate large-file ZIP while its prompt, hash, manifest and conversion settings
-are committed directly. User-supplied PLYs belong in the matching `incoming/`.
-Until those PLYs arrive, keep explicit placeholders. Never claim source art has
-been converted when only the reference or a synthetic test is available.
+The first eight static objects have completed the real reference → TripoSplat →
+voxel round trip. Their status is `ready-for-test-drive`, not final art approval.
+The runtime GLBs and binary review sheets are delivered to the user in an asset
+ZIP; the catalog expects those paths. Extract that ZIP before source play or
+building from a checkout that lacks the runtime files. The standalone HTML
+already embeds them and can be tested immediately. Keep the imported Emberbrook
+adventurer; `next-adventurer` remains deferred.
+
+**Commit small code and normal text files directly. Roundtrip large binary files
+through the user in both directions.** Generate transparent references, deliver
+them as a ZIP, then pull the user's committed PNGs and original PLYs. Review,
+clean up and convert those actual inputs; send the resulting runtime blobs back
+in another ZIP for the user to commit. Verify the committed blobs and hashes
+before claiming they are in Git. Do not push large binaries through GitHub tool
+calls, ask the user to apply code patches, or treat a delivered ZIP as a commit.
 
 Each asset owns its reference, original splat, rig settings, conversion settings,
 runtime output, and review notes. Do not overwrite another asset to add one.
@@ -88,7 +96,7 @@ The existing `?model=...` option is for a skinned player GLB only. Use the
 The output directory must be new; builds never overwrite an accepted runtime.
 The converter accepts vertex-only, uncompressed ASCII or binary little-endian
 **standard 3DGS** PLY: `x/y/z`, `f_dc_0..2`, `opacity`, `scale_0..2`, `rot_0..3`.
-Opacity is a logit, scales are logarithms, and source quaternions are WXYZ.
+Opacity is a logit (±infinity is valid for alpha 1/0; NaN is invalid), scales are logarithms, and source quaternions are WXYZ.
 Confirm these semantics against the actual TripoSplat export before converting.
 A mesh PLY, RGB point cloud, compressed splat, renamed ZIP, or Git LFS pointer
 is not that format. Report an incompatible header; implement a deliberate adapter
@@ -96,15 +104,18 @@ only against a known sample. Do not silently guess a format or add fallback APIs
 
 Inspect bounds, outliers, orientation, and limb gaps first. Set `source_to_game`
 (an orthonormal 3×3 matrix), optional source-space `crop` bounds, voxel resolution,
-opacity floor, density threshold, sigma extent, color quantization and grid limit
+opacity floor, density threshold, sigma extent, optional `voxel_filter_sigma`
+(in voxel units), color quantization and grid limit
 in **that asset's** `asset.json`. For humanoids only, fit every joint and region gate in `rig.json` to
 the actual voxel geometry. Joint positions are in normalized game coordinates.
 L/R labels in this first rig refer to negative/positive model X respectively.
 Keep parent joints before children; the runtime requires contiguous joint node
 indices beginning at zero. No universal rig fit is promised.
 
-The recipe samples oriented Gaussian density, takes the strongest Gaussian per
-voxel, quantizes DC colors, emits only exposed cube faces, normalizes height,
+The recipe samples oriented Gaussian density, optionally low-passes it at voxel
+scale to reduce pinholes, takes the maximum density for occupancy, blends DC
+colors using density weights, quantizes colors, emits only exposed cube faces,
+and normalizes height,
 and, for humanoids, fits four normalized segment weights. Static assets use
 `world_height` in their manifest and export in game units with no rig. The
 recipe discards higher spherical harmonics
@@ -142,8 +153,9 @@ converter checks, never proof of TripoSplat asset quality.
 `emberbrook-adventurer` is `imported-runtime`: its GLB was extracted byte-for-byte
 from the user's HTML. Its source image, PLY and original converter are absent.
 Do not label that conversion reproducible. `next-adventurer` is `deferred`.
-Use `candidate-needs-visual-review` for fresh builds; only document a reviewed
-asset as accepted, with the evidence and remaining limitations.
+Use `candidate-needs-visual-review` for fresh builds and `ready-for-test-drive`
+after agent visual/game review. Record remaining limitations and let the user
+judge the art in play; do not equate structural validity with art approval.
 
 ## Development and delivery
 

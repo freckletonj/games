@@ -1,12 +1,13 @@
 # River stepping boulder
 
-Status: **awaiting-splat**. The reference PNG is supplied separately in the town
-image ZIP; extract it to `source/reference.png` and commit it. Its submitted
-prompt and SHA-256 are recorded beside this file. No runtime mesh exists yet.
+Status: **ready-for-test-drive**. Converted from the committed transparent
+reference and original TripoSplat PLY. Source bytes are unchanged.
 
-Create a TripoSplat Gaussian export of that single reference and commit it as
-`incoming/model.ply`. This is a static asset, with no character rig. Its initial
-world height is 0.6 player-height units; fit the real geometry before promotion.
+The static voxel GLB is enabled in the town, at 0.3 game units high.
+It has 16,452 triangles, vertex colors, and no character rig or animation.
+Extract the runtime asset ZIP at the repository root and commit its
+`runtime/asset.glb` and `runtime/review.png`; small configuration and reports
+are committed directly by the agent. The standalone HTML already embeds the mesh.
 
-Follow [the town asset guide](../../docs/TOWN_ASSETS.md) for conversion, in-game
-preview, collision/scale review and promotion into the existing town slots.
+See [the review](runtime/REVIEW.md), [conversion report](runtime/report.json),
+and [town guide](../../docs/TOWN_ASSETS.md) for fitting and limitations.

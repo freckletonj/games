@@ -1,11 +1,10 @@
 # First town asset batch
 
 The current adventurer stays. The unused `next-adventurer` experiment is deferred;
-no new character PLY is needed. The town is already playable with authored block
-placeholders: three cottages, a grocery, a potion shop, a bridge, a swimmable
-river and a five-stone jumping route north of the bridge.
+no new character PLY is needed. The first real TripoSplat batch is now converted and enabled: three cottages, a grocery, a potion shop, a bridge, a swimmable
+river and a three-boulder jumping route north of the bridge.
 
-## Reference → splat handoff
+## Repeatable reference → splat handoff
 
 The reference ZIP contains **only the eight PNGs**, using these repository paths.
 Extract at the repository root and commit the images. Convert one PNG at a time
@@ -13,7 +12,7 @@ in TripoSplat, then commit the returned original Gaussian PLY at the matching
 path. Do not combine this batch into a single splat. A boulder is the simplest
 first conversion to check; the house and shops can follow with the same contract.
 
-| Object | Reference PNG | Returned PLY | Initial world height |
+| Object | Reference PNG | Returned PLY | Fitted world height |
 | --- | --- | --- | --- |
 | Cottage exterior | `Adventure Town/assets/willow-cottage/source/reference.png` | `Adventure Town/assets/willow-cottage/incoming/model.ply` | 2.9 |
 | Grocery exterior | `Adventure Town/assets/greenbasket-grocery/source/reference.png` | `Adventure Town/assets/greenbasket-grocery/incoming/model.ply` | 3.1 |
@@ -22,9 +21,11 @@ first conversion to check; the house and shops can follow with the same contract
 | Potion workbench | `Adventure Town/assets/potion-workbench/source/reference.png` | `Adventure Town/assets/potion-workbench/incoming/model.ply` | 1.25 |
 | Dining table | `Adventure Town/assets/cottage-table/source/reference.png` | `Adventure Town/assets/cottage-table/incoming/model.ply` | 0.65 |
 | Cottage hearth | `Adventure Town/assets/cottage-hearth/source/reference.png` | `Adventure Town/assets/cottage-hearth/incoming/model.ply` | 1.55 |
-| Stepping boulder | `Adventure Town/assets/river-boulder/source/reference.png` | `Adventure Town/assets/river-boulder/incoming/model.ply` | 0.6 |
+| Stepping boulder | `Adventure Town/assets/river-boulder/source/reference.png` | `Adventure Town/assets/river-boulder/incoming/model.ply` | 0.3 |
 
-Heights are provisional game units (the player is one unit tall). Prompts,
+Heights are game units (the player is one unit tall). The boulder was reduced
+to 0.3 units high to preserve its broad source proportions, with three separated
+low stones across the river. Buildings and props have fitted authored collision. Prompts,
 reference hashes and starting conversion settings are committed beside each
 asset; the large PNGs are delivered separately. The original PLY must retain
 its Gaussian properties; record the TripoSplat export settings/version when
@@ -52,9 +53,8 @@ interactions. There is no buying, inventory or crafting system in this milestone
 
 Rooms are furnished cutaway spaces, assembled from separate props. This makes
 floor plans readable and reusable without asking a single exterior image to
-reconstruct hidden rooms. Their walls/floors and placeholder furniture are already
-present; reviewed prop meshes replace just the corresponding visual shapes.
-No reference image is claimed to have become a 3D game asset yet.
+reconstruct hidden rooms. Their walls/floors are authored separately; converted prop meshes supply the corresponding visual
+shapes. The eight runtime meshes come from the actual committed PLYs.
 
 ## Agent conversion and review
 
@@ -93,7 +93,7 @@ the authored placeholders. A configured path that fails to load is an error;
 there is no silent runtime fallback. The offline bundler embeds all promoted
 scenery, so HTTP and offline play use the same accepted assets.
 
-Keep collision stable while replacing visuals. A splat is not a collision mesh,
+Fit authored collision deliberately while replacing visuals, preserving playable routes. A splat is not a collision mesh,
 and an exterior is not a complete navigable interior. Moving parts should become
 separate assets with explicit pivots when a real gameplay need arises. Buildings
 and furniture do not need character rigs.
@@ -106,3 +106,32 @@ transfer is needed; archive entries must use their real repository-relative path
 State exactly what is committed and what still needs user upload. Source ZIPs
 must not overwrite unrelated code or contain pretend generated outputs. Pull the
 user's committed assets and inspect them before the next conversion step.
+
+## First real conversion review
+
+All eight references match their generation-record SHA-256 hashes. Each PLY has
+65,536 standard 3DGS Gaussians; opacity endpoints include infinite logits, which
+correctly mean alpha 0/1. Original PNG/PLY files are unchanged. The upright fit
+for this batch is `[x,y,z] → [z,-y,x]`, recorded per asset rather than assumed for
+future exports. No crop or invented hidden geometry was applied.
+
+The first sampling pass was porous. A 0.5-voxel Gaussian filter and density-weighted
+DC colors reduced pinholes and speckle. Buildings use 32 height samples, props 24,
+and the small river boulder 16. This keeps cubic steps readable and reduces the
+render cost compared with the initial higher-resolution attempt. The eight meshes
+have 119,980 triangles total before instancing. Static objects have no skin or
+animation. Their reports record exact counts, source/config/runtime hashes and
+bounds; review sheets compare the reference with front/oblique/rear voxel views.
+These sheets are mesh renders, not Gaussian renderings.
+
+The cottage, shop facades, hearth, produce shelf, bottles and table silhouette
+survive well enough for a test drive. Inferred hidden surfaces remain weaker:
+the grocery rear is dark/open, the workbench rear is very dark, small labels and
+accessories soften, and source lighting remains baked into colors. The pipeline
+is promising for this scale, but user art acceptance is still pending.
+
+The runtime ZIP contains only `Adventure Town/assets/<id>/runtime/asset.glb`
+and `runtime/review.png` for these eight assets. Extract it at the repository root
+and commit those files. Code/config/reports/review notes are already committed
+separately by the agent. Source play/build requires those GLBs; the delivered
+standalone HTML already embeds them and needs no network or extra files.

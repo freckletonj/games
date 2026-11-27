@@ -1,0 +1,33 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65534,
+  "grid": [
+    37,
+    37,
+    36
+  ],
+  "occupied_voxels": 14209,
+  "asset": "moss-ember-potions",
+  "source_sha256": "161de925bb51816dc0f7a748ff9238908dbddb700d47f40f60de3d8d2d6000b2",
+  "config_sha256": "224d7653e50425876a4ce39b2808eeb57a830226aac3cbfa5029e5d0be37d1b6",
+  "rig_sha256": null,
+  "vertices": 44504,
+  "triangles": 22252,
+  "clips": [],
+  "status": "ready-for-test-drive",
+  "method": "max-gaussian-density; exposed voxel faces; density-weighted DC colors; world-space scale",
+  "kind": "static",
+  "bounds": {
+    "min": [
+      -1.4926470588235292,
+      0.0,
+      -1.4073529411764705
+    ],
+    "max": [
+      1.4926470588235292,
+      2.9,
+      1.4073529411764705
+    ]
+  },
+  "runtime_sha256": "d1fa382e242cb29e488c4cfd007929db36d2a4d9d5ed68778dfe603dc9d5e236"
+}

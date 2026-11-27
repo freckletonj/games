@@ -1,0 +1,33 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65534,
+  "grid": [
+    32,
+    29,
+    34
+  ],
+  "occupied_voxels": 8276,
+  "asset": "cottage-table",
+  "source_sha256": "18dadbe27aea3f4085fa472e4717ee0a2adb7a0c1d6a1b68a02a7dcd8a5fcf9f",
+  "config_sha256": "848ffbce59f9a29dd7baa9932192ccc0cf30d2b3d4260640a8ff639e401bde64",
+  "rig_sha256": null,
+  "vertices": 22768,
+  "triangles": 11384,
+  "clips": [],
+  "status": "ready-for-test-drive",
+  "method": "max-gaussian-density; exposed voxel faces; density-weighted DC colors; world-space scale",
+  "kind": "static",
+  "bounds": {
+    "min": [
+      -0.375,
+      0.0,
+      -0.3875
+    ],
+    "max": [
+      0.375,
+      0.65,
+      0.3875
+    ]
+  },
+  "runtime_sha256": "107bd597bfcb820b3b42d008291190204fb01c3db91daa6e2634f156b7d03b98"
+}

@@ -66,7 +66,8 @@ def read_ply(path):
     required = ["x", "y", "z", "opacity"] + [f"{prefix}_{i}" for prefix, n in (("f_dc", 3), ("scale", 3), ("rot", 4)) for i in range(n)]
     if not set(required).issubset(data.dtype.names):
         raise ValueError("Expected standard 3DGS properties: " + ", ".join(required))
-    if not all(np.isfinite(data[name]).all() for name in required):
+    # A 3DGS opacity is a logit: +/-infinity represents alpha 1/0, not bad geometry.
+    if np.isnan(data["opacity"]).any() or not all(np.isfinite(data[name]).all() for name in required if name != "opacity"):
         raise ValueError("Non-finite Gaussian properties")
     return data
 
@@ -108,6 +109,8 @@ def voxelize(data, config):
     factor = config["height_voxels"] / (high[1] - low[1])
     centers = (centers - low) * factor
     covariance *= factor**2
+    # Low-pass the Gaussian field before sampling a coarser voxel grid.
+    covariance += np.eye(3)[None,:,:] * config.get('voxel_filter_sigma', 0.0)**2
     extent = config["sigma_extent"] * np.sqrt(np.diagonal(covariance, axis1=1, axis2=2))
     origin = np.floor((centers-extent).min(axis=0)).astype(int)
     shape = np.ceil((centers+extent).max(axis=0) - origin).astype(int) + 1
@@ -115,6 +118,7 @@ def voxelize(data, config):
         raise ValueError(f"Grid {shape.tolist()} exceeds max_grid_cells; inspect crop/scales or reduce resolution")
     density = np.zeros(tuple(shape), dtype=np.float32)
     colors = np.zeros((*shape, 3), dtype=np.float32)
+    color_weight = np.zeros(tuple(shape), dtype=np.float32)
     for center, cov, radius, opacity, color in zip(centers-origin, covariance, extent, alpha, rgb):
         lo = np.maximum(0, np.floor(center-radius).astype(int))
         hi = np.minimum(shape, np.ceil(center+radius).astype(int)+1)
@@ -124,12 +128,14 @@ def voxelize(data, config):
         values = opacity*np.exp(-.5*distance)
         values[distance > config["sigma_extent"]**2] = 0
         region = tuple(slice(a,b) for a,b in zip(lo,hi))
-        stronger = values > density[region]
-        density[region][stronger] = values[stronger]
-        colors[region][stronger] = color
+        np.maximum(density[region], values, out=density[region])
+        colors[region] += values[...,None] * color
+        color_weight[region] += values
     occupied = density >= config["density_threshold"]
     if not occupied.any():
         raise ValueError("No occupied voxels; inspect source and thresholds")
+    supported = color_weight > 0
+    colors[supported] /= color_weight[supported,None]
     # Explicit color quantization; no learned model or view-dependent shading at runtime.
     levels = config["color_levels"]
     colors = np.round(colors*(levels-1))/(levels-1)
@@ -324,7 +330,7 @@ def build(asset, output):
     report['kind']=config['kind']
     report['bounds']={'min':positions.min(axis=0).tolist(),'max':positions.max(axis=0).tolist()}
     if rig is None:
-        report['method']='max-gaussian-density; exposed voxel faces; static vertex colors; world-space scale'
+        report['method']='max-gaussian-density; exposed voxel faces; density-weighted DC colors; world-space scale'
     (output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps(report,indent=2))
 

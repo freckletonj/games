@@ -30,7 +30,7 @@ npm run build
 ```
 
 Double-click `dist/adventure-town.html` to play offline. It embeds all code,
-styles and the selected GLB. The source version uses modules and fetches the
+styles, the character and all eight converted town assets. The source version uses modules and fetches the
 model, so serve `index.html` over HTTP rather than opening it as a local file.
 The village block geometry, movement and camera come from the supplied prototype;
 the model is now a standalone asset and code is split into model/world/renderer/
@@ -38,16 +38,19 @@ controller modules. The offline file is generated, not committed.
 
 ## The new asset loop
 
-**Agent generates transparent reference → user commits TripoSplat PLY → agent
-voxelizes, fits a rig and exports motion → inspect in the game → promote.**
+**Agent generates transparent PNGs → image ZIP to user → user commits PNGs and
+TripoSplat PLYs → agent reviews/voxelizes → runtime ZIP to user → play and commit.**
 
 The workflow and acceptance rules live in [AGENTS.md](AGENTS.md). The current
 batch is **eight town objects**, detailed in [the town asset guide](docs/TOWN_ASSETS.md):
 cottage/grocery/potion shop exteriors, produce shelf, potion workbench, dining
-table, hearth and boulder. The reference PNGs come in a separate ZIP; their
-prompts, hashes, settings and PLY destinations are committed in each asset's
-own directory. The existing adventurer stays; the new-character experiment is
-deferred and needs no PLY.
+table, hearth and boulder. The user has committed the eight reference PNGs and
+original splats. Their first
+voxel conversions are now enabled in the town, with per-asset reports and visual
+review notes. Extract the **runtime asset ZIP at the repository root** and commit
+its GLBs/review PNGs before running the source checkout. Small code/config/docs
+are committed by the agent. The standalone HTML is ready to play without
+extracting anything. The existing adventurer stays; the new character is deferred.
 
 To generate the PLYs in your existing TripoSplat environment, run from the
 repository root:
@@ -57,7 +60,7 @@ python "Adventure Town/tools/generate_splats.py" --weights /path/to/ckpts
 ```
 
 This loads the weights once, processes pending references sequentially, and saves
-into each asset's `incoming/` directory. See [the CLI guide](docs/TRIPOSPLAT.md)
+into each asset's `incoming/` directory for new references. See [the CLI guide](docs/TRIPOSPLAT.md)
 for the weight layout, selecting asset IDs, resuming and settings. For the later
 voxel conversion, use this game's directory and its NumPy environment:
 
@@ -76,10 +79,13 @@ Static objects export without a rig. Reviewed models go in the asset's `runtime/
 and are enabled in `game/town-assets.js`. The offline build embeds them too.
 Rooms, collision and door triggers are authored separately from the visual mesh.
 
-The converter has synthetic tests; **no real TripoSplat export has been supplied
-for this town batch yet**. All eight slots currently use explicit block
-placeholders. A valid GLB is not appearance or scale approval. Follow the town
-guide for source upload, conversion, visual review and promotion.
+These are actual 3D voxel meshes from the committed Gaussian splats, with flat
+vertex colors. The first batch uses a voxel-scale density filter and blended
+colors to reduce holes/noise. Hidden backs remain less convincing than fronts:
+the grocery has a large dark/open rear area, and the workbench back is dark.
+Those are reconstruction limits to judge during this test drive. Props are
+static; the existing character keeps its rig and animation. See each asset's
+`runtime/REVIEW.md` and `runtime/review.png` for evidence and limitations.
 
 ## Checks and boundaries
 

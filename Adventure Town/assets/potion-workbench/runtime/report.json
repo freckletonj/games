@@ -1,0 +1,33 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65536,
+  "grid": [
+    28,
+    29,
+    26
+  ],
+  "occupied_voxels": 6894,
+  "asset": "potion-workbench",
+  "source_sha256": "a34b8d73aa8155e48f4b30c65473540c54196338fcc3092e99ebfb6f0189123f",
+  "config_sha256": "f59b893b051129c8828cf8c96d06fb081576631ca1339a357b2a24fe0f57d401",
+  "rig_sha256": null,
+  "vertices": 17504,
+  "triangles": 8752,
+  "clips": [],
+  "status": "ready-for-test-drive",
+  "method": "max-gaussian-density; exposed voxel faces; density-weighted DC colors; world-space scale",
+  "kind": "static",
+  "bounds": {
+    "min": [
+      -0.6009615384615384,
+      0.0,
+      -0.5528846153846154
+    ],
+    "max": [
+      0.6009615384615384,
+      1.25,
+      0.5528846153846154
+    ]
+  },
+  "runtime_sha256": "2a43df0c6d3ab8a0f3a3b320195149d1428a214b6b64b9ef77c46918614b2ad1"
+}

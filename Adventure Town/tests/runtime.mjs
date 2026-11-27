@@ -186,6 +186,14 @@ for (const side of [-1, 1]) {
   assert.ok(!state().swimming);
   assert.equal(state().y, 0);
 }
+// Swimming onto a low boulder also lifts the feet out of the water.
+vm.runInContext(
+  "Object.assign(player,{x:-.7,y:-.58,z:-5.7,grounded:false,vy:0,swimming:true});moveAxis('x',.2)",
+  sandbox,
+);
+tick();
+assert.ok(!state().swimming && state().grounded);
+assert.ok(Math.abs(state().y + 0.12) < 0.001);
 element("#reset").onclick();
 // Every building has an enterable room and returns to its own door.
 for (const id of [
@@ -229,18 +237,32 @@ for (const id of [
 }
 element("#reset").onclick();
 // A full simulated jump can cross every stepping-stone gap.
-for (let i = 0; i < 4; i++) {
+for (
+  let i = 0;
+  i < vm.runInContext("steppingStones.length - 1", sandbox);
+  i++
+) {
   vm.runInContext(
     `{const s=steppingStones[${i}];Object.assign(player,{x:s.x,y:s.top,z:s.z,grounded:true,vy:0,swimming:false});yaw=Math.PI/2;}`,
     sandbox,
   );
   key("KeyS", true);
   key("Space", true);
-  advance(0.5);
+  advance(0.85);
   key("KeyS", false);
   key("Space", false);
   advance(0.5);
   assert.ok(state().grounded && !state().swimming, "land on the next stone");
+  assert.ok(
+    Math.abs(
+      state().x - vm.runInContext(`steppingStones[${i + 1}].x`, sandbox),
+    ) < 0.15,
+  );
+  assert.ok(
+    Math.abs(
+      state().y - vm.runInContext(`steppingStones[${i + 1}].top`, sandbox),
+    ) < 0.01,
+  );
 }
 element("#reset").onclick();
 // Every clip changes the real skinned vertices; all buffers remain finite.

@@ -1,0 +1,33 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65423,
+  "grid": [
+    30,
+    29,
+    24
+  ],
+  "occupied_voxels": 7392,
+  "asset": "produce-shelf",
+  "source_sha256": "174815f2333124d6407874514078ba331c78d144515f8c7c7707f3cdd3f03abe",
+  "config_sha256": "fe8751ee9ae48acf7f33122df4c37f0486e0e397208866fd5b9290218be3a086",
+  "rig_sha256": null,
+  "vertices": 21736,
+  "triangles": 10868,
+  "clips": [],
+  "status": "ready-for-test-drive",
+  "method": "max-gaussian-density; exposed voxel faces; density-weighted DC colors; world-space scale",
+  "kind": "static",
+  "bounds": {
+    "min": [
+      -0.7269230769230769,
+      0.0,
+      -0.5653846153846154
+    ],
+    "max": [
+      0.7269230769230769,
+      1.4,
+      0.5653846153846154
+    ]
+  },
+  "runtime_sha256": "32f2b972e83c28e18b341c476d90ce83dd5254613cb5401da60f403e3ebb0db7"
+}

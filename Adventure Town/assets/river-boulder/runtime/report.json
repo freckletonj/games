@@ -1,0 +1,33 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65320,
+  "grid": [
+    47,
+    21,
+    40
+  ],
+  "occupied_voxels": 6710,
+  "asset": "river-boulder",
+  "source_sha256": "53866178546a4a7ad7c1c5326eca1b367fcf68bb7282f9f9b9e8105c4ad610c3",
+  "config_sha256": "3f20baa4f57307609616411e6ceacd780ff7620196b4a2746801aa44248769f1",
+  "rig_sha256": null,
+  "vertices": 32904,
+  "triangles": 16452,
+  "clips": [],
+  "status": "ready-for-test-drive",
+  "method": "max-gaussian-density; exposed voxel faces; density-weighted DC colors; world-space scale",
+  "kind": "static",
+  "bounds": {
+    "min": [
+      -0.3666666666666667,
+      0.0,
+      -0.31666666666666665
+    ],
+    "max": [
+      0.3666666666666667,
+      0.3,
+      0.31666666666666665
+    ]
+  },
+  "runtime_sha256": "ef8bbe15a138c8976d8eab9b909725e71012e352cadccb542b3a269ef01dc82a"
+}

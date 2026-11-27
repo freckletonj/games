@@ -1,25 +1,38 @@
 {
   "id": "willow-cottage",
   "kind": "static",
-  "status": "awaiting-splat",
+  "status": "ready-for-test-drive",
   "reference": "source/reference.png",
   "splat": "incoming/model.ply",
   "runtime": "runtime/asset.glb",
   "world_height": 2.9,
   "conversion": {
     "source_to_game": [
-      [1, 0, 0],
-      [0, 1, 0],
-      [0, 0, 1]
+      [
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        -1,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ]
     ],
     "crop": null,
-    "height_voxels": 48,
+    "height_voxels": 32,
     "opacity_min": 0.1,
     "sigma_extent": 2.5,
     "density_threshold": 0.2,
-    "color_levels": 8,
-    "max_grid_cells": 4000000
+    "color_levels": 12,
+    "max_grid_cells": 4000000,
+    "voxel_filter_sigma": 0.5
   },
-  "notes": "Unfitted preset. Inspect the actual PLY orientation, crop, shape and scale before review. Reference PNG delivered separately; no runtime GLB exists yet.",
+  "notes": "Converted from committed TripoSplat PLY; fitted upright orientation, voxel-scale density filter and blended palette. See runtime/REVIEW.md. Runtime GLB delivered in the large-file ZIP for user commit; test-drive quality, not final art approval.",
   "reference_sha256": "f1db4451314ca38fc175be8bc1d693738129d44f7e21a19e9b5a8f67a56f35da"
 }
