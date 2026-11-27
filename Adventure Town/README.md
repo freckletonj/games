@@ -97,6 +97,15 @@ town closes it with an explicitly authored wall. The original PLY is unchanged.
 The character now swims head-first and face-down, at a fitted waterline.
 See per-asset `runtime/REVIEW.md` for comparisons and remaining approximations.
 
+## Next town art batch
+
+The [asset backlog](docs/ASSET_BACKLOG.md) inventories 25 proposed designs for the
+current town visual pass. [Reference batch 02](docs/ASSET_BATCH_02.md) starts with
+the grocery counter, apothecary cabinet, grocer, herbalist, lantern and well.
+These six references await user-committed PNGs and original TripoSplat PLYs.
+They are not converted or loaded by the game yet. The two shopkeepers are new
+humanoid NPC work; the imported player stays and `next-adventurer` remains deferred.
+
 ## Checks and boundaries
 
 ```sh

@@ -1,0 +1,11 @@
+{
+  "id": "apothecary-cabinet",
+  "kind": "static",
+  "status": "awaiting-splat",
+  "reference": "source/reference.png",
+  "reference_sha256": "6f9c76014e6d40636c16d6256318e0532555f0f536f49ace33b5725b5d8e2b24",
+  "splat": "incoming/model.ply",
+  "runtime": "runtime/asset.glb",
+  "world_height": 1.4,
+  "notes": "Second town reference batch. Reference supplied in the PNG-only ZIP; user commits PNG and original standard 3DGS PLY. World height is a provisional placement target. Fit conversion settings, orientation and collision to the actual PLY before building. Not registered in the runtime catalog."
+}

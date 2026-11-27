@@ -1,0 +1,10 @@
+{
+  "id": "emberbrook-grocer",
+  "kind": "humanoid",
+  "status": "awaiting-splat",
+  "reference": "source/reference.png",
+  "reference_sha256": "bb515de1b60ca49cf7cbb1804e8c49d05101c57eeedeb594eb44cfb931376f4c",
+  "splat": "incoming/model.ply",
+  "runtime": "runtime/asset.glb",
+  "notes": "Second town reference batch. Reference supplied in the PNG-only ZIP; user commits PNG and original standard 3DGS PLY. Target height is one game unit. Fit conversion settings and rig.json to the actual PLY before building; no rig or animation has been generated yet. Not registered in the runtime catalog."
+}

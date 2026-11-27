@@ -1,0 +1,11 @@
+{
+  "id": "town-lantern",
+  "kind": "static",
+  "status": "awaiting-splat",
+  "reference": "source/reference.png",
+  "reference_sha256": "c91ef00c4131de5c77ad9f052a537c8ee16d00332c1beccf88dad08e0379f926",
+  "splat": "incoming/model.ply",
+  "runtime": "runtime/asset.glb",
+  "world_height": 1.55,
+  "notes": "Second town reference batch. Reference supplied in the PNG-only ZIP; user commits PNG and original standard 3DGS PLY. World height is a provisional placement target. Fit conversion settings, orientation and collision to the actual PLY before building. Not registered in the runtime catalog."
+}

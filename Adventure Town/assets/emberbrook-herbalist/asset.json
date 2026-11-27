@@ -1,0 +1,10 @@
+{
+  "id": "emberbrook-herbalist",
+  "kind": "humanoid",
+  "status": "awaiting-splat",
+  "reference": "source/reference.png",
+  "reference_sha256": "9d5033001f396b20d70a1b6dc405e7803afaed30ec9f3eb924bb98c33d27ed9d",
+  "splat": "incoming/model.ply",
+  "runtime": "runtime/asset.glb",
+  "notes": "Second town reference batch. Reference supplied in the PNG-only ZIP; user commits PNG and original standard 3DGS PLY. Target height is one game unit. Fit conversion settings and rig.json to the actual PLY before building; no rig or animation has been generated yet. Not registered in the runtime catalog."
+}
