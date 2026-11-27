@@ -1,0 +1,25 @@
+{
+  "id": "potion-workbench",
+  "kind": "static",
+  "status": "awaiting-splat",
+  "reference": "source/reference.png",
+  "splat": "incoming/model.ply",
+  "runtime": "runtime/asset.glb",
+  "world_height": 1.25,
+  "conversion": {
+    "source_to_game": [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1]
+    ],
+    "crop": null,
+    "height_voxels": 32,
+    "opacity_min": 0.1,
+    "sigma_extent": 2.5,
+    "density_threshold": 0.2,
+    "color_levels": 8,
+    "max_grid_cells": 4000000
+  },
+  "notes": "Unfitted preset. Inspect the actual PLY orientation, crop, shape and scale before review. Reference PNG delivered separately; no runtime GLB exists yet.",
+  "reference_sha256": "5a20581514b88dcee9bc8fe8113c1f7f07ca0ce644f7b843b36c57aa953c5aad"
+}

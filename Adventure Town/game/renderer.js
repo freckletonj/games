@@ -49,6 +49,11 @@ export function webRenderer(gl, canvas, staticVerts) {
   }
   return {
     name: "WebGL",
+    setScene(vertices) {
+      staticVerts = vertices;
+      gl.bindBuffer(gl.ARRAY_BUFFER, sb);
+      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+    },
     draw(cam, character, fx) {
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);

@@ -1,6 +1,8 @@
 # Next adventurer: first TripoSplat round trip
 
-Status: **awaiting-splat**. The transparent reference is generated and ready.
+Status: **deferred**. The user is keeping the imported Emberbrook character.
+No TripoSplat conversion is requested for this reference. The instructions below
+are retained as historical notes only.
 It depicts a copper-haired adventurer with a teal scarf, cream shirt, brown vest,
 trousers and boots. The A-pose separates the arms from the body and the boots
 from each other. It is a new candidate, not a reconstruction of the Emberbrook

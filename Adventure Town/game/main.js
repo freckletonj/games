@@ -1,3 +1,4 @@
+import { activeSceneryIds } from "./scenery.js";
 import {
   positions,
   normals,
@@ -16,6 +17,10 @@ import {
   tri,
   tile,
   effectGeometry,
+  buildings,
+  steppingStones,
+  selectWorld,
+  box,
 } from "./world.js";
 import { webRenderer } from "./renderer.js";
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
@@ -33,6 +38,7 @@ const spawn = { x: -4.1, y: 0, z: 1.1 },
     time: 0,
     air: 0,
     land: 0,
+    swimming: false,
   };
 const keys = new Set();
 let jumpQueued = false,
@@ -45,6 +51,94 @@ let jumpQueued = false,
   notice = 0,
   frameCount = 0,
   measured = 0;
+let sceneId = "outdoors",
+  currentBuilding = null,
+  returnPoint = null,
+  returnView = null,
+  potionBubbles = 0;
+function teleport(point) {
+  Object.assign(player, point, {
+    vy: 0,
+    grounded: true,
+    swimming: false,
+    clip: "Idle",
+    time: 0,
+    land: 0,
+  });
+  const follow = sceneId === "outdoors" ? 1 : 0.25;
+  camX = player.x * follow;
+  camY = player.y * 0.72 + 0.2;
+  camZ = player.z * follow;
+  keys.clear();
+  jumpQueued = false;
+}
+function changeScene(id) {
+  sceneId = id;
+  renderer.setScene(selectWorld(id));
+  $("#map").style.display = id === "outdoors" ? "block" : "none";
+}
+function interactionTarget() {
+  if (!player.grounded || player.swimming) return null;
+  if (sceneId === "outdoors") {
+    const building = buildings.find(
+      (b) =>
+        Math.hypot(player.x - b.x, player.z - (b.z + b.d / 2 + 0.4)) < 0.95,
+    );
+    return building
+      ? { action: "enter", building, label: "Enter " + building.name }
+      : null;
+  }
+  if (Math.hypot(player.x, player.z - 2.65) < 0.85)
+    return { action: "leave", label: "Return to town" };
+  if (sceneId === "grocery" && Math.hypot(player.x - 2, player.z + 0.65) < 1.05)
+    return { action: "apple", label: "Taste an apple" };
+  if (sceneId === "potions" && Math.hypot(player.x, player.z + 0.65) < 1.05)
+    return { action: "brew", label: "Stir the cauldron" };
+  if (sceneId === "cottage" && Math.hypot(player.x, player.z + 1.55) < 0.9)
+    return { action: "warm", label: "Rest by the hearth" };
+  return null;
+}
+function interact() {
+  const target = interactionTarget();
+  if (!target) return;
+  if (target.action === "enter") {
+    currentBuilding = target.building;
+    returnView = { yaw, pitch, zoom };
+    returnPoint = {
+      x: currentBuilding.x,
+      y: 0,
+      z: currentBuilding.z + currentBuilding.d / 2 + 0.55,
+    };
+    changeScene(
+      ["grocery", "potions"].includes(currentBuilding.id)
+        ? currentBuilding.id
+        : "cottage",
+    );
+    teleport({ x: 0, y: 0, z: 2.05, angle: Math.PI });
+    yaw = 0.35;
+    pitch = 0.75;
+    zoom = Math.max(1, (0.9 * canvas.clientHeight) / canvas.clientWidth);
+    $("#zoom").textContent = zoom < 1.2 ? "Zoom out" : "Zoom in";
+    message(currentBuilding.name + " · F at the door to leave");
+  } else if (target.action === "leave") {
+    changeScene("outdoors");
+    teleport({ ...returnPoint, angle: 0 });
+    currentBuilding = null;
+    ({ yaw, pitch, zoom } = returnView);
+    $("#zoom").textContent = zoom < 1.2 ? "Zoom out" : "Zoom in";
+    message("Back in Emberbrook");
+  } else if (target.action === "brew") {
+    potionBubbles = 3;
+    message("A little river mint… a very bubbly result!");
+  } else if (target.action === "apple")
+    message("Crisp, sweet, and perfect for a riverside walk.");
+  else message("A warm hearth. Outside, the stream keeps flowing.");
+}
+function updateInteraction() {
+  const target = interactionTarget();
+  $("#interact").hidden = target === null;
+  if (target) $("#interact").textContent = "F · " + target.label;
+}
 const gravity = 10.5,
   jumpSpeed = 4.35,
   radius = 0.21,
@@ -55,6 +149,9 @@ function message(text) {
   notice = 2.4;
 }
 function reset(notify = true) {
+  changeScene("outdoors");
+  currentBuilding = null;
+  potionBubbles = 0;
   Object.assign(player, spawn, {
     vy: 0,
     grounded: true,
@@ -64,6 +161,7 @@ function reset(notify = true) {
     land: 0,
     angle: 0.58,
   });
+  player.swimming = false;
   camX = spawn.x;
   camY = 0.2;
   camZ = spawn.z;
@@ -75,14 +173,16 @@ function overlaps(s, x, z, r = radius) {
 function groundAt(x, z, maxY) {
   let top = -Infinity;
   for (let s of solids)
-    if (s.top <= maxY && s.top > top && overlaps(s, x, z, 0.12)) top = s.top;
+    if (s.top <= maxY && s.top > top && overlaps(s, x, z)) top = s.top;
   return top;
 }
 function moveAxis(axis, d) {
   if (!d) return;
   let x = player.x + (axis === "x" ? d : 0),
     z = player.z + (axis === "z" ? d : 0);
-  if (Math.abs(x) > 15.6 || Math.abs(z) > 11.6) return;
+  const limitX = sceneId === "outdoors" ? 15.6 : 2.85,
+    limitZ = sceneId === "outdoors" ? 11.6 : 2.85;
+  if (Math.abs(x) > limitX || Math.abs(z) > limitZ) return;
   let lift = 0;
   for (let s of solids) {
     if (
@@ -92,7 +192,10 @@ function moveAxis(axis, d) {
     )
       continue;
     let step = s.top - player.y;
-    if (player.grounded && step <= 0.19) {
+    if (
+      (player.grounded && step <= 0.19) ||
+      (player.swimming && s.top <= 0.08 && step <= 0.7)
+    ) {
       lift = Math.max(lift, step);
       continue;
     }
@@ -125,17 +228,29 @@ function step(dt) {
       );
     player.angle += delta * Math.min(1, dt * 14);
   }
-  if (jumpQueued && player.grounded) {
-    player.vy = jumpSpeed;
+  player.swimming =
+    sceneId === "outdoors" &&
+    Math.abs(player.x) < 1.7 &&
+    player.y < -0.18 &&
+    player.vy <= 0 &&
+    groundAt(player.x, player.z, 0.4) < -0.3;
+  if (jumpQueued && (player.grounded || player.swimming)) {
+    player.vy = player.swimming ? 3.2 : jumpSpeed;
+    player.swimming = false;
     player.grounded = false;
     player.air = 0;
     player.land = 0;
   }
   jumpQueued = false;
-  let speed = run ? 2.75 : 1.45;
+  let speed = player.swimming ? 1.15 : run ? 2.75 : 1.45;
   if (moving) {
     moveAxis("x", sx * speed * dt);
     moveAxis("z", sz * speed * dt);
+  }
+  if (player.swimming && groundAt(player.x, player.z, 0.08) >= -0.05) {
+    player.swimming = false;
+    player.grounded = true;
+    player.y = groundAt(player.x, player.z, 0.08);
   }
   let floor = groundAt(player.x, player.z, player.y + 0.025);
   if (player.grounded && player.y - floor > 0.035) {
@@ -143,7 +258,11 @@ function step(dt) {
     player.vy = 0;
     player.air = 0;
   }
-  if (!player.grounded) {
+  if (player.swimming) {
+    player.y = -0.58;
+    player.vy = 0;
+    player.grounded = false;
+  } else if (!player.grounded) {
     let prev = player.y;
     player.air += dt;
     player.vy -= gravity * dt;
@@ -170,19 +289,20 @@ function step(dt) {
     }
     player.y = next;
   } else player.y = floor;
-  if (player.y < -0.37) {
-    reset(false);
-    message("The stream is too deep. Try the bridge!");
-  }
-  let clip = !player.grounded
-    ? "Jump"
-    : player.land > 0
+  if (player.y < -4) reset();
+  let clip = player.swimming
+    ? moving
+      ? "Walk"
+      : "Idle"
+    : !player.grounded
       ? "Jump"
-      : moving
-        ? run
-          ? "Run"
-          : "Walk"
-        : "Idle";
+      : player.land > 0
+        ? "Jump"
+        : moving
+          ? run
+            ? "Run"
+            : "Walk"
+          : "Idle";
   if (clip !== player.clip) {
     player.clip = clip;
     player.time = 0;
@@ -200,9 +320,11 @@ function step(dt) {
       (player.time + dt * (clip === "Run" ? 1.3 : clip === "Walk" ? 1.05 : 1)) %
       clips[clip].duration;
   player.land = Math.max(0, player.land - dt);
+  potionBubbles = Math.max(0, potionBubbles - dt);
   let k = 1 - Math.exp(-dt * 7);
-  camX = mix(camX, player.x, k);
-  camZ = mix(camZ, player.z, k);
+  const follow = sceneId === "outdoors" ? 1 : 0.25;
+  camX = mix(camX, player.x * follow, k);
+  camZ = mix(camZ, player.z * follow, k);
   camY = mix(camY, player.y * 0.72 + 0.2, k);
   if (notice > 0) {
     notice -= dt;
@@ -218,7 +340,12 @@ function step(dt) {
           : player.z < -2.5
             ? "Old watchtower"
             : "Eastbank meadow";
-  $("#area").textContent = area + (player.grounded ? "" : " · airborne");
+  $("#area").textContent =
+    sceneId === "outdoors"
+      ? area +
+        (player.swimming ? " · swimming" : player.grounded ? "" : " · airborne")
+      : currentBuilding.name;
+  updateInteraction();
 }
 const movementKeys = new Set([
   "KeyW",
@@ -232,6 +359,7 @@ const movementKeys = new Set([
   "Space",
   "ShiftLeft",
   "ShiftRight",
+  "KeyF",
   "KeyQ",
   "KeyE",
 ]);
@@ -239,6 +367,7 @@ window.addEventListener("keydown", (e) => {
   if (!movementKeys.has(e.code)) return;
   e.preventDefault();
   if (e.code === "Space" && !keys.has("Space")) jumpQueued = true;
+  if (e.code === "KeyF" && !keys.has("KeyF")) interact();
   keys.add(e.code);
 });
 window.addEventListener("keyup", (e) => keys.delete(e.code));
@@ -263,6 +392,7 @@ for (let b of document.querySelectorAll("[data-key]")) {
   for (let ev of ["pointerup", "pointercancel", "lostpointercapture"])
     b.addEventListener(ev, () => keys.delete(key));
 }
+$("#interact").onclick = interact;
 $("#reset").onclick = () => reset();
 $("#orbit").onclick = () => {
   yaw += Math.PI / 2;
@@ -337,6 +467,14 @@ function skinCharacter() {
       NY += w * (bm[o + 1] * nx + bm[o + 5] * ny + bm[o + 9] * nz);
       NZ += w * (bm[o + 2] * nx + bm[o + 6] * ny + bm[o + 10] * nz);
     }
+    if (player.swimming) {
+      const tilt = -1.05,
+        ct = Math.cos(tilt),
+        st = Math.sin(tilt),
+        yy = Y - 0.4;
+      [Y, Z] = [0.4 + ct * yy - st * Z, st * yy + ct * Z];
+      [NY, NZ] = [ct * NY - st * NZ, st * NY + ct * NZ];
+    }
     charP[k] = ca * X + sa * Z + player.x;
     charP[k + 1] = Y;
     charP[k + 2] = -sa * X + ca * Z + player.z;
@@ -407,11 +545,49 @@ function effects(t) {
         );
       }
     }
-    for (let i = 0; i < 25; i++) {
-      let z = ((((i * 2.47 + t * 0.37) % 23) + 23) % 23) - 11.5,
-        x = Math.sin(i * 3.37) * 1.22;
-      tile(x, z, 0.18 + 0.16 * Math.sin(i * 2) ** 2, 0.035, "#9cc8bd", -0.393);
-    }
+    if (sceneId === "outdoors")
+      for (let i = 0; i < 25; i++) {
+        let z = ((((i * 2.47 + t * 0.37) % 23) + 23) % 23) - 11.5,
+          x = Math.sin(i * 3.37) * 1.22;
+        tile(
+          x,
+          z,
+          0.18 + 0.16 * Math.sin(i * 2) ** 2,
+          0.035,
+          "#9cc8bd",
+          -0.393,
+        );
+      }
+    if (sceneId === "outdoors")
+      for (const b of buildings) {
+        const y = 0.04 + 0.02 * Math.sin(t * 2);
+        tile(b.x, b.z + b.d / 2 + 0.35, 0.24, 0.24, "#e1c17b", y);
+      }
+    if (player.swimming)
+      for (let i = 0; i < 10; i++) {
+        const a = (i * Math.PI) / 5 + t * 0.7;
+        tile(
+          player.x + 0.35 * Math.cos(a),
+          player.z + 0.35 * Math.sin(a),
+          0.08,
+          0.05,
+          "#c1ded2",
+          -0.385,
+        );
+      }
+    if (sceneId === "potions" && potionBubbles > 0)
+      for (let i = 0; i < 7; i++) {
+        const y = 1.25 + ((t * 0.5 + i * 0.17) % 1) * 0.65;
+        box(
+          Math.sin(i * 8 + t) * 0.22,
+          y,
+          -1.48,
+          0.06,
+          0.06,
+          0.06,
+          i % 2 ? "#9ad4b7" : "#c6a7d5",
+        );
+      }
   });
 }
 const gl = canvas.getContext("webgl", {
@@ -441,17 +617,33 @@ function drawMap() {
   mc.fillRect(20, 90, 224, 12);
   mc.fillStyle = "#9c744a";
   mc.fillRect(115, 88, 34, 16);
-  mc.fillStyle = "#c7b595";
-  for (let [x, z, w, d] of [
-    [-5.5, -3.45, 2.65, 2.15],
-    [-10.2, -3.75, 2.95, 2.45],
-    [-8, 4.15, 2.8, 2.3],
-    [-12.2, 3.6, 2.45, 2.15],
-    [7.7, -4.7, 2.05, 2.05],
-    [11, -1.9, 2.45, 2.1],
-  ]) {
-    let [px, pz] = mapPoint(x, z);
-    mc.fillRect(px - w * 3.85, pz - d * 3.75, w * 7.7, d * 7.5);
+  for (const building of buildings) {
+    const [px, pz] = mapPoint(building.x, building.z);
+    mc.fillStyle =
+      building.id === "grocery"
+        ? "#a7be79"
+        : building.id === "potions"
+          ? "#b49abf"
+          : "#d2bb91";
+    mc.fillRect(
+      px - building.w * 3.85,
+      pz - building.d * 3.75,
+      building.w * 7.7,
+      building.d * 7.5,
+    );
+    mc.fillStyle = "#3b5142";
+    mc.font = "bold 16px system-ui";
+    mc.textAlign = "center";
+    mc.fillText(
+      building.id === "grocery" ? "G" : building.id === "potions" ? "P" : "H",
+      px,
+      pz + 5,
+    );
+  }
+  mc.fillStyle = "#a4b197";
+  for (const stone of steppingStones) {
+    const [px, pz] = mapPoint(stone.x, stone.z);
+    mc.fillRect(px - 2, pz - 2, 4, 4);
   }
   mc.fillStyle = "#a2ae88";
   mc.fillRect(170, 117, 62, 17);
@@ -510,5 +702,11 @@ window.gameState = () => ({
   renderer: renderer.name,
   triangles: staticVerts.length / 18 + indices.length / 3,
   fps: measured,
+  scene: sceneId,
+  cameraYaw: yaw,
+  building: currentBuilding?.id ?? null,
+  swimming: player.swimming,
+  interaction: interactionTarget()?.action ?? null,
+  scenery: activeSceneryIds(),
 });
 requestAnimationFrame(frame);

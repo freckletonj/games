@@ -38,6 +38,11 @@ def validate(path):
     triangles=p[idx.reshape(-1,3)]
     face=np.cross(triangles[:,1]-triangles[:,0],triangles[:,2]-triangles[:,0])
     assert (np.einsum('ij,ij->i',face,n[idx[::3]])>0).all(), 'winding or degenerate triangles'
+    assert doc['accessors'][attr['COLOR_0']]['componentType']==5121 and doc['accessors'][attr['COLOR_0']]['normalized']
+    if 'skins' not in doc:
+        assert len(doc['nodes'])==1 and doc['nodes'][0]['mesh']==0
+        assert not any(key in doc['nodes'][0] for key in ['matrix','translation','rotation','scale']), 'static geometry must be baked into vertex positions'
+        assert 'animations' not in doc, 'static assets have no invented animation'
     clips=[]
     if 'skins' in doc:
         joints=a(attr['JOINTS_0']);weights=a(attr['WEIGHTS_0'])

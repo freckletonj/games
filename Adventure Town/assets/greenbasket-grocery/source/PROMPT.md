@@ -1,0 +1,7 @@
+# Greenbasket Grocery exterior
+
+Generated reference for the first town batch. Use the single PNG as TripoSplat input.
+
+## Submitted prompt
+
+Use case: stylized-concept. Asset type: isolated reference for a TripoSplat-to-voxel 3D game asset in Adventure Town. One complete small cozy single-storey village grocery shop, cream plaster and oak framing, moss green pitched tile roof, centered wooden front door, two generous front display windows, short green-and-cream striped awning. A small attached hanging sign bearing a simple painted apple symbol with no lettering. No exterior produce crates, no surrounding ground. Style: charming substantial three-dimensional voxel sculpture built from crisp cubic steps and blocky connected volumes, consistent chunky voxel size, warm cream, oak brown, muted terracotta, moss green and restrained accent colors. Match a cozy riverside fantasy town. Not flat pixel art and not smooth polygonal modeling. Camera: one front-right three-quarter view, near orthographic, slightly elevated enough to see the upper surfaces; the FRONT of the object faces the viewer and will become +Z in the game. Soft even diffuse lighting, minimal baked shadow. Entire object centered within the central 75% of a square canvas with generous fully transparent margins on ALL sides. Genuine RGBA transparency outside the object and in openings. No ground plane, cast shadow, backdrop, checkerboard, pedestal, lettering, watermark, people, or extra views.

@@ -1,7 +1,7 @@
 {
   "id": "next-adventurer",
   "kind": "humanoid",
-  "status": "awaiting-splat",
+  "status": "deferred",
   "reference": "source/reference.png",
   "splat": "incoming/model.ply",
   "rig": "rig.json",
@@ -20,5 +20,5 @@
     "color_levels": 8,
     "max_grid_cells": 4000000
   },
-  "notes": "Starting settings, not a fitted asset. Inspect orientation, crop, density and every joint after the real PLY arrives."
+  "notes": "Deferred at the user request. Keep the imported Emberbrook character; no PLY is requested for this experiment."
 }

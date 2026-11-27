@@ -14,7 +14,7 @@
       <canvas id="view" aria-label="Playable 3D fantasy village"></canvas>
     </div>
     <div id="hud">
-      <div class="eyebrow">A new beginning · voxel exploration</div>
+      <div class="eyebrow">Emberbrook · riverside rambles</div>
       <h1>Adventure Town</h1>
       <div id="area">Willowbank village</div>
     </div>
@@ -26,11 +26,13 @@
       <div>
         <kbd>W A S D</kbd> / <kbd>↑ ← ↓ →</kbd> Move &nbsp; <kbd>Shift</kbd> Run
         &nbsp; <kbd>Space</kbd> Jump &nbsp; <kbd>Q</kbd> <kbd>E</kbd> Orbit
+        &nbsp; <kbd>F</kbd> Use / Enter
       </div>
       <div id="info">Loading world…</div>
     </div>
     <canvas id="map" width="264" height="192" aria-label="Village map"></canvas>
-    <div id="message"></div>
+    <div id="message" role="status"></div>
+    <button id="interact" hidden>Enter</button>
     <div id="touch">
       <div id="dpad">
         <button data-key="KeyW">↑</button><button data-key="KeyA">←</button

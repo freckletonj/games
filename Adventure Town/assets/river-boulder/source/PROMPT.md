@@ -1,0 +1,7 @@
+# River stepping boulder
+
+Generated reference for the first town batch. Use the single PNG as TripoSplat input.
+
+## Submitted prompt
+
+Use case: stylized-concept. Asset type: isolated reference for a TripoSplat-to-voxel 3D game asset in Adventure Town. One standalone broad squat gray river boulder with a fairly flat upper surface suitable for a game character to land on, irregular stepped cubic stone silhouette, a few connected patches of muted moss green on the top edges. Height roughly half its width. No river, grass, dirt, ground plane, water, detached stones or plants. Style: charming substantial three-dimensional voxel sculpture built from crisp cubic steps and blocky connected volumes, consistent chunky voxel size, warm cream, oak brown, muted terracotta, moss green and restrained accent colors. Match a cozy riverside fantasy town. Not flat pixel art and not smooth polygonal modeling. Camera: one front-right three-quarter view, near orthographic, slightly elevated enough to see the upper surfaces; the FRONT of the object faces the viewer and will become +Z in the game. Soft even diffuse lighting, minimal baked shadow. Entire object centered within the central 75% of a square canvas with generous fully transparent margins on ALL sides. Genuine RGBA transparency outside the object and in openings. No ground plane, cast shadow, backdrop, checkerboard, pedestal, lettering, watermark, people, or extra views.

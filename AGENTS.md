@@ -7,7 +7,7 @@ the game being changed.
 
 - `Wonderwood/` contains the Phaser campaign, original Canvas game, shared art,
   and their build and verification tools. See `Wonderwood/AGENTS.md`.
-- `Adventure Town/` contains the 3D test ground and character asset pipeline.
+- `Adventure Town/` contains the voxel town, interiors and image/splat asset pipeline.
   See `Adventure Town/AGENTS.md`.
 - `.github/workflows/` contains repository workflows. Shell steps can set a
   game working directory; artifact upload paths are relative to the checkout.

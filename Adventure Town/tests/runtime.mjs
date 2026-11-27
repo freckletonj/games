@@ -164,14 +164,85 @@ vm.runInContext(
 );
 advance(0.3);
 assert.ok(Math.abs(state().y - 0.32) < 0.001);
-// Deep water triggers the same respawn path as player input.
+// Water becomes a traversable swimming route.
 vm.runInContext(
   "Object.assign(player,{x:0,y:-.4,z:3,grounded:false,vy:0});",
   sandbox,
 );
 tick();
-assert.equal(state().x, start.x);
-assert.equal(state().z, start.z);
+assert.equal(state().x, 0);
+assert.equal(state().z, 3);
+assert.ok(state().swimming);
+// Buoyancy holds indefinitely; exiting either bank puts the feet on grass.
+advance(2);
+assert.ok(state().swimming);
+assert.ok(Math.abs(state().y + 0.58) < 0.001);
+for (const side of [-1, 1]) {
+  vm.runInContext(
+    `Object.assign(player,{x:${side * 1.48},y:-.58,z:3,grounded:false,vy:0,swimming:true});moveAxis('x',${side * 0.12})`,
+    sandbox,
+  );
+  tick();
+  assert.ok(!state().swimming);
+  assert.equal(state().y, 0);
+}
+element("#reset").onclick();
+// Every building has an enterable room and returns to its own door.
+for (const id of [
+  "cottage",
+  "grocery",
+  "potions",
+  "garden-cottage",
+  "riverside-cottage",
+]) {
+  vm.runInContext(
+    `{const b=buildings.find(b=>b.id==='${id}');Object.assign(player,{x:b.x,y:0,z:b.z+b.d/2+.4,grounded:true,vy:0});}`,
+    sandbox,
+  );
+  tick();
+  assert.equal(state().interaction, "enter");
+  key("KeyF", true);
+  key("KeyF", false);
+  tick();
+  assert.equal(state().building, id);
+  assert.equal(
+    state().scene,
+    ["grocery", "potions"].includes(id) ? id : "cottage",
+  );
+  const current = state();
+  vm.runInContext("moveAxis('x',10)", sandbox);
+  assert.equal(state().x, current.x, "indoor boundary");
+  if (id === "potions") {
+    vm.runInContext("Object.assign(player,{x:0,z:-.65});interact()", sandbox);
+    assert.ok(vm.runInContext("potionBubbles>0", sandbox));
+  }
+  vm.runInContext(
+    "Object.assign(player,{x:0,z:2.6,grounded:true});interact()",
+    sandbox,
+  );
+  tick();
+  assert.equal(state().scene, "outdoors");
+  assert.equal(
+    state().x,
+    vm.runInContext(`buildings.find(b=>b.id==='${id}').x`, sandbox),
+  );
+}
+element("#reset").onclick();
+// A full simulated jump can cross every stepping-stone gap.
+for (let i = 0; i < 4; i++) {
+  vm.runInContext(
+    `{const s=steppingStones[${i}];Object.assign(player,{x:s.x,y:s.top,z:s.z,grounded:true,vy:0,swimming:false});yaw=Math.PI/2;}`,
+    sandbox,
+  );
+  key("KeyS", true);
+  key("Space", true);
+  advance(0.5);
+  key("KeyS", false);
+  key("Space", false);
+  advance(0.5);
+  assert.ok(state().grounded && !state().swimming, "land on the next stone");
+}
+element("#reset").onclick();
 // Every clip changes the real skinned vertices; all buffers remain finite.
 for (const clip of ["Idle", "Walk", "Run", "Jump"]) {
   const motion = vm.runInContext(
@@ -189,11 +260,10 @@ for (const clip of ["Idle", "Walk", "Run", "Jump"]) {
   );
 }
 // Zoom and orbit controls update the actual camera.
-assert.equal(element("#zoom").textContent, "");
 element("#zoom").onclick();
 assert.equal(element("#zoom").textContent, "Zoom in");
 element("#orbit").onclick();
 assert.ok(draws > 100);
 console.log(
-  "Runtime checks passed: boot, idle/walk/run/jump, landing, focus release, wall collision, bridge, river respawn, all clip skinning, finite draw buffers, camera controls.",
+  "Runtime checks passed: boot, idle/walk/run/jump, landing, focus release, wall collision, bridge, swimming/shore exits, enter/leave all buildings, stepping-stone jumps, all clip skinning, finite draw buffers, camera controls.",
 );

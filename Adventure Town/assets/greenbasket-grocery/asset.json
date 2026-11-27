@@ -1,0 +1,25 @@
+{
+  "id": "greenbasket-grocery",
+  "kind": "static",
+  "status": "awaiting-splat",
+  "reference": "source/reference.png",
+  "splat": "incoming/model.ply",
+  "runtime": "runtime/asset.glb",
+  "world_height": 3.1,
+  "conversion": {
+    "source_to_game": [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1]
+    ],
+    "crop": null,
+    "height_voxels": 48,
+    "opacity_min": 0.1,
+    "sigma_extent": 2.5,
+    "density_threshold": 0.2,
+    "color_levels": 8,
+    "max_grid_cells": 4000000
+  },
+  "notes": "Unfitted preset. Inspect the actual PLY orientation, crop, shape and scale before review. Reference PNG delivered separately; no runtime GLB exists yet.",
+  "reference_sha256": "264f02c8266fb04039755c5eebf86561a4274f51824b67ab948d724e2cec99bc"
+}

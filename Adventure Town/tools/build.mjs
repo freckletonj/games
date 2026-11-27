@@ -16,8 +16,28 @@ const clean = (s) =>
     .replace(/^import[\s\S]*?from ["'][^"']+["'];\s*$/gm, "")
     .replace(/^export \{[\s\S]*?\};\s*$/gm, "")
     .replace(/^export /gm, "");
+const { townAssets } = await import("../game/town-assets.js");
+const embeddedScenery = townAssets
+  .filter((asset) => asset.runtime !== null)
+  .map((asset) => [
+    asset.id,
+    readFileSync(resolve(root, asset.runtime)).toString("base64"),
+  ]);
+const scenery = read("game/scenery.js").replace(
+  /\/\/ BEGIN_SCENERY_LOAD[\s\S]*?\/\/ END_SCENERY_LOAD/,
+  () =>
+    `const sceneryMeshes=new Map(${JSON.stringify(embeddedScenery)}.map(([id,encoded])=>[id,readGlb(Uint8Array.from(atob(encoded),c=>c.charCodeAt(0)))]));`,
+);
 const world = read("game/world.js");
-const js = [model, world, read("game/renderer.js"), read("game/main.js")]
+const js = [
+  read("game/glb.js"),
+  read("game/town-assets.js"),
+  model,
+  scenery,
+  world,
+  read("game/renderer.js"),
+  read("game/main.js"),
+]
   .map(clean)
   .join("\n");
 let html = read("index.html")

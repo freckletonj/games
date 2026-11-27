@@ -1,3 +1,4 @@
+import { sceneryGeometry } from "./scenery.js";
 const clampColor = (x, a, b) => Math.max(a, Math.min(b, x));
 const solids = [],
   staticData = [],
@@ -242,6 +243,84 @@ function ledge(x, z, w, d, h) {
     box(xx, h - 0.28, z + d / 2 - 0.025, 0.34, 0.16, 0.06, "#a2a18a");
   }
 }
+function assetShape(id, position, placeholder, angle = 0, scale = 1) {
+  const start = dest.length;
+  placeholder();
+  const vertices = sceneryGeometry(id, position, angle, scale);
+  if (vertices !== null) {
+    dest.length = start;
+    for (const value of vertices) dest.push(value);
+  }
+}
+export const buildings = [
+  {
+    id: "cottage",
+    name: "Willow Cottage",
+    asset: "willow-cottage",
+    x: -5.5,
+    z: -3.45,
+    w: 2.65,
+    d: 2.15,
+    h: 1.67,
+    color: "#e4ca9e",
+    roof: "#a65a42",
+  },
+  {
+    id: "grocery",
+    name: "Greenbasket Grocery",
+    asset: "greenbasket-grocery",
+    x: -10.2,
+    z: -3.75,
+    w: 2.95,
+    d: 2.45,
+    h: 1.8,
+    color: "#d8bd92",
+    roof: "#6c8581",
+  },
+  {
+    id: "potions",
+    name: "Moss & Ember Potions",
+    asset: "moss-ember-potions",
+    x: 11,
+    z: -1.9,
+    w: 2.45,
+    d: 2.1,
+    h: 1.55,
+    color: "#d9cba9",
+    roof: "#805e83",
+  },
+  {
+    id: "garden-cottage",
+    name: "Garden Cottage",
+    asset: "willow-cottage",
+    x: -8,
+    z: 4.15,
+    w: 2.8,
+    d: 2.3,
+    h: 1.65,
+    color: "#e0c3a1",
+    roof: "#9b6448",
+  },
+  {
+    id: "riverside-cottage",
+    name: "Riverside Cottage",
+    asset: "willow-cottage",
+    x: -12.2,
+    z: 3.6,
+    w: 2.45,
+    d: 2.15,
+    h: 1.5,
+    color: "#d5c29e",
+    roof: "#78855d",
+  },
+];
+export const steppingStones = [
+  { x: -1.45, z: -5.7, w: 0.7, d: 0.78, top: 0.14 },
+  { x: -0.73, z: -5.8, w: 0.64, d: 0.74, top: 0.34 },
+  { x: 0, z: -5.65, w: 0.68, d: 0.78, top: 0.52 },
+  { x: 0.73, z: -5.8, w: 0.64, d: 0.74, top: 0.34 },
+  { x: 1.45, z: -5.7, w: 0.7, d: 0.78, top: 0.14 },
+];
 // Terrain and river: ground is two solid banks, with a lower riverbed.
 box(-8.85, -0.58, 0, 14.3, 0.58, 24, "#756247", true);
 box(8.85, -0.58, 0, 14.3, 0.58, 24, "#756247", true);
@@ -325,10 +404,54 @@ for (let s of [-1, 1]) {
 lamp(-2.7, -1);
 lamp(2.7, 1);
 // Village west bank. Courtyard and cottage gardens.
-house(-5.5, -3.45, 2.65, 2.15, 1.67, "#e4ca9e", "#a65a42");
-house(-10.2, -3.75, 2.95, 2.45, 1.8, "#d8bd92", "#6c8581");
-house(-8.0, 4.15, 2.8, 2.3, 1.65, "#e0c3a1", "#9b6448");
-house(-12.2, 3.6, 2.45, 2.15, 1.5, "#d5c29e", "#78855d");
+
+for (const b of buildings) {
+  assetShape(b.asset, [b.x, 0, b.z], () =>
+    house(b.x, b.z, b.w, b.d, b.h, b.color, b.roof),
+  );
+  const front = b.z + b.d / 2;
+  tile(
+    b.x,
+    front + 0.28,
+    0.7,
+    0.5,
+    b.id === "grocery" ? "#91ad65" : b.id === "potions" ? "#a484af" : "#81aaa0",
+    0.014,
+  );
+}
+// A second river crossing rewards jumping, with swimming as an alternate route.
+for (const stone of steppingStones) {
+  assetShape(
+    "river-boulder",
+    [stone.x, -0.42, stone.z],
+    () => {
+      box(
+        stone.x,
+        -0.42,
+        stone.z,
+        stone.w,
+        stone.top + 0.42,
+        stone.d,
+        "#869486",
+        true,
+      );
+      box(
+        stone.x,
+        stone.top - 0.035,
+        stone.z,
+        stone.w * 0.85,
+        0.04,
+        stone.d * 0.82,
+        "#9dac89",
+      );
+    },
+    0,
+    (stone.top + 0.42) / 0.6,
+  );
+}
+// Sandy banks make swim entry and exit easy to spot.
+for (const side of [-1, 1]) tile(side * 2.15, 7.8, 0.95, 2.2, "#c5ba8f", 0.015);
+
 // Inn sign and outdoor table.
 box(-4.13, 0.78, -2.21, 0.1, 0.1, 0.44, "#745236");
 box(-4.13, 0.47, -1.99, 0.46, 0.35, 0.085, "#84603c");
@@ -399,7 +522,7 @@ box(10, 1.91, 4.15, 0.22, 0.39, 0.22, "#78c7b4");
 ledge(4.8, -7.6, 2.4, 1.8, 0.42);
 ledge(5.25, -9.05, 2.5, 1.1, 0.86);
 ledge(7.2, -9.05, 1.4, 1.2, 1.28);
-house(11.0, -1.9, 2.45, 2.1, 1.55, "#d9cba9", "#758b72");
+
 lamp(5.1, -2.4);
 lamp(4.6, 2.4);
 lamp(9.7, 1.0);
@@ -479,9 +602,115 @@ for (let s of solids) {
     z = (s.l + s.r) / 2 - 0.14;
   tile(x, z, w + 0.23, d + 0.23, "#6c854d", 0.006);
 }
-const staticVerts = new Float32Array(staticData);
-
-export { solids, staticVerts, color, tri, tile, dynamicData };
+const outdoors = {
+  vertices: new Float32Array(staticData),
+  colliders: [...solids],
+};
+export let staticVerts = outdoors.vertices;
+const roomScenes = new Map();
+function interior(kind) {
+  const saved = dest,
+    savedSolids = solids.splice(0);
+  dest = [];
+  box(0, -0.18, 0, 6.4, 0.18, 6.4, "#6c513c", true);
+  for (let x = -3; x < 3; x += 0.5)
+    for (let z = -3; z < 3; z += 0.5)
+      tile(
+        x + 0.25,
+        z + 0.25,
+        0.49,
+        0.49,
+        kind === "potions"
+          ? "#8a8091"
+          : kind === "grocery"
+            ? "#b3a580"
+            : "#b99c74",
+        0.003,
+      );
+  // Cutaway walls leave the entire walking space visible from the game camera.
+  for (const side of [-1, 1]) {
+    box(side * 3.1, 0, 0, 0.2, 0.48, 6.2, "#dfcba6", true);
+    box(0, 0, side * 3.1, 6.2, 0.48, 0.2, "#dfcba6", true);
+  }
+  tile(0, 2.65, 0.95, 0.65, "#7daca1", 0.012);
+  tile(0, 0, 1.5, 1.4, kind === "potions" ? "#6d8c91" : "#96725b", 0.009);
+  if (kind === "grocery") {
+    for (const x of [-2, 2])
+      assetShape("produce-shelf", [x, 0, -1.5], () => {
+        box(x, 0, -1.5, 1.1, 1.1, 0.8, "#8d623c", true);
+        for (const y of [0.55, 1.05])
+          for (let k = 0; k < 3; k++)
+            box(
+              x - 0.35 + k * 0.35,
+              y,
+              -1.25,
+              0.27,
+              0.22,
+              0.3,
+              ["#be6248", "#83a05a", "#d5af65"][k],
+            );
+      });
+    box(-1.3, 0, 1.0, 1.1, 0.65, 0.6, "#8d6746", true);
+    box(-1.3, 0.65, 1.0, 1.2, 0.08, 0.7, "#d6b585");
+  } else if (kind === "potions") {
+    assetShape("potion-workbench", [0, 0, -1.6], () => {
+      box(0, 0, -1.6, 2.1, 0.8, 0.85, "#7b5741", true);
+      box(0, 0.8, -1.6, 2.2, 0.09, 0.95, "#aa845e");
+      for (const [x, c] of [
+        [-0.75, "#78b5a4"],
+        [0.75, "#bc98c1"],
+      ]) {
+        box(x, 0.89, -1.65, 0.22, 0.34, 0.22, c);
+        box(x, 1.23, -1.65, 0.14, 0.1, 0.14, "#b38d59");
+      }
+      box(0, 0.89, -1.48, 0.5, 0.36, 0.45, "#424e50");
+      tile(0, -1.48, 0.37, 0.3, "#84c7af", 1.25);
+    });
+    for (let i = 0; i < 3; i++) {
+      box(-2.45, 0.4 + i * 0.4, -1.8, 0.5, 0.08, 1.3, "#8b694c");
+      box(
+        -2.45,
+        0.48 + i * 0.4,
+        -1.8,
+        0.2,
+        0.2,
+        0.24,
+        ["#b68bbf", "#80b8ab", "#cfac60"][i],
+      );
+    }
+  } else {
+    box(-2, 0, -0.5, 1.05, 0.4, 1.8, "#816145", true);
+    box(-2, 0.4, -0.5, 1.08, 0.12, 1.8, "#cfbd9c");
+    box(-2, 0.52, -0.2, 1.1, 0.08, 1.15, "#6d9591");
+    assetShape("cottage-table", [1.25, 0, 0.25], () => {
+      for (const x of [0.85, 1.65])
+        for (const z of [-0.15, 0.65]) box(x, 0, z, 0.1, 0.6, 0.1, "#7c5639");
+      box(1.25, 0.6, 0.25, 1.05, 0.08, 1.05, "#ac8253", true);
+    });
+    assetShape("cottage-hearth", [0, 0, -2.5], () => {
+      box(0, 0, -2.5, 1.2, 1.4, 0.65, "#90998b", true);
+      box(0, 0.1, -2.14, 0.65, 0.65, 0.025, "#453d35");
+      box(0, 0.13, -2.1, 0.42, 0.15, 0.08, "#d99b51");
+    });
+  }
+  const result = {
+    vertices: new Float32Array(dest),
+    colliders: solids.splice(0),
+  };
+  solids.push(...savedSolids);
+  dest = saved;
+  return result;
+}
+roomScenes.set("cottage", interior("cottage"));
+roomScenes.set("grocery", interior("grocery"));
+roomScenes.set("potions", interior("potions"));
+export function selectWorld(id) {
+  const scene = id === "outdoors" ? outdoors : roomScenes.get(id);
+  solids.splice(0, solids.length, ...scene.colliders);
+  staticVerts = scene.vertices;
+  return staticVerts;
+}
+export { solids, color, tri, tile, box, dynamicData };
 export function effectGeometry(draw) {
   dynamicData.length = 0;
   dest = dynamicData;

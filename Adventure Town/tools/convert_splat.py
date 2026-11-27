@@ -310,6 +310,8 @@ def build(asset, output):
     data=read_ply(source)
     occupied,colors,report=voxelize(data,config['conversion'])
     positions,normals,colors,indices=surface_mesh(occupied,colors)
+    if config['kind']=='static':
+        positions *= config['world_height']
     output.mkdir(parents=True,exist_ok=False)
     rig=json.loads((asset/config['rig']).read_text()) if config['kind']=='humanoid' else None
     write_glb(output/'asset.glb',positions,normals,colors,indices,rig)
@@ -319,6 +321,10 @@ def build(asset, output):
                    "rig_sha256":hashlib.sha256((asset/config['rig']).read_bytes()).hexdigest() if rig else None,
                    "vertices":len(positions),"triangles":len(indices)//3,"clips":[c[0] for c in clips_for_rig(rig)] if rig else [],
                    "status":"candidate-needs-visual-review","method":"max-gaussian-density; exposed voxel faces; fitted segment weights; procedural motion"})
+    report['kind']=config['kind']
+    report['bounds']={'min':positions.min(axis=0).tolist(),'max':positions.max(axis=0).tolist()}
+    if rig is None:
+        report['method']='max-gaussian-density; exposed voxel faces; static vertex colors; world-space scale'
     (output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps(report,indent=2))
 

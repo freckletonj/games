@@ -40,6 +40,33 @@ with tempfile.TemporaryDirectory() as temp:
         assert again.read_bytes()==output.read_bytes()
     # Verify that a newly exported Uint32-index GLB plays through the same runtime.
     subprocess.run(['node',str(root/'tests/runtime.mjs'),str(output)],check=True)
+    # Static town assets retain configured game scale and have no invented rig.
+    from convert_splat import build
+    asset=temp/'static-asset';asset.mkdir()
+    import shutil
+    shutil.copy(path,asset/'input.ply')
+    (asset/'asset.json').write_text(json.dumps({'id':'static-fixture','kind':'static','splat':'input.ply','world_height':1.4,'conversion':config}))
+    built=temp/'static-build';build(asset,built);validate(built/'asset.glb')
+    from validate_asset import read_glb
+    document,accessor=read_glb(built/'asset.glb')
+    assert 'skins' not in document and 'animations' not in document
+    xyz=accessor(document['meshes'][0]['primitives'][0]['attributes']['POSITION'])
+    assert np.isclose(xyz[:,1].min(),0) and np.isclose(xyz[:,1].max(),1.4)
+    (root/'dist/static-fixture.glb').write_bytes((built/'asset.glb').read_bytes())
+    # A promoted static GLB is embedded by the real offline build and rendered
+    # through its actual runtime. Temporary project copy leaves the catalog alone.
+    isolated=temp/'offline-project';isolated.mkdir()
+    shutil.copytree(root/'game',isolated/'game')
+    (isolated/'tools').mkdir();shutil.copy(root/'tools/build.mjs',isolated/'tools/build.mjs')
+    (isolated/'tests').mkdir();shutil.copy(root/'tests/runtime.mjs',isolated/'tests/runtime.mjs')
+    for filename in ['index.html','package.json']:shutil.copy(root/filename,isolated/filename)
+    character=isolated/'assets/emberbrook-adventurer/runtime';character.mkdir(parents=True)
+    shutil.copy(root/'assets/emberbrook-adventurer/runtime/asset.glb',character/'asset.glb')
+    (isolated/'runtime').mkdir();shutil.copy(built/'asset.glb',isolated/'runtime/fixture.glb')
+    catalog=isolated/'game/town-assets.js'
+    catalog.write_text(catalog.read_text().replace('runtime: null','runtime: "runtime/fixture.glb"',1))
+    subprocess.run(['node',str(isolated/'tools/build.mjs')],check=True)
+    subprocess.run(['node',str(isolated/'tests/runtime.mjs')],check=True)
     # A single occupied cube has six exposed faces, outward winding, and no internals.
     p,n,c,idx=surface_mesh(np.ones((1,1,1),bool),np.ones((1,1,1,3)))
     assert len(p)==24 and len(idx)==36

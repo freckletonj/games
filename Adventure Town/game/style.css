@@ -105,7 +105,7 @@ kbd {
 #message {
   position: absolute;
   left: 50%;
-  bottom: 100px;
+  bottom: 135px;
   transform: translateX(-50%);
   background: #213a31e8;
   border: 1px solid #c8c6a26a;
@@ -220,5 +220,31 @@ kbd {
   }
   #area {
     font-size: 11px;
+  }
+}
+
+[hidden] {
+  display: none !important;
+}
+#interact {
+  position: absolute;
+  left: 50%;
+  bottom: 80px;
+  transform: translateX(-50%);
+  background: #36594c;
+  border-color: #e1c17b;
+}
+@media (pointer: coarse), (max-width: 650px) {
+  #interact {
+    left: 12px;
+    bottom: 150px;
+    transform: none;
+    max-width: 220px;
+  }
+  #message {
+    white-space: normal;
+    width: calc(100% - 32px);
+    bottom: 200px;
+    text-align: center;
   }
 }

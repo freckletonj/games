@@ -1,0 +1,25 @@
+{
+  "id": "moss-ember-potions",
+  "kind": "static",
+  "status": "awaiting-splat",
+  "reference": "source/reference.png",
+  "splat": "incoming/model.ply",
+  "runtime": "runtime/asset.glb",
+  "world_height": 2.9,
+  "conversion": {
+    "source_to_game": [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1]
+    ],
+    "crop": null,
+    "height_voxels": 48,
+    "opacity_min": 0.1,
+    "sigma_extent": 2.5,
+    "density_threshold": 0.2,
+    "color_levels": 8,
+    "max_grid_cells": 4000000
+  },
+  "notes": "Unfitted preset. Inspect the actual PLY orientation, crop, shape and scale before review. Reference PNG delivered separately; no runtime GLB exists yet.",
+  "reference_sha256": "981f4cbcff7829f8d6c7d2d57aa0e783c8ec8f9819c8f1d2831aafa7c1798d78"
+}

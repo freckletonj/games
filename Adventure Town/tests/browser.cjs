@@ -47,6 +47,50 @@ const server = createServer((request, response) => {
   const page = await browser.newPage({
     viewport: { width: 1280, height: 800 },
   });
+  async function walkTo(targetX, targetZ, tab = page) {
+    const held = new Set();
+    for (let step = 0; step < 150; step++) {
+      const state = await tab.evaluate(() => gameState());
+      const x = targetX - state.x,
+        z = targetZ - state.z,
+        distance = Math.hypot(x, z);
+      if (distance < 0.22) {
+        for (const key of held) await tab.keyboard.up(key);
+        return;
+      }
+      const dx =
+        (x * Math.cos(state.cameraYaw) - z * Math.sin(state.cameraYaw)) /
+        distance;
+      const dz =
+        (x * Math.sin(state.cameraYaw) + z * Math.cos(state.cameraYaw)) /
+        distance;
+      const desired = new Set();
+      if (dx > 0.38) desired.add("d");
+      if (dx < -0.38) desired.add("a");
+      if (dz > 0.38) desired.add("s");
+      if (dz < -0.38) desired.add("w");
+      if (distance > 1 && !state.swimming) desired.add("Shift");
+      for (const key of held)
+        if (!desired.has(key)) {
+          await tab.keyboard.up(key);
+          held.delete(key);
+        }
+      for (const key of desired)
+        if (!held.has(key)) {
+          await tab.keyboard.down(key);
+          held.add(key);
+        }
+      await tab.waitForTimeout(100);
+    }
+    throw Error(
+      "Walk could not reach " +
+        JSON.stringify({
+          targetX,
+          targetZ,
+          state: await tab.evaluate(() => gameState()),
+        }),
+    );
+  }
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   for (const url of [
@@ -89,6 +133,68 @@ const server = createServer((request, response) => {
   }
   mkdirSync(root + "/dist/review", { recursive: true });
   await page.screenshot({ path: root + "/dist/review/desktop.png" });
+  // Tour using only real movement keys and the actual contextual action.
+  await walkTo(-4.1, -1.7);
+  await walkTo(-5.5, -1.8);
+  await page.keyboard.press("f");
+  await page.waitForTimeout(100);
+  assert.equal((await page.evaluate(() => gameState())).scene, "cottage");
+  await page.screenshot({ path: root + "/dist/review/cottage.png" });
+  await page
+    .getByRole("button", { name: "F · Return to town", exact: true })
+    .click();
+  await walkTo(-5.5, 0);
+  await walkTo(-10.2, 0);
+  await walkTo(-10.2, -1.95);
+  await page.keyboard.press("f");
+  await page.waitForTimeout(100);
+  assert.equal((await page.evaluate(() => gameState())).scene, "grocery");
+  await walkTo(1.2, 0);
+  await walkTo(2, -0.65);
+  await page.keyboard.press("f");
+  assert.match(await page.locator("#message").textContent(), /Crisp/);
+  await page.screenshot({ path: root + "/dist/review/grocery.png" });
+  await walkTo(0, 1.5);
+  await walkTo(0, 2.6);
+  await page.keyboard.press("f");
+  await walkTo(-10.2, 0);
+  await walkTo(-3, 0);
+  await walkTo(0, 0);
+  await walkTo(3, 0);
+  await walkTo(11, 0);
+  await page.keyboard.press("f");
+  await page.waitForTimeout(100);
+  assert.equal((await page.evaluate(() => gameState())).scene, "potions");
+  await walkTo(0, -0.65);
+  await page.keyboard.press("f");
+  await page.waitForTimeout(150);
+  assert.match(await page.locator("#message").textContent(), /bubbly/);
+  await page.screenshot({ path: root + "/dist/review/potions.png" });
+  await walkTo(0, 2.6);
+  await page.keyboard.press("f");
+  await walkTo(11, 0);
+  await walkTo(3.3, 0);
+  await walkTo(3.3, 7.8);
+  await walkTo(2.5, 7.8);
+  await walkTo(0, 7.8);
+  assert.ok((await page.evaluate(() => gameState())).swimming);
+  await page.screenshot({ path: root + "/dist/review/swimming.png" });
+  await walkTo(-2.5, 7.8);
+  assert.ok((await page.evaluate(() => gameState())).grounded);
+  // Load an unpromoted synthetic static GLB through the real scenery path.
+  await page.goto(
+    base + "/?scenery=produce-shelf&candidate=dist/static-fixture.glb",
+  );
+  await page.waitForFunction(() => window.gameState?.().fps > 0);
+  assert.deepEqual((await page.evaluate(() => gameState())).scenery, [
+    "produce-shelf",
+  ]);
+  await walkTo(-4.1, 0);
+  await walkTo(-10.2, 0);
+  await walkTo(-10.2, -1.95);
+  await page.keyboard.press("f");
+  await page.waitForTimeout(150);
+  assert.equal((await page.evaluate(() => gameState())).scene, "grocery");
   const mobile = await browser.newPage({
     viewport: { width: 390, height: 844 },
     isMobile: true,
@@ -105,11 +211,23 @@ const server = createServer((request, response) => {
   await mobile.waitForTimeout(150);
   assert.equal((await mobile.evaluate(() => gameState())).clip, "Jump");
   await mobile.screenshot({ path: root + "/dist/review/mobile.png" });
+  await mobile.getByRole("button", { name: "Respawn" }).tap();
+  await walkTo(-4.1, -1.7, mobile);
+  await walkTo(-5.5, -1.8, mobile);
+  await mobile
+    .getByRole("button", { name: "F · Enter Willow Cottage", exact: true })
+    .tap();
+  await mobile.waitForTimeout(150);
+  assert.equal((await mobile.evaluate(() => gameState())).scene, "cottage");
+  await mobile
+    .getByRole("button", { name: "F · Return to town", exact: true })
+    .tap();
+  assert.equal((await mobile.evaluate(() => gameState())).scene, "outdoors");
   assert.deepEqual(errors, []);
   await browser.close();
   server.close();
   console.log(
-    "Browser checks passed: HTTP modules, offline file without network, WebGL, keyboard walk/run/jump/land, orbit/zoom/respawn, mobile touch jump, no page errors.",
+    "Browser checks passed: HTTP modules, offline file without network, WebGL, keyboard walk/run/jump/land, orbit/zoom/respawn, mobile touch jump/doors, cottage/grocery/potion interiors, shop interactions, swimming bank-to-bank, candidate static scenery, no page errors.",
   );
 })().catch((error) => {
   console.error(error);

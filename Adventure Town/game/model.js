@@ -1,3 +1,4 @@
+import { readGlb } from "./glb.js";
 // This reader intentionally supports our documented GLB subset; it is not a general glTF loader.
 // BEGIN_MODEL_LOAD
 const defaultModelPath = "assets/emberbrook-adventurer/runtime/asset.glb";
@@ -7,28 +8,7 @@ const response = await fetch(new URL("../" + modelPath, import.meta.url));
 if (!response.ok) throw Error(`Model failed to load: ${response.status}`);
 const bytes = new Uint8Array(await response.arrayBuffer());
 // END_MODEL_LOAD
-const dv = new DataView(bytes.buffer);
-if (dv.getUint32(0, true) !== 0x46546c67 || dv.getUint32(4, true) !== 2)
-  throw Error("Expected a glTF 2.0 GLB");
-const jsonLen = dv.getUint32(12, true);
-const doc = JSON.parse(new TextDecoder().decode(bytes.slice(20, 20 + jsonLen)));
-const bin = 28 + jsonLen;
-const accessor = (i) => {
-  const a = doc.accessors[i],
-    v = doc.bufferViews[a.bufferView];
-  const n = { SCALAR: 1, VEC3: 3, VEC4: 4, MAT4: 16 }[a.type];
-  const C = {
-    5126: Float32Array,
-    5123: Uint16Array,
-    5121: Uint8Array,
-    5125: Uint32Array,
-  }[a.componentType];
-  return new C(
-    bytes.buffer,
-    bin + (v.byteOffset || 0) + (a.byteOffset || 0),
-    a.count * n,
-  );
-};
+const { document: doc, accessor } = readGlb(bytes);
 const prim = doc.meshes[0].primitives[0],
   atts = prim.attributes;
 const positions = accessor(atts.POSITION),
@@ -109,7 +89,7 @@ function sample(track, time) {
   return dim === 4 ? norm(v) : v;
 }
 function skeleton(name, time) {
-  let ts = doc.nodes.slice(0, 15).map((n) => n.translation),
+  let ts = doc.nodes.slice(0, parents.length).map((n) => n.translation),
     qs = ts.map(() => [0, 0, 0, 1]);
   for (let tr of clips[name].tracks) {
     (tr.path === "rotation" ? qs : ts)[tr.node] = sample(tr, time);
