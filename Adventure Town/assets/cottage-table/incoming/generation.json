@@ -1,0 +1,24 @@
+{
+  "asset": "cottage-table",
+  "reference": "source/reference.png",
+  "splat": "incoming/model.ply",
+  "reference_sha256": "ea2ade94b5157cfbf3390cce6596de93533db4c6f1e26dbef78a882742c66651",
+  "triposplat_source_sha256": "df17e9648f6e12988837311a207f06d24e302e5526632bc7d1596b68b8c89a35",
+  "weights": {
+    "ckpt_path": "diffusion_models/triposplat_fp16.safetensors",
+    "decoder_path": "vae/triposplat_vae_decoder_fp16.safetensors",
+    "dinov3_path": "clip_vision/dino_v3_vit_h.safetensors",
+    "flux2_vae_encoder_path": "vae/flux2-vae.safetensors",
+    "rmbg_path": "background_removal/birefnet.safetensors"
+  },
+  "device": "cuda",
+  "settings": {
+    "seed": 42,
+    "steps": 20,
+    "num_gaussians": 65536,
+    "guidance_scale": 3.0,
+    "shift": 3.0,
+    "erode_radius": 1
+  },
+  "export": "Gaussian.save_ply with upstream default transform"
+}

@@ -65,6 +65,12 @@ def main():
             raise FileNotFoundError(f"Missing local weight file: {path}")
 
     # Import only after preflight; --help, --dry-run and completed queues need no ML environment.
+    # if TripoSplat source not installed, mkdir vendor; git clone
+    import sys
+    source_dir = args.weights / 'vendor' / 'TripoSplat'
+    if str(source_dir) not in sys.path:
+        sys.path.insert(0, str(source_dir))
+
     import triposplat
 
     print("Loading TripoSplat weights once…", flush=True)
