@@ -38,6 +38,16 @@ building from a checkout that lacks the runtime files. The standalone HTML
 already embeds them and can be tested immediately. Keep the imported Emberbrook
 adventurer; `next-adventurer` remains deferred.
 
+The second batch adds four static assets (grocery counter, apothecary cabinet,
+lantern and well) plus two fitted humanoid shopkeepers. They are
+`ready-for-test-drive`; the user commits their runtime binaries from the ZIP.
+See `docs/ASSET_BATCH_02.md`. `game/town-characters.js` owns NPC placements;
+`game/characters.js` shares the humanoid parser/skinner with the player and
+updates slow NPC Idle poses at 10 Hz. The offline build embeds those GLBs.
+New rigs may specify a relaxed `arm_rest_angle`, an interpolated lower-arm gate,
+a tapered `shoulder_blend` and `hip_blend_height`; fit these to each actual mesh.
+Inspect full cycles and check stretched faces, not just bone or weight validity.
+
 **Commit small code and normal text files directly. Roundtrip large binary files
 through the user in both directions.** Generate transparent references, deliver
 them as a ZIP, then pull the user's committed PNGs and original PLYs. Review,

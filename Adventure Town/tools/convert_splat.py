@@ -204,7 +204,11 @@ def skin_weights(positions, rig):
     ]:
         for name in names:
             allowed[mask,next(i for i,j in enumerate(joints) if j["name"]==name)] = True
-    arms=(np.abs(positions[:,0])>=gates["arm_x"]) & (positions[:,1]>=gates["arm_bottom"]) & (positions[:,1]<=gates["head_y"])
+    arm_x=gates["arm_x"]
+    if 'arm_split_y' in gates:
+        half=gates['arm_transition_height']/2
+        arm_x=np.interp(positions[:,1],[gates['arm_split_y']-half,gates['arm_split_y']+half],[gates['arm_lower_x'],arm_x])
+    arms=(np.abs(positions[:,0])>=arm_x) & (positions[:,1]>=gates["arm_bottom"]) & (positions[:,1]<=gates["head_y"])
     for side, sign in [("L",-1),("R",1)]:
         mask=arms & (positions[:,0]*sign>0)
         allowed[mask]=False
@@ -213,10 +217,34 @@ def skin_weights(positions, rig):
         # Restrict leg weights to the same side so the stride doesn't pull both boots.
         for name in [f"Thigh.{side}",f"Shin.{side}",f"Foot.{side}"]:
             allowed[positions[:,0]*sign<0,next(i for i,j in enumerate(joints) if j["name"]==name)]=False
+    # A short fitted shoulder band joins torso and arm weights continuously.
+    # Hard region changes on connected sleeve faces produce stretched spikes.
+    if 'shoulder_blend' in rig:
+        blend=rig['shoulder_blend']
+        phase=np.clip((positions[:,1]-blend['bottom'])/(blend['top']-blend['bottom']),0,1)
+        width=np.maximum(1e-6,blend['width']*np.sin(np.pi*phase))
+        strength=np.clip((np.abs(positions[:,0])-arm_x)/width+.5,0,1)
+        shoulder=(positions[:,1]>=blend['bottom']) & (positions[:,1]<=blend['top']) & (strength>0) & (strength<1)
+        for side,sign in [('L',-1),('R',1)]:
+            mask=shoulder & (positions[:,0]*sign>0)
+            for name in ['Pelvis','Spine',f'UpperArm.{side}',f'Forearm.{side}',f'Hand.{side}']:
+                allowed[mask,next(i for i,j in enumerate(joints) if j['name']==name)]=True
     distance[~allowed]=np.inf
-    nearest=np.argsort(distance,axis=1)[:,:4]
-    selected=np.take_along_axis(distance,nearest,axis=1)
-    raw=np.exp(-selected**2/(2*rig["weight_radius"]**2))
+    raw=np.exp(-distance**2/(2*rig["weight_radius"]**2))
+    if 'shoulder_blend' in rig:
+        arm_columns=np.array([j['name'].startswith(('UpperArm','Forearm','Hand')) for j in joints])
+        for columns,factor in [(arm_columns,strength),(~arm_columns,1-strength)]:
+            values=raw[shoulder][:,columns]
+            raw[np.ix_(shoulder,columns)]=values/np.maximum(values.sum(axis=1,keepdims=True),1e-30)*factor[shoulder,None]
+    if 'hip_blend_height' in rig:
+        leg_strength=np.clip((gates['leg_y']-positions[:,1])/rig['hip_blend_height'],0,1)
+        hips=(leg_strength>0) & (leg_strength<1) & ~arms
+        leg_columns=np.array([j['name'].startswith(('Thigh','Shin','Foot')) for j in joints])
+        for columns,factor in [(leg_columns,leg_strength),(~leg_columns,1-leg_strength)]:
+            values=raw[hips][:,columns]
+            raw[np.ix_(hips,columns)]=values/np.maximum(values.sum(axis=1,keepdims=True),1e-30)*factor[hips,None]
+    nearest=np.argsort(-raw,axis=1)[:,:4]
+    raw=np.take_along_axis(raw,nearest,axis=1)
     # Normalize in floating point before exact byte quantization (sum is 255).
     if np.any(raw.sum(axis=1)==0):
         raise ValueError("Unweighted vertices; refit rig or increase weight_radius")
@@ -251,7 +279,11 @@ def clips_for_rig(rig):
                 if label.startswith('Shin'): angle=1.0*tuck
                 if label.startswith('UpperArm'): angle=-.9*tuck
             elif label=='Spine': angle=.015*np.sin(phase)
-            quat=np.column_stack([np.sin(angle/2),np.zeros((len(times),2)),np.cos(angle/2)])
+            # Lower A-pose shoulders for a fitted relaxed pose, then apply stride.
+            rest=side*rig.get('arm_rest_angle',0) if label.startswith('UpperArm') else 0
+            sx,cx=np.sin(angle/2),np.cos(angle/2)
+            sz,cz=np.sin(rest/2),np.cos(rest/2)
+            quat=np.column_stack([sx*cz,-sx*sz,cx*sz,cx*cz])
             tracks.append((names[label],times,quat))
         result.append((name,tracks))
     return result
@@ -330,7 +362,7 @@ def build(asset, output):
                    "config_sha256":hashlib.sha256((asset/'asset.json').read_bytes()).hexdigest(),
                    "rig_sha256":hashlib.sha256((asset/config['rig']).read_bytes()).hexdigest() if rig else None,
                    "vertices":len(positions),"triangles":len(indices)//3,"clips":[c[0] for c in clips_for_rig(rig)] if rig else [],
-                   "status":"candidate-needs-visual-review","method":"max-gaussian-density; exposed voxel faces; fitted segment weights; procedural motion"})
+                   "status":"candidate-needs-visual-review","method":config['conversion'].get('density_mode','maximum')+" Gaussian occupancy; exposed voxel faces; fitted segment weights; procedural motion"})
     report['kind']=config['kind']
     report['bounds']={'min':positions.min(axis=0).tolist(),'max':positions.max(axis=0).tolist()}
     if rig is None:

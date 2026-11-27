@@ -1,15 +1,8 @@
 import { activeSceneryIds } from "./scenery.js";
-import {
-  positions,
-  normals,
-  colors,
-  joints,
-  weights,
-  indices,
-  clips,
-  skeleton,
-  norm,
-} from "./model.js";
+import { activeCharacters, npcGeometry } from "./characters.js";
+import { playerModel, poseCharacter, norm } from "./model.js";
+const { positions, normals, colors, joints, weights, indices, clips, skeleton } =
+  playerModel;
 import {
   solids,
   staticVerts,
@@ -528,35 +521,18 @@ const srgb = (x) =>
     1,
   );
 function skinCharacter() {
-  let bm = skeleton(player.clip, player.time).bones,
-    lowest = Infinity,
+  const posed = poseCharacter(playerModel, player.clip, player.time);
+  let lowest = Infinity,
     ca = Math.cos(player.angle),
     sa = Math.sin(player.angle);
   for (let i = 0; i < positions.length / 3; i++) {
     let k = i * 3,
-      x = positions[k],
-      y = positions[k + 1],
-      z = positions[k + 2],
-      nx = normals[k],
-      ny = normals[k + 1],
-      nz = normals[k + 2],
-      X = 0,
-      Y = 0,
-      Z = 0,
-      NX = 0,
-      NY = 0,
-      NZ = 0;
-    for (let a = 0; a < 4; a++) {
-      let w = weights[i * 4 + a] / 255;
-      if (!w) continue;
-      let o = joints[i * 4 + a] * 16;
-      X += w * (bm[o] * x + bm[o + 4] * y + bm[o + 8] * z + bm[o + 12]);
-      Y += w * (bm[o + 1] * x + bm[o + 5] * y + bm[o + 9] * z + bm[o + 13]);
-      Z += w * (bm[o + 2] * x + bm[o + 6] * y + bm[o + 10] * z + bm[o + 14]);
-      NX += w * (bm[o] * nx + bm[o + 4] * ny + bm[o + 8] * nz);
-      NY += w * (bm[o + 1] * nx + bm[o + 5] * ny + bm[o + 9] * nz);
-      NZ += w * (bm[o + 2] * nx + bm[o + 6] * ny + bm[o + 10] * nz);
-    }
+      X = posed.positions[k],
+      Y = posed.positions[k + 1],
+      Z = posed.positions[k + 2],
+      NX = posed.normals[k],
+      NY = posed.normals[k + 1],
+      NZ = posed.normals[k + 2];
     if (player.swimming) {
       const tilt = 1.35,
         ct = Math.cos(tilt),
@@ -789,7 +765,7 @@ function frame(now) {
     canvas.width = w;
     canvas.height = h;
   }
-  renderer.draw(camera(), skinCharacter(), effects(worldTime));
+  renderer.draw(camera(), skinCharacter(), effects(worldTime), npcGeometry(sceneId, worldTime));
   hudTime += dt;
   if (hudTime >= 0.1) {
     updateHud();
@@ -814,7 +790,7 @@ window.gameState = () => ({
   grounded: player.grounded,
   clip: player.clip,
   renderer: renderer.name,
-  triangles: staticVerts.length / 18 + indices.length / 3,
+  triangles: staticVerts.length / 18 + indices.length / 3 + npcGeometry(sceneId, worldTime).length / 18,
   visibleTriangles: renderer.visibleTriangles() + indices.length / 3,
   fps: measured,
   scene: sceneId,
@@ -825,5 +801,6 @@ window.gameState = () => ({
   swimming: player.swimming,
   interaction: interactionTarget()?.action ?? null,
   scenery: activeSceneryIds(),
+  characters: activeCharacters(sceneId).map((actor) => actor.id),
 });
 requestAnimationFrame(frame);

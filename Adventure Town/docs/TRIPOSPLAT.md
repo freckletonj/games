@@ -31,7 +31,7 @@ the game's runtime or the separate NumPy voxel converter environment.
 ## Choose a batch
 
 With no asset IDs, the script selects manifests whose status is `awaiting-splat`
-(currently the eight town objects). It ignores the deferred character experiment
+(completed assets are no longer in that queue). It ignores the deferred character experiment
 and skips PLYs that already exist. Extract the reference PNG ZIP into the checkout
 first. All pending reference paths and weight files are checked before model
 construction, so a missing input does not waste part of a generation batch.

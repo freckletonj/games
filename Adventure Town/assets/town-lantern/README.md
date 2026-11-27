@@ -1,13 +1,11 @@
-# Town lantern post
+# Town Lantern
 
-Status: **awaiting-splat**. Reference image generated; PNG delivery is not a repository commit or a converted runtime model.
+Status: **ready-for-test-drive**, awaiting the user's in-game art review. Reference PNG and original TripoSplat PLY are committed and were verified locally; runtime binary files are delivered separately by ZIP for the user to commit.
 
 Stone square foot, thick oak post, bronze-framed amber lantern and terracotta stepped cap. One connected upright object; no chain or side arm.
 
-Intended placement: Replace existing lamp visuals at their authored town positions, fitting collision separately.
+All six existing town lamp locations. Each base has a fitted 0.52 × 0.48 authored collision envelope, height 1.55.
 
-Provisional world height: 1.55 game units. This is a static object: no bones or animation. Inspect its real footprint, pivot and openings before fitting authored collision or placement.
+The original PNG and PLY are unchanged. `asset.json` owns the fitted conversion settings. The asset exports at 1.55 game units tall, +Y up, +Z forward, with feet/base at Y=0.
 
-The manifest currently supplies image-to-splat routing only. Conversion settings are intentionally absent until actual PLY inspection; do not run voxel conversion yet.
-
-Extract the reference ZIP at the repository root. Keep `source/reference.png` unchanged, generate its own splat and commit `incoming/model.ply` plus `incoming/generation.json`. Preserve the original standard 3DGS Gaussian fields. See [the next asset batch](../../docs/ASSET_BATCH_02.md) and [the full backlog](../../docs/ASSET_BACKLOG.md).
+See [runtime/REVIEW.md](runtime/REVIEW.md) for actual visual/game checks and remaining limitations, and [runtime/report.json](runtime/report.json) for geometry counts and hashes. The [batch handoff](../../docs/ASSET_BATCH_02.md) gives extraction and commit instructions. Runtime ZIP delivery is not a Git commit.

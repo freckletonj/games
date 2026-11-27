@@ -1,4 +1,5 @@
 import { sceneryGeometry } from "./scenery.js";
+import { townCharacters } from "./town-characters.js";
 const clampColor = (x, a, b) => Math.max(a, Math.min(b, x));
 const solids = [],
   staticData = [],
@@ -204,12 +205,19 @@ function flower(x, z, c) {
   box(x, 0.235, z, 0.07, 0.025, 0.07, "#e3bd66");
 }
 function lamp(x, z) {
-  box(x, 0, z, 0.1, 1.05, 0.1, "#624b35", true);
-  box(x, 1.0, z, 0.3, 0.08, 0.3, "#65513a");
-  box(x, 1.08, z, 0.22, 0.27, 0.22, "#f1c571");
-  box(x, 1.35, z, 0.32, 0.075, 0.32, "#654b34");
-  box(x, 1.43, z, 0.13, 0.11, 0.13, "#654b34");
+  assetShape("town-lantern", [x, 0, z], () => {
+    solids.push({
+      a: x - 0.26, b: x + 0.26, l: z - 0.24, r: z + 0.24,
+      bottom: 0, top: 1.55,
+    });
+    box(x, 0, z, 0.1, 1.05, 0.1, "#624b35");
+    box(x, 1.0, z, 0.3, 0.08, 0.3, "#65513a");
+    box(x, 1.08, z, 0.22, 0.27, 0.22, "#f1c571");
+    box(x, 1.35, z, 0.32, 0.075, 0.32, "#654b34");
+    box(x, 1.43, z, 0.13, 0.11, 0.13, "#654b34");
+  });
 }
+
 function fence(x, z, axis, n) {
   for (let i = 0; i <= n; i++)
     box(
@@ -470,23 +478,25 @@ for (let s of [-1, 1]) {
   box(-4.0 + s * 0.64, 0, 3.35, 0.14, 0.3, 0.14, "#795438");
   box(-4.0 + s * 0.64, 0.3, 3.35, 0.29, 0.08, 0.45, "#a48150");
 }
-// Well in west plaza.
-for (let i = 0; i < 8; i++) {
-  let a = (i * Math.PI) / 4;
-  box(
-    -8.0 + 0.43 * Math.cos(a),
-    0,
-    1.65 + 0.43 * Math.sin(a),
-    0.37,
-    0.48,
-    0.37,
-    "#8e978d",
-    true,
-  );
-}
-box(-8, 0.025, 1.65, 0.62, 0.06, 0.62, "#436e70");
-for (let s of [-1, 1]) box(-8 + s * 0.48, 0.4, 1.65, 0.1, 0.85, 0.1, "#6d5138");
-roof(-8, 1.22, 1.65, 1.25, 1.05, 0.4, "#9b5c42");
+// Well in west plaza. Preserve the authored basin collision.
+assetShape("plaza-well", [-8, 0, 1.65], () => {
+  for (let i = 0; i < 8; i++) {
+    let a = (i * Math.PI) / 4;
+    box(
+      -8.0 + 0.43 * Math.cos(a),
+      0,
+      1.65 + 0.43 * Math.sin(a),
+      0.37,
+      0.48,
+      0.37,
+      "#8e978d",
+      true,
+    );
+  }
+  box(-8, 0.025, 1.65, 0.62, 0.06, 0.62, "#436e70");
+  for (let s of [-1, 1]) box(-8 + s * 0.48, 0.4, 1.65, 0.1, 0.85, 0.1, "#6d5138");
+  roof(-8, 1.22, 1.65, 1.25, 1.05, 0.4, "#9b5c42");
+});
 fence(-12.9, -1.65, "x", 3);
 fence(-10.3, 5.7, "x", 4);
 lamp(-6.7, 0.85);
@@ -666,8 +676,9 @@ function interior(kind) {
               ["#be6248", "#83a05a", "#d5af65"][k],
             );
       });
-    box(-1.3, 0, 1.0, 1.1, 0.65, 0.6, "#8d6746", true);
-    box(-1.3, 0.65, 1.0, 1.2, 0.08, 0.7, "#d6b585");
+    assetShape("grocery-counter", [-1.65, 0, 1], () => {
+      box(-1.65, 0, 1, 1.62, 0.73, 1.2, "#8d6746", true);
+    });
   } else if (kind === "potions") {
     assetShape("potion-workbench", [0, 0, -1.6], () => {
       box(0, 0, -1.6, 1.2, 0.8, 1.05, "#7b5741", true);
@@ -682,18 +693,9 @@ function interior(kind) {
       box(0, 0.89, -1.48, 0.5, 0.36, 0.45, "#424e50");
       tile(0, -1.48, 0.37, 0.3, "#84c7af", 1.25);
     });
-    for (let i = 0; i < 3; i++) {
-      box(-2.45, 0.4 + i * 0.4, -1.8, 0.5, 0.08, 1.3, "#8b694c");
-      box(
-        -2.45,
-        0.48 + i * 0.4,
-        -1.8,
-        0.2,
-        0.2,
-        0.24,
-        ["#b68bbf", "#80b8ab", "#cfac60"][i],
-      );
-    }
+    assetShape("apothecary-cabinet", [-2.35, 0, -1.8], () => {
+      box(-2.35, 0, -1.8, 1.02, 1.4, 0.98, "#8b694c", true);
+    }, Math.PI / 2);
   } else {
     box(-2, 0, -0.5, 1.05, 0.4, 1.8, "#816145", true);
     box(-2, 0.4, -0.5, 1.08, 0.12, 1.8, "#cfbd9c");
@@ -708,6 +710,10 @@ function interior(kind) {
       box(0, 0.1, -2.14, 0.65, 0.65, 0.025, "#453d35");
       box(0, 0.13, -2.1, 0.42, 0.15, 0.08, "#d99b51");
     });
+  }
+  for (const actor of townCharacters.filter((actor) => actor.scene === kind)) {
+    const [x, y, z] = actor.position;
+    solids.push({ a: x - 0.2, b: x + 0.2, l: z - 0.2, r: z + 0.2, bottom: y, top: y + 1 });
   }
   const result = {
     vertices: new Float32Array(dest),

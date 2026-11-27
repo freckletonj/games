@@ -41,7 +41,7 @@ npm run build
 ```
 
 Double-click `dist/adventure-town.html` to play offline. It embeds all code,
-styles, the character and all eight converted town assets. The source version uses modules and fetches the
+styles, the player, all twelve static town meshes and both rigged shopkeepers. The source version uses modules and fetches the
 model, so serve `index.html` over HTTP rather than opening it as a local file.
 The village block geometry, movement and camera come from the supplied prototype;
 the model is now a standalone asset and code is split into model/world/renderer/
@@ -52,8 +52,8 @@ controller modules. The offline file is generated, not committed.
 **Agent generates transparent PNGs → image ZIP to user → user commits PNGs and
 TripoSplat PLYs → agent reviews/voxelizes → runtime ZIP to user → play and commit.**
 
-The workflow and acceptance rules live in [AGENTS.md](AGENTS.md). The current
-batch is **eight town objects**, detailed in [the town asset guide](docs/TOWN_ASSETS.md):
+The workflow and acceptance rules live in [AGENTS.md](AGENTS.md). The first
+batch was **eight town objects**, detailed in [the town asset guide](docs/TOWN_ASSETS.md):
 cottage/grocery/potion shop exteriors, produce shelf, potion workbench, dining
 table, hearth and boulder. The user has committed the eight reference PNGs and
 original splats. Their first
@@ -61,7 +61,7 @@ voxel conversions are now enabled in the town, with per-asset reports and visual
 review notes. Extract the **runtime asset ZIP at the repository root** and commit
 its GLBs/review PNGs before running the source checkout. Small code/config/docs
 are committed by the agent. The standalone HTML is ready to play without
-extracting anything. The existing adventurer stays; the new character is deferred.
+extracting anything. The imported adventurer stays; the replacement-player experiment is deferred.
 
 To generate the PLYs in your existing TripoSplat environment, run from the
 repository root:
@@ -102,9 +102,11 @@ See per-asset `runtime/REVIEW.md` for comparisons and remaining approximations.
 The [asset backlog](docs/ASSET_BACKLOG.md) inventories 25 proposed designs for the
 current town visual pass. [Reference batch 02](docs/ASSET_BATCH_02.md) starts with
 the grocery counter, apothecary cabinet, grocer, herbalist, lantern and well.
-These six references await user-committed PNGs and original TripoSplat PLYs.
-They are not converted or loaded by the game yet. The two shopkeepers are new
-humanoid NPC work; the imported player stays and `next-adventurer` remains deferred.
+The six original PNGs and TripoSplat PLYs are committed and converted. Extract
+the new runtime ZIP at the repository root before source play/build. The counter,
+cabinet, lanterns and well are enabled; the two rigged shopkeepers idle in their
+shops. The separate offline play ZIP embeds everything. The imported player stays
+and `next-adventurer` remains deferred. All six assets await user art review.
 
 ## Checks and boundaries
 

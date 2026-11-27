@@ -1,18 +1,18 @@
 # Emberbrook asset backlog
 
-Reviewed against PR #27 at `27dae67330fb0cb958b5799ded1ce8535fdb1972` on 2026-11-27.
+Updated after reading the user-committed second batch at `a5e68c3a29c3b861757c515a13a94922f7584711` on 2026-11-27.
 
 This is the proposed complete visual-art backlog for the current explorable town, based on `game/world.js`, `game/town-assets.js` and the existing asset docs. It is not a claim that the game cannot be played without these designs. Most static entries replace existing authored block visuals; benches, signposts, a cupboard and the NPC population are additions within the user's requested town-art work. No shopping mechanics, quests or inventory are proposed.
 
-There are **25 designs** below: six references generated in the current handoff and 19 planned references. Only the generated six have new manifests and join the splat queue. Each design is one reusable asset, not one asset per placed instance. The bridge belongs in this inventory as an existing authored visual that can be improved.
+There are **25 designs** below: six converted designs ready for a test drive and 19 planned references. All six original PNGs/PLYs are now committed; the runtime binary ZIP still needs user extraction/commit. These six are no longer in the splat queue. Each design is one reusable asset, not one asset per placed instance. The bridge belongs in this inventory as an existing authored visual that can be improved.
 
 ## Shop interiors
 
 | Asset ID | Design and purpose | Status |
 | --- | --- | --- |
-| grocery-counter | Replace the grocery's simple counter; keep the top clear and aisle open | awaiting-splat |
+| grocery-counter | Replace the grocery's simple counter; keep the top clear and aisle open | ready-for-test-drive |
 | provisions-barrel | Reusable closed supplies barrel for grocery storage | planned |
-| apothecary-cabinet | Replace the potion room's simple bottle shelving | awaiting-splat |
+| apothecary-cabinet | Replace the potion room's simple bottle shelving | ready-for-test-drive |
 
 ## Cottage interiors
 
@@ -26,8 +26,8 @@ There are **25 designs** below: six references generated in the current handoff 
 
 | Asset ID | Design and purpose | Status |
 | --- | --- | --- |
-| plaza-well | Replace the roofed west-plaza well visual | awaiting-splat |
-| town-lantern | Replace the existing town lamp visuals | awaiting-splat |
+| plaza-well | Replace the roofed west-plaza well visual | ready-for-test-drive |
+| town-lantern | Replace the existing town lamp visuals | ready-for-test-drive |
 | town-bench | Reusable public seating beside paths | planned |
 | town-signpost | Directional post; keep any readable labels authored separately | planned |
 | garden-fence | Reusable fence segment matching current boundaries | planned |
@@ -61,12 +61,12 @@ There are **25 designs** below: six references generated in the current handoff 
 
 | Asset ID | Design and purpose | Status |
 | --- | --- | --- |
-| emberbrook-grocer | Grocery shopkeeper with short apron and separated legs | awaiting-splat |
-| emberbrook-herbalist | Potion shopkeeper, trousers and close-fitting vest | awaiting-splat |
+| emberbrook-grocer | Grocery shopkeeper with short apron and separated legs | ready-for-test-drive |
+| emberbrook-herbalist | Potion shopkeeper, trousers and close-fitting vest | ready-for-test-drive |
 | emberbrook-resident | Reusable resident for cottage/plaza population | planned |
 | emberbrook-gardener | Resident suited to the town gardens | planned |
 
-These are new NPC assets, not a replacement for the imported player. Keep `next-adventurer` deferred. Reference images do not establish successful rigging: each actual PLY needs its own orientation, density and skeleton fit, complete Idle/Walk/Run/Jump review and eventual in-game NPC placement. No NPC controller is added by this handoff.
+These are new NPC assets, not a replacement for the imported player. Keep `next-adventurer` deferred. The first two now have fitted rigs, reviewed Idle/Walk/Run/Jump clips and shop placements. The resident and gardener still need references, actual PLY inspection and their own rig fits. Shopkeepers are stationary; no roaming AI, trading or quest behavior is added.
 
 ## Existing art to retain and review
 

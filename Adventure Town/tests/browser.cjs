@@ -117,7 +117,7 @@ const server = createServer((request, response) => {
     await page.waitForFunction(() => window.gameState?.().fps > 0);
     const start = await page.evaluate(() => gameState());
     assert.equal(start.renderer, "WebGL");
-    assert.equal(start.scenery.length, 8, "all converted town assets loaded");
+    assert.equal(start.scenery.length, 12, "all converted town assets loaded");
     await page.keyboard.press("Escape");
     assert.equal((await page.evaluate(() => gameState())).paused, true);
     await page.keyboard.down("s");
@@ -146,7 +146,7 @@ const server = createServer((request, response) => {
         const renderer = webRenderer(gl, canvas, wall);
         const camera = {target:[0,0,0],right:[1,0,0],up:[0,1,0],dir:[0,0,1],scale:16};
         const amberPixels = (z) => {
-          renderer.draw(camera, actor(z), new Float32Array());
+          renderer.draw(camera, actor(z), new Float32Array(), new Float32Array());
           const pixels = new Uint8Array(64*64*4);
           gl.readPixels(0,0,64,64,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
           let amber = 0;
@@ -215,6 +215,7 @@ const server = createServer((request, response) => {
   await page.keyboard.press("f");
   await page.waitForTimeout(100);
   assert.equal((await page.evaluate(() => gameState())).scene, "grocery");
+  assert.deepEqual((await page.evaluate(() => gameState())).characters, ["emberbrook-grocer"]);
   await walkTo(1.2, 0);
   await walkTo(2, -0.65);
   await page.keyboard.press("f");
@@ -231,6 +232,7 @@ const server = createServer((request, response) => {
   await page.keyboard.press("f");
   await page.waitForTimeout(100);
   assert.equal((await page.evaluate(() => gameState())).scene, "potions");
+  assert.deepEqual((await page.evaluate(() => gameState())).characters, ["emberbrook-herbalist"]);
   await walkTo(0, -0.65);
   await page.keyboard.press("f");
   await page.waitForTimeout(150);
@@ -253,7 +255,7 @@ const server = createServer((request, response) => {
   );
   await page.waitForFunction(() => window.gameState?.().fps > 0);
   const scenery = (await page.evaluate(() => gameState())).scenery;
-  assert.equal(scenery.length, 8);
+  assert.equal(scenery.length, 12);
   assert.ok(scenery.includes("produce-shelf"));
   await walkTo(-4.1, 0);
   await walkTo(-10.6, 0);

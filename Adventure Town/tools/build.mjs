@@ -1,4 +1,4 @@
-// Bundle our four modules and the selected model into a double-clickable offline HTML.
+// Bundle game modules, scenery and rigged characters into offline HTML.
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve, dirname } from "node:path";
@@ -28,11 +28,21 @@ const scenery = read("game/scenery.js").replace(
   () =>
     `const sceneryMeshes=new Map(${JSON.stringify(embeddedScenery)}.map(([id,encoded])=>[id,readGlb(Uint8Array.from(atob(encoded),c=>c.charCodeAt(0)))]));`,
 );
+const { townCharacters } = await import("../game/town-characters.js");
+const embeddedCharacters = townCharacters.map((actor) => [
+  actor.id, readFileSync(resolve(root, actor.runtime)).toString("base64"),
+]);
+const characters = read("game/characters.js").replace(
+  /\/\/ BEGIN_CHARACTERS_LOAD[\s\S]*?\/\/ END_CHARACTERS_LOAD/,
+  () => `const npcModels=new Map(${JSON.stringify(embeddedCharacters)}.map(([id,encoded])=>[id,characterModel(Uint8Array.from(atob(encoded),c=>c.charCodeAt(0)))]));`,
+);
 const world = read("game/world.js");
 const js = [
   read("game/glb.js"),
   read("game/town-assets.js"),
+  read("game/town-characters.js"),
   model,
+  characters,
   scenery,
   world,
   read("game/renderer.js"),

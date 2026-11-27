@@ -1,0 +1,38 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65524,
+  "grid": [
+    27,
+    35,
+    28
+  ],
+  "occupied_voxels": 4291,
+  "asset": "plaza-well",
+  "source_sha256": "e46060a28562aa5ea71a94be8235bc77ac83f7752c8d2811008ca6129be29aee",
+  "config_sha256": "d05907e2f74c83f635151ae53594337de676aa77246abae85babee35fe465793",
+  "rig_sha256": null,
+  "vertices": 23816,
+  "triangles": 11908,
+  "clips": [],
+  "status": "ready-for-test-drive",
+  "method": "alpha_union Gaussian occupancy; exposed voxel faces; density-weighted DC colors; world-space scale",
+  "kind": "static",
+  "bounds": {
+    "min": [
+      -0.5955882352941178,
+      0.0,
+      -0.5955882352941178
+    ],
+    "max": [
+      0.5955882352941178,
+      1.62,
+      0.5955882352941178
+    ]
+  },
+  "build_config_sha256": "8629a207927d1bc8443a3dc659cf6b2a12f64dad11dc7efd756241baa6577541",
+  "reference_sha256": "a7d6e91caf7836a8ec77a891c46099c9572b88e2720a47b10a4399b007d53f37",
+  "runtime_sha256": "6b35370c9fb682374a1e817fa083744356fc101a10a7c9d1cb7574218e52ac69",
+  "converter_sha256": "9c7ede83cd1b5b2d364c280cb113303537eb07353bab3dc9fde3285111866330",
+  "structural_audit": "passed",
+  "visual_review": "source DC Gaussian composite plus front/oblique/side/rear WebGL mesh views and actual game placement"
+}

@@ -1,13 +1,11 @@
-# Emberbrook herbalist
+# Emberbrook Herbalist
 
-Status: **awaiting-splat**. Reference image generated; PNG delivery is not a repository commit or a converted runtime model.
+Status: **ready-for-test-drive**, awaiting the user's in-game art review. Reference PNG and original TripoSplat PLY are committed and were verified locally; runtime binary files are delivered separately by ZIP for the user to commit.
 
 Friendly silver-haired herbalist in cream sleeves, a lavender vest with moss trim, green trousers and brown boots. Empty-handed A-pose with separate legs; no skirt or loose accessories.
 
-Intended placement: Future potion shopkeeper; stand beside the workbench with clear access to the room entrance.
+Potion room at (1.85, 0, -1.65), yaw -0.35 beside the workbench. A separate authored 0.40 × 0.40 collision envelope leaves the central approach clear.
 
-Target height is one game unit, +Y up and +Z forward, feet at Y=0. A-pose is a reconstruction input, not an animated pose. After the original PLY arrives, inspect orientation, floaters and limb separation, then fit every joint and region in a new rig.json to that asset. Use the existing humanoid pipeline and audit Idle/Walk/Run/Jump; do not reuse a guessed universal rig. NPC placement/controller work follows successful mesh and motion review.
+The original PNG and PLY are unchanged. `asset.json` owns the fitted conversion settings, and `rig.json` owns this character’s skeleton and weight/pose settings. The asset exports at 1 game units tall, +Y up, +Z forward, with feet/base at Y=0.
 
-The manifest currently supplies image-to-splat routing only. Conversion settings and rig are intentionally absent until actual PLY inspection; do not run voxel conversion yet.
-
-Extract the reference ZIP at the repository root. Keep `source/reference.png` unchanged, generate its own splat and commit `incoming/model.ply` plus `incoming/generation.json`. Preserve the original standard 3DGS Gaussian fields. See [the next asset batch](../../docs/ASSET_BATCH_02.md) and [the full backlog](../../docs/ASSET_BACKLOG.md).
+See [runtime/REVIEW.md](runtime/REVIEW.md) for actual visual/game checks and remaining limitations, and [runtime/report.json](runtime/report.json) for geometry counts and hashes. The [batch handoff](../../docs/ASSET_BATCH_02.md) gives extraction and commit instructions. Runtime ZIP delivery is not a Git commit.

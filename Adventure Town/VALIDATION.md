@@ -170,3 +170,45 @@ Small code/config/docs/reports are committed directly. The new handoff ZIP
 contains all eight static GLBs and the two updated comparison PNGs. It does not
 contain code or browser screenshots. Extract at the repository root and commit
 the resulting runtime files; the standalone HTML already embeds the fixes.
+
+
+## Second town asset round trip (2026-11-27)
+
+All six user-committed references and original PLYs were read from revision
+`a5e68c3a29c3b861757c515a13a94922f7584711`. Reference SHA-256 values match the
+original handoff and generation records. Each PLY is the expected binary
+little-endian vertex-only standard 3DGS export with 65,536 Gaussians. Original
+PNGs and PLYs, the first eight runtime GLBs and the imported player are unchanged.
+
+The new grocery counter, apothecary cabinet, six reused lanterns and plaza well
+replace authored visuals with fitted converted meshes and separate collision.
+Two individually fitted 15-joint characters stand in the grocery and potion
+shop, using relaxed Idle loops. Both export Idle/Walk/Run/Jump. The offline
+build embeds twelve static assets, the two shopkeepers and the imported player.
+
+Six structural GLB audits passed. Agent review compared each reference with
+orthographic DC Gaussian alpha composites and front/oblique/side/rear WebGL
+mesh renders. Character review covered 24 rendered phases per clip, including
+full-cycle GIFs. The first rig fits exposed misplaced hand/waist vertices and
+hard shoulder/hip seams; fitted gates and continuous weight transitions removed
+the conspicuous spikes. The real-mesh regression samples whole cycles, finite
+skinning, loop closure, same-side leg weights and triangle-edge strain. Maximum
+sampled stretch is 2.784× for the grocer and 2.112× for the herbalist, below a 3×
+spike guard. Small voxel creases and in-place procedural foot drift remain.
+
+`npm test` passes the controller, real NPC rigs, synthetic PLY conversion and
+TripoSplat CLI tests. The two new GLBs were also used as candidate player models
+for the full controller/skinning check. Chromium checks passed HTTP and offline
+play with network blocked, real WebGL silhouette pixels, pause/focus, keyboard
+movement/camera, touch doors and controls, all interior types, both contextual
+shop interactions, bank-to-bank swimming and candidate scenery. The shop tests
+assert the expected grocer/herbalist is present. Actual grocery/potion views and
+full motion loops were inspected. Browser rendering is software-backed and
+these observations are not a hardware frame-rate benchmark.
+
+The source-data rebuilds of both final rigs matched the reviewed GLBs
+byte-for-byte. Per-asset `runtime/report.json` records exact source, reference,
+config, rig, compiler and runtime hashes and mesh counts; `runtime/REVIEW.md`
+records remaining limitations. All six are `ready-for-test-drive`, not final
+user art approval. New binary outputs are delivered by runtime ZIP for user
+extraction/commit; the separate play ZIP contains a standalone offline HTML.

@@ -105,7 +105,7 @@ export function webRenderer(gl, canvas, staticVerts) {
     name: "WebGL",
     setScene,
     visibleTriangles: () => visibleTriangles,
-    draw(cam, character, fx) {
+    draw(cam, character, fx, npcs) {
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       for (let n of ["target", "right", "up", "dir"])
@@ -125,6 +125,9 @@ export function webRenderer(gl, canvas, staticVerts) {
       gl.bindBuffer(gl.ARRAY_BUFFER, db);
       gl.bufferData(gl.ARRAY_BUFFER, fx, gl.DYNAMIC_DRAW);
       draw(db, fx.length);
+      gl.bufferData(gl.ARRAY_BUFFER, npcs, gl.DYNAMIC_DRAW);
+      draw(db, npcs.length);
+      visibleTriangles += npcs.length / 18;
       gl.bufferData(gl.ARRAY_BUFFER, character, gl.DYNAMIC_DRAW);
       // Only hidden fragments pass GREATER; visible character colors stay intact.
       // A stippled silhouette keeps the player readable behind roofs and trees.

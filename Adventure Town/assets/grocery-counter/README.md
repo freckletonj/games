@@ -1,13 +1,11 @@
-# Grocery service counter
+# Grocery Counter
 
-Status: **awaiting-splat**. Reference image generated; PNG delivery is not a repository commit or a converted runtime model.
+Status: **ready-for-test-drive**, awaiting the user's in-game art review. Reference PNG and original TripoSplat PLY are committed and were verified locally; runtime binary files are delivered separately by ZIP for the user to commit.
 
 Broad oak cabinet base, cream overhanging top, dark corner posts and moss-green trim. Empty countertop; one connected furniture object.
 
-Intended placement: Replace the simple grocery counter at (-1.3, 0, 1.0); preserve door and central aisle clearance.
+Grocery interior at (-1.65, 0, 1), facing +Z. Authored collision is 1.62 × 1.20 units, height 0.73, fitted to the actual mesh footprint. The counter stays clear of the door and central aisle.
 
-Provisional world height: 0.73 game units. This is a static object: no bones or animation. Inspect its real footprint, pivot and openings before fitting authored collision or placement.
+The original PNG and PLY are unchanged. `asset.json` owns the fitted conversion settings. The asset exports at 0.73 game units tall, +Y up, +Z forward, with feet/base at Y=0.
 
-The manifest currently supplies image-to-splat routing only. Conversion settings are intentionally absent until actual PLY inspection; do not run voxel conversion yet.
-
-Extract the reference ZIP at the repository root. Keep `source/reference.png` unchanged, generate its own splat and commit `incoming/model.ply` plus `incoming/generation.json`. Preserve the original standard 3DGS Gaussian fields. See [the next asset batch](../../docs/ASSET_BATCH_02.md) and [the full backlog](../../docs/ASSET_BACKLOG.md).
+See [runtime/REVIEW.md](runtime/REVIEW.md) for actual visual/game checks and remaining limitations, and [runtime/report.json](runtime/report.json) for geometry counts and hashes. The [batch handoff](../../docs/ASSET_BATCH_02.md) gives extraction and commit instructions. Runtime ZIP delivery is not a Git commit.

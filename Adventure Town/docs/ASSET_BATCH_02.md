@@ -2,14 +2,24 @@
 
 Generated 2026-11-27 for PR #27, branch `codex/adventure-town-playability-polish`. This continues the same transparent image → user TripoSplat → inspected voxel conversion → runtime ZIP workflow.
 
+## Current status: converted and integrated
+
+All six reference hashes and original standard 3DGS PLYs were verified at user commit `a5e68c3a29c3b861757c515a13a94922f7584711`. The four static assets are enabled in town; the grocer and herbalist have individually fitted 15-joint rigs and stand in their respective shops. They use relaxed Idle loops; Walk/Run/Jump are also exported and reviewed. Status is `ready-for-test-drive`, with user art review still pending.
+
+Small code, settings, rig files, reports and review notes are committed by the agent. **Extract the new runtime ZIP at the repository root on this PR branch and commit its contents.** It contains six `assets/<id>/runtime/asset.glb` files, six `review.png` sheets, and the two characters' `motion.png` and four named clip GIFs, all beneath `Adventure Town/`. No source PNG/PLY or unrelated code is overwritten. The separate offline play ZIP contains one self-contained HTML; extract it and double-click to play immediately, with no server or network.
+
+After extracting the runtime ZIP, stage the six asset directories shown in the handoff command below, commit with a runtime-art message and push this PR branch. `runtime/report.json` records each delivered GLB SHA-256. The agent has verified the ZIP bytes, but a delivered ZIP is not a repository commit.
+
+The first eight runtime assets and imported player remain unchanged. There are now twelve static town meshes and two stationary shopkeepers. Floors, walls, doors, collision, navigation and water remain authored.
+
 ## Six reference images
 
 | Asset ID | Kind | Target height | Intended use |
 | --- | --- | --- | --- |
-| grocery-counter | static | 0.73 | Replace the simple grocery counter at (-1.3, 0, 1.0); preserve door and central aisle clearance. |
+| grocery-counter | static | 0.73 | Grocery counter at (-1.65, 0, 1); door and central aisle remain clear. |
 | apothecary-cabinet | static | 1.4 | Replace the simple side shelving in the potion room; fit against its side wall without covering the workbench or doorway. |
-| emberbrook-grocer | humanoid | 1 | Future grocery shopkeeper; fit placement to the counter while leaving the walking aisle open. |
-| emberbrook-herbalist | humanoid | 1 | Future potion shopkeeper; stand beside the workbench with clear access to the room entrance. |
+| emberbrook-grocer | humanoid | 1 | Rigged grocery shopkeeper behind the counter at (-1.65, 0, -0.05). |
+| emberbrook-herbalist | humanoid | 1 | Rigged potion shopkeeper beside the workbench at (1.85, 0, -1.65). |
 | town-lantern | static | 1.55 | Replace existing lamp visuals at their authored town positions, fitting collision separately. |
 | plaza-well | static | 1.62 | Replace the existing west-plaza well visual near (-8, 0, 1.65); preserve its authored collision envelope. |
 
@@ -17,7 +27,7 @@ Heights are provisional game units (player height = 1). Each source is a single 
 
 The well's basin and the cabinet shelf openings need special inspection after reconstruction. For characters, inspect arm/torso and crotch gaps before fitting joint positions and region gates.
 
-## User handoff
+## Original reference handoff (completed)
 
 The uniquely named reference ZIP contains **only these six PNGs**, with real repository-relative paths. Extract it at the repository root of this PR branch. Small manifests, prompts and docs are committed directly by the agent.
 
@@ -47,7 +57,7 @@ git commit -m "Add second town reference batch and original TripoSplat outputs"
 git push origin codex/adventure-town-playability-polish
 ```
 
-Generate each reference separately; preserve original standard 3DGS properties. Do not combine images or rename mesh PLYs into Gaussian inputs. A ZIP delivery is not a Git commit. At the time these notes are written, the six new PNGs/PLYs are not confirmed committed.
+Generate each reference separately; preserve original standard 3DGS properties. Do not combine images or rename mesh PLYs into Gaussian inputs. A ZIP delivery is not a Git commit. The six PNGs/PLYs and generation records are now confirmed committed at the intake revision above.
 
 ## Reference integrity
 
@@ -66,6 +76,6 @@ The ZIP was checked for exactly six PNG entries, CRC integrity and these byte ha
 
 Read the committed branch head and download PNG/PLY bytes directly to local files; never emit binary/base64 payloads through GitHub tools into conversation context. Verify the source PNG hashes above, inspect the actual PLY header and Gaussian fields, then inspect orientation, bounds, floaters and gaps.
 
-Conversion settings and humanoid rig files are intentionally absent from this reference-only handoff. Fit them only after inspecting each actual PLY. Build candidates into new `experiments/<id>-<attempt>/` paths. Audit GLBs and review multi-angle mesh/splat comparisons. For the two humanoids, fit each rig separately and watch full Idle/Walk/Run/Jump cycles before NPC integration. Keep the existing player and deferred experiment unchanged.
+The original reference-only handoff omitted conversion settings and humanoid rigs. Both are now fitted against the inspected PLYs and committed beside each asset. Build candidates into new `experiments/<id>-<attempt>/` paths. Audit GLBs and review multi-angle mesh/splat comparisons. For the two humanoids, fit each rig separately and watch full Idle/Walk/Run/Jump cycles before NPC integration. Keep the existing player and deferred experiment unchanged.
 
-No new runtime paths, meshes, NPC behavior or gameplay changes are included in this reference batch. After conversion and in-game review, commit small settings/code/reports directly and deliver GLBs/review images in another uniquely named repository-path ZIP plus a standalone offline HTML for immediate testing. User commits the binary outputs.
+The original reference handoff did not include runtime paths, meshes or NPC placement. The current conversion now enables the four static meshes and two idle shopkeepers as described above. After conversion and in-game review, commit small settings/code/reports directly and deliver GLBs/review images in another uniquely named repository-path ZIP plus a standalone offline HTML for immediate testing. User commits the binary outputs.
