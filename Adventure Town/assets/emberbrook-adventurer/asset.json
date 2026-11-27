@@ -1,0 +1,13 @@
+{
+  "id": "emberbrook-adventurer",
+  "kind": "humanoid",
+  "status": "imported-runtime",
+  "runtime": "runtime/asset.glb",
+  "reference": null,
+  "splat": null,
+  "rig": null,
+  "clips": ["Idle", "Walk", "Run", "Jump"],
+  "source": "User attachment emberbrook_playable_v1(1).html",
+  "sha256": "3127d8b6663a4e45f5b483a136b4fcd82ce2937231bc171b402f862bea8234d1",
+  "notes": "Extracted embedded GLB byte-for-byte. Original image, source PLY and original conversion recipe were not attached. This asset is not claimed reproducible from a splat."
+}

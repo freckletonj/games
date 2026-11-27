@@ -1,0 +1,24 @@
+{
+  "id": "next-adventurer",
+  "kind": "humanoid",
+  "status": "awaiting-splat",
+  "reference": "source/reference.png",
+  "splat": "incoming/model.ply",
+  "rig": "rig.json",
+  "runtime": "runtime/asset.glb",
+  "conversion": {
+    "source_to_game": [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1]
+    ],
+    "crop": null,
+    "height_voxels": 64,
+    "opacity_min": 0.1,
+    "sigma_extent": 2.5,
+    "density_threshold": 0.2,
+    "color_levels": 8,
+    "max_grid_cells": 4000000
+  },
+  "notes": "Starting settings, not a fitted asset. Inspect orientation, crop, density and every joint after the real PLY arrives."
+}

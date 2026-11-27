@@ -1,0 +1,11 @@
+{
+  "name": "adventure-town",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 8000 --bind 127.0.0.1",
+    "build": "node tools/build.mjs",
+    "test": "npm run build && node tests/runtime.mjs && python3 tests/pipeline.py"
+  }
+}
