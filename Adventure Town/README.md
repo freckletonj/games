@@ -8,6 +8,17 @@ to orbit. Drag to turn the camera and scroll to zoom. Touch controls are include
 The rooms have furniture and small contextual interactions. There is no shopping
 system, inventory, quest progression or combat in this milestone.
 
+Follow the northern ledges around the old watchtower to reach its viewing deck.
+Jumps allow a short grace period after leaving an edge and remember a press just
+before landing. The north-up map marks the tower (T), ruins (R), and tower steps.
+If scenery hides the player, an amber stippled silhouette shows their position.
+
+Press **Escape** or **Pause** for a break and a controls guide. Losing focus also
+pauses; resume explicitly when ready. Standard gamepads work too: left stick or
+D-pad to move, B/RT to run, A to jump, X to interact, right stick for the camera,
+and Start to pause. Partial stick input walks more slowly. Respawn returns both
+the player and camera to the starting view.
+
 The current player is the **exact rigged GLB extracted from the user's Emberbrook
 HTML**: 6,782 vertices, 3,682 triangles, 15 joints, and Idle/Walk/Run/Jump clips.
 It is a playable imported baseline. The original PLY and reconstruction recipe
@@ -96,6 +107,8 @@ This builds the offline game and exercises its actual controller and CPU skinnin
 with a deterministic clock and a WebGL/DOM stub. It checks movement, jump/landing,
 wall collision, bridge support, swimming/shore exits, all room transitions,
 stepping-stone jumps, focus release and finite draw data.
+It also checks buffered/late jumps, grace expiry, the complete watchtower climb,
+pause/resume, analog controller input/disconnects and conservative view culling.
 Python checks both PLY encodings, exposed-face meshing, deterministic GLB export,
 weights, bind pose, winding, animation structure and static export at game scale. The tests require NumPy.
 They do not establish visual quality, contact quality or actual GPU rendering.
@@ -111,3 +124,5 @@ Chromium; `ADVENTURE_CHROMIUM` can select an explicit executable. It exercises
 both the HTTP source and offline file, tours the three interior types, swims
 bank-to-bank, previews a candidate static GLB, and checks mobile touch controls,
 and writes temporary review captures under ignored `dist/review/`.
+The browser checks also verify pause focus and actual WebGL silhouette pixels,
+so a visible player keeps its original colors while an occluded player is marked.

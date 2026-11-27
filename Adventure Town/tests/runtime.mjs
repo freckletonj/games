@@ -15,7 +15,7 @@ if (process.argv[2]) {
   const encoded = readFileSync(process.argv[2]).toString("base64");
   source = source.replace(/atob\('[^']+'\)/, () => `atob('${encoded}')`);
 }
-const listeners = {},
+const listeners = {}, documentListeners = {},
   elements = new Map();
 let nextFrame,
   now = 0,
@@ -99,7 +99,7 @@ const sandbox = {
   document: {
     querySelector: element,
     querySelectorAll: () => [],
-    addEventListener() {},
+    addEventListener: (name, fn) => (documentListeners[name] = fn),
     hidden: false,
   },
   window: { addEventListener: (name, fn) => (listeners[name] = fn) },
@@ -307,6 +307,136 @@ element("#zoom").onclick();
 assert.equal(element("#zoom").textContent, "Zoom in");
 element("#orbit").onclick();
 assert.ok(draws > 100);
+// The connected watchtower climb is possible with the real controller.
+element("#reset").onclick();
+vm.runInContext("Object.assign(player,{x:4.8,y:0,z:-5.9,grounded:true,vy:0});", sandbox);
+const route = vm.runInContext("[...towerSteps,{x:7.7,z:-4.7,top:2.71}]", sandbox);
+for (const target of route) {
+  const start = state();
+  const angle = Math.atan2(target.x - start.x, target.z - start.z);
+  vm.runInContext(`yaw=${angle}`, sandbox);
+  key("ShiftLeft", true);
+  key("KeyS", true);
+  key("Space", true);
+  for (let frames = 0; frames < 60; frames++) {
+    tick();
+    if (Math.hypot(state().x - target.x, state().z - target.z) < .1) break;
+  }
+  key("KeyS", false);
+  key("ShiftLeft", false);
+  key("Space", false);
+  advance(.7);
+  assert.ok(Math.hypot(state().x - target.x, state().z - target.z) < .2, "reach next tower landing");
+  assert.ok(state().grounded && Math.abs(state().y - target.top) < .01, "land at authored tower height");
+}
+// Jumps are forgiving at ledge edges and just before a landing.
+element("#reset").onclick();
+vm.runInContext("Object.assign(player,{x:3.35,y:.42,z:-7.6,grounded:true,vy:0});coyote=0", sandbox);
+advance(.05);
+assert.ok(!state().grounded);
+key("Space", true);
+tick();
+assert.ok(vm.runInContext("player.vy > 3", sandbox), "late jump uses coyote time");
+key("Space", false);
+element("#reset").onclick();
+vm.runInContext("Object.assign(player,{x:3.35,y:.42,z:-7.6,grounded:true,vy:0});coyote=0", sandbox);
+advance(.16);
+key("Space", true);
+tick();
+assert.ok(vm.runInContext("player.vy < 0", sandbox), "grace expires instead of allowing double jumps");
+key("Space", false);
+element("#reset").onclick();
+vm.runInContext("Object.assign(player,{y:.06,grounded:false,vy:-1});coyote=0", sandbox);
+key("Space", true);
+key("Space", false);
+advance(.1);
+assert.ok(vm.runInContext("player.vy > 3", sandbox), "early jump is buffered through landing");
+// Pause freezes simulation AND render work; resume never retains movement.
+element("#reset").onclick();
+key("KeyS", true);
+advance(.1);
+key("Escape", true);
+const frozen = state(), pausedDraws = draws;
+advance(.5);
+assert.equal(state().x, frozen.x);
+assert.equal(state().z, frozen.z);
+assert.equal(draws, pausedDraws);
+key("Escape", true);
+advance(.1);
+assert.equal(state().x, frozen.x);
+documentListeners.visibilitychange();
+assert.equal(state().paused, false);
+sandbox.document.hidden = true;
+documentListeners.visibilitychange();
+assert.equal(state().paused, true);
+sandbox.document.hidden = false;
+element("#resume").onclick();
+// Standard controller deadzone, analog walk, run, jump, pause and disconnect.
+element("#reset").onclick();
+const controller = {
+  connected: true, mapping: "standard", axes: [0, .1, 0, 0],
+  buttons: Array.from({length:17}, () => ({pressed:false})),
+};
+sandbox.navigator.getGamepads = () => [null, controller];
+advance(.1);
+assert.equal(state().x, -4.1);
+controller.axes[1] = .55;
+const analogStart = state();
+advance(.3);
+const analogWalk = Math.hypot(state().x - analogStart.x, state().z - analogStart.z);
+assert.ok(analogWalk > .15 && analogWalk < .25);
+assert.equal(state().input, "gamepad");
+controller.axes[1] = 1;
+controller.buttons[1].pressed = true;
+advance(.1);
+assert.equal(state().clip, "Run");
+controller.axes[1] = 0;
+controller.buttons[1].pressed = false;
+controller.buttons[0].pressed = true;
+tick();
+assert.equal(state().clip, "Jump");
+advance(1);
+assert.equal(state().grounded, true, "holding A does not auto-jump");
+controller.buttons[9].pressed = true;
+tick();
+assert.equal(state().paused, true);
+advance(.1);
+assert.equal(state().paused, true, "holding Start does not toggle repeatedly");
+controller.buttons[9].pressed = false;
+tick();
+controller.buttons[9].pressed = true;
+tick();
+assert.equal(state().paused, false);
+controller.connected = false;
+const unplugged = state();
+advance(.2);
+assert.equal(state().x, unplugged.x);
+assert.equal(state().z, unplugged.z);
+assert.equal(state().input, "keyboard");
+// The view culler must keep geometry touching a screen edge, including tall
+// objects and triangles that cross more than one cell.
+const culling = vm.runInContext(`(() => {
+  const cam={target:[0,0,0],right:[1,0,0],up:[0,1,0],scale:100};
+  const edge={min:[.99,-.1,-1],max:[1.5,.1,1]};
+  const outside={min:[1.01,-.1,-1],max:[1.5,.1,1]};
+  const tall={min:[-.1,-10,-1],max:[.1,10,1]};
+  const packed=sceneBatches(new Float32Array([
+    -10,0,0,1,0,0, 10,0,0,1,0,0, 0,1,0,1,0,0,
+    20,0,20,0,1,0, 21,0,20,0,1,0, 20,1,20,0,1,0,
+  ]));
+  return {edge:batchVisible(edge,cam,200,200), outside:batchVisible(outside,cam,200,200),
+    tall:batchVisible(tall,cam,200,200), count:packed.batches.reduce((n,b)=>n+b.count,0),
+    crosses:batchVisible(packed.batches[0],cam,200,200)};
+})()`, sandbox);
+assert.equal(culling.edge, true);
+assert.equal(culling.outside, false);
+assert.equal(culling.tall, true);
+assert.equal(culling.crosses, true);
+assert.equal(culling.count, 6, "batching preserves every triangle");
+element("#reset").onclick();
+advance(.1);
+assert.ok(state().visibleTriangles < state().triangles, "offscreen scenery is culled in the real world");
+console.log(`Spawn view submits ${state().visibleTriangles} of ${state().triangles} scene/player triangles.`);
 console.log(
-  "Runtime checks passed: boot, idle/walk/run/jump, landing, focus release, wall collision, bridge, swimming/shore exits, enter/leave all buildings, stepping-stone jumps, all clip skinning, finite draw buffers, camera controls.",
+  "Runtime checks passed: movement, buffered/late jumps, grace expiry, pause/focus release, analog gamepad/disconnect, collisions, swimming, all interiors, stepping stones, complete watchtower climb, skinning, finite buffers and conservative view culling.",
 );

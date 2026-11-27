@@ -19,6 +19,7 @@ import {
   effectGeometry,
   buildings,
   steppingStones,
+  towerSteps,
   selectWorld,
   box,
 } from "./world.js";
@@ -400,16 +401,22 @@ const movementKeys = new Set([
   "KeyE",
 ]);
 window.addEventListener("keydown", (e) => {
+  if (paused && e.code === "Tab") {
+    e.preventDefault();
+    $("#resume").focus();
+    return;
+  }
   if (e.code === "Escape" && !e.repeat) {
     e.preventDefault();
     setPaused(!paused);
     return;
   }
   // Space/Enter on a focused button should activate that button.
-  if (e.target?.tagName === "BUTTON") return;
+  if (e.target?.tagName === "BUTTON" && e.code === "Space") return;
   if (!movementKeys.has(e.code)) return;
   e.preventDefault();
   if (paused) return;
+  if (e.repeat && !keys.has(e.code)) return;
   inputMode = "keyboard";
   if (e.code === "Space" && !keys.has("Space")) jumpQueued = true;
   if (e.code === "KeyF" && !keys.has("KeyF")) interact();
@@ -437,33 +444,35 @@ for (let b of document.querySelectorAll("[data-key]")) {
   for (let ev of ["pointerup", "pointercancel", "lostpointercapture"])
     b.addEventListener(ev, () => keys.delete(key));
 }
-$("#interact").onclick = interact;
+$("#interact").onclick = () => { interact(); canvas.focus(); };
 $("#reset").onclick = () => { reset(); canvas.focus(); };
 $("#pause").onclick = () => setPaused(!paused);
 $("#resume").onclick = () => setPaused(false);
 $("#orbit").onclick = () => {
   yaw += Math.PI / 2;
+  canvas.focus();
 };
 $("#zoom").onclick = () => {
   zoom = zoom < 1.2 ? 1.48 : 1;
   $("#zoom").textContent = zoom < 1.2 ? "Zoom out" : "Zoom in";
+  canvas.focus();
 };
 let drag = null;
 canvas.addEventListener("pointerdown", (e) => {
   if (paused || drag) return;
   canvas.focus();
-  drag = [e.clientX, e.clientY];
+  drag = [e.clientX, e.clientY, e.pointerId];
   canvas.setPointerCapture(e.pointerId);
 });
 canvas.addEventListener("pointermove", (e) => {
-  if (drag) {
+  if (drag && drag[2] === e.pointerId) {
     yaw -= (e.clientX - drag[0]) * 0.008;
     pitch = clamp(pitch + (e.clientY - drag[1]) * 0.004, 0.44, 1.05);
-    drag = [e.clientX, e.clientY];
+    drag = [e.clientX, e.clientY, e.pointerId];
   }
 });
 for (let ev of ["pointerup", "pointercancel", "lostpointercapture"])
-  canvas.addEventListener(ev, () => (drag = null));
+  canvas.addEventListener(ev, (e) => { if (drag?.[2] === e.pointerId) drag = null; });
 canvas.addEventListener(
   "wheel",
   (e) => {
@@ -482,6 +491,7 @@ function pollGamepad(dt) {
     pad.run = false;
     pad.buttons = [];
     if (inputMode === "gamepad") inputMode = "keyboard";
+    $("#pad-help").hidden = true;
     return;
   }
   const buttons = connected.buttons.map((b) => b.pressed);
@@ -720,6 +730,21 @@ function drawMap() {
   }
   mc.fillStyle = "#a2ae88";
   mc.fillRect(170, 117, 62, 17);
+  mc.fillStyle = "#e9cf8d";
+  for (const step of towerSteps) {
+    const [x, z] = mapPoint(step.x, step.z);
+    mc.fillRect(x - 2, z - 2, 4, 4);
+  }
+  mc.font = "bold 14px system-ui";
+  mc.textAlign = "center";
+  for (const [label, x, z] of [["T", 7.7, -4.7], ["R", 10, 4.8]]) {
+    const [px, pz] = mapPoint(x, z);
+    mc.fillStyle = "#253c32";
+    mc.fillText(label, px + 1, pz + 1);
+    mc.fillStyle = "#fff3bd";
+    mc.fillText(label, px, pz);
+  }
+  mc.fillText("N ↑", 241, 22);
   mc.strokeStyle = "#deead15e";
   mc.strokeRect(8, 6, 248, 180);
   let [x, z] = mapPoint(player.x, player.z);
@@ -738,19 +763,26 @@ function drawMap() {
 }
 let last = performance.now(),
   fpsStart = last,
-  hudTime = 0,
+  hudTime = 0.1,
   worldTime = 0,
   sim = 0;
 function frame(now) {
   let dt = Math.min(0.06, (now - last) / 1000);
   last = now;
   pollGamepad(dt);
-  sim = paused ? 0 : sim + dt;
-  while (sim >= 1 / 120 && !paused) {
+  if (paused) {
+    sim = 0;
+    frameCount = 0;
+    fpsStart = now;
+    requestAnimationFrame(frame);
+    return;
+  }
+  sim += dt;
+  while (sim >= 1 / 120) {
     step(1 / 120);
     sim -= 1 / 120;
   }
-  if (!paused) worldTime += dt;
+  worldTime += dt;
   let h = Math.min(400, Math.max(220, Math.round(canvas.clientHeight * 0.47))),
     w = Math.round((h * canvas.clientWidth) / canvas.clientHeight);
   if (canvas.width !== w || canvas.height !== h) {
@@ -783,6 +815,7 @@ window.gameState = () => ({
   clip: player.clip,
   renderer: renderer.name,
   triangles: staticVerts.length / 18 + indices.length / 3,
+  visibleTriangles: renderer.visibleTriangles() + indices.length / 3,
   fps: measured,
   scene: sceneId,
   paused,

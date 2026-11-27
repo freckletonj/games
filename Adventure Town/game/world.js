@@ -527,9 +527,17 @@ box(10.0, 2.63, 5.05, 1.75, 0.3, 0.52, "#a7ad99", true);
 box(10, 2.93, 5.05, 0.49, 0.18, 0.55, "#b5b7a2");
 box(10, 1.72, 4.15, 0.4, 0.19, 0.4, "#8a9c8a");
 box(10, 1.91, 4.15, 0.22, 0.39, 0.22, "#78c7b4");
-ledge(4.8, -7.6, 2.4, 1.8, 0.42);
-ledge(5.25, -9.05, 2.5, 1.1, 0.86);
-ledge(7.2, -9.05, 1.4, 1.2, 1.28);
+// A connected jump route climbs around the watchtower to its viewing deck.
+// Each rise is below the standing jump apex; broad landings keep it forgiving.
+export const towerSteps = [
+  { x: 4.8, z: -7.6, w: 2.4, d: 1.8, top: 0.42 },
+  { x: 5.25, z: -9.05, w: 2.5, d: 1.1, top: 0.86 },
+  { x: 7.2, z: -9.05, w: 1.4, d: 1.2, top: 1.28 },
+  { x: 8.7, z: -8.6, w: 1.35, d: 1.3, top: 1.7 },
+  { x: 9.5, z: -6.85, w: 1.35, d: 1.5, top: 2.12 },
+  { x: 9.5, z: -4.7, w: 1.3, d: 1.5, top: 2.55 },
+];
+for (const s of towerSteps) ledge(s.x, s.z, s.w, s.d, s.top);
 
 lamp(5.1, -2.4);
 lamp(4.6, 2.4);

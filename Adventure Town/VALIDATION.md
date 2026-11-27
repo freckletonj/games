@@ -1,5 +1,40 @@
 # Validation log
 
+## Exploration and controls polish · 2026-11-26
+
+The six northern ledges now connect to the watchtower viewing deck. A deterministic
+test starts on grass and reaches every landing and the deck using the real jump,
+run, gravity and collision code. Existing river crossings, moss ruins and all five
+building entrances retain their authored collision and asset files.
+
+Jump presses are buffered for 120 ms and ledge grace lasts 100 ms. Regression
+checks cover both windows, grace expiry, and held-button behavior. Pause stops
+simulation, effects and draw calls; focus loss pauses automatically. Keyboard
+resume clears held movement. The pause dialog traps keyboard focus on Resume.
+Standard-mapped controller tests cover deadzone, analog speed, run, single jumps,
+Start-button edges and disconnect. These use simulated controller input; a physical
+gamepad has not been tested here.
+
+Static triangles are grouped spatially and culled conservatively against the
+orthographic view. Large terrain faces have separate batches so they cannot
+inflate building bounds. At the starting desktop view, diagnostics submit 149,517
+of 180,987 world/player triangles, about 17% fewer than drawing the whole scene.
+Character lighting is computed once per unique vertex instead of per triangle
+corner. HUD/map updates run at 10 Hz, and scenery downloads run concurrently.
+These are work reductions, not a hardware frame-rate guarantee.
+
+The hidden-player pass uses the world's depth buffer before drawing the normal
+player, avoiding self-occlusion artifacts. A real WebGL pixel test verifies amber
+stipple appears behind a wall and is absent when the player is in front. View
+culling tests retain tall objects, screen-edge geometry and cell-spanning triangles.
+
+`npm test` passes with the real assets and synthetic converter fixtures. Real
+Chromium checks pass for HTTP modules, the offline build with no network requests,
+pause/resume and dialog focus, movement/camera, all interior types, shop actions,
+swimming, candidate scenery, and narrow mobile touch controls/doors. No page or
+WebGL errors occurred. Browser rendering is software-backed; desktop/mobile
+captures were inspected. Existing conversion quality limitations below still apply.
+
 Current status: the eight real town splats are converted and enabled for a test
 drive. Their runtime blobs are delivered separately for user commit. Earlier
 entries below describe previous milestones, before those PLYs arrived.

@@ -6,7 +6,11 @@ export function sceneBatches(vertices) {
   for (let i = 0; i < vertices.length; i += 18) {
     const x = (vertices[i] + vertices[i + 6] + vertices[i + 12]) / 3;
     const z = (vertices[i + 2] + vertices[i + 8] + vertices[i + 14]) / 3;
-    const key = Math.floor(x / 4) + "," + Math.floor(z / 4);
+    const wide = [0,1,2].some((c) =>
+      Math.max(vertices[i+c], vertices[i+c+6], vertices[i+c+12]) -
+      Math.min(vertices[i+c], vertices[i+c+6], vertices[i+c+12]) > 4);
+    // Large terrain faces must not enlarge a town object's culling bounds.
+    const key = wide ? "terrain" : Math.floor(x / 4) + "," + Math.floor(z / 4);
     if (!cells.has(key)) cells.set(key, []);
     cells.get(key).push(i);
   }
@@ -80,10 +84,9 @@ export function webRenderer(gl, canvas, staticVerts) {
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
   gl.clearColor(0.54, 0.67, 0.57, 1);
-  let sb = gl.createBuffer(),
-    db = gl.createBuffer();
+  const sb = gl.createBuffer(), db = gl.createBuffer();
   const scenes = new WeakMap();
-  let batches;
+  let batches, visibleTriangles = 0;
   function setScene(vertices) {
     if (!scenes.has(vertices)) scenes.set(vertices, sceneBatches(vertices));
     const scene = scenes.get(vertices);
@@ -101,6 +104,7 @@ export function webRenderer(gl, canvas, staticVerts) {
   return {
     name: "WebGL",
     setScene,
+    visibleTriangles: () => visibleTriangles,
     draw(cam, character, fx) {
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -112,14 +116,16 @@ export function webRenderer(gl, canvas, staticVerts) {
         (cam.scale * 2) / canvas.height,
       );
       gl.uniform3fv(loc.tint, [0, 0, 0]);
+      visibleTriangles = 0;
       for (const batch of batches)
-        if (batchVisible(batch, cam, canvas.width, canvas.height))
+        if (batchVisible(batch, cam, canvas.width, canvas.height)) {
           draw(sb, batch.count * 6, batch.first);
+          visibleTriangles += batch.count / 3;
+        }
       gl.bindBuffer(gl.ARRAY_BUFFER, db);
       gl.bufferData(gl.ARRAY_BUFFER, fx, gl.DYNAMIC_DRAW);
       draw(db, fx.length);
       gl.bufferData(gl.ARRAY_BUFFER, character, gl.DYNAMIC_DRAW);
-      draw(db, character.length);
       // Only hidden fragments pass GREATER; visible character colors stay intact.
       // A stippled silhouette keeps the player readable behind roofs and trees.
       gl.depthFunc(gl.GREATER);
@@ -128,6 +134,8 @@ export function webRenderer(gl, canvas, staticVerts) {
       draw(db, character.length);
       gl.depthMask(true);
       gl.depthFunc(gl.LEQUAL);
+      gl.uniform3fv(loc.tint, [0, 0, 0]);
+      draw(db, character.length);
     },
   };
 }
