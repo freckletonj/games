@@ -80,12 +80,11 @@ and are enabled in `game/town-assets.js`. The offline build embeds them too.
 Rooms, collision and door triggers are authored separately from the visual mesh.
 
 These are actual 3D voxel meshes from the committed Gaussian splats, with flat
-vertex colors. The first batch uses a voxel-scale density filter and blended
-colors to reduce holes/noise. Hidden backs remain less convincing than fronts:
-the grocery has a large dark/open rear area, and the workbench back is dark.
-Those are reconstruction limits to judge during this test drive. Props are
-static; the existing character keeps its rig and animation. See each asset's
-`runtime/REVIEW.md` and `runtime/review.png` for evidence and limitations.
+vertex colors. The hearth and grocery have a finer, more selective second conversion to retain
+small details and colors. The original grocery splat has an open lower rear; the
+town closes it with an explicitly authored wall. The original PLY is unchanged.
+The character now swims head-first and face-down, at a fitted waterline.
+See per-asset `runtime/REVIEW.md` for comparisons and remaining approximations.
 
 ## Checks and boundaries
 

@@ -2,32 +2,32 @@
   "input_splats": 65536,
   "retained_splats": 65492,
   "grid": [
-    44,
-    37,
-    40
+    62,
+    51,
+    55
   ],
-  "occupied_voxels": 10354,
+  "occupied_voxels": 19363,
   "asset": "greenbasket-grocery",
   "source_sha256": "20a7a7f40b5b81d74e96d8c880251c9c96fe677f0c434bd3688afb0537c35423",
-  "config_sha256": "65924d4908b7f51d7ece30bce44fbcf686beb0bd6369a6414d91426c4c9a182e",
+  "config_sha256": "60a504920b0b4dd4bd330940cb2ee0b1ff0c2eaea872a97ce537d93f613b8b38",
   "rig_sha256": null,
-  "vertices": 36680,
-  "triangles": 18340,
+  "vertices": 87304,
+  "triangles": 43652,
   "clips": [],
   "status": "ready-for-test-drive",
-  "method": "max-gaussian-density; exposed voxel faces; density-weighted DC colors; world-space scale",
+  "method": "alpha_union Gaussian occupancy; exposed voxel faces; density-weighted DC colors; world-space scale",
   "kind": "static",
   "bounds": {
     "min": [
-      -1.8691176470588236,
+      -1.9052083333333334,
       0.0,
-      -1.686764705882353
+      -1.7114583333333335
     ],
     "max": [
-      1.8691176470588236,
+      1.9052083333333334,
       3.1,
-      1.686764705882353
+      1.7114583333333335
     ]
   },
-  "runtime_sha256": "643c94d6ff313b8e892ae7d9268e28f7b5c2f82b1eb7277fc08046e90a10b37e"
+  "runtime_sha256": "5ac414739208ff2bf0b48cefc2b36930cf5e1da18ea36e90501feee52e70bfa2"
 }

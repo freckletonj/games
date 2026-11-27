@@ -27,3 +27,16 @@ batch section in `../../../VALIDATION.md` for controller and browser evidence.
 The runtime GLB and review PNG are delivered in the binary ZIP for user commit.
 The report and this note are small text files committed by the agent. Do not
 claim the runtime blobs are committed until the returned Git tree confirms it.
+
+## Detail correction after user test drive
+
+The new conversion uses 48 height samples, 32 color levels, a 0.25-voxel
+filter, accumulated opacity occupancy (`1-product(1-alpha*density)` at threshold
+0.5), and fourth-power density weights for more local color selection. This
+retains detail that the previous coarse grid and broad color blend softened.
+The comparison image shows old mesh, revised mesh and a depth-sorted orthographic
+Gaussian composite from the actual PLY, in front oblique and rear views. The
+composite is a diagnostic CPU renderer, not an upstream TripoSplat screenshot.
+
+The mantel cloth, lantern/books, chimney opening and firebox are more distinct
+than in the previous conversion. Fine details remain voxel approximations.

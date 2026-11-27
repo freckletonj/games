@@ -135,3 +135,15 @@ and `runtime/review.png` for these eight assets. Extract it at the repository ro
 and commit those files. Code/config/reports/review notes are already committed
 separately by the agent. Source play/build requires those GLBs; the delivered
 standalone HTML already embeds them and needs no network or extra files.
+
+## User playtest corrections
+
+The hearth/grocery now use 48 height samples, 32 color levels, a smaller 0.25
+filter, accumulated opacity and selective fourth-power color weights. Compare
+their updated review sheets against Gaussian composites of the original PLYs.
+The grocery rear is also open in that source composite. Authored wall infill in
+`game/world.js` closes it in town; the source and converted GLB remain honest
+about missing geometry. Other six GLBs are byte-identical to the previous batch.
+The new binary handoff includes all eight GLBs because the previous upload was
+not visible on main when this correction began. Extract it at the repo root;
+only changed files will need a new Git commit if the old batch was added locally.

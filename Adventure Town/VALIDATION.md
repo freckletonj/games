@@ -108,3 +108,30 @@ repository paths. It was checked for archive integrity and matching GLB hashes.
 Small code/settings/reports/review notes are committed separately. The standalone
 HTML embeds the exact runtime GLBs and imported character and is ready to play;
 source builds require the user to extract and commit the runtime ZIP first.
+
+## Playtest corrections — 2026-11-26
+
+The hearth/grocery were rebuilt from unchanged original PLYs using finer grids
+and more selective color weights. Their comparison PNGs include old/revised
+meshes and an orthographic Gaussian composite of the actual PLY, oblique and
+rear. This confirms the grocery's lower rear is absent in the original too.
+An explicitly authored wall/gable in `game/world.js` closes the opening; no
+source recovery is claimed. Its roof seam was checked in the offline game.
+The six other static GLB hashes match the previous batch exactly. All eight
+GLBs pass the structural audit; the two changed reports record new hashes.
+
+Swimming uses positive 1.35-radian forward tilt with a lower render offset.
+Regression checks compare actual skinned head/foot centroids to ensure the head
+leads along travel and stays above water. The face points toward the water.
+This is still a tilted Walk/Idle animation rather than a dedicated swim clip.
+The controller/shore behavior is unchanged.
+
+`npm test` passes, including a new overlapping-splat occupancy regression and
+the swim pose checks. The full Chromium HTTP/offline/interiors/swimming/mobile
+suite passed, and dedicated offline views of the repaired rear and swimming
+pose were inspected. Rendering here uses software WebGL.
+
+Small code/config/docs/reports are committed directly. The new handoff ZIP
+contains all eight static GLBs and the two updated comparison PNGs. It does not
+contain code or browser screenshots. Extract at the repository root and commit
+the resulting runtime files; the standalone HTML already embeds the fixes.

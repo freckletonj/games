@@ -25,13 +25,15 @@
       ]
     ],
     "crop": null,
-    "height_voxels": 32,
+    "height_voxels": 48,
     "opacity_min": 0.1,
     "sigma_extent": 2.5,
-    "density_threshold": 0.2,
-    "color_levels": 12,
+    "density_threshold": 0.5,
+    "color_levels": 32,
     "max_grid_cells": 4000000,
-    "voxel_filter_sigma": 0.5
+    "voxel_filter_sigma": 0.25,
+    "color_weight_power": 4,
+    "density_mode": "alpha_union"
   },
   "notes": "Converted from committed TripoSplat PLY; fitted upright orientation, voxel-scale density filter and blended palette. See runtime/REVIEW.md. Runtime GLB delivered in the large-file ZIP for user commit; test-drive quality, not final art approval.",
   "reference_sha256": "264f02c8266fb04039755c5eebf86561a4274f51824b67ab948d724e2cec99bc"

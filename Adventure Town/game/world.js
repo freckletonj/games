@@ -409,6 +409,20 @@ for (const b of buildings) {
   assetShape(b.asset, [b.x, 0, b.z], () =>
     house(b.x, b.z, b.w, b.d, b.h, b.color, b.roof),
   );
+  // The original grocery splat has an open lower rear. This authored infill
+  // closes its shell without modifying or claiming to recover source geometry.
+  if (b.asset === "greenbasket-grocery") {
+    const x = b.x + 0.25, z = b.z - 1.48;
+    box(x, 0, z, 3.0, 0.18, 0.16, "#929080");
+    box(x, 0.18, z, 2.9, 1.8, 0.12, "#d6bd94");
+    for (const dx of [-1.4, 0, 1.4])
+      box(x+dx, 0.18, z-0.07, 0.12, 1.8, 0.08, "#795338");
+    tri([x-1.5, 1.98, z-0.09], [x+1.5, 1.98, z-0.09],
+      [x, 2.65, z-0.09], color("#d6bd94", 0.81));
+    box(x, 1.98, z-0.1, 0.12, 0.65, 0.08, "#795338");
+    for (const y of [0.18, 1.9])
+      box(x, y, z-0.07, 3.0, 0.12, 0.08, "#795338");
+  }
   const front = b.z + b.d / 2;
   tile(
     b.x,

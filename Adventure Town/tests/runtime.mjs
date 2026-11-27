@@ -281,6 +281,20 @@ for (const clip of ["Idle", "Walk", "Run", "Jump"]) {
     clip + " has motion",
   );
 }
+// Swimming points the head along travel and keeps it above the water.
+const swim = vm.runInContext(`(() => {
+  Object.assign(player,{angle:0,clip:'Idle',time:0,swimming:true,y:-.58});
+  skinCharacter();
+  const center = (min,max) => {
+    let y=0,z=0,count=0;
+    for(let i=0;i<positions.length;i+=3) if(positions[i+1]>=min && positions[i+1]<=max){y+=charP[i+1]-.8;z+=charP[i+2];count++;}
+    return {y:y/count,z:z/count};
+  };
+  return {head:center(.8,1.1),feet:center(0,.15)};
+})()`,sandbox);
+assert.ok(swim.head.z > swim.feet.z + .4, 'head leads feet while swimming');
+assert.ok(swim.head.y > -.41, 'head remains above water');
+element("#reset").onclick();
 // Zoom and orbit controls update the actual camera.
 element("#zoom").onclick();
 assert.equal(element("#zoom").textContent, "Zoom in");

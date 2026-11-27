@@ -115,8 +115,7 @@ indices beginning at zero. No universal rig fit is promised.
 The recipe samples oriented Gaussian density, optionally low-passes it at voxel
 scale to reduce pinholes, takes the maximum density for occupancy, blends DC
 colors using density weights, quantizes colors, emits only exposed cube faces,
-and normalizes height,
-and, for humanoids, fits four normalized segment weights. Static assets use
+normalizes height and, for humanoids, fits four normalized segment weights. Static assets use
 `world_height` in their manifest and export in game units with no rig. The
 recipe discards higher spherical harmonics
 and does not reproduce Gaussian alpha compositing. It is a stylization recipe,
@@ -179,3 +178,23 @@ make them apply a whole-project ZIP. The user uploads large asset blobs only.
 Read the committed files before continuing conversion. Do not
 claim an upload or commit happened without checking it. Keep the archive under
 `old/` untouched, including canonical source bytes; do not maintain it in parallel.
+
+## Lessons from the first playtest
+
+Compare source splat rendering with the converted mesh before attributing a
+missing wall to TripoSplat. Point projections alone do not establish surface
+coverage. The grocery rear opening is present in a Gaussian composite of the
+original PLY and is explicitly repaired by authored infill in `game/world.js`.
+Keep source bytes unchanged and label authored repairs; never call them recovered
+geometry. Inspect the final wall at the roof seam in the real game.
+
+Do not use one aggressive detail budget for every object. Hearth and grocery
+now use 48 height samples, 32 color levels, filter sigma 0.25, `density_mode:
+"alpha_union"` at threshold 0.5, and `color_weight_power: 4`. Alpha union
+accumulates overlapping splat support; color power favors local contributions
+to retain edges. Other assets retain their existing settings. These are volume
+sampling choices, not exact view-dependent Gaussian compositing.
+
+Swimming must be head-first along +Z before yaw, with the face toward the water.
+Test actual skinned head/feet positions and inspect the pose at the waterline;
+checking buoyancy alone does not verify swimming appearance.

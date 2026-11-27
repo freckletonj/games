@@ -59,6 +59,12 @@ with tempfile.TemporaryDirectory() as temp:
     bottom=cols[occ & (np.indices(occ.shape)[1] < occ.shape[1]//3)]
     assert len(bottom)>0 and (bottom[:,0]>0).all()
     assert np.allclose(bottom[:,0],bottom[:,2]) and np.allclose(bottom[:,1],0)
+    # Several overlapping splats can support a wall even when each is subthreshold.
+    union_config={**config,'density_mode':'alpha_union','density_threshold':.99,'color_weight_power':4}
+    wall=data.copy();wall['opacity']=0
+    for i in range(3):wall['scale_'+str(i)]=-.8
+    union,union_colors,_=voxelize(wall,union_config)
+    assert union.any() and np.isfinite(union_colors).all()
     import unittest
     for field,value in [('opacity',np.nan),('x',np.inf),('scale_0',np.inf)]:
         invalid=rows.copy();invalid[0,fields.index(field)]=value

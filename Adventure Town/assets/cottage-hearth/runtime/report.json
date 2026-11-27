@@ -2,32 +2,32 @@
   "input_splats": 65536,
   "retained_splats": 65436,
   "grid": [
-    25,
-    29,
-    20
+    43,
+    51,
+    33
   ],
-  "occupied_voxels": 4835,
+  "occupied_voxels": 19466,
   "asset": "cottage-hearth",
   "source_sha256": "beca7aa374c64c015b15e43a185aac24f0ea4428612d95df82d559df75f4625e",
-  "config_sha256": "1b7a2c833e4612e30cc8b6ed606082a65eea92f58a0f5b7b93cc47950d922c4c",
+  "config_sha256": "c3d895b119423067b49cf500a5d165a3e23eb9f2d98619f0c110b4bdd63955af",
   "rig_sha256": null,
-  "vertices": 12912,
-  "triangles": 6456,
+  "vertices": 75800,
+  "triangles": 37900,
   "clips": [],
   "status": "ready-for-test-drive",
-  "method": "max-gaussian-density; exposed voxel faces; density-weighted DC colors; world-space scale",
+  "method": "alpha_union Gaussian occupancy; exposed voxel faces; density-weighted DC colors; world-space scale",
   "kind": "static",
   "bounds": {
     "min": [
-      -0.6557692307692308,
+      -0.6619791666666667,
       0.0,
-      -0.5067307692307692
+      -0.484375
     ],
     "max": [
-      0.6557692307692308,
+      0.6619791666666667,
       1.55,
-      0.5067307692307692
+      0.484375
     ]
   },
-  "runtime_sha256": "37dd57dd415f999bfbbe29a4ee4203e948068b3e52c27b092658dc4517832ae9"
+  "runtime_sha256": "b4d87cbe7bc5e9695fe233477e1fbea16f1c99027fc88b5431cb7e13fa565a3d"
 }

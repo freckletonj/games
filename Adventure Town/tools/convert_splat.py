@@ -128,9 +128,13 @@ def voxelize(data, config):
         values = opacity*np.exp(-.5*distance)
         values[distance > config["sigma_extent"]**2] = 0
         region = tuple(slice(a,b) for a,b in zip(lo,hi))
-        np.maximum(density[region], values, out=density[region])
-        colors[region] += values[...,None] * color
-        color_weight[region] += values
+        if config.get('density_mode', 'maximum') == 'alpha_union':
+            density[region] += (1-density[region]) * values
+        else:
+            np.maximum(density[region], values, out=density[region])
+        weights = values ** config.get('color_weight_power', 1)
+        colors[region] += weights[...,None] * color
+        color_weight[region] += weights
     occupied = density >= config["density_threshold"]
     if not occupied.any():
         raise ValueError("No occupied voxels; inspect source and thresholds")
@@ -330,7 +334,7 @@ def build(asset, output):
     report['kind']=config['kind']
     report['bounds']={'min':positions.min(axis=0).tolist(),'max':positions.max(axis=0).tolist()}
     if rig is None:
-        report['method']='max-gaussian-density; exposed voxel faces; density-weighted DC colors; world-space scale'
+        report['method']=config['conversion'].get('density_mode', 'maximum')+' Gaussian occupancy; exposed voxel faces; density-weighted DC colors; world-space scale'
     (output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps(report,indent=2))
 

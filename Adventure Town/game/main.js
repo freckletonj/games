@@ -468,7 +468,7 @@ function skinCharacter() {
       NZ += w * (bm[o + 2] * nx + bm[o + 6] * ny + bm[o + 10] * nz);
     }
     if (player.swimming) {
-      const tilt = -1.05,
+      const tilt = 1.35,
         ct = Math.cos(tilt),
         st = Math.sin(tilt),
         yy = Y - 0.4;
@@ -483,7 +483,7 @@ function skinCharacter() {
     charN[k + 2] = -sa * NX + ca * NZ;
     lowest = Math.min(lowest, Y);
   }
-  let offset = player.y - (player.clip === "Jump" ? lowest : 0);
+  let offset = player.y - (player.swimming ? 0.22 : player.clip === "Jump" ? lowest : 0);
   for (let i = 0; i < indices.length; i++) {
     let k = indices[i] * 3,
       o = i * 6,
