@@ -42,6 +42,10 @@ const spawn = { x: -4.1, y: 0, z: 1.1 },
   };
 const keys = new Set();
 let jumpQueued = false,
+  jumpBuffer = 0,
+  coyote = 0,
+  paused = false,
+  inputMode = "keyboard",
   yaw = 0.58,
   pitch = 0.7,
   zoom = 1,
@@ -56,6 +60,24 @@ let sceneId = "outdoors",
   returnPoint = null,
   returnView = null,
   potionBubbles = 0;
+const pad = { x: 0, z: 0, run: false, buttons: [] };
+function releaseInput() {
+  keys.clear();
+  jumpQueued = false;
+  jumpBuffer = 0;
+  pad.x = pad.z = 0;
+  pad.run = false;
+  drag = null;
+}
+function setPaused(value) {
+  paused = value;
+  releaseInput();
+  $("#pause-panel").hidden = !value;
+  $("#pause").textContent = value ? "Resume" : "Pause";
+  $("#pause").setAttribute("aria-expanded", String(value));
+  $("#interact").hidden = true;
+  (value ? $("#resume") : canvas).focus();
+}
 function teleport(point) {
   Object.assign(player, point, {
     vy: 0,
@@ -69,8 +91,8 @@ function teleport(point) {
   camX = player.x * follow;
   camY = player.y * 0.72 + 0.2;
   camZ = player.z * follow;
-  keys.clear();
-  jumpQueued = false;
+  coyote = 0;
+  releaseInput();
 }
 function changeScene(id) {
   sceneId = id;
@@ -99,6 +121,7 @@ function interactionTarget() {
   return null;
 }
 function interact() {
+  if (paused) return;
   const target = interactionTarget();
   if (!target) return;
   if (target.action === "enter") {
@@ -136,8 +159,9 @@ function interact() {
 }
 function updateInteraction() {
   const target = interactionTarget();
-  $("#interact").hidden = target === null;
-  if (target) $("#interact").textContent = "F · " + target.label;
+  $("#interact").hidden = paused || target === null;
+  if (target) $("#interact").textContent =
+    (inputMode === "gamepad" ? "X · " : inputMode === "touch" ? "" : "F · ") + target.label;
 }
 const gravity = 10.5,
   jumpSpeed = 4.35,
@@ -149,6 +173,8 @@ function message(text) {
   notice = 2.4;
 }
 function reset(notify = true) {
+  releaseInput();
+  coyote = 0;
   changeScene("outdoors");
   currentBuilding = null;
   potionBubbles = 0;
@@ -165,7 +191,11 @@ function reset(notify = true) {
   camX = spawn.x;
   camY = 0.2;
   camZ = spawn.z;
-  if (notify) message("Back at Willowbank village");
+  yaw = 0.58;
+  pitch = 0.7;
+  zoom = 1;
+  $("#zoom").textContent = "Zoom out";
+  if (notify) message("Back in Emberbrook · Willowbank village");
 }
 function overlaps(s, x, z, r = radius) {
   return x + r > s.a && x - r < s.b && z + r > s.l && z - r < s.r;
@@ -209,10 +239,10 @@ function step(dt) {
     right = keys.has("KeyD") || keys.has("ArrowRight"),
     up = keys.has("KeyW") || keys.has("ArrowUp"),
     down = keys.has("KeyS") || keys.has("ArrowDown"),
-    dx = Number(right) - Number(left),
-    dz = Number(down) - Number(up),
+    dx = clamp(Number(right) - Number(left) + pad.x, -1, 1),
+    dz = clamp(Number(down) - Number(up) + pad.z, -1, 1),
     moving = !!(dx || dz),
-    run = keys.has("ShiftLeft") || keys.has("ShiftRight");
+    run = keys.has("ShiftLeft") || keys.has("ShiftRight") || pad.run;
   if (keys.has("KeyQ")) yaw -= dt * 1.4;
   if (keys.has("KeyE")) yaw += dt * 1.4;
   let sx = dx * Math.cos(yaw) + dz * Math.sin(yaw),
@@ -234,18 +264,22 @@ function step(dt) {
     player.y < -0.18 &&
     player.vy <= 0 &&
     groundAt(player.x, player.z, 0.4) < -0.3;
-  if (jumpQueued && (player.grounded || player.swimming)) {
+  coyote = player.grounded ? 0.1 : Math.max(0, coyote - dt);
+  jumpBuffer = jumpQueued ? 0.12 : Math.max(0, jumpBuffer - dt);
+  jumpQueued = false;
+  if (jumpBuffer > 0 && (player.grounded || player.swimming || coyote > 0)) {
     player.vy = player.swimming ? 3.2 : jumpSpeed;
     player.swimming = false;
     player.grounded = false;
     player.air = 0;
     player.land = 0;
+    jumpBuffer = coyote = 0;
   }
-  jumpQueued = false;
   let speed = player.swimming ? 1.15 : run ? 2.75 : 1.45;
   if (moving) {
-    moveAxis("x", sx * speed * dt);
-    moveAxis("z", sz * speed * dt);
+    const amount = Math.min(1, len);
+    moveAxis("x", sx * speed * amount * dt);
+    moveAxis("z", sz * speed * amount * dt);
   }
   if (player.swimming && groundAt(player.x, player.z, 0.08) > -0.3) {
     player.swimming = false;
@@ -330,6 +364,8 @@ function step(dt) {
     notice -= dt;
     if (notice <= 0) $("#message").style.opacity = 0;
   }
+}
+function updateHud() {
   let area =
     Math.abs(player.x) < 2.3
       ? "Emberbrook crossing"
@@ -364,27 +400,36 @@ const movementKeys = new Set([
   "KeyE",
 ]);
 window.addEventListener("keydown", (e) => {
+  if (e.code === "Escape" && !e.repeat) {
+    e.preventDefault();
+    setPaused(!paused);
+    return;
+  }
+  // Space/Enter on a focused button should activate that button.
+  if (e.target?.tagName === "BUTTON") return;
   if (!movementKeys.has(e.code)) return;
   e.preventDefault();
+  if (paused) return;
+  inputMode = "keyboard";
   if (e.code === "Space" && !keys.has("Space")) jumpQueued = true;
   if (e.code === "KeyF" && !keys.has("KeyF")) interact();
   keys.add(e.code);
 });
 window.addEventListener("keyup", (e) => keys.delete(e.code));
 window.addEventListener("blur", () => {
-  keys.clear();
-  jumpQueued = false;
+  setPaused(true);
 });
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
-    keys.clear();
-    jumpQueued = false;
+    setPaused(true);
   }
 });
 for (let b of document.querySelectorAll("[data-key]")) {
   let key = b.dataset.key;
   b.addEventListener("pointerdown", (e) => {
     e.preventDefault();
+    if (paused) return;
+    inputMode = "touch";
     b.setPointerCapture(e.pointerId);
     keys.add(key);
     if (key === "Space") jumpQueued = true;
@@ -393,7 +438,9 @@ for (let b of document.querySelectorAll("[data-key]")) {
     b.addEventListener(ev, () => keys.delete(key));
 }
 $("#interact").onclick = interact;
-$("#reset").onclick = () => reset();
+$("#reset").onclick = () => { reset(); canvas.focus(); };
+$("#pause").onclick = () => setPaused(!paused);
+$("#resume").onclick = () => setPaused(false);
 $("#orbit").onclick = () => {
   yaw += Math.PI / 2;
 };
@@ -403,6 +450,8 @@ $("#zoom").onclick = () => {
 };
 let drag = null;
 canvas.addEventListener("pointerdown", (e) => {
+  if (paused || drag) return;
+  canvas.focus();
   drag = [e.clientX, e.clientY];
   canvas.setPointerCapture(e.pointerId);
 });
@@ -423,9 +472,40 @@ canvas.addEventListener(
   },
   { passive: false },
 );
+// Standard-mapped gamepads only; all buttons are edge-triggered.
+function pollGamepad(dt) {
+  const connected = Array.from(navigator.getGamepads()).find(
+    (p) => p?.connected && p.mapping === "standard",
+  );
+  if (!connected) {
+    pad.x = pad.z = 0;
+    pad.run = false;
+    pad.buttons = [];
+    if (inputMode === "gamepad") inputMode = "keyboard";
+    return;
+  }
+  const buttons = connected.buttons.map((b) => b.pressed);
+  const pressed = (i) => buttons[i] && !pad.buttons[i];
+  const axis = (v) => Math.abs(v) < 0.18 ? 0 : Math.sign(v) * (Math.abs(v) - 0.18) / 0.82;
+  const x = axis(connected.axes[0]), z = axis(connected.axes[1]);
+  if (x || z || buttons.some(Boolean)) inputMode = "gamepad";
+  if (pressed(9)) setPaused(!paused);
+  if (!paused) {
+    pad.x = x + Number(buttons[15]) - Number(buttons[14]);
+    pad.z = z + Number(buttons[13]) - Number(buttons[12]);
+    pad.run = buttons[1] || buttons[7];
+    if (pressed(0)) jumpQueued = true;
+    if (pressed(2)) interact();
+    yaw += axis(connected.axes[2]) * dt * 1.8;
+    pitch = clamp(pitch + axis(connected.axes[3]) * dt, 0.44, 1.05);
+  }
+  pad.buttons = buttons;
+  $("#pad-help").hidden = inputMode !== "gamepad";
+}
 // Skin the exact embedded GLB. Remove baked jump elevation so world physics is authoritative.
 const charP = new Float32Array(positions.length),
   charN = new Float32Array(normals.length),
+  charLit = new Float32Array(positions.length),
   charData = new Float32Array(indices.length * 6),
   charBase = new Float32Array(positions.length);
 for (let i = 0; i < positions.length / 3; i++)
@@ -481,28 +561,21 @@ function skinCharacter() {
     charN[k] = ca * NX + sa * NZ;
     charN[k + 1] = NY;
     charN[k + 2] = -sa * NX + ca * NZ;
+    const nl = Math.hypot(charN[k], charN[k + 1], charN[k + 2]) || 1;
+    const lighting = 0.71 + 0.38 * Math.max(0,
+      (charN[k] * light[0] + charN[k + 1] * light[1] + charN[k + 2] * light[2]) / nl);
+    for (let c = 0; c < 3; c++) charLit[k + c] = srgb(charBase[k + c] * lighting);
     lowest = Math.min(lowest, Y);
   }
   let offset = player.y - (player.swimming ? 0.22 : player.clip === "Jump" ? lowest : 0);
   for (let i = 0; i < indices.length; i++) {
     let k = indices[i] * 3,
-      o = i * 6,
-      nl = Math.hypot(charN[k], charN[k + 1], charN[k + 2]) || 1,
-      lighting =
-        0.71 +
-        0.38 *
-          Math.max(
-            0,
-            (charN[k] * light[0] +
-              charN[k + 1] * light[1] +
-              charN[k + 2] * light[2]) /
-              nl,
-          );
+      o = i * 6;
     charData[o] = charP[k];
     charData[o + 1] = charP[k + 1] + offset;
     charData[o + 2] = charP[k + 2];
     for (let c = 0; c < 3; c++)
-      charData[o + 3 + c] = srgb(charBase[k + c] * lighting);
+      charData[o + 3 + c] = charLit[k + c];
   }
   return charData;
 }
@@ -594,7 +667,7 @@ const gl = canvas.getContext("webgl", {
   alpha: false,
   antialias: false,
   depth: true,
-  preserveDrawingBuffer: true,
+  preserveDrawingBuffer: false,
 });
 if (!gl) {
   $("#error").style.display = "block";
@@ -665,23 +738,32 @@ function drawMap() {
 }
 let last = performance.now(),
   fpsStart = last,
+  hudTime = 0,
+  worldTime = 0,
   sim = 0;
 function frame(now) {
   let dt = Math.min(0.06, (now - last) / 1000);
   last = now;
-  sim += dt;
-  while (sim >= 1 / 120) {
+  pollGamepad(dt);
+  sim = paused ? 0 : sim + dt;
+  while (sim >= 1 / 120 && !paused) {
     step(1 / 120);
     sim -= 1 / 120;
   }
+  if (!paused) worldTime += dt;
   let h = Math.min(400, Math.max(220, Math.round(canvas.clientHeight * 0.47))),
     w = Math.round((h * canvas.clientWidth) / canvas.clientHeight);
   if (canvas.width !== w || canvas.height !== h) {
     canvas.width = w;
     canvas.height = h;
   }
-  renderer.draw(camera(), skinCharacter(), effects(now / 1000));
-  drawMap();
+  renderer.draw(camera(), skinCharacter(), effects(worldTime));
+  hudTime += dt;
+  if (hudTime >= 0.1) {
+    updateHud();
+    if (sceneId === "outdoors") drawMap();
+    hudTime = 0;
+  }
   frameCount++;
   if (now - fpsStart > 600) {
     measured = Math.round((frameCount * 1000) / (now - fpsStart));
@@ -703,6 +785,8 @@ window.gameState = () => ({
   triangles: staticVerts.length / 18 + indices.length / 3,
   fps: measured,
   scene: sceneId,
+  paused,
+  input: inputMode,
   cameraYaw: yaw,
   building: currentBuilding?.id ?? null,
   swimming: player.swimming,

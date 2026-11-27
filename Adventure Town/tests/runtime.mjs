@@ -48,6 +48,7 @@ const gl = {
   enableVertexAttribArray() {},
   enable() {},
   depthFunc() {},
+  depthMask() {},
   clearColor() {},
   createBuffer: () => ({}),
   bindBuffer() {},
@@ -76,6 +77,8 @@ function element(id) {
       getContext: (type) => (type === "webgl" ? gl : mapContext),
       addEventListener() {},
       setPointerCapture() {},
+      setAttribute() {},
+      focus() {},
     });
   return elements.get(id);
 }
@@ -101,6 +104,7 @@ const sandbox = {
   },
   window: { addEventListener: (name, fn) => (listeners[name] = fn) },
   performance: { now: () => now },
+  navigator: { getGamepads: () => [] },
   requestAnimationFrame: (fn) => (nextFrame = fn),
 };
 vm.createContext(sandbox);
@@ -152,6 +156,9 @@ const before = state();
 advance(0.2);
 assert.equal(state().x, before.x);
 assert.equal(state().z, before.z);
+assert.equal(state().paused, true);
+key("Escape", true);
+assert.equal(state().paused, false);
 // Actual collision routines stop at the house wall and permit the bridge deck.
 vm.runInContext(
   "Object.assign(player,{x:-5.5,y:0,z:-1.8,grounded:true});moveAxis('z',-.5)",

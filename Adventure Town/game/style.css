@@ -28,6 +28,7 @@ canvas {
   display: block;
   image-rendering: pixelated;
 }
+#view:focus { outline: none; }
 #hud {
   position: absolute;
   left: 20px;
@@ -114,7 +115,9 @@ kbd {
   opacity: 0;
   transition: opacity 0.2s;
   pointer-events: none;
-  white-space: nowrap;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  text-align: center;
 }
 #touch {
   display: none;
@@ -233,6 +236,38 @@ kbd {
   transform: translateX(-50%);
   background: #36594c;
   border-color: #e1c17b;
+}
+#pause-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: #142b25bd;
+  overflow: auto;
+  touch-action: pan-y;
+}
+.pause-card {
+  width: min(100%, 460px);
+  padding: clamp(20px, 4vw, 32px);
+  background: #213a31;
+  border: 1px solid #b9bd8b;
+  border-radius: 14px;
+  box-shadow: 0 16px 60px #10241f70;
+}
+.pause-card h2 { font: 28px Georgia, serif; margin: 10px 0; }
+.pause-card p { line-height: 1.6; color: #d5dfc5; }
+.pause-card dl { display: grid; grid-template-columns: auto 1fr; gap: 12px; line-height: 1.5; }
+.pause-card dt { color: #eac780; }
+.pause-card dd { margin: 0; }
+#resume { width: 100%; margin-top: 10px; border-color: #eac780; }
+.touch-help { display: none; }
+@media (pointer: coarse) {
+  .touch-help { display: block; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #message { transition: none; }
 }
 @media (pointer: coarse), (max-width: 650px) {
   #interact {
