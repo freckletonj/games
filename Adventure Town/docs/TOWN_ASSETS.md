@@ -30,6 +30,18 @@ asset; the large PNGs are delivered separately. The original PLY must retain
 its Gaussian properties; record the TripoSplat export settings/version when
 available. The PNG and PLY files are not loaded by the game.
 
+Use the [local batch CLI](TRIPOSPLAT.md) to load your installed TripoSplat weights
+once and generate every pending PLY in sequence:
+
+```sh
+python "Adventure Town/tools/generate_splats.py" --weights /path/to/ckpts
+```
+
+Run that command from the repository root in your existing TripoSplat environment.
+Existing PLYs are skipped; each output gets `generation.json` with the settings.
+No manual output renaming is needed. See the CLI guide for a subset, dry-run and
+intentional regeneration.
+
 ## Buildings and interiors
 
 An exterior splat supplies the visible building shell. Door interaction points,

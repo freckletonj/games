@@ -56,6 +56,17 @@ The actual prompt for each object is recorded in its `source/PROMPT.md`.
 Generate exteriors and individual interior props separately; keep floors, rooms,
 doors and collision authored so spaces remain navigable.
 
+## Local TripoSplat generation
+
+`tools/generate_splats.py` is a standalone CLI for the user's existing TripoSplat
+environment. See `docs/TRIPOSPLAT.md`. It constructs the official pipeline once,
+processes the `awaiting-splat` queue sequentially, honors each manifest's reference
+and splat paths, skips existing PLYs, and records `generation.json`. Keep the
+TripoSplat ML dependencies out of the game runtime and NumPy conversion tools.
+Do not add weight downloads, API fallbacks, retries or automatic promotion.
+Use `--dry-run` to inspect the queue without loading models; `--overwrite` is an
+explicit request to regenerate an existing original. Ignore partial PLY files.
+
 ## PLY intake and conversion
 
 Run commands from `Adventure Town/`. Use Python 3.11+ and Node 20+.

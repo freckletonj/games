@@ -49,6 +49,18 @@ prompts, hashes, settings and PLY destinations are committed in each asset's
 own directory. The existing adventurer stays; the new-character experiment is
 deferred and needs no PLY.
 
+To generate the PLYs in your existing TripoSplat environment, run from the
+repository root:
+
+```sh
+python "Adventure Town/tools/generate_splats.py" --weights /path/to/ckpts
+```
+
+This loads the weights once, processes pending references sequentially, and saves
+into each asset's `incoming/` directory. See [the CLI guide](docs/TRIPOSPLAT.md)
+for the weight layout, selecting asset IDs, resuming and settings. For the later
+voxel conversion, use this game's directory and its NumPy environment:
+
 ```sh
 python3 -m venv .venv
 # Activate .venv, then:
