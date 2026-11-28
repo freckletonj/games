@@ -8,6 +8,17 @@ to orbit. Drag to turn the camera and scroll to zoom. Touch controls are include
 The rooms have furniture and small contextual interactions. There is no shopping
 system, inventory, quest progression or combat in this milestone.
 
+Follow the northern ledges around the old watchtower to reach its viewing deck.
+Jumps allow a short grace period after leaving an edge and remember a press just
+before landing. The north-up map marks the tower (T), ruins (R), and tower steps.
+If scenery hides the player, an amber stippled silhouette shows their position.
+
+Press **Escape** or **Pause** for a break and a controls guide. Losing focus also
+pauses; resume explicitly when ready. Standard gamepads work too: left stick or
+D-pad to move, B/RT to run, A to jump, X to interact, right stick for the camera,
+and Start to pause. Partial stick input walks more slowly. Respawn returns both
+the player and camera to the starting view.
+
 The current player is the **exact rigged GLB extracted from the user's Emberbrook
 HTML**: 6,782 vertices, 3,682 triangles, 15 joints, and Idle/Walk/Run/Jump clips.
 It is a playable imported baseline. The original PLY and reconstruction recipe
@@ -30,7 +41,7 @@ npm run build
 ```
 
 Double-click `dist/adventure-town.html` to play offline. It embeds all code,
-styles, the character and all eight converted town assets. The source version uses modules and fetches the
+styles, the player, all sixteen static town meshes and seven rigged town characters (three residents and four animals). The source version uses modules and fetches the
 model, so serve `index.html` over HTTP rather than opening it as a local file.
 The village block geometry, movement and camera come from the supplied prototype;
 the model is now a standalone asset and code is split into model/world/renderer/
@@ -41,8 +52,8 @@ controller modules. The offline file is generated, not committed.
 **Agent generates transparent PNGs → image ZIP to user → user commits PNGs and
 TripoSplat PLYs → agent reviews/voxelizes → runtime ZIP to user → play and commit.**
 
-The workflow and acceptance rules live in [AGENTS.md](AGENTS.md). The current
-batch is **eight town objects**, detailed in [the town asset guide](docs/TOWN_ASSETS.md):
+The workflow and acceptance rules live in [AGENTS.md](AGENTS.md). The first
+batch was **eight town objects**, detailed in [the town asset guide](docs/TOWN_ASSETS.md):
 cottage/grocery/potion shop exteriors, produce shelf, potion workbench, dining
 table, hearth and boulder. The user has committed the eight reference PNGs and
 original splats. Their first
@@ -50,7 +61,7 @@ voxel conversions are now enabled in the town, with per-asset reports and visual
 review notes. Extract the **runtime asset ZIP at the repository root** and commit
 its GLBs/review PNGs before running the source checkout. Small code/config/docs
 are committed by the agent. The standalone HTML is ready to play without
-extracting anything. The existing adventurer stays; the new character is deferred.
+extracting anything. The imported adventurer stays; the replacement-player experiment is deferred.
 
 To generate the PLYs in your existing TripoSplat environment, run from the
 repository root:
@@ -86,6 +97,25 @@ town closes it with an explicitly authored wall. The original PLY is unchanged.
 The character now swims head-first and face-down, at a fitted waterline.
 See per-asset `runtime/REVIEW.md` for comparisons and remaining approximations.
 
+## Next town art batch
+
+The [asset backlog](docs/ASSET_BACKLOG.md) inventories 33 designs for the
+current town visual pass. [Reference batch 02](docs/ASSET_BATCH_02.md) starts with
+the grocery counter, apothecary cabinet, grocer, herbalist, lantern and well.
+The six original PNGs and TripoSplat PLYs are committed and converted. Extract
+the new runtime ZIP at the repository root before source play/build. The counter,
+cabinet, lanterns and well are enabled; the two rigged shopkeepers idle in their
+shops. The separate offline play ZIP embeds everything. The imported player stays
+and `next-adventurer` remains deferred. All six assets await user art review.
+
+## Creature friendship and batch 03
+
+The new batch adds low plaster/timber shop panels, oak grocery boards and lilac potion-room paving, benches, berry bushes, a gardener and four rigged animals. Original reference PNGs and PLYs are unchanged. Dedicated quadruped/bird rigs are fitted to the rabbit, fox and owl; the rock bear uses an individually fitted biped rig. The [batch handoff](docs/ASSET_BATCH_03.md) and per-asset review notes describe remaining art approximations.
+
+Approach an animal as the explorer and press **F** twice to offer berries. Hearts mark trust. At full trust, press **G** (or contextual **F**) to send a friendship orb during the 12-second opportunity. **T** becomes the current caught animal and returns to explorer. Gamepad uses **X** for context, **RB** for orb and **Y** for form; touch buttons are provided. Springaroo double-jumps, Tidefox swims faster and uses **F** to dive/surface, Moonwing has four wingbeats between landings, and Flintfist uses **F** to push a ruin boulder or punch a cracked seal. Try the high garden landing and optional ruin passages. Read [the playable rules](docs/CREATURE_FRIENDSHIP.md) for recovery and limits.
+
+Extract the new runtime ZIP at the repository root and commit its binaries on PR #27's branch before source play/build. Code, manifests and text reviews are already committed separately. The play ZIP contains a standalone offline HTML with all assets embedded. All nine new conversions await user art review; the floor remains an authored surface guided by its reference.
+
 ## Checks and boundaries
 
 ```sh
@@ -96,9 +126,11 @@ This builds the offline game and exercises its actual controller and CPU skinnin
 with a deterministic clock and a WebGL/DOM stub. It checks movement, jump/landing,
 wall collision, bridge support, swimming/shore exits, all room transitions,
 stepping-stone jumps, focus release and finite draw data.
+It also checks buffered/late jumps, grace expiry, the complete watchtower climb,
+pause/resume, analog controller input/disconnects and conservative view culling.
 Python checks both PLY encodings, exposed-face meshing, deterministic GLB export,
 weights, bind pose, winding, animation structure and static export at game scale. The tests require NumPy.
-They do not establish visual quality, contact quality or actual GPU rendering.
+The new checks also exercise all four friendship encounters, safe form changes, limited abilities, obstacle collision changes, real character motion cycles and exact-color static face merging. These deterministic checks do not establish visual quality, contact quality or actual GPU rendering.
 
 The previous project is preserved byte-for-byte under
 [`../old/Adventure Town/`](<../old/Adventure Town/>). Its GIF/multiview compiler and
@@ -110,4 +142,6 @@ For optional real browser checks, install Playwright separately and run
 Chromium; `ADVENTURE_CHROMIUM` can select an explicit executable. It exercises
 both the HTTP source and offline file, tours the three interior types, swims
 bank-to-bank, previews a candidate static GLB, and checks mobile touch controls,
-and writes temporary review captures under ignored `dist/review/`.
+exercises keyboard/touch friendship and the garden double jump, and writes temporary review captures under ignored `dist/review/`.
+The browser checks also verify pause focus and actual WebGL silhouette pixels,
+so a visible player keeps its original colors while an occluded player is marked.

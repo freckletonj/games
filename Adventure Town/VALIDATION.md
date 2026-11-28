@@ -1,5 +1,91 @@
 # Validation log
 
+## Batch 03 and creature friendship · 2026-11-27
+
+All nine actual PLYs from user commit `1f0bb0122c7e606722175a37d9edf7ad4c1cfa52`
+were verified as standard 3DGS, 65,536 vertices each, with reference/generation
+hashes matching. Source PNG/PLY bytes remain unchanged. Springaroo uses an explicit
+crop and fitted facing; Tidefox and Moonwing have fitted facing. The other new
+inputs retain their complete source bounds. See `docs/ASSET_BATCH_03_INTAKE.md`.
+
+Four static conversions and five individually fitted rigs are enabled. Static
+same-color coplanar merging preserves the voxel surface while reducing repeated
+wall/prop cost. Final triangle counts are panel 4,848, bench 6,612, bush 9,206,
+orb 7,202, gardener 13,256, Springaroo 14,800, Tidefox 15,216, Moonwing 13,288 and
+Flintfist 19,476. All nine pass structural validation; rebuilding all nine from the unchanged original PLYs and final settings reproduces the reviewed GLBs byte-for-byte. Dedicated quadruped/bird
+rigs use explicit anatomy fits, soft weight regions and per-asset smoothing;
+there is no automatic rigging or claimed topology recovery.
+
+Actual Gaussian composites and mesh front/side/back/oblique views were inspected.
+The five characters have 12 actual software-WebGL renders per clip, full-cycle
+GIFs and motion sheets. Full-cycle finite skinning and edge-strain checks include
+the existing two shopkeepers and all five new rigs. Remaining approximations
+include source lighting, small joint creases and procedural foot drift;
+Springaroo's inferred rear is coarse/asymmetric and the orb's rear is dark.
+These are `ready-for-test-drive`, pending user art approval.
+
+`npm test` covers the complete real controller, all four two-berry/orb/form
+encounters, wall-blocked orbs, opportunity expiry and pause, simulated gamepad
+X/RB/Y, clearance-safe form switching, the double-jump garden landing, no third
+jump or airborne form reset, four finite wingbeats, dive/surface and under-bridge
+clearance, physical pushing and seal removal, room persistence and respawn.
+Real character skinning, static merging, synthetic PLY conversion and the
+TripoSplat generation CLI are also exercised. No physical pad was available.
+
+Chromium exercises HTTP modules and standalone offline play, existing controls,
+WebGL silhouette pixels, focus/pause, all interior types, shop actions, swimming,
+candidate scenery and narrow mobile doors. Additional checks feed/catch/transform
+with keyboard and touch and reach the garden landing by double jump. No page
+errors occurred; offline play makes no network requests. Shop, outdoor, transformed,
+garden and touch renders were inspected. Software WebGL is functional evidence,
+not a target-device performance benchmark.
+
+The grocery/potion floors and backing walls remain authored; low converted
+panels decorate the cutaways without blocking doors. Garden/ruin obstacles are
+optional prototypes with authored geometry/collision, not generated obstacle art
+or a mandatory progression campaign. The current caught slot replaces its prior
+form when another animal is caught; no collection inventory was introduced.
+
+Small code/config/reports/reviews are committed directly. The separate runtime
+ZIP carries only the nine GLBs and binary review material, at repository-relative
+paths, for user extraction and commit. The play ZIP embeds the exact same GLBs.
+Original assets, imported player and `old/` remain unchanged.
+
+## Exploration and controls polish · 2026-11-26
+
+The six northern ledges now connect to the watchtower viewing deck. A deterministic
+test starts on grass and reaches every landing and the deck using the real jump,
+run, gravity and collision code. Existing river crossings, moss ruins and all five
+building entrances retain their authored collision and asset files.
+
+Jump presses are buffered for 120 ms and ledge grace lasts 100 ms. Regression
+checks cover both windows, grace expiry, and held-button behavior. Pause stops
+simulation, effects and draw calls; focus loss pauses automatically. Keyboard
+resume clears held movement. The pause dialog traps keyboard focus on Resume.
+Standard-mapped controller tests cover deadzone, analog speed, run, single jumps,
+Start-button edges and disconnect. These use simulated controller input; a physical
+gamepad has not been tested here.
+
+Static triangles are grouped spatially and culled conservatively against the
+orthographic view. Large terrain faces have separate batches so they cannot
+inflate building bounds. At the starting desktop view, diagnostics submit 149,517
+of 180,987 world/player triangles, about 17% fewer than drawing the whole scene.
+Character lighting is computed once per unique vertex instead of per triangle
+corner. HUD/map updates run at 10 Hz, and scenery downloads run concurrently.
+These are work reductions, not a hardware frame-rate guarantee.
+
+The hidden-player pass uses the world's depth buffer before drawing the normal
+player, avoiding self-occlusion artifacts. A real WebGL pixel test verifies amber
+stipple appears behind a wall and is absent when the player is in front. View
+culling tests retain tall objects, screen-edge geometry and cell-spanning triangles.
+
+`npm test` passes with the real assets and synthetic converter fixtures. Real
+Chromium checks pass for HTTP modules, the offline build with no network requests,
+pause/resume and dialog focus, movement/camera, all interior types, shop actions,
+swimming, candidate scenery, and narrow mobile touch controls/doors. No page or
+WebGL errors occurred. Browser rendering is software-backed; desktop/mobile
+captures were inspected. Existing conversion quality limitations below still apply.
+
 Current status: the eight real town splats are converted and enabled for a test
 drive. Their runtime blobs are delivered separately for user commit. Earlier
 entries below describe previous milestones, before those PLYs arrived.
@@ -135,3 +221,45 @@ Small code/config/docs/reports are committed directly. The new handoff ZIP
 contains all eight static GLBs and the two updated comparison PNGs. It does not
 contain code or browser screenshots. Extract at the repository root and commit
 the resulting runtime files; the standalone HTML already embeds the fixes.
+
+
+## Second town asset round trip (2026-11-27)
+
+All six user-committed references and original PLYs were read from revision
+`a5e68c3a29c3b861757c515a13a94922f7584711`. Reference SHA-256 values match the
+original handoff and generation records. Each PLY is the expected binary
+little-endian vertex-only standard 3DGS export with 65,536 Gaussians. Original
+PNGs and PLYs, the first eight runtime GLBs and the imported player are unchanged.
+
+The new grocery counter, apothecary cabinet, six reused lanterns and plaza well
+replace authored visuals with fitted converted meshes and separate collision.
+Two individually fitted 15-joint characters stand in the grocery and potion
+shop, using relaxed Idle loops. Both export Idle/Walk/Run/Jump. The offline
+build embeds twelve static assets, the two shopkeepers and the imported player.
+
+Six structural GLB audits passed. Agent review compared each reference with
+orthographic DC Gaussian alpha composites and front/oblique/side/rear WebGL
+mesh renders. Character review covered 24 rendered phases per clip, including
+full-cycle GIFs. The first rig fits exposed misplaced hand/waist vertices and
+hard shoulder/hip seams; fitted gates and continuous weight transitions removed
+the conspicuous spikes. The real-mesh regression samples whole cycles, finite
+skinning, loop closure, same-side leg weights and triangle-edge strain. Maximum
+sampled stretch is 2.784× for the grocer and 2.112× for the herbalist, below a 3×
+spike guard. Small voxel creases and in-place procedural foot drift remain.
+
+`npm test` passes the controller, real NPC rigs, synthetic PLY conversion and
+TripoSplat CLI tests. The two new GLBs were also used as candidate player models
+for the full controller/skinning check. Chromium checks passed HTTP and offline
+play with network blocked, real WebGL silhouette pixels, pause/focus, keyboard
+movement/camera, touch doors and controls, all interior types, both contextual
+shop interactions, bank-to-bank swimming and candidate scenery. The shop tests
+assert the expected grocer/herbalist is present. Actual grocery/potion views and
+full motion loops were inspected. Browser rendering is software-backed and
+these observations are not a hardware frame-rate benchmark.
+
+The source-data rebuilds of both final rigs matched the reviewed GLBs
+byte-for-byte. Per-asset `runtime/report.json` records exact source, reference,
+config, rig, compiler and runtime hashes and mesh counts; `runtime/REVIEW.md`
+records remaining limitations. All six are `ready-for-test-drive`, not final
+user art approval. New binary outputs are delivered by runtime ZIP for user
+extraction/commit; the separate play ZIP contains a standalone offline HTML.

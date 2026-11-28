@@ -1,0 +1,41 @@
+{
+  "id": "moonwing",
+  "kind": "bird",
+  "status": "ready-for-test-drive",
+  "reference": "source/reference.png",
+  "reference_sha256": "98c4aa6b3f9fe09441da434593fec0cdb8ebffa71b572cea155a4a9e68933026",
+  "runtime": "runtime/asset.glb",
+  "notes": "Befriendable owl and playable form with four wingbeats between landings. Reviewed actual source composites, fitted mesh views and gameplay. Facing and wing roots are fitted to the actual PLY. Wing feathers merge into chunky blocks; procedural flapping retains small creases at the roots. Flight is limited to four airborne wingbeats.",
+  "splat": "incoming/model.ply",
+  "target_height": 0.6,
+  "conversion": {
+    "source_to_game": [
+      [
+        -0.5226872289306592,
+        0.0,
+        0.8525245220595057
+      ],
+      [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      [
+        0.8525245220595057,
+        0.0,
+        0.5226872289306592
+      ]
+    ],
+    "crop": null,
+    "height_voxels": 40,
+    "opacity_min": 0.1,
+    "sigma_extent": 2.5,
+    "density_threshold": 0.5,
+    "density_mode": "alpha_union",
+    "color_weight_power": 4,
+    "color_levels": 32,
+    "max_grid_cells": 4000000,
+    "voxel_filter_sigma": 0.25
+  },
+  "rig": "rig.json"
+}

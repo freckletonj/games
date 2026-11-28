@@ -76,7 +76,8 @@ def validate(path):
                 if channel['target']['path']=='rotation':
                     assert np.allclose(np.linalg.norm(values,axis=1),1,atol=1e-5)
                 else: assert channel['target']['path']=='translation'
-        assert set(clips)=={'Idle','Walk','Run','Jump'}, 'humanoid movement clip contract'
+        assert {'Idle','Walk','Run','Jump'} <= set(clips), 'core movement clip contract'
+        assert len(clips)==len(set(clips)), 'unique clip names'
     report={'vertices':len(p),'triangles':len(idx)//3,'clips':clips,'status':'structural-checks-passed'}
     print(json.dumps(report))
     return report

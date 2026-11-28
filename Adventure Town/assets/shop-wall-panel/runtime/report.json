@@ -1,0 +1,52 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65535,
+  "grid": [
+    60,
+    19,
+    15
+  ],
+  "occupied_voxels": 6688,
+  "asset": "shop-wall-panel",
+  "source_sha256": "b2377bc876b2541fcef4aa45abb56fd3ed36e1d0d60c00b0e8acdb531a29c646",
+  "config_sha256": "806f775075c634e18c2e43bfd970898648b9c64bf894610fa7cf7e5e7d95e011",
+  "rig_sha256": null,
+  "vertices": 9696,
+  "triangles": 4848,
+  "clips": [],
+  "status": "ready-for-test-drive",
+  "method": "alpha_union Gaussian occupancy; exposed voxel faces; density-weighted DC colors; world-space scale",
+  "kind": "static",
+  "bounds": {
+    "min": [
+      -0.8047058823529412,
+      0.0,
+      -0.16941176470588235
+    ],
+    "max": [
+      0.8047058823529412,
+      0.48,
+      0.16941176470588235
+    ]
+  },
+  "conversion_config_sha256": "c1420d3e5932004d2b94452a604736cc769650ed3553c445d5f2358b1640ef43",
+  "reference_sha256": "4b46c72b8aedd15551a812839a0699e5034fe2ecf8b0c78c924f309efe238807",
+  "runtime_sha256": "f6fef74323d9890d228857ed7d136f0bccc7d656402cf9ec0cc160ad36775cb4",
+  "review_date": "2026-11-27",
+  "compiler_sha256": {
+    "convert_splat.py": "9d19248902f50bbee5b377b6b8c73be79b2171ed70cb7592b50603a5854cb25d",
+    "creature_rig.py": "ccc35ceafd541fd929ca080f73c719096b33bec0a118d37e305e4018a22443de"
+  },
+  "review": {
+    "mesh_views": [
+      "front",
+      "side",
+      "back",
+      "oblique"
+    ],
+    "original_ply_composite": true,
+    "webgl_errors": 0,
+    "motion_frames_per_clip": 0,
+    "user_art_approval": false
+  }
+}

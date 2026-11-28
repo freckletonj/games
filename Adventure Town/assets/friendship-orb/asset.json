@@ -1,0 +1,42 @@
+{
+  "id": "friendship-orb",
+  "kind": "static",
+  "status": "ready-for-test-drive",
+  "reference": "source/reference.png",
+  "reference_sha256": "7e45be340e9e9bb973134491e705effdcf913216d4900579366dd079d76aac67",
+  "runtime": "runtime/asset.glb",
+  "notes": "Visible friendship projectile used to catch a ready animal. Reviewed actual source composites, fitted mesh views and gameplay. The original splat has a dark inferred rear; that dark rear remains in the voxel mesh. The heart is clearest from the front. It is ready for interaction testing, with rear-color art review still pending.",
+  "splat": "incoming/model.ply",
+  "target_height": 0.18,
+  "conversion": {
+    "source_to_game": [
+      [
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        -1,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ]
+    ],
+    "crop": null,
+    "height_voxels": 24,
+    "opacity_min": 0.1,
+    "sigma_extent": 2.5,
+    "density_threshold": 0.5,
+    "density_mode": "alpha_union",
+    "color_weight_power": 4,
+    "color_levels": 32,
+    "max_grid_cells": 4000000,
+    "voxel_filter_sigma": 0.25,
+    "merge_faces": true
+  },
+  "world_height": 0.22
+}

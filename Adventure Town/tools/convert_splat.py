@@ -10,6 +10,7 @@ import struct
 from pathlib import Path
 
 import numpy as np
+from creature_rig import creature_weights, creature_clips, packed_weights
 
 SH_C0 = 0.28209479177387814
 PLY_TYPES = {"float": "<f4", "float32": "<f4", "double": "<f8", "float64": "<f8",
@@ -155,7 +156,7 @@ FACES = [([1,0,0], [[1,0,0],[1,1,0],[1,1,1],[1,0,1]]),
          ([0,0,-1], [[0,0,0],[0,1,0],[1,1,0],[1,0,0]])]
 
 
-def surface_mesh(occupied, color_grid):
+def surface_mesh(occupied, color_grid, merge_faces=False):
     positions, normals, colors, indices = [], [], [], []
     for normal, corners in FACES:
         neighbor = np.zeros_like(occupied)
@@ -165,6 +166,31 @@ def surface_mesh(occupied, color_grid):
             dst.append(slice(None,-1) if d == 1 else slice(1,None) if d == -1 else slice(None))
         neighbor[tuple(dst)] = occupied[tuple(src)]
         cells = np.argwhere(occupied & ~neighbor)
+        if merge_faces:
+            # Merge only coplanar faces with exactly equal quantized color.
+            # The occupied volume, silhouette and flat shading are unchanged.
+            axis=next(i for i,d in enumerate(normal) if d)
+            u,v=[i for i in range(3) if i!=axis]
+            palette,labels=np.unique(color_grid[tuple(cells.T)],axis=0,return_inverse=True)
+            for layer in np.unique(cells[:,axis]):
+                mask=cells[:,axis]==layer
+                plane=np.full((occupied.shape[u],occupied.shape[v]),-1,dtype=int)
+                plane[cells[mask,u],cells[mask,v]]=labels[mask]
+                for a in range(plane.shape[0]):
+                    for b in range(plane.shape[1]):
+                        label=plane[a,b]
+                        if label<0:continue
+                        width=1
+                        while b+width<plane.shape[1] and plane[a,b+width]==label:width+=1
+                        height=1
+                        while a+height<plane.shape[0] and (plane[a+height,b:b+width]==label).all():height+=1
+                        start=np.zeros(3);start[axis]=layer;start[u]=a;start[v]=b
+                        size=np.ones(3);size[u]=height;size[v]=width
+                        positions.append(start+np.array(corners)*size)
+                        normals.append(np.tile(normal,(4,1)))
+                        colors.append(np.tile(palette[label],(4,1)))
+                        plane[a:a+height,b:b+width]=-1
+            continue
         positions.append((cells[:,None,:] + np.array(corners)).reshape(-1,3))
         normals.append(np.tile(normal,(len(cells)*4,1)))
         colors.append(np.repeat(color_grid[tuple(cells.T)],4,axis=0))
@@ -181,6 +207,8 @@ def surface_mesh(occupied, color_grid):
 
 def skin_weights(positions, rig):
     """Manually fitted joint segments plus explicit anatomical regions."""
+    if rig.get('family') in ('quadruped', 'bird'):
+        return creature_weights(positions, rig)
     joints = rig["joints"]
     points = np.array([j["position"] for j in joints])
     parents = np.array([j["parent"] for j in joints])
@@ -204,7 +232,11 @@ def skin_weights(positions, rig):
     ]:
         for name in names:
             allowed[mask,next(i for i,j in enumerate(joints) if j["name"]==name)] = True
-    arms=(np.abs(positions[:,0])>=gates["arm_x"]) & (positions[:,1]>=gates["arm_bottom"]) & (positions[:,1]<=gates["head_y"])
+    arm_x=gates["arm_x"]
+    if 'arm_split_y' in gates:
+        half=gates['arm_transition_height']/2
+        arm_x=np.interp(positions[:,1],[gates['arm_split_y']-half,gates['arm_split_y']+half],[gates['arm_lower_x'],arm_x])
+    arms=(np.abs(positions[:,0])>=arm_x) & (positions[:,1]>=gates["arm_bottom"]) & (positions[:,1]<=gates["head_y"])
     for side, sign in [("L",-1),("R",1)]:
         mask=arms & (positions[:,0]*sign>0)
         allowed[mask]=False
@@ -213,26 +245,44 @@ def skin_weights(positions, rig):
         # Restrict leg weights to the same side so the stride doesn't pull both boots.
         for name in [f"Thigh.{side}",f"Shin.{side}",f"Foot.{side}"]:
             allowed[positions[:,0]*sign<0,next(i for i,j in enumerate(joints) if j["name"]==name)]=False
+    # A short fitted shoulder band joins torso and arm weights continuously.
+    # Hard region changes on connected sleeve faces produce stretched spikes.
+    if 'shoulder_blend' in rig:
+        blend=rig['shoulder_blend']
+        phase=np.clip((positions[:,1]-blend['bottom'])/(blend['top']-blend['bottom']),0,1)
+        width=np.maximum(1e-6,blend['width']*np.sin(np.pi*phase))
+        strength=np.clip((np.abs(positions[:,0])-arm_x)/width+.5,0,1)
+        shoulder=(positions[:,1]>=blend['bottom']) & (positions[:,1]<=blend['top']) & (strength>0) & (strength<1)
+        for side,sign in [('L',-1),('R',1)]:
+            mask=shoulder & (positions[:,0]*sign>0)
+            for name in ['Pelvis','Spine',f'UpperArm.{side}',f'Forearm.{side}',f'Hand.{side}']:
+                allowed[mask,next(i for i,j in enumerate(joints) if j['name']==name)]=True
     distance[~allowed]=np.inf
-    nearest=np.argsort(distance,axis=1)[:,:4]
-    selected=np.take_along_axis(distance,nearest,axis=1)
-    raw=np.exp(-selected**2/(2*rig["weight_radius"]**2))
-    # Normalize in floating point before exact byte quantization (sum is 255).
-    if np.any(raw.sum(axis=1)==0):
-        raise ValueError("Unweighted vertices; refit rig or increase weight_radius")
-    raw=raw/raw.sum(axis=1,keepdims=True)*255
-    weights=np.floor(raw).astype(np.uint8)
-    for row, missing in enumerate(255-weights.sum(axis=1)):
-        order=np.argsort(-(raw[row]-weights[row]))
-        weights[row,order[:int(missing)]]+=1
-    return nearest.astype(np.uint8), weights
+    raw=np.exp(-distance**2/(2*rig["weight_radius"]**2))
+    if 'shoulder_blend' in rig:
+        arm_columns=np.array([j['name'].startswith(('UpperArm','Forearm','Hand')) for j in joints])
+        for columns,factor in [(arm_columns,strength),(~arm_columns,1-strength)]:
+            values=raw[shoulder][:,columns]
+            raw[np.ix_(shoulder,columns)]=values/np.maximum(values.sum(axis=1,keepdims=True),1e-30)*factor[shoulder,None]
+    if 'hip_blend_height' in rig:
+        leg_strength=np.clip((gates['leg_y']-positions[:,1])/rig['hip_blend_height'],0,1)
+        hips=(leg_strength>0) & (leg_strength<1) & ~arms
+        leg_columns=np.array([j['name'].startswith(('Thigh','Shin','Foot')) for j in joints])
+        for columns,factor in [(leg_columns,leg_strength),(~leg_columns,1-leg_strength)]:
+            values=raw[hips][:,columns]
+            raw[np.ix_(hips,columns)]=values/np.maximum(values.sum(axis=1,keepdims=True),1e-30)*factor[hips,None]
+    return packed_weights(positions, raw, rig)
 
 
 def clips_for_rig(rig):
     """In-place procedural test motion. The game owns all world translation."""
+    if rig.get('family') in ('quadruped', 'bird'):
+        return creature_clips(rig)
     result=[]
     names={j["name"]:i for i,j in enumerate(rig["joints"])}
-    for name,duration,amplitude in [("Idle",2,0),("Walk",1,.55),("Run",.65,.9),("Jump",.8,0)]:
+    definitions=[("Idle",2,0),("Walk",1,.55),("Run",.65,.9),("Jump",.8,0)]
+    definitions += [(name,1,0) for name in rig.get('actions', [])]
+    for name,duration,amplitude in definitions:
         times=np.linspace(0,duration,25)
         tracks=[]
         for joint in rig["joints"]:
@@ -250,8 +300,19 @@ def clips_for_rig(rig):
                 if label.startswith('Thigh'): angle=-.6*tuck
                 if label.startswith('Shin'): angle=1.0*tuck
                 if label.startswith('UpperArm'): angle=-.9*tuck
+            elif name in ('Push','Punch'):
+                pulse=np.sin(np.pi*times/duration)**2
+                if label.startswith('UpperArm'):
+                    angle=-pulse*(1.0 if name=='Push' or label.endswith('.R') else .2)
+                if label.startswith('Forearm'): angle=-.2*pulse
+                if label=='Spine': angle=.12*pulse
             elif label=='Spine': angle=.015*np.sin(phase)
-            quat=np.column_stack([np.sin(angle/2),np.zeros((len(times),2)),np.cos(angle/2)])
+            angle *= rig.get('motion_scale', 1)
+            # Lower A-pose shoulders for a fitted relaxed pose, then apply stride.
+            rest=side*rig.get('arm_rest_angle',0) if label.startswith('UpperArm') else 0
+            sx,cx=np.sin(angle/2),np.cos(angle/2)
+            sz,cz=np.sin(rest/2),np.cos(rest/2)
+            quat=np.column_stack([sx*cz,-sx*sz,cx*sz,cx*cz])
             tracks.append((names[label],times,quat))
         result.append((name,tracks))
     return result
@@ -316,21 +377,23 @@ def write_glb(path, positions, normals, colors, indices, rig=None):
 def build(asset, output):
     asset=Path(asset);output=Path(output)
     config=json.loads((asset/'asset.json').read_text())
+    if config['kind'] not in ('static','humanoid','quadruped','bird'):
+        raise ValueError('Fit a supported asset kind and conversion settings before building')
     source=asset/config['splat']
     data=read_ply(source)
     occupied,colors,report=voxelize(data,config['conversion'])
-    positions,normals,colors,indices=surface_mesh(occupied,colors)
+    positions,normals,colors,indices=surface_mesh(occupied,colors,config['conversion'].get('merge_faces',False))
     if config['kind']=='static':
         positions *= config['world_height']
     output.mkdir(parents=True,exist_ok=False)
-    rig=json.loads((asset/config['rig']).read_text()) if config['kind']=='humanoid' else None
+    rig=json.loads((asset/config['rig']).read_text()) if config['kind']!='static' else None
     write_glb(output/'asset.glb',positions,normals,colors,indices,rig)
     np.savez_compressed(output/'voxels.npz',occupied=occupied)
     report.update({"asset":config['id'],"source_sha256":hashlib.sha256(source.read_bytes()).hexdigest(),
                    "config_sha256":hashlib.sha256((asset/'asset.json').read_bytes()).hexdigest(),
                    "rig_sha256":hashlib.sha256((asset/config['rig']).read_bytes()).hexdigest() if rig else None,
                    "vertices":len(positions),"triangles":len(indices)//3,"clips":[c[0] for c in clips_for_rig(rig)] if rig else [],
-                   "status":"candidate-needs-visual-review","method":"max-gaussian-density; exposed voxel faces; fitted segment weights; procedural motion"})
+                   "status":"candidate-needs-visual-review","method":config['conversion'].get('density_mode','maximum')+" Gaussian occupancy; exposed voxel faces; fitted segment weights; procedural motion"})
     report['kind']=config['kind']
     report['bounds']={'min':positions.min(axis=0).tolist(),'max':positions.max(axis=0).tolist()}
     if rig is None:

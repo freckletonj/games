@@ -1,0 +1,42 @@
+{
+  "id": "blushberry-bush",
+  "kind": "static",
+  "status": "ready-for-test-drive",
+  "reference": "source/reference.png",
+  "reference_sha256": "90077cb32bea5a6b79ab6d5a90684fd31b1dae73de040e3975f10939706ed3c6",
+  "runtime": "runtime/asset.glb",
+  "notes": "Reusable berry vegetation beside the four animal encounters. Reviewed actual source composites, fitted mesh views and gameplay. The inferred back is plain/darker and berries merge at distance. Detached offered berries and hearts are authored effects; baked berries are not individually simulated.",
+  "splat": "incoming/model.ply",
+  "target_height": 0.65,
+  "conversion": {
+    "source_to_game": [
+      [
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        -1,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ]
+    ],
+    "crop": null,
+    "height_voxels": 24,
+    "opacity_min": 0.1,
+    "sigma_extent": 2.5,
+    "density_threshold": 0.5,
+    "density_mode": "alpha_union",
+    "color_weight_power": 4,
+    "color_levels": 24,
+    "max_grid_cells": 4000000,
+    "voxel_filter_sigma": 0.25,
+    "merge_faces": true
+  },
+  "world_height": 0.62
+}

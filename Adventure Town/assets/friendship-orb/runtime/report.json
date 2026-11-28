@@ -1,0 +1,52 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65527,
+  "grid": [
+    26,
+    27,
+    22
+  ],
+  "occupied_voxels": 5079,
+  "asset": "friendship-orb",
+  "source_sha256": "4058e05cdebfd0f7ce1116bea085525bf20bc7208a15601805162a4c3e5d3472",
+  "config_sha256": "535d9ce464ee2080cf949c2cda11081189e73da8a7aaf9ea0b4b3169fc145dc8",
+  "rig_sha256": null,
+  "vertices": 14404,
+  "triangles": 7202,
+  "clips": [],
+  "status": "ready-for-test-drive",
+  "method": "alpha_union Gaussian occupancy; exposed voxel faces; density-weighted DC colors; world-space scale",
+  "kind": "static",
+  "bounds": {
+    "min": [
+      -0.1056,
+      0.0,
+      -0.08800000000000001
+    ],
+    "max": [
+      0.1056,
+      0.22,
+      0.08800000000000001
+    ]
+  },
+  "conversion_config_sha256": "42b854bd781f7370d3ddf11018c0f2282ffd61cdcbc93dc470af17abea0ceaaa",
+  "reference_sha256": "7e45be340e9e9bb973134491e705effdcf913216d4900579366dd079d76aac67",
+  "runtime_sha256": "e525c0690eeb30c0979f07cf9ff0bfbed9f11ba60c8bd17910d3ea37849f6ce5",
+  "review_date": "2026-11-27",
+  "compiler_sha256": {
+    "convert_splat.py": "9d19248902f50bbee5b377b6b8c73be79b2171ed70cb7592b50603a5854cb25d",
+    "creature_rig.py": "ccc35ceafd541fd929ca080f73c719096b33bec0a118d37e305e4018a22443de"
+  },
+  "review": {
+    "mesh_views": [
+      "front",
+      "side",
+      "back",
+      "oblique"
+    ],
+    "original_ply_composite": true,
+    "webgl_errors": 0,
+    "motion_frames_per_clip": 0,
+    "user_art_approval": false
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 61709,
+  "grid": [
+    26,
+    35,
+    26
+  ],
+  "occupied_voxels": 5864,
+  "asset": "apothecary-cabinet",
+  "source_sha256": "84d6c966534ab4a88c73acfbebcddbf04df73556d6a11ce5f950df338d0ad4a7",
+  "config_sha256": "d15f06eee2ba8840120cc338c86ffa56501ced9ed31c2e6750326a7e5478dd32",
+  "rig_sha256": null,
+  "vertices": 25984,
+  "triangles": 12992,
+  "clips": [],
+  "status": "ready-for-test-drive",
+  "method": "alpha_union Gaussian occupancy; exposed voxel faces; density-weighted DC colors; world-space scale",
+  "kind": "static",
+  "bounds": {
+    "min": [
+      -0.48787878787878786,
+      0.0,
+      -0.509090909090909
+    ],
+    "max": [
+      0.48787878787878786,
+      1.4,
+      0.509090909090909
+    ]
+  },
+  "build_config_sha256": "e1e87bdf3c8dc3aa8147e3e1134beec4366e709460c0fbba1600b5410a70f1d4",
+  "reference_sha256": "6f9c76014e6d40636c16d6256318e0532555f0f536f49ace33b5725b5d8e2b24",
+  "runtime_sha256": "765580bc469cef05a3d67fae185fd7caa8d8ea7ca90fea8144f466d64b4bab73",
+  "converter_sha256": "9c7ede83cd1b5b2d364c280cb113303537eb07353bab3dc9fde3285111866330",
+  "structural_audit": "passed",
+  "visual_review": "source DC Gaussian composite plus front/oblique/side/rear WebGL mesh views and actual game placement"
+}

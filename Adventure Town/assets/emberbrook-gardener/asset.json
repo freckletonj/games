@@ -1,0 +1,41 @@
+{
+  "id": "emberbrook-gardener",
+  "kind": "humanoid",
+  "status": "ready-for-test-drive",
+  "reference": "source/reference.png",
+  "reference_sha256": "d67444b47c021826dee76481d3c63dff78ee5eb53a1eb9c7b2094087e1b6343b",
+  "runtime": "runtime/asset.glb",
+  "notes": "A new idle resident beside the town gardens. Reviewed actual source composites, fitted mesh views and gameplay. Small face details soften. Procedural in-place motion retains modest shoulder/hip creases and foot drift. The resident idles outdoors; it has no roaming or quest behavior.",
+  "splat": "incoming/model.ply",
+  "target_height": 1,
+  "conversion": {
+    "source_to_game": [
+      [
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        -1,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ]
+    ],
+    "crop": null,
+    "height_voxels": 64,
+    "opacity_min": 0.1,
+    "sigma_extent": 2.5,
+    "density_threshold": 0.5,
+    "density_mode": "alpha_union",
+    "color_weight_power": 4,
+    "color_levels": 32,
+    "max_grid_cells": 4000000,
+    "voxel_filter_sigma": 0.25
+  },
+  "rig": "rig.json"
+}

@@ -1,0 +1,158 @@
+{
+  "joints": [
+    {
+      "name": "Pelvis",
+      "parent": -1,
+      "position": [
+        0.02,
+        0.45,
+        0.03
+      ]
+    },
+    {
+      "name": "Spine",
+      "parent": 0,
+      "position": [
+        0.02,
+        0.61,
+        0.03
+      ]
+    },
+    {
+      "name": "Head",
+      "parent": 1,
+      "position": [
+        0.025,
+        0.755,
+        0.0
+      ]
+    },
+    {
+      "name": "Thigh.L",
+      "parent": 0,
+      "position": [
+        -0.08,
+        0.43,
+        0.03
+      ]
+    },
+    {
+      "name": "Shin.L",
+      "parent": 3,
+      "position": [
+        -0.08,
+        0.26,
+        0.035
+      ]
+    },
+    {
+      "name": "Foot.L",
+      "parent": 4,
+      "position": [
+        -0.085,
+        0.08,
+        0.055
+      ]
+    },
+    {
+      "name": "UpperArm.L",
+      "parent": 1,
+      "position": [
+        -0.1,
+        0.67,
+        0.035
+      ]
+    },
+    {
+      "name": "Forearm.L",
+      "parent": 6,
+      "position": [
+        -0.195,
+        0.55,
+        0.035
+      ]
+    },
+    {
+      "name": "Hand.L",
+      "parent": 7,
+      "position": [
+        -0.28,
+        0.43,
+        0.04
+      ]
+    },
+    {
+      "name": "Thigh.R",
+      "parent": 0,
+      "position": [
+        0.1,
+        0.43,
+        0.03
+      ]
+    },
+    {
+      "name": "Shin.R",
+      "parent": 9,
+      "position": [
+        0.1,
+        0.26,
+        0.035
+      ]
+    },
+    {
+      "name": "Foot.R",
+      "parent": 10,
+      "position": [
+        0.105,
+        0.08,
+        0.055
+      ]
+    },
+    {
+      "name": "UpperArm.R",
+      "parent": 1,
+      "position": [
+        0.14,
+        0.67,
+        0.035
+      ]
+    },
+    {
+      "name": "Forearm.R",
+      "parent": 12,
+      "position": [
+        0.215,
+        0.55,
+        0.035
+      ]
+    },
+    {
+      "name": "Hand.R",
+      "parent": 13,
+      "position": [
+        0.295,
+        0.43,
+        0.04
+      ]
+    }
+  ],
+  "regions": {
+    "head_y": 0.75,
+    "leg_y": 0.35,
+    "arm_x": 0.14,
+    "arm_bottom": 0.37,
+    "arm_split_y": 0.54,
+    "arm_lower_x": 0.16,
+    "arm_transition_height": 0.08
+  },
+  "weight_radius": 0.06,
+  "arm_rest_angle": 0.28,
+  "shoulder_blend": {
+    "bottom": 0.52,
+    "top": 0.72,
+    "width": 0.075
+  },
+  "hip_blend_height": 0.08,
+  "motion_scale": 0.7,
+  "weight_smoothing": 12
+}

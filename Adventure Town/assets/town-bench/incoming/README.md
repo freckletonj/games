@@ -1,0 +1,1 @@
+Return the original TripoSplat `model.ply` here, retaining x/y/z, DC color, opacity logits, logarithmic scales and WXYZ rotations. Preserve source bytes; record generation settings. No PLY is supplied in this reference handoff.

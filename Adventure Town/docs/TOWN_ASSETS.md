@@ -1,5 +1,8 @@
 # First town asset batch
 
+The second round trip is documented in [ASSET_BATCH_02.md](ASSET_BATCH_02.md):
+four new static objects and two rigged shopkeepers, with runtime binary ZIP handoff.
+
 The current adventurer stays. The unused `next-adventurer` experiment is deferred;
 no new character PLY is needed. The first real TripoSplat batch is now converted and enabled: three cottages, a grocery, a potion shop, a bridge, a swimmable
 river and a three-boulder jumping route north of the bridge.

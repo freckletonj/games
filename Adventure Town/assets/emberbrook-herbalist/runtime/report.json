@@ -1,0 +1,46 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65427,
+  "grid": [
+    49,
+    67,
+    20
+  ],
+  "occupied_voxels": 7618,
+  "asset": "emberbrook-herbalist",
+  "source_sha256": "bb7c01df8e1fc3abe494ecdd223688a52dc623c6b0f892c3bea8e0bb483f4363",
+  "config_sha256": "d4507c72aa0f88b8e0246ad5adead53a64c73f1c4f4a47060b7feee6ad55c909",
+  "rig_sha256": "1876e5a838028bbcf222a4215ab167f8693e923998ccfee83b9fce65149acf35",
+  "vertices": 25448,
+  "triangles": 12724,
+  "clips": [
+    "Idle",
+    "Walk",
+    "Run",
+    "Jump"
+  ],
+  "status": "ready-for-test-drive",
+  "method": "alpha_union Gaussian occupancy; exposed voxel faces; fitted segment weights with shoulder/hip blending; relaxed in-place procedural motion",
+  "kind": "humanoid",
+  "bounds": {
+    "min": [
+      -0.359375,
+      0.0,
+      -0.1328125
+    ],
+    "max": [
+      0.359375,
+      1.0,
+      0.1328125
+    ]
+  },
+  "build_config_sha256": "d4507c72aa0f88b8e0246ad5adead53a64c73f1c4f4a47060b7feee6ad55c909",
+  "reference_sha256": "9d5033001f396b20d70a1b6dc405e7803afaed30ec9f3eb924bb98c33d27ed9d",
+  "runtime_sha256": "13b0f2b2f8a2dc62a3242328efcda153e3ea54d1feb17a35cf5c455da6db211b",
+  "converter_sha256": "9c7ede83cd1b5b2d364c280cb113303537eb07353bab3dc9fde3285111866330",
+  "structural_audit": "passed",
+  "visual_review": "source DC Gaussian composite plus front/oblique/side/rear WebGL mesh views and actual game placement",
+  "joints": 15,
+  "review_frames_per_clip": 24,
+  "maximum_sampled_edge_stretch": 2.112278737867967
+}

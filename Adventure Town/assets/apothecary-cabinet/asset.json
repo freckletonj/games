@@ -1,0 +1,40 @@
+{
+  "id": "apothecary-cabinet",
+  "kind": "static",
+  "status": "ready-for-test-drive",
+  "reference": "source/reference.png",
+  "reference_sha256": "6f9c76014e6d40636c16d6256318e0532555f0f536f49ace33b5725b5d8e2b24",
+  "splat": "incoming/model.ply",
+  "runtime": "runtime/asset.glb",
+  "world_height": 1.4,
+  "notes": "Converted from the user-committed original TripoSplat PLY. Source PNG and PLY are unchanged. Fitted conversion and authored placement/collision; see runtime/REVIEW.md. Runtime GLB/review binaries are delivered by ZIP for user commit. Test-drive status is not final art approval.",
+  "conversion": {
+    "source_to_game": [
+      [
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        -1,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ]
+    ],
+    "crop": null,
+    "height_voxels": 32,
+    "opacity_min": 0.1,
+    "sigma_extent": 2.5,
+    "density_threshold": 0.5,
+    "density_mode": "alpha_union",
+    "color_weight_power": 4,
+    "color_levels": 32,
+    "max_grid_cells": 4000000,
+    "voxel_filter_sigma": 0.25
+  }
+}

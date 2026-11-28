@@ -1,0 +1,42 @@
+{
+  "id": "town-bench",
+  "kind": "static",
+  "status": "ready-for-test-drive",
+  "reference": "source/reference.png",
+  "reference_sha256": "b359c1b91623bcc05b6f4d5c83f87d2d546aad04c4e0b0165e9c87dc06afcf59",
+  "runtime": "runtime/asset.glb",
+  "notes": "Two public benches with separate authored collision. Reviewed actual source composites, fitted mesh views and gameplay. Back and seat edges are reconstructed approximately. The separate authored collision is deliberately simple. No seating animation is implemented.",
+  "splat": "incoming/model.ply",
+  "target_height": 0.58,
+  "conversion": {
+    "source_to_game": [
+      [
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        -1,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ]
+    ],
+    "crop": null,
+    "height_voxels": 24,
+    "opacity_min": 0.1,
+    "sigma_extent": 2.5,
+    "density_threshold": 0.5,
+    "density_mode": "alpha_union",
+    "color_weight_power": 4,
+    "color_levels": 24,
+    "max_grid_cells": 4000000,
+    "voxel_filter_sigma": 0.25,
+    "merge_faces": true
+  },
+  "world_height": 0.8
+}

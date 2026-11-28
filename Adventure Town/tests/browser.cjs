@@ -117,7 +117,49 @@ const server = createServer((request, response) => {
     await page.waitForFunction(() => window.gameState?.().fps > 0);
     const start = await page.evaluate(() => gameState());
     assert.equal(start.renderer, "WebGL");
-    assert.equal(start.scenery.length, 8, "all converted town assets loaded");
+    assert.equal(start.scenery.length, 16, "all converted town assets loaded");
+    await page.keyboard.press("Escape");
+    assert.equal((await page.evaluate(() => gameState())).paused, true);
+    await page.keyboard.down("s");
+    await page.waitForTimeout(200);
+    await page.keyboard.up("s");
+    assert.equal((await page.evaluate(() => gameState())).x, start.x);
+    await page.keyboard.press("Tab");
+    assert.equal(await page.evaluate(() => document.activeElement.id), "resume");
+    await page.getByRole("button", { name: "Back to exploring" }).click();
+    assert.equal((await page.evaluate(() => gameState())).paused, false);
+    if (url === base) {
+      const pixels = await page.evaluate(async () => {
+        const { webRenderer } = await import("./game/renderer.js");
+        const canvas = document.createElement("canvas");
+        canvas.width = canvas.height = 64;
+        const gl = canvas.getContext("webgl", { antialias: false });
+        const vertex = (x,y,z,c) => [x,y,z,...c];
+        const blue = [.1,.2,.5], green = [.2,.7,.3];
+        const wall = new Float32Array([
+          ...vertex(-2,-2,1,blue),...vertex(2,-2,1,blue),...vertex(2,2,1,blue),
+          ...vertex(-2,-2,1,blue),...vertex(2,2,1,blue),...vertex(-2,2,1,blue),
+        ]);
+        const actor = (z) => new Float32Array([
+          ...vertex(-.7,-.7,z,green),...vertex(.7,-.7,z,green),...vertex(0,.7,z,green),
+        ]);
+        const renderer = webRenderer(gl, canvas, wall);
+        const camera = {target:[0,0,0],right:[1,0,0],up:[0,1,0],dir:[0,0,1],scale:16};
+        const amberPixels = (z) => {
+          renderer.draw(camera, actor(z), new Float32Array(), new Float32Array());
+          const pixels = new Uint8Array(64*64*4);
+          gl.readPixels(0,0,64,64,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
+          let amber = 0;
+          for(let i=0;i<pixels.length;i+=4)
+            if(pixels[i]>240 && pixels[i+1]>190 && pixels[i+2]<160) amber++;
+          return amber;
+        };
+        return { visible: amberPixels(2), hidden: amberPixels(0), error: gl.getError() };
+      });
+      assert.equal(pixels.visible, 0, "visible player keeps normal colors");
+      assert.ok(pixels.hidden > 50, "hidden player has a stippled silhouette");
+      assert.equal(pixels.error, 0, "renderer produces no WebGL errors");
+    }
     await page.keyboard.down("s");
     await page.waitForFunction((start) => {
       const state = gameState();
@@ -173,6 +215,7 @@ const server = createServer((request, response) => {
   await page.keyboard.press("f");
   await page.waitForTimeout(100);
   assert.equal((await page.evaluate(() => gameState())).scene, "grocery");
+  assert.deepEqual((await page.evaluate(() => gameState())).characters, ["emberbrook-grocer"]);
   await walkTo(1.2, 0);
   await walkTo(2, -0.65);
   await page.keyboard.press("f");
@@ -189,6 +232,7 @@ const server = createServer((request, response) => {
   await page.keyboard.press("f");
   await page.waitForTimeout(100);
   assert.equal((await page.evaluate(() => gameState())).scene, "potions");
+  assert.deepEqual((await page.evaluate(() => gameState())).characters, ["emberbrook-herbalist"]);
   await walkTo(0, -0.65);
   await page.keyboard.press("f");
   await page.waitForTimeout(150);
@@ -211,7 +255,7 @@ const server = createServer((request, response) => {
   );
   await page.waitForFunction(() => window.gameState?.().fps > 0);
   const scenery = (await page.evaluate(() => gameState())).scenery;
-  assert.equal(scenery.length, 8);
+  assert.equal(scenery.length, 16);
   assert.ok(scenery.includes("produce-shelf"));
   await walkTo(-4.1, 0);
   await walkTo(-10.6, 0);
@@ -248,11 +292,48 @@ const server = createServer((request, response) => {
     .getByRole("button", { name: "F · Return to town", exact: true })
     .tap();
   assert.equal((await mobile.evaluate(() => gameState())).scene, "outdoors");
+  // Exercise the actual friendship controls in the offline build, then on touch.
+  const friendshipPage=await browser.newPage({viewport:{width:1280,height:800}});
+  friendshipPage.on("pageerror",error=>errors.push(error.message));
+  await friendshipPage.goto(pathToFileURL(root+"/dist/adventure-town.html").href);
+  await friendshipPage.waitForFunction(()=>window.gameState?.().fps>0);
+  await walkTo(-5.7,1.8,friendshipPage);
+  await friendshipPage.keyboard.press("f");
+  await friendshipPage.waitForFunction(()=>gameState().friends[0].trust===60);
+  await friendshipPage.keyboard.press("f");
+  await friendshipPage.waitForFunction(()=>gameState().friends[0].trust===100);
+  await friendshipPage.keyboard.press("g");
+  await friendshipPage.waitForFunction(()=>gameState().caught==="springaroo");
+  await friendshipPage.keyboard.press("t");
+  await friendshipPage.waitForFunction(()=>gameState().form==="springaroo");
+  await friendshipPage.screenshot({path:root+"/dist/review/springaroo.png"});
+  await walkTo(-5.7,6.4,friendshipPage);
+  await walkTo(-7.2,7.5,friendshipPage);
+  await friendshipPage.keyboard.down("a");await friendshipPage.keyboard.down("s");
+  await friendshipPage.keyboard.press("Space");
+  await friendshipPage.waitForFunction(()=>gameState().y>.6);
+  await friendshipPage.keyboard.press("Space");
+  await friendshipPage.waitForFunction(()=>gameState().z>8.3);
+  await friendshipPage.keyboard.up("a");await friendshipPage.keyboard.up("s");
+  await friendshipPage.waitForFunction(()=>gameState().grounded&&gameState().y>1.3);
+  await friendshipPage.screenshot({path:root+"/dist/review/garden-overlook.png"});
+  await mobile.bringToFront();
+  if((await mobile.evaluate(()=>gameState())).paused)await mobile.getByRole("button",{name:"Back to exploring"}).click();
+  await walkTo(-5.7,1.8,mobile);
+  await mobile.locator("#interact").tap();
+  await mobile.waitForFunction(()=>gameState().friends[0].trust===60);
+  await mobile.locator("#interact").tap();
+  await mobile.waitForFunction(()=>gameState().friends[0].trust===100);
+  await mobile.locator("#orb").tap();
+  await mobile.waitForFunction(()=>gameState().caught==="springaroo");
+  await mobile.locator("#form").tap();
+  await mobile.waitForFunction(()=>gameState().form==="springaroo");
+  await mobile.screenshot({path:root+"/dist/review/mobile-friendship.png"});
   assert.deepEqual(errors, []);
   await browser.close();
   server.close();
   console.log(
-    "Browser checks passed: HTTP modules, offline file without network, WebGL, keyboard walk/run/jump/land, orbit/zoom/respawn, mobile touch jump/doors, cottage/grocery/potion interiors, shop interactions, swimming bank-to-bank, candidate static scenery, no page errors.",
+    "Browser checks passed: HTTP and offline/no network, real WebGL silhouette pixels, pause/resume/focus, keyboard movement, camera, mobile touch/doors, shops, swimming, candidate scenery, keyboard/touch berry-orb-form loop, high garden landing, no page errors.",
   );
 })().catch((error) => {
   console.error(error);

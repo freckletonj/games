@@ -1,0 +1,41 @@
+{
+  "id": "tidefox",
+  "kind": "quadruped",
+  "status": "ready-for-test-drive",
+  "reference": "source/reference.png",
+  "reference_sha256": "216d1e249c6085f4dbc461af3974f1370524ac3a72f8ef26486b52527ac23921",
+  "runtime": "runtime/asset.glb",
+  "notes": "Befriendable aquatic fox and playable faster-swim/dive form. Reviewed actual source composites, fitted mesh views and gameplay. Facing is fitted to the actual PLY. Rear paws and tail are inferred; small voxel creases and in-place foot drift remain. Swim is a procedural paddle, not trained animation.",
+  "splat": "incoming/model.ply",
+  "target_height": 0.55,
+  "conversion": {
+    "source_to_game": [
+      [
+        0.5646424733950354,
+        0.0,
+        0.8253356149096783
+      ],
+      [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      [
+        0.8253356149096783,
+        0.0,
+        -0.5646424733950354
+      ]
+    ],
+    "crop": null,
+    "height_voxels": 40,
+    "opacity_min": 0.1,
+    "sigma_extent": 2.5,
+    "density_threshold": 0.5,
+    "density_mode": "alpha_union",
+    "color_weight_power": 4,
+    "color_levels": 32,
+    "max_grid_cells": 4000000,
+    "voxel_filter_sigma": 0.25
+  },
+  "rig": "rig.json"
+}

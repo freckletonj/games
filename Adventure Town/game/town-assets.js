@@ -32,4 +32,12 @@ export const townAssets = [
     id: "river-boulder",
     runtime: "assets/river-boulder/runtime/asset.glb",
   },
+  { id: "grocery-counter", runtime: "assets/grocery-counter/runtime/asset.glb" },
+  { id: "apothecary-cabinet", runtime: "assets/apothecary-cabinet/runtime/asset.glb" },
+  { id: "town-lantern", runtime: "assets/town-lantern/runtime/asset.glb" },
+  { id: "plaza-well", runtime: "assets/plaza-well/runtime/asset.glb" },
+  { id: "shop-wall-panel", runtime: "assets/shop-wall-panel/runtime/asset.glb" },
+  { id: "town-bench", runtime: "assets/town-bench/runtime/asset.glb" },
+  { id: "blushberry-bush", runtime: "assets/blushberry-bush/runtime/asset.glb" },
+  { id: "friendship-orb", runtime: "assets/friendship-orb/runtime/asset.glb" },
 ];

@@ -1,0 +1,31 @@
+// Town residents and creature encounters. Positions are authored in game units.
+export const townCharacters = [
+  {
+    id: "emberbrook-grocer",
+    runtime: "assets/emberbrook-grocer/runtime/asset.glb",
+    scene: "grocery",
+    position: [-1.65, 0, -0.05],
+    angle: 0,
+  },
+  {
+    id: "emberbrook-herbalist",
+    runtime: "assets/emberbrook-herbalist/runtime/asset.glb",
+    scene: "potions",
+    position: [1.85, 0, -1.65],
+    angle: -0.35,
+  },
+  { id: "emberbrook-gardener", runtime: "assets/emberbrook-gardener/runtime/asset.glb",
+    scene: "outdoors", position: [-7.2, 0, 6.4], angle: .8 },
+  { id: "springaroo", name: "Springaroo", runtime: "assets/springaroo/runtime/asset.glb",
+    scene: "outdoors", position: [-6.3, 0, 2.4], angle: .4,
+    friend: true, scale: .64, radius: .23, height: .64, power: "Double jump" },
+  { id: "tidefox", name: "Tidefox", runtime: "assets/tidefox/runtime/asset.glb",
+    scene: "outdoors", position: [-2.6, 0, 8.1], angle: 1.2,
+    friend: true, scale: .5, radius: .34, height: .5, power: "Swim and dive" },
+  { id: "moonwing", name: "Moonwing", runtime: "assets/moonwing/runtime/asset.glb",
+    scene: "outdoors", position: [4.5, 0, -6.2], angle: -.8,
+    friend: true, scale: .6, radius: .44, height: .6, power: "Four wingbeats" },
+  { id: "flintfist", name: "Flintfist", runtime: "assets/flintfist/runtime/asset.glb",
+    scene: "outdoors", position: [11, 0, 8.0], angle: -.6,
+    friend: true, scale: .9, radius: .45, height: .9, power: "Push and punch" },
+];

@@ -15,7 +15,7 @@ if (process.argv[2]) {
   const encoded = readFileSync(process.argv[2]).toString("base64");
   source = source.replace(/atob\('[^']+'\)/, () => `atob('${encoded}')`);
 }
-const listeners = {},
+const listeners = {}, documentListeners = {},
   elements = new Map();
 let nextFrame,
   now = 0,
@@ -48,6 +48,7 @@ const gl = {
   enableVertexAttribArray() {},
   enable() {},
   depthFunc() {},
+  depthMask() {},
   clearColor() {},
   createBuffer: () => ({}),
   bindBuffer() {},
@@ -76,6 +77,8 @@ function element(id) {
       getContext: (type) => (type === "webgl" ? gl : mapContext),
       addEventListener() {},
       setPointerCapture() {},
+      setAttribute() {},
+      focus() {},
     });
   return elements.get(id);
 }
@@ -96,11 +99,12 @@ const sandbox = {
   document: {
     querySelector: element,
     querySelectorAll: () => [],
-    addEventListener() {},
+    addEventListener: (name, fn) => (documentListeners[name] = fn),
     hidden: false,
   },
   window: { addEventListener: (name, fn) => (listeners[name] = fn) },
   performance: { now: () => now },
+  navigator: { getGamepads: () => [] },
   requestAnimationFrame: (fn) => (nextFrame = fn),
 };
 vm.createContext(sandbox);
@@ -152,6 +156,9 @@ const before = state();
 advance(0.2);
 assert.equal(state().x, before.x);
 assert.equal(state().z, before.z);
+assert.equal(state().paused, true);
+key("Escape", true);
+assert.equal(state().paused, false);
 // Actual collision routines stop at the house wall and permit the bridge deck.
 vm.runInContext(
   "Object.assign(player,{x:-5.5,y:0,z:-1.8,grounded:true});moveAxis('z',-.5)",
@@ -300,6 +307,197 @@ element("#zoom").onclick();
 assert.equal(element("#zoom").textContent, "Zoom in");
 element("#orbit").onclick();
 assert.ok(draws > 100);
+// The connected watchtower climb is possible with the real controller.
+element("#reset").onclick();
+vm.runInContext("Object.assign(player,{x:4.8,y:0,z:-5.9,grounded:true,vy:0});", sandbox);
+const route = vm.runInContext("[...towerSteps,{x:7.7,z:-4.7,top:2.71}]", sandbox);
+for (const target of route) {
+  const start = state();
+  const angle = Math.atan2(target.x - start.x, target.z - start.z);
+  vm.runInContext(`yaw=${angle}`, sandbox);
+  key("ShiftLeft", true);
+  key("KeyS", true);
+  key("Space", true);
+  for (let frames = 0; frames < 60; frames++) {
+    tick();
+    if (Math.hypot(state().x - target.x, state().z - target.z) < .1) break;
+  }
+  key("KeyS", false);
+  key("ShiftLeft", false);
+  key("Space", false);
+  advance(.7);
+  assert.ok(Math.hypot(state().x - target.x, state().z - target.z) < .2, "reach next tower landing");
+  assert.ok(state().grounded && Math.abs(state().y - target.top) < .01, "land at authored tower height");
+}
+// Jumps are forgiving at ledge edges and just before a landing.
+element("#reset").onclick();
+vm.runInContext("Object.assign(player,{x:3.35,y:.42,z:-7.6,grounded:true,vy:0});coyote=0", sandbox);
+advance(.05);
+assert.ok(!state().grounded);
+key("Space", true);
+tick();
+assert.ok(vm.runInContext("player.vy > 3", sandbox), "late jump uses coyote time");
+key("Space", false);
+element("#reset").onclick();
+vm.runInContext("Object.assign(player,{x:3.35,y:.42,z:-7.6,grounded:true,vy:0});coyote=0", sandbox);
+advance(.16);
+key("Space", true);
+tick();
+assert.ok(vm.runInContext("player.vy < 0", sandbox), "grace expires instead of allowing double jumps");
+key("Space", false);
+element("#reset").onclick();
+vm.runInContext("Object.assign(player,{y:.06,grounded:false,vy:-1});coyote=0", sandbox);
+key("Space", true);
+key("Space", false);
+advance(.1);
+assert.ok(vm.runInContext("player.vy > 3", sandbox), "early jump is buffered through landing");
+// Pause freezes simulation AND render work; resume never retains movement.
+element("#reset").onclick();
+key("KeyS", true);
+advance(.1);
+key("Escape", true);
+const frozen = state(), pausedDraws = draws;
+advance(.5);
+assert.equal(state().x, frozen.x);
+assert.equal(state().z, frozen.z);
+assert.equal(draws, pausedDraws);
+key("Escape", true);
+advance(.1);
+assert.equal(state().x, frozen.x);
+documentListeners.visibilitychange();
+assert.equal(state().paused, false);
+sandbox.document.hidden = true;
+documentListeners.visibilitychange();
+assert.equal(state().paused, true);
+sandbox.document.hidden = false;
+element("#resume").onclick();
+// Standard controller deadzone, analog walk, run, jump, pause and disconnect.
+element("#reset").onclick();
+const controller = {
+  connected: true, mapping: "standard", axes: [0, .1, 0, 0],
+  buttons: Array.from({length:17}, () => ({pressed:false})),
+};
+sandbox.navigator.getGamepads = () => [null, controller];
+advance(.1);
+assert.equal(state().x, -4.1);
+controller.axes[1] = .55;
+const analogStart = state();
+advance(.3);
+const analogWalk = Math.hypot(state().x - analogStart.x, state().z - analogStart.z);
+assert.ok(analogWalk > .15 && analogWalk < .25);
+assert.equal(state().input, "gamepad");
+controller.axes[1] = 1;
+controller.buttons[1].pressed = true;
+advance(.1);
+assert.equal(state().clip, "Run");
+controller.axes[1] = 0;
+controller.buttons[1].pressed = false;
+controller.buttons[0].pressed = true;
+tick();
+assert.equal(state().clip, "Jump");
+advance(1);
+assert.equal(state().grounded, true, "holding A does not auto-jump");
+controller.buttons[9].pressed = true;
+tick();
+assert.equal(state().paused, true);
+advance(.1);
+assert.equal(state().paused, true, "holding Start does not toggle repeatedly");
+controller.buttons[9].pressed = false;
+tick();
+controller.buttons[9].pressed = true;
+tick();
+assert.equal(state().paused, false);
+controller.connected = false;
+const unplugged = state();
+advance(.2);
+assert.equal(state().x, unplugged.x);
+assert.equal(state().z, unplugged.z);
+assert.equal(state().input, "keyboard");
+// The view culler must keep geometry touching a screen edge, including tall
+// objects and triangles that cross more than one cell.
+const culling = vm.runInContext(`(() => {
+  const cam={target:[0,0,0],right:[1,0,0],up:[0,1,0],scale:100};
+  const edge={min:[.99,-.1,-1],max:[1.5,.1,1]};
+  const outside={min:[1.01,-.1,-1],max:[1.5,.1,1]};
+  const tall={min:[-.1,-10,-1],max:[.1,10,1]};
+  const packed=sceneBatches(new Float32Array([
+    -10,0,0,1,0,0, 10,0,0,1,0,0, 0,1,0,1,0,0,
+    20,0,20,0,1,0, 21,0,20,0,1,0, 20,1,20,0,1,0,
+  ]));
+  return {edge:batchVisible(edge,cam,200,200), outside:batchVisible(outside,cam,200,200),
+    tall:batchVisible(tall,cam,200,200), count:packed.batches.reduce((n,b)=>n+b.count,0),
+    crosses:batchVisible(packed.batches[0],cam,200,200)};
+})()`, sandbox);
+assert.equal(culling.edge, true);
+assert.equal(culling.outside, false);
+assert.equal(culling.tall, true);
+assert.equal(culling.crosses, true);
+assert.equal(culling.count, 6, "batching preserves every triangle");
+element("#reset").onclick();
+advance(.1);
+assert.ok(state().visibleTriangles < state().triangles, "offscreen scenery is culled in the real world");
+if(!process.argv[2] && vm.runInContext("Object.keys(creatureForms).length",sandbox)){
+  const act=code=>vm.runInContext(code,sandbox);
+  const simulate=seconds=>act(`for(let tick=0;tick<${Math.ceil(seconds*120)};tick++)step(1/120)`);
+  const press=code=>{key(code,true);key(code,false);};
+  const encounters=[['springaroo',-5.7,1.8],['tidefox',-2.9,9],['moonwing',4.5,-5.4],['flintfist',11.5,8.4]];
+  for(const [id,x,z]of encounters){
+    act(`{reset(false);Object.assign(player,{x:${x},z:${z}});const encounter=friends.find(f=>f.id===${JSON.stringify(id)});encounter.captured=0;encounter.trust=encounter.friendship=0;encounter.lure=null;[encounter.x,encounter.y,encounter.z]=creatureForms[encounter.id].position;}`);
+    press('KeyF');simulate(1.3);
+    assert.equal(state().friends.find(f=>f.id===id).trust,60,id+' eats the first berry');
+    press('KeyF');simulate(1.3);
+    assert.equal(state().friends.find(f=>f.id===id).trust,100,id+' likes two berries');
+    press('KeyG');simulate(.7);assert.equal(state().caught,id,'actual orb collision catches '+id);
+    press('KeyT');assert.equal(state().form,id);simulate(.1);
+    assert.ok(act('skinCharacter().every(Number.isFinite)'),'finite playable '+id);
+    press('KeyT');assert.equal(state().form,null);
+  }
+  // The standard pad uses the same feed, projectile and form actions as keys.
+  act("reset(false);Object.assign(player,{x:-5.7,z:1.8,caught:null});Object.assign(friends[0],{x:-6.3,y:0,z:2.4,captured:0,trust:0,friendship:0,lure:null});");
+  controller.buttons.forEach(button=>button.pressed=false);
+  controller.connected=true;tick();
+  const padPress=index=>{controller.buttons[index].pressed=true;tick();controller.buttons[index].pressed=false;tick();};
+  padPress(2);simulate(1.3);assert.equal(state().friends[0].trust,60);
+  padPress(2);simulate(1.3);assert.equal(state().friends[0].trust,100);
+  padPress(5);simulate(.7);assert.equal(state().caught,'springaroo');
+  padPress(3);assert.equal(state().form,'springaroo');
+  padPress(3);assert.equal(state().form,null);
+  controller.connected=false;tick();
+  // Capture opportunities and projectiles use simulation time; a wall stops an orb.
+  act(`reset(false);Object.assign(player,{x:-5.7,z:1.8,caught:null,angle:-Math.PI/4});const rabbit=friends[0];Object.assign(rabbit,{x:-6.3,y:0,z:2.4,captured:0,trust:100,friendship:12,lure:null});const testWall={a:-6.12,b:-5.88,l:1.98,r:2.22,bottom:0,top:2};solids.push(testWall);`);
+  press('KeyG');simulate(1);assert.equal(state().caught,null);assert.equal(state().orbCount,0);
+  act('solids.splice(solids.indexOf(testWall),1);friends[0].friendship=.2;');
+  press('Escape');advance(.4);assert.ok(state().friends[0].friendship>0,'pause freezes friendship');press('Escape');simulate(.3);assert.equal(state().friends[0].trust,0);
+  // The second jump reaches the optional 1.35-unit garden landing.
+  act("reset(false);Object.assign(player,{x:-7.2,z:7.5,caught:'springaroo'});yaw=0;toggleForm();");
+  key('KeyS',true);press('Space');simulate(.3);press('Space');simulate(.4);key('KeyS',false);simulate(.8);
+  assert.ok(Math.abs(state().y-1.35)<.02&&state().grounded,'Springaroo lands on the high garden rock');
+  act("reset(false);player.caught='springaroo';toggleForm();");press('Space');simulate(.15);press('Space');simulate(.1);
+  assert.equal(act('player.jumps'),2);const beforeThird=act('player.vy');press('Space');simulate(.01);assert.ok(act('player.vy')<beforeThird,'no third air jump');
+  press('KeyT');assert.equal(state().form,'springaroo','airborne form switching cannot replenish jumps');
+  // Four wingbeats are exhausted in the air and refreshed only by landing.
+  act("reset(false);player.caught='moonwing';toggleForm();");press('Space');simulate(.1);
+  for(let i=0;i<4;i++){press('Space');simulate(.1);}
+  assert.equal(state().wingbeats,0);const beforeFlap=act('player.vy');press('Space');simulate(.01);assert.ok(act('player.vy')<beforeFlap);
+  // Tidefox fits below the water and cannot turn into a human under the bridge.
+  act("reset(false);Object.assign(player,{x:0,z:8,y:-.58,grounded:false,swimming:true,caught:'tidefox'});setForm('tidefox');");simulate(.05);press('KeyF');simulate(.05);
+  assert.equal(state().diving,true);assert.equal(state().y,-1.02);assert.equal(state().clip,'Swim');
+  press('KeyF');simulate(.05);assert.equal(state().diving,false);assert.equal(state().y,-.58);
+  act('player.z=0');assert.equal(act('setForm(null)'),false);assert.equal(state().form,'tidefox');
+  // Changing form is rejected if the larger form would intersect a ceiling.
+  act("reset(false);player.caught='springaroo';setForm('springaroo');const ceiling={a:player.x-.5,b:player.x+.5,l:player.z-.5,r:player.z+.5,bottom:.8,top:1.2};solids.push(ceiling);");
+  assert.equal(act('setForm(null)'),false);act('solids.splice(solids.indexOf(ceiling),1)');
+  // Physical obstacle states change their real colliders, including after a room visit.
+  act("reset(false);Object.assign(player,{x:friendPuzzles.boulder.a-.49,z:6.8,caught:'flintfist'});setForm('flintfist');");
+  const pushStart=state().x;press('KeyF');simulate(1.4);
+  assert.ok(Math.abs(state().puzzles.boulder-1.8)<1e-5);assert.ok(state().x>pushStart+1.7,'pusher follows the boulder');
+  act('Object.assign(player,{x:11.9,z:7.3,y:0,grounded:true});');press('KeyF');simulate(1.1);
+  assert.equal(state().puzzles.sealOpen,true);const sealStart=state().z;act("moveAxis('z',-.3)");assert.ok(state().z<sealStart-.25,'opened seal no longer blocks the body');
+  act("changeScene('grocery');changeScene('outdoors');");assert.equal(act('friendPuzzles.seal.disabled'),true);
+  element('#reset').onclick();assert.equal(state().form,null);assert.equal(state().caught,'flintfist','respawn retains the caught form');
+  console.log('Friendship checks passed: all four real encounters, berries, orb collision/walls, pause/expiry, safe transformations, second-jump landing, finite wingbeats, diving, and physical push/punch colliders.');
+}
+console.log(`Spawn view submits ${state().visibleTriangles} of ${state().triangles} scene/player triangles.`);
 console.log(
-  "Runtime checks passed: boot, idle/walk/run/jump, landing, focus release, wall collision, bridge, swimming/shore exits, enter/leave all buildings, stepping-stone jumps, all clip skinning, finite draw buffers, camera controls.",
+  "Runtime checks passed: movement, buffered/late jumps, grace expiry, pause/focus release, analog gamepad/disconnect, collisions, swimming, all interiors, stepping stones, complete watchtower climb, skinning, finite buffers and conservative view culling.",
 );

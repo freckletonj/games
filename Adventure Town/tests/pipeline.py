@@ -9,13 +9,20 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from convert_splat import read_ply, voxelize, surface_mesh, write_glb, skin_weights
+from convert_splat import read_ply, voxelize, surface_mesh, write_glb, skin_weights, clips_for_rig
 from validate_asset import validate
 
 root=Path(__file__).resolve().parents[1]
 config=json.loads((root/'assets/next-adventurer/asset.json').read_text())['conversion']
 config['height_voxels']=16
 rig=json.loads((root/'assets/next-adventurer/rig.json').read_text())
+relaxed={**rig, 'arm_rest_angle': .4}
+for _,tracks in clips_for_rig(relaxed):
+    for i,times,quaternions in tracks:
+        name=relaxed['joints'][i]['name']
+        assert np.allclose(np.linalg.norm(quaternions,axis=1),1)
+        if name.startswith('UpperArm'):
+            assert np.sign(quaternions[:,2]).tolist()==[1 if name.endswith('.L') else -1]*len(times)
 fields=['x','y','z','f_dc_0','f_dc_1','f_dc_2','opacity','scale_0','scale_1','scale_2','rot_0','rot_1','rot_2','rot_3']
 rows=np.array([[0,y,0,.4,.1,-.3,4,-2.7,-2.7,-2.7,1,0,0,0] for y in np.linspace(0,1,12)],dtype='<f4')
 with tempfile.TemporaryDirectory() as temp:
@@ -99,6 +106,7 @@ with tempfile.TemporaryDirectory() as temp:
     (isolated/'runtime').mkdir();shutil.copy(built/'asset.glb',isolated/'runtime/fixture.glb')
     catalog=isolated/'game/town-assets.js'
     catalog.write_text('export const townAssets = [{id: "produce-shelf", runtime: "runtime/fixture.glb"}];\n')
+    (isolated/'game/town-characters.js').write_text('export const townCharacters = [];\n')
     subprocess.run(['node',str(isolated/'tools/build.mjs')],check=True)
     subprocess.run(['node',str(isolated/'tests/runtime.mjs')],check=True)
     # A single occupied cube has six exposed faces, outward winding, and no internals.
@@ -107,5 +115,14 @@ with tempfile.TemporaryDirectory() as temp:
     # Two adjacent cells omit their shared face.
     p,n,c,idx=surface_mesh(np.ones((2,1,1),bool),np.ones((2,1,1,3)))
     assert len(idx)==60
+    # Merging preserves the actual surface area and colors while removing only
+    # redundant coplanar cube faces. Different colors may never be merged.
+    occupied=np.ones((2,2,2),bool);colors=np.ones((2,2,2,3))
+    p,n,c,idx=surface_mesh(occupied,colors,merge_faces=True)
+    assert len(p)==24 and len(idx)==36
+    mixed=np.ones((2,1,1,3));mixed[1]=[1,0,0]
+    p,n,c,idx=surface_mesh(np.ones((2,1,1),bool),mixed,merge_faces=True)
+    assert len(idx)==60 and len(np.unique(c,axis=0))==2
+    merged=temp/'merged.glb';write_glb(merged,p,n,c,idx);validate(merged)
 validate(root/'assets/emberbrook-adventurer/runtime/asset.glb')
 print('Pipeline checks passed: PLY encodings, deterministic export, skin weights, bind pose, clips, surface winding, hidden faces, imported GLB.')

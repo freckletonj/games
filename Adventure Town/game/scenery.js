@@ -1,22 +1,20 @@
 import { readGlb } from "./glb.js";
 import { townAssets } from "./town-assets.js";
 // BEGIN_SCENERY_LOAD
-const sceneryMeshes = new Map();
 const sceneryQuery = new URLSearchParams(location.search);
-for (const asset of townAssets) {
-  const path =
+const sceneryPaths = townAssets.map((asset) => ({
+  id: asset.id,
+  path:
     sceneryQuery.get("scenery") === asset.id
       ? sceneryQuery.get("candidate")
-      : asset.runtime;
-  if (path === null) continue;
+      : asset.runtime,
+})).filter(({ path }) => path !== null);
+const sceneryMeshes = new Map(await Promise.all(sceneryPaths.map(async ({ id, path }) => {
   const result = await fetch(new URL("../" + path, import.meta.url));
   if (!result.ok)
-    throw Error(`Scenery ${asset.id} failed to load: ${result.status}`);
-  sceneryMeshes.set(
-    asset.id,
-    readGlb(new Uint8Array(await result.arrayBuffer())),
-  );
-}
+    throw Error(`Scenery ${id} failed to load: ${result.status}`);
+  return [id, readGlb(new Uint8Array(await result.arrayBuffer()))];
+})));
 // END_SCENERY_LOAD
 export function sceneryGeometry(id, position, angle = 0, scale = 1) {
   if (!sceneryMeshes.has(id)) return null; // Explicitly unconverted slot; its authored placeholder remains.

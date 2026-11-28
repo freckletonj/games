@@ -1,0 +1,46 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65504,
+  "grid": [
+    50,
+    67,
+    21
+  ],
+  "occupied_voxels": 9352,
+  "asset": "emberbrook-grocer",
+  "source_sha256": "5fc9e2d8e0e521eb87c542be878faa8f2387497232640330e15a48d02a44df93",
+  "config_sha256": "9a18e973c533aab0ade1a4e7c103cc83eb3d141798eac02cbeaa042b4a7a5d50",
+  "rig_sha256": "18acea9eee86b1812f1cdf19bb1291dc2a0dc24f41829f3b65ff835023b3a08c",
+  "vertices": 25576,
+  "triangles": 12788,
+  "clips": [
+    "Idle",
+    "Walk",
+    "Run",
+    "Jump"
+  ],
+  "status": "ready-for-test-drive",
+  "method": "alpha_union Gaussian occupancy; exposed voxel faces; fitted segment weights with shoulder/hip blending; relaxed in-place procedural motion",
+  "kind": "humanoid",
+  "bounds": {
+    "min": [
+      -0.3671875,
+      0.0,
+      -0.140625
+    ],
+    "max": [
+      0.3671875,
+      1.0,
+      0.140625
+    ]
+  },
+  "build_config_sha256": "9a18e973c533aab0ade1a4e7c103cc83eb3d141798eac02cbeaa042b4a7a5d50",
+  "reference_sha256": "bb515de1b60ca49cf7cbb1804e8c49d05101c57eeedeb594eb44cfb931376f4c",
+  "runtime_sha256": "8ea006993b3784bae93dbd683bca5fb7b784f84dd8ef7022c7452cca271c3cd6",
+  "converter_sha256": "9c7ede83cd1b5b2d364c280cb113303537eb07353bab3dc9fde3285111866330",
+  "structural_audit": "passed",
+  "visual_review": "source DC Gaussian composite plus front/oblique/side/rear WebGL mesh views and actual game placement",
+  "joints": 15,
+  "review_frames_per_clip": 24,
+  "maximum_sampled_edge_stretch": 2.783500405287155
+}

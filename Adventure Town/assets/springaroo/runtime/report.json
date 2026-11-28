@@ -1,0 +1,57 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 58955,
+  "grid": [
+    37,
+    51,
+    32
+  ],
+  "occupied_voxels": 9624,
+  "asset": "springaroo",
+  "source_sha256": "b71ff700022cec2959df9558aa6299e1db83a2e57efd6ee8ba2d4acaf207fbd0",
+  "config_sha256": "270393235835b3fb314051d292c837a68eb9bb64996281119e4f2e88276b60dd",
+  "rig_sha256": "a5ed7ce31cd69c587d7d7ae9f610a69ce4da8be9032567299bf835b50b263323",
+  "vertices": 29600,
+  "triangles": 14800,
+  "clips": [
+    "Idle",
+    "Walk",
+    "Run",
+    "Jump"
+  ],
+  "status": "ready-for-test-drive",
+  "method": "alpha_union Gaussian occupancy; exposed voxel faces; fitted segment weights; procedural motion",
+  "kind": "quadruped",
+  "bounds": {
+    "min": [
+      -0.3541666666666667,
+      0.0,
+      -0.3020833333333333
+    ],
+    "max": [
+      0.3541666666666667,
+      1.0,
+      0.3020833333333333
+    ]
+  },
+  "conversion_config_sha256": "7ff7b6f6ff90eaedadccaaaf7fdee6afe2fc858b2e71d59cd7eceac2fd5769da",
+  "reference_sha256": "3df3b6657e0f9cb005251d7882d7d4d36a36560c289fdebb7d4429683d37feb9",
+  "runtime_sha256": "cff20c30b046dbddebfe250fcebc26975c47580568ec0f260d6c7833932b4534",
+  "review_date": "2026-11-27",
+  "compiler_sha256": {
+    "convert_splat.py": "9d19248902f50bbee5b377b6b8c73be79b2171ed70cb7592b50603a5854cb25d",
+    "creature_rig.py": "ccc35ceafd541fd929ca080f73c719096b33bec0a118d37e305e4018a22443de"
+  },
+  "review": {
+    "mesh_views": [
+      "front",
+      "side",
+      "back",
+      "oblique"
+    ],
+    "original_ply_composite": true,
+    "webgl_errors": 0,
+    "motion_frames_per_clip": 12,
+    "user_art_approval": false
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "id": "emberbrook-herbalist",
+  "kind": "humanoid",
+  "status": "ready-for-test-drive",
+  "reference": "source/reference.png",
+  "reference_sha256": "9d5033001f396b20d70a1b6dc405e7803afaed30ec9f3eb924bb98c33d27ed9d",
+  "splat": "incoming/model.ply",
+  "runtime": "runtime/asset.glb",
+  "notes": "Converted from the user-committed original TripoSplat PLY. Source PNG and PLY are unchanged. Fitted conversion and authored placement/collision; see runtime/REVIEW.md. Runtime GLB/review binaries are delivered by ZIP for user commit. Test-drive status is not final art approval.",
+  "conversion": {
+    "source_to_game": [
+      [
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        -1,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ]
+    ],
+    "crop": null,
+    "height_voxels": 64,
+    "opacity_min": 0.1,
+    "sigma_extent": 2.5,
+    "density_threshold": 0.5,
+    "density_mode": "alpha_union",
+    "color_weight_power": 4,
+    "color_levels": 32,
+    "max_grid_cells": 4000000,
+    "voxel_filter_sigma": 0.25
+  },
+  "rig": "rig.json"
+}
