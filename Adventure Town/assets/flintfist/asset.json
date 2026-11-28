@@ -1,11 +1,40 @@
 {
   "id": "flintfist",
   "kind": "humanoid",
-  "status": "awaiting-splat",
+  "status": "candidate-needs-visual-review",
   "reference": "source/reference.png",
   "reference_sha256": "a239aa9f717db353c07a546722040b07d345052749b42550c0a3d2d095612d00",
   "runtime": null,
-  "notes": "Reference stage only. No original PLY, fitted conversion, rig or runtime is present. Fit conversion settings to the actual returned PLY before building.",
+  "notes": "Original standard 3DGS PLY and reference verified at 1f0bb0122c7e606722175a37d9edf7ad4c1cfa52. Conversion and rig fitting in progress; runtime is not promoted.",
   "splat": "incoming/model.ply",
-  "target_height": 0.85
+  "target_height": 0.85,
+  "conversion": {
+    "source_to_game": [
+      [
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        -1,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ]
+    ],
+    "crop": null,
+    "height_voxels": 64,
+    "opacity_min": 0.1,
+    "sigma_extent": 2.5,
+    "density_threshold": 0.5,
+    "density_mode": "alpha_union",
+    "color_weight_power": 4,
+    "color_levels": 32,
+    "max_grid_cells": 4000000,
+    "voxel_filter_sigma": 0.25
+  }
 }
