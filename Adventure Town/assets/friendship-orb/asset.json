@@ -35,7 +35,8 @@
     "color_weight_power": 4,
     "color_levels": 32,
     "max_grid_cells": 4000000,
-    "voxel_filter_sigma": 0.25
+    "voxel_filter_sigma": 0.25,
+    "merge_faces": true
   },
   "world_height": 0.22
 }

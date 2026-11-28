@@ -1,0 +1,1229 @@
+{
+  "family": "quadruped",
+  "weight_radius": 0.075,
+  "joints": [
+    {
+      "name": "Root",
+      "parent": -1,
+      "position": [
+        0.08,
+        0.26,
+        0.03
+      ],
+      "tip": [
+        -0.08,
+        0.24,
+        0.26
+      ],
+      "bounds": [
+        [
+          -0.3,
+          0.1,
+          -0.24
+        ],
+        [
+          0.39,
+          0.58,
+          0.28
+        ]
+      ],
+      "blend": 0.07
+    },
+    {
+      "name": "Chest",
+      "parent": 0,
+      "position": [
+        -0.08,
+        0.35,
+        0.26
+      ],
+      "tip": [
+        -0.13,
+        0.5,
+        0.33
+      ],
+      "bounds": [
+        [
+          -0.4,
+          0.18,
+          0.1
+        ],
+        [
+          0.22,
+          0.57,
+          0.66
+        ]
+      ],
+      "blend": 0.07
+    },
+    {
+      "name": "Head",
+      "parent": 1,
+      "position": [
+        -0.15,
+        0.55,
+        0.34
+      ],
+      "tip": [
+        -0.15,
+        0.8,
+        0.34
+      ],
+      "bounds": [
+        [
+          -0.45,
+          0.38,
+          0.13
+        ],
+        [
+          0.31,
+          0.91,
+          0.72
+        ]
+      ],
+      "blend": 0.08
+    },
+    {
+      "name": "Ear.L",
+      "parent": 2,
+      "position": [
+        -0.33,
+        0.85,
+        0.33
+      ],
+      "tip": [
+        -0.33,
+        0.98,
+        0.33
+      ],
+      "bounds": [
+        [
+          -0.47,
+          0.81,
+          0.12
+        ],
+        [
+          -0.18,
+          1.1,
+          0.55
+        ]
+      ],
+      "blend": 0.05
+    },
+    {
+      "name": "Ear.R",
+      "parent": 2,
+      "position": [
+        0.0,
+        0.85,
+        0.33
+      ],
+      "tip": [
+        0.0,
+        0.98,
+        0.33
+      ],
+      "bounds": [
+        [
+          -0.18,
+          0.81,
+          0.12
+        ],
+        [
+          0.32,
+          1.1,
+          0.55
+        ]
+      ],
+      "blend": 0.05
+    },
+    {
+      "name": "Tail",
+      "parent": 0,
+      "position": [
+        0.08,
+        0.32,
+        -0.13
+      ],
+      "tip": [
+        0.18,
+        0.39,
+        -0.4
+      ],
+      "bounds": [
+        [
+          -0.12,
+          0.13,
+          -0.72
+        ],
+        [
+          0.4,
+          0.65,
+          -0.17
+        ]
+      ],
+      "blend": 0.06
+    },
+    {
+      "name": "TailTip",
+      "parent": 5,
+      "position": [
+        0.18,
+        0.39,
+        -0.4
+      ],
+      "tip": [
+        0.25,
+        0.53,
+        -0.6
+      ],
+      "bounds": [
+        [
+          -0.1,
+          0.15,
+          -0.74
+        ],
+        [
+          0.45,
+          0.7,
+          -0.35
+        ]
+      ],
+      "blend": 0.07
+    },
+    {
+      "name": "Front.L",
+      "parent": 1,
+      "position": [
+        -0.2,
+        0.28,
+        0.42
+      ],
+      "tip": [
+        -0.202,
+        0.16,
+        0.46
+      ],
+      "bounds": [
+        [
+          -0.42,
+          -0.1,
+          0.27
+        ],
+        [
+          -0.06,
+          0.38,
+          0.62
+        ]
+      ],
+      "blend": 0.05
+    },
+    {
+      "name": "Front.LShin",
+      "parent": 7,
+      "position": [
+        -0.202,
+        0.16,
+        0.46
+      ],
+      "tip": [
+        -0.202,
+        0.04,
+        0.46
+      ],
+      "bounds": [
+        [
+          -0.42,
+          -0.1,
+          0.27
+        ],
+        [
+          -0.06,
+          0.38,
+          0.62
+        ]
+      ],
+      "blend": 0.05
+    },
+    {
+      "name": "Front.LPaw",
+      "parent": 8,
+      "position": [
+        -0.202,
+        0.04,
+        0.46
+      ],
+      "tip": [
+        -0.202,
+        0.04,
+        0.52
+      ],
+      "bounds": [
+        [
+          -0.42,
+          -0.1,
+          0.27
+        ],
+        [
+          -0.06,
+          0.13,
+          0.62
+        ]
+      ],
+      "blend": 0.04
+    },
+    {
+      "name": "Front.R",
+      "parent": 1,
+      "position": [
+        0.08,
+        0.28,
+        0.44
+      ],
+      "tip": [
+        0.103,
+        0.16,
+        0.481
+      ],
+      "bounds": [
+        [
+          -0.06,
+          -0.1,
+          0.27
+        ],
+        [
+          0.3,
+          0.38,
+          0.64
+        ]
+      ],
+      "blend": 0.05
+    },
+    {
+      "name": "Front.RShin",
+      "parent": 10,
+      "position": [
+        0.103,
+        0.16,
+        0.481
+      ],
+      "tip": [
+        0.103,
+        0.04,
+        0.481
+      ],
+      "bounds": [
+        [
+          -0.06,
+          -0.1,
+          0.27
+        ],
+        [
+          0.3,
+          0.38,
+          0.64
+        ]
+      ],
+      "blend": 0.05
+    },
+    {
+      "name": "Front.RPaw",
+      "parent": 11,
+      "position": [
+        0.103,
+        0.04,
+        0.481
+      ],
+      "tip": [
+        0.103,
+        0.04,
+        0.5409999999999999
+      ],
+      "bounds": [
+        [
+          -0.06,
+          -0.1,
+          0.27
+        ],
+        [
+          0.3,
+          0.13,
+          0.64
+        ]
+      ],
+      "blend": 0.04
+    },
+    {
+      "name": "Hind.L",
+      "parent": 0,
+      "position": [
+        -0.06,
+        0.29,
+        0.02
+      ],
+      "tip": [
+        -0.067,
+        0.16499999999999998,
+        0.035
+      ],
+      "bounds": [
+        [
+          -0.26,
+          -0.1,
+          -0.18
+        ],
+        [
+          0.09,
+          0.37,
+          0.27
+        ]
+      ],
+      "blend": 0.05
+    },
+    {
+      "name": "Hind.LShin",
+      "parent": 13,
+      "position": [
+        -0.067,
+        0.16499999999999998,
+        0.035
+      ],
+      "tip": [
+        -0.067,
+        0.04,
+        0.035
+      ],
+      "bounds": [
+        [
+          -0.26,
+          -0.1,
+          -0.18
+        ],
+        [
+          0.09,
+          0.37,
+          0.27
+        ]
+      ],
+      "blend": 0.05
+    },
+    {
+      "name": "Hind.LPaw",
+      "parent": 14,
+      "position": [
+        -0.067,
+        0.04,
+        0.035
+      ],
+      "tip": [
+        -0.067,
+        0.04,
+        0.095
+      ],
+      "bounds": [
+        [
+          -0.26,
+          -0.1,
+          -0.18
+        ],
+        [
+          0.09,
+          0.13,
+          0.27
+        ]
+      ],
+      "blend": 0.04
+    },
+    {
+      "name": "Hind.R",
+      "parent": 0,
+      "position": [
+        0.22,
+        0.29,
+        0.04
+      ],
+      "tip": [
+        0.234,
+        0.16499999999999998,
+        0.071
+      ],
+      "bounds": [
+        [
+          0.09,
+          -0.1,
+          -0.18
+        ],
+        [
+          0.42,
+          0.37,
+          0.27
+        ]
+      ],
+      "blend": 0.05
+    },
+    {
+      "name": "Hind.RShin",
+      "parent": 16,
+      "position": [
+        0.234,
+        0.16499999999999998,
+        0.071
+      ],
+      "tip": [
+        0.234,
+        0.04,
+        0.071
+      ],
+      "bounds": [
+        [
+          0.09,
+          -0.1,
+          -0.18
+        ],
+        [
+          0.42,
+          0.37,
+          0.27
+        ]
+      ],
+      "blend": 0.05
+    },
+    {
+      "name": "Hind.RPaw",
+      "parent": 17,
+      "position": [
+        0.234,
+        0.04,
+        0.071
+      ],
+      "tip": [
+        0.234,
+        0.04,
+        0.131
+      ],
+      "bounds": [
+        [
+          0.09,
+          -0.1,
+          -0.18
+        ],
+        [
+          0.42,
+          0.13,
+          0.27
+        ]
+      ],
+      "blend": 0.04
+    }
+  ],
+  "clips": {
+    "Idle": {
+      "duration": 2,
+      "joints": {
+        "Chest": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.018,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Head": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.025,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Tail": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "amplitude": 0.04,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Ear.L": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.025,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Ear.R": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.025,
+          "phase": 1.0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "TailTip": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "amplitude": 0.08,
+          "phase": -0.6,
+          "offset": 0,
+          "wave": "sin"
+        }
+      }
+    },
+    "Walk": {
+      "duration": 0.9,
+      "joints": {
+        "Chest": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.018,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Head": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.025,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Tail": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "amplitude": 0.12,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Ear.L": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.025,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Ear.R": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.025,
+          "phase": 1.0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "TailTip": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "amplitude": 0.08,
+          "phase": -0.6,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Front.L": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.28,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Front.LShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.098,
+          "phase": 1,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Front.R": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.28,
+          "phase": 3.141592653589793,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Front.RShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.098,
+          "phase": 4.141592653589793,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Hind.L": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.28,
+          "phase": 3.141592653589793,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Hind.LShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.098,
+          "phase": 4.141592653589793,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Hind.R": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.28,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Hind.RShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.098,
+          "phase": 1,
+          "offset": 0,
+          "wave": "sin"
+        }
+      }
+    },
+    "Run": {
+      "duration": 0.6,
+      "joints": {
+        "Chest": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.018,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Head": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.025,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Tail": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "amplitude": 0.12,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Ear.L": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.025,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Ear.R": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.025,
+          "phase": 1.0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "TailTip": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "amplitude": 0.08,
+          "phase": -0.6,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Front.L": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.45,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Front.LShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.1575,
+          "phase": 1,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Front.R": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.45,
+          "phase": 3.141592653589793,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Front.RShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.1575,
+          "phase": 4.141592653589793,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Hind.L": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.45,
+          "phase": 3.141592653589793,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Hind.LShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.1575,
+          "phase": 4.141592653589793,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Hind.R": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.45,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Hind.RShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.1575,
+          "phase": 1,
+          "offset": 0,
+          "wave": "sin"
+        }
+      }
+    },
+    "Jump": {
+      "duration": 0.8,
+      "joints": {
+        "Chest": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.018,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Head": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.025,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Tail": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "amplitude": 0.12,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Ear.L": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.025,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Ear.R": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.025,
+          "phase": 1.0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "TailTip": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "amplitude": 0.08,
+          "phase": -0.6,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Front.L": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": -0.42,
+          "phase": 0,
+          "offset": 0,
+          "wave": "pulse"
+        },
+        "Front.LShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.336,
+          "phase": 0,
+          "offset": 0,
+          "wave": "pulse"
+        },
+        "Front.R": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": -0.42,
+          "phase": 0,
+          "offset": 0,
+          "wave": "pulse"
+        },
+        "Front.RShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.336,
+          "phase": 0,
+          "offset": 0,
+          "wave": "pulse"
+        },
+        "Hind.L": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": -0.42,
+          "phase": 0,
+          "offset": 0,
+          "wave": "pulse"
+        },
+        "Hind.LShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.336,
+          "phase": 0,
+          "offset": 0,
+          "wave": "pulse"
+        },
+        "Hind.R": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": -0.42,
+          "phase": 0,
+          "offset": 0,
+          "wave": "pulse"
+        },
+        "Hind.RShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.336,
+          "phase": 0,
+          "offset": 0,
+          "wave": "pulse"
+        }
+      }
+    },
+    "Swim": {
+      "duration": 0.8,
+      "joints": {
+        "Chest": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.018,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Head": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.025,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Tail": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "amplitude": 0.12,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Ear.L": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.025,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Ear.R": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.025,
+          "phase": 1.0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "TailTip": {
+          "axis": [
+            0,
+            1,
+            0
+          ],
+          "amplitude": 0.08,
+          "phase": -0.6,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Front.L": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.25,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Front.LShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.0875,
+          "phase": 1,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Front.R": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.25,
+          "phase": 3.141592653589793,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Front.RShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.0875,
+          "phase": 4.141592653589793,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Hind.L": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.25,
+          "phase": 3.141592653589793,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Hind.LShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.0875,
+          "phase": 4.141592653589793,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Hind.R": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.25,
+          "phase": 0,
+          "offset": 0,
+          "wave": "sin"
+        },
+        "Hind.RShin": {
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "amplitude": 0.0875,
+          "phase": 1,
+          "offset": 0,
+          "wave": "sin"
+        }
+      }
+    }
+  },
+  "weight_smoothing": 12
+}

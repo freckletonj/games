@@ -36,5 +36,6 @@
     "color_levels": 32,
     "max_grid_cells": 4000000,
     "voxel_filter_sigma": 0.25
-  }
+  },
+  "rig": "rig.json"
 }
