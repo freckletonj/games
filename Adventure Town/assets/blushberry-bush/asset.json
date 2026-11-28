@@ -1,0 +1,11 @@
+{
+  "id": "blushberry-bush",
+  "kind": "static",
+  "status": "awaiting-splat",
+  "reference": "source/reference.png",
+  "reference_sha256": "90077cb32bea5a6b79ab6d5a90684fd31b1dae73de040e3975f10939706ed3c6",
+  "runtime": null,
+  "notes": "Reference stage only. No original PLY, fitted conversion, rig or runtime is present. Fit conversion settings to the actual returned PLY before building.",
+  "splat": "incoming/model.ply",
+  "target_height": 0.65
+}

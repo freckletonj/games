@@ -1,0 +1,11 @@
+{
+  "id": "friendship-orb",
+  "kind": "static",
+  "status": "awaiting-splat",
+  "reference": "source/reference.png",
+  "reference_sha256": "7e45be340e9e9bb973134491e705effdcf913216d4900579366dd079d76aac67",
+  "runtime": null,
+  "notes": "Reference stage only. No original PLY, fitted conversion, rig or runtime is present. Fit conversion settings to the actual returned PLY before building.",
+  "splat": "incoming/model.ply",
+  "target_height": 0.18
+}

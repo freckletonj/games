@@ -7,6 +7,17 @@ rules and compiler are historical, not the workflow for this project.
 
 ## Scope and style
 
+The next user-requested expansion includes shop surfaces, more town residents,
+and Wonderwood-style creature friendship: berries → orb capture → transformation
+→ traversal/puzzle abilities. See `docs/ASSET_BATCH_03.md` and
+`docs/CREATURE_FRIENDSHIP.md`. Batch 03 is reference/intake work only; its
+`creature-reference` manifests are not supported converter/runtime kinds.
+Fit conversion settings and rigs to actual returned PLYs. Quadruped and bird rigs
+need deliberate implementation before promotion; do not use humanoid or static
+surrogates. Shop floors, wall dimensions, doors and collision remain authored.
+This requested creature scope supersedes the older other-rigs exclusion below
+only for this expansion. It does not authorize unrelated game systems.
+
 The current milestone is an explorable town: enterable cottages/grocery/potion
 shop, furnished cutaway interiors, swimming and stepping-stone jumping, plus
 one repeatable static-asset handoff. Read `docs/TOWN_ASSETS.md`. Preserve the

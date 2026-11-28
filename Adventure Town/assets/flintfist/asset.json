@@ -1,0 +1,11 @@
+{
+  "id": "flintfist",
+  "kind": "humanoid",
+  "status": "awaiting-splat",
+  "reference": "source/reference.png",
+  "reference_sha256": "a239aa9f717db353c07a546722040b07d345052749b42550c0a3d2d095612d00",
+  "runtime": null,
+  "notes": "Reference stage only. No original PLY, fitted conversion, rig or runtime is present. Fit conversion settings to the actual returned PLY before building.",
+  "splat": "incoming/model.ply",
+  "target_height": 0.85
+}

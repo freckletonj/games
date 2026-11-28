@@ -1,10 +1,10 @@
 # Emberbrook asset backlog
 
-Updated after reading the user-committed second batch at `a5e68c3a29c3b861757c515a13a94922f7584711` on 2026-11-27.
+Updated 2026-11-27 against PR #27 head `7c6d812236a30a9ba5edc02cfaca309018f001c1`. Batch 03 adds the requested shop surfaces and creature-friendship art; see [its handoff](ASSET_BATCH_03.md) and [gameplay design](CREATURE_FRIENDSHIP.md).
 
 This is the proposed complete visual-art backlog for the current explorable town, based on `game/world.js`, `game/town-assets.js` and the existing asset docs. It is not a claim that the game cannot be played without these designs. Most static entries replace existing authored block visuals; benches, signposts, a cupboard and the NPC population are additions within the user's requested town-art work. No shopping mechanics, quests or inventory are proposed.
 
-There are **25 designs** below: six converted designs ready for a test drive and 19 planned references. All six original PNGs/PLYs are now committed; the runtime binary ZIP still needs user extraction/commit. These six are no longer in the splat queue. Each design is one reusable asset, not one asset per placed instance. The bridge belongs in this inventory as an existing authored visual that can be improved.
+There are **33 designs** below: six converted designs ready for a test drive, ten generated references in batch 03, and 17 planned designs. The ten references include a floor construction guide outside the splat queue. Batch 02's original PNGs/PLYs are committed; preserve its existing runtime review status. Each design is one reusable asset, not one asset per placed instance. The bridge belongs in this inventory as an existing authored visual that can be improved.
 
 ## Shop interiors
 
@@ -13,6 +13,8 @@ There are **25 designs** below: six converted designs ready for a test drive and
 | grocery-counter | Replace the grocery's simple counter; keep the top clear and aisle open | ready-for-test-drive |
 | provisions-barrel | Reusable closed supplies barrel for grocery storage | planned |
 | apothecary-cabinet | Replace the potion room's simple bottle shelving | ready-for-test-drive |
+| shop-wall-panel | Reusable plaster/timber decoration fitted to authored low cutaway walls | reference generated; awaiting-splat |
+| shop-floor-sample | Oak board construction/material guide for the authored flat floor | reference-only; no splat |
 
 ## Cottage interiors
 
@@ -28,7 +30,7 @@ There are **25 designs** below: six converted designs ready for a test drive and
 | --- | --- | --- |
 | plaza-well | Replace the roofed west-plaza well visual | ready-for-test-drive |
 | town-lantern | Replace the existing town lamp visuals | ready-for-test-drive |
-| town-bench | Reusable public seating beside paths | planned |
+| town-bench | Reusable public seating beside paths | reference generated; awaiting-splat |
 | town-signpost | Directional post; keep any readable labels authored separately | planned |
 | garden-fence | Reusable fence segment matching current boundaries | planned |
 | river-bridge | Improve the current bridge visual while preserving authored deck and collision | planned |
@@ -48,6 +50,7 @@ There are **25 designs** below: six converted designs ready for a test drive and
 | emberbrook-tree | Reusable broadleaf tree replacing the current block crowns | planned |
 | river-bush | Reusable chunky bush replacing current block shrubs | planned |
 | meadow-flowers | Compact connected flower cluster for existing flower patches | planned |
+| blushberry-bush | Pink berries and readable vegetation for the friendship loop | reference generated; awaiting-splat |
 
 ## Landmarks
 
@@ -64,9 +67,24 @@ There are **25 designs** below: six converted designs ready for a test drive and
 | emberbrook-grocer | Grocery shopkeeper with short apron and separated legs | ready-for-test-drive |
 | emberbrook-herbalist | Potion shopkeeper, trousers and close-fitting vest | ready-for-test-drive |
 | emberbrook-resident | Reusable resident for cottage/plaza population | planned |
-| emberbrook-gardener | Resident suited to the town gardens | planned |
+| emberbrook-gardener | Resident suited to the town gardens | reference generated; awaiting-splat |
 
-These are new NPC assets, not a replacement for the imported player. Keep `next-adventurer` deferred. The first two now have fitted rigs, reviewed Idle/Walk/Run/Jump clips and shop placements. The resident and gardener still need references, actual PLY inspection and their own rig fits. Shopkeepers are stationary; no roaming AI, trading or quest behavior is added.
+These are new NPC assets, not a replacement for the imported player. Keep `next-adventurer` deferred. The first two have fitted rigs, reviewed Idle/Walk/Run/Jump clips and shop placements. The resident still needs a reference; the gardener now has a reference and awaits its actual PLY and individual rig fit. Shopkeepers are stationary; no roaming AI, trading or quest behavior is added.
+
+## Creature friendship and capture
+
+| Asset ID | Design and purpose | Status |
+| --- | --- | --- |
+| springaroo | Cute rabbit; proposed high/double jump puzzle form | reference generated; awaiting-splat; quadruped rig required |
+| tidefox | Aquatic fox; proposed swim/dive puzzle form | reference generated; awaiting-splat; quadruped rig required |
+| moonwing | Owl; proposed limited-wingbeat puzzle form | reference generated; awaiting-splat; bird rig required |
+| flintfist | Bipedal rock bear; proposed push/punch puzzle form | reference generated; awaiting-splat; individual humanoid rig fit required |
+| friendship-orb | Heart-marked capture orb; effects and behavior authored separately | reference generated; awaiting-splat |
+
+The animal, berry and orb roles are design proposals for the user-requested
+Wonderwood dynamic, not implemented gameplay. The original 25-design town pass
+is retained. These eight added designs plus the newly generated gardener and
+bench make ten references in batch 03. No animal is claimed to be rigged yet.
 
 ## Existing art to retain and review
 
@@ -88,4 +106,4 @@ Keep floors, cutaway walls, door triggers, terrain, paths, water, collision and 
 
 ## Current delivery
 
-See [batch 02](ASSET_BATCH_02.md) for the six generated references, exact intake mapping, hashes and commands. The first eight objects remain documented in [TOWN_ASSETS.md](TOWN_ASSETS.md). Do not regenerate them merely to populate the new-art queue.
+See [batch 03](ASSET_BATCH_03.md) for ten new references and the nine-source splat handoff. [Batch 02](ASSET_BATCH_02.md) retains its prior conversion notes. The first eight objects remain documented in [TOWN_ASSETS.md](TOWN_ASSETS.md). Do not regenerate completed sources merely to populate the new-art queue.

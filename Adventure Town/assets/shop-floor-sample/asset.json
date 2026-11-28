@@ -1,0 +1,9 @@
+{
+  "id": "shop-floor-sample",
+  "kind": "reference-only",
+  "status": "reference-only",
+  "reference": "source/reference.png",
+  "reference_sha256": "d361aff28713cac8afc63b550aa221ea514040d92f45a64b57b4acf62373b97c",
+  "runtime": null,
+  "notes": "Visual guide for an authored flat floor. Not a seamless texture and not in the TripoSplat queue."
+}

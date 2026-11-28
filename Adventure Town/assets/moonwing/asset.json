@@ -1,0 +1,11 @@
+{
+  "id": "moonwing",
+  "kind": "creature-reference",
+  "status": "awaiting-splat",
+  "reference": "source/reference.png",
+  "reference_sha256": "98c4aa6b3f9fe09441da434593fec0cdb8ebffa71b572cea155a4a9e68933026",
+  "runtime": null,
+  "notes": "Reference stage only. No original PLY, fitted conversion, rig or runtime is present. Fit conversion settings to the actual returned PLY before building. Requires deliberate quadruped or wing rig support; the current converter only rigs humanoids. Do not convert as a static or humanoid surrogate.",
+  "splat": "incoming/model.ply",
+  "target_height": 0.6
+}
