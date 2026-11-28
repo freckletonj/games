@@ -1,0 +1,52 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65536,
+  "grid": [
+    33,
+    27,
+    32
+  ],
+  "occupied_voxels": 5234,
+  "asset": "blushberry-bush",
+  "source_sha256": "32a63ca73de33daedb6a9239a4834fbfc7b3254c875898f33b66108a7eeff2de",
+  "config_sha256": "cbf0bb5d46a6c9387754441ac2b08bb35bd326ab46c426bbbaa84536d5287a8f",
+  "rig_sha256": null,
+  "vertices": 18412,
+  "triangles": 9206,
+  "clips": [],
+  "status": "ready-for-test-drive",
+  "method": "alpha_union Gaussian occupancy; exposed voxel faces; density-weighted DC colors; world-space scale",
+  "kind": "static",
+  "bounds": {
+    "min": [
+      -0.3875,
+      0.0,
+      -0.3745833333333333
+    ],
+    "max": [
+      0.3875,
+      0.62,
+      0.3745833333333333
+    ]
+  },
+  "conversion_config_sha256": "0adf1cc0e4ce51e332cd824ca2b38040c6f5f6cde0694a064045d15d11b06725",
+  "reference_sha256": "90077cb32bea5a6b79ab6d5a90684fd31b1dae73de040e3975f10939706ed3c6",
+  "runtime_sha256": "52d79eded7dd96259dc6f51d02e162795c37333910642ca196858a9907fd672b",
+  "review_date": "2026-11-27",
+  "compiler_sha256": {
+    "convert_splat.py": "9d19248902f50bbee5b377b6b8c73be79b2171ed70cb7592b50603a5854cb25d",
+    "creature_rig.py": "ccc35ceafd541fd929ca080f73c719096b33bec0a118d37e305e4018a22443de"
+  },
+  "review": {
+    "mesh_views": [
+      "front",
+      "side",
+      "back",
+      "oblique"
+    ],
+    "original_ply_composite": true,
+    "webgl_errors": 0,
+    "motion_frames_per_clip": 0,
+    "user_art_approval": false
+  }
+}

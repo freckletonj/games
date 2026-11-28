@@ -1,11 +1,11 @@
 {
   "id": "moonwing",
   "kind": "bird",
-  "status": "candidate-needs-visual-review",
+  "status": "ready-for-test-drive",
   "reference": "source/reference.png",
   "reference_sha256": "98c4aa6b3f9fe09441da434593fec0cdb8ebffa71b572cea155a4a9e68933026",
-  "runtime": null,
-  "notes": "Original standard 3DGS PLY and reference verified at 1f0bb0122c7e606722175a37d9edf7ad4c1cfa52. Conversion and rig fitting in progress; runtime is not promoted.",
+  "runtime": "runtime/asset.glb",
+  "notes": "Befriendable owl and playable form with four wingbeats between landings. Reviewed actual source composites, fitted mesh views and gameplay. Facing and wing roots are fitted to the actual PLY. Wing feathers merge into chunky blocks; procedural flapping retains small creases at the roots. Flight is limited to four airborne wingbeats.",
   "splat": "incoming/model.ply",
   "target_height": 0.6,
   "conversion": {

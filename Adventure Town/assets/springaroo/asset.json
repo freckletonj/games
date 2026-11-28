@@ -1,11 +1,11 @@
 {
   "id": "springaroo",
   "kind": "quadruped",
-  "status": "candidate-needs-visual-review",
+  "status": "ready-for-test-drive",
   "reference": "source/reference.png",
   "reference_sha256": "3df3b6657e0f9cb005251d7882d7d4d36a36560c289fdebb7d4429683d37feb9",
-  "runtime": null,
-  "notes": "Original standard 3DGS PLY and reference verified at 1f0bb0122c7e606722175a37d9edf7ad4c1cfa52. Conversion and rig fitting in progress; runtime is not promoted.",
+  "runtime": "runtime/asset.glb",
+  "notes": "Befriendable rabbit and playable double-jump form; reaches the optional garden landing. Reviewed actual source composites, fitted mesh views and gameplay. Explicit source-space crop removes stray rear geometry and retains 58,955 of 65,536 Gaussians. Facing is fitted separately. The inferred rear remains asymmetric and coarse; the image cannot establish hidden anatomy. Ear and leg joints remain connected through the reviewed clips.",
   "splat": "incoming/model.ply",
   "target_height": 0.65,
   "conversion": {

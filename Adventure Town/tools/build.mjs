@@ -41,6 +41,7 @@ const js = [
   read("game/glb.js"),
   read("game/town-assets.js"),
   read("game/town-characters.js"),
+  read("game/creatures.js"),
   model,
   characters,
   scenery,

@@ -1,0 +1,57 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65503,
+  "grid": [
+    41,
+    67,
+    19
+  ],
+  "occupied_voxels": 5187,
+  "asset": "emberbrook-gardener",
+  "source_sha256": "fb79cde55bb92013efe9eeb59596c16e3bf49d3bfd8e4e0b9281b3d91465d974",
+  "config_sha256": "f1a799403c261a3a6a4062fdc9d75cad4d04cafc2af564128ace8612eee9951d",
+  "rig_sha256": "ab072136c7b02c577bd783a4286f1291017131c4fb6179e1a766e9f157390d4d",
+  "vertices": 26512,
+  "triangles": 13256,
+  "clips": [
+    "Idle",
+    "Walk",
+    "Run",
+    "Jump"
+  ],
+  "status": "ready-for-test-drive",
+  "method": "alpha_union Gaussian occupancy; exposed voxel faces; fitted segment weights; procedural motion",
+  "kind": "humanoid",
+  "bounds": {
+    "min": [
+      -0.3046875,
+      0.0,
+      -0.1328125
+    ],
+    "max": [
+      0.3046875,
+      1.0,
+      0.1328125
+    ]
+  },
+  "conversion_config_sha256": "51dfffa50ea75f707f298ed0ab806d4f84b927bffaee36fe74d817a33012126d",
+  "reference_sha256": "d67444b47c021826dee76481d3c63dff78ee5eb53a1eb9c7b2094087e1b6343b",
+  "runtime_sha256": "adb3307887f1ee4c3dda9686844968fdd637695f7ae24463931738590d88fd95",
+  "review_date": "2026-11-27",
+  "compiler_sha256": {
+    "convert_splat.py": "9d19248902f50bbee5b377b6b8c73be79b2171ed70cb7592b50603a5854cb25d",
+    "creature_rig.py": "ccc35ceafd541fd929ca080f73c719096b33bec0a118d37e305e4018a22443de"
+  },
+  "review": {
+    "mesh_views": [
+      "front",
+      "side",
+      "back",
+      "oblique"
+    ],
+    "original_ply_composite": true,
+    "webgl_errors": 0,
+    "motion_frames_per_clip": 12,
+    "user_art_approval": false
+  }
+}

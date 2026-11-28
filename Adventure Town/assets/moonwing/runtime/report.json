@@ -1,0 +1,58 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65493,
+  "grid": [
+    60,
+    43,
+    23
+  ],
+  "occupied_voxels": 8589,
+  "asset": "moonwing",
+  "source_sha256": "23eaf32120885139268028ecd7f1cb4297a942b42ee995fa47bb80e1544fe6a2",
+  "config_sha256": "5936061b5dd2cf43d8992d35083e6392014a781f8c02480b1dde85dad68823d8",
+  "rig_sha256": "8dd6cb29f2e9d1343fef1f74267b8a14cab264aa3cabb311e7c2a902dc44e237",
+  "vertices": 26576,
+  "triangles": 13288,
+  "clips": [
+    "Idle",
+    "Walk",
+    "Run",
+    "Jump",
+    "Fly"
+  ],
+  "status": "ready-for-test-drive",
+  "kind": "bird",
+  "bounds": {
+    "min": [
+      -0.7125,
+      0.0,
+      -0.2625
+    ],
+    "max": [
+      0.7125,
+      1.0,
+      0.2625
+    ]
+  },
+  "method": "alpha_union Gaussian occupancy; exposed voxel faces; fitted segment weights; procedural motion",
+  "conversion_config_sha256": "1b1ee772e7ba2c6ad02297878526c03eb5c53053860bf985043c65a06b8ef158",
+  "reference_sha256": "98c4aa6b3f9fe09441da434593fec0cdb8ebffa71b572cea155a4a9e68933026",
+  "runtime_sha256": "74bd0c29e07f695f1df385a02f430762efc068173c9790161fe85ecadaad02ab",
+  "review_date": "2026-11-27",
+  "compiler_sha256": {
+    "convert_splat.py": "9d19248902f50bbee5b377b6b8c73be79b2171ed70cb7592b50603a5854cb25d",
+    "creature_rig.py": "ccc35ceafd541fd929ca080f73c719096b33bec0a118d37e305e4018a22443de"
+  },
+  "review": {
+    "mesh_views": [
+      "front",
+      "side",
+      "back",
+      "oblique"
+    ],
+    "original_ply_composite": true,
+    "webgl_errors": 0,
+    "motion_frames_per_clip": 12,
+    "user_art_approval": false
+  }
+}

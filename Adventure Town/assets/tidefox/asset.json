@@ -1,11 +1,11 @@
 {
   "id": "tidefox",
   "kind": "quadruped",
-  "status": "candidate-needs-visual-review",
+  "status": "ready-for-test-drive",
   "reference": "source/reference.png",
   "reference_sha256": "216d1e249c6085f4dbc461af3974f1370524ac3a72f8ef26486b52527ac23921",
-  "runtime": null,
-  "notes": "Original standard 3DGS PLY and reference verified at 1f0bb0122c7e606722175a37d9edf7ad4c1cfa52. Conversion and rig fitting in progress; runtime is not promoted.",
+  "runtime": "runtime/asset.glb",
+  "notes": "Befriendable aquatic fox and playable faster-swim/dive form. Reviewed actual source composites, fitted mesh views and gameplay. Facing is fitted to the actual PLY. Rear paws and tail are inferred; small voxel creases and in-place foot drift remain. Swim is a procedural paddle, not trained animation.",
   "splat": "incoming/model.ply",
   "target_height": 0.55,
   "conversion": {

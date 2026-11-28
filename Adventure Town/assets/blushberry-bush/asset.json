@@ -1,11 +1,11 @@
 {
   "id": "blushberry-bush",
   "kind": "static",
-  "status": "candidate-needs-visual-review",
+  "status": "ready-for-test-drive",
   "reference": "source/reference.png",
   "reference_sha256": "90077cb32bea5a6b79ab6d5a90684fd31b1dae73de040e3975f10939706ed3c6",
-  "runtime": null,
-  "notes": "Original standard 3DGS PLY and reference verified at 1f0bb0122c7e606722175a37d9edf7ad4c1cfa52. Conversion and rig fitting in progress; runtime is not promoted.",
+  "runtime": "runtime/asset.glb",
+  "notes": "Reusable berry vegetation beside the four animal encounters. Reviewed actual source composites, fitted mesh views and gameplay. The inferred back is plain/darker and berries merge at distance. Detached offered berries and hearts are authored effects; baked berries are not individually simulated.",
   "splat": "incoming/model.ply",
   "target_height": 0.65,
   "conversion": {

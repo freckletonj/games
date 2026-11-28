@@ -41,7 +41,7 @@ npm run build
 ```
 
 Double-click `dist/adventure-town.html` to play offline. It embeds all code,
-styles, the player, all twelve static town meshes and both rigged shopkeepers. The source version uses modules and fetches the
+styles, the player, all sixteen static town meshes and seven rigged town characters (three residents and four animals). The source version uses modules and fetches the
 model, so serve `index.html` over HTTP rather than opening it as a local file.
 The village block geometry, movement and camera come from the supplied prototype;
 the model is now a standalone asset and code is split into model/world/renderer/
@@ -99,7 +99,7 @@ See per-asset `runtime/REVIEW.md` for comparisons and remaining approximations.
 
 ## Next town art batch
 
-The [asset backlog](docs/ASSET_BACKLOG.md) inventories 25 proposed designs for the
+The [asset backlog](docs/ASSET_BACKLOG.md) inventories 33 designs for the
 current town visual pass. [Reference batch 02](docs/ASSET_BATCH_02.md) starts with
 the grocery counter, apothecary cabinet, grocer, herbalist, lantern and well.
 The six original PNGs and TripoSplat PLYs are committed and converted. Extract
@@ -107,6 +107,14 @@ the new runtime ZIP at the repository root before source play/build. The counter
 cabinet, lanterns and well are enabled; the two rigged shopkeepers idle in their
 shops. The separate offline play ZIP embeds everything. The imported player stays
 and `next-adventurer` remains deferred. All six assets await user art review.
+
+## Creature friendship and batch 03
+
+The new batch adds low plaster/timber shop panels, oak grocery boards and lilac potion-room paving, benches, berry bushes, a gardener and four rigged animals. Original reference PNGs and PLYs are unchanged. Dedicated quadruped/bird rigs are fitted to the rabbit, fox and owl; the rock bear uses an individually fitted biped rig. The [batch handoff](docs/ASSET_BATCH_03.md) and per-asset review notes describe remaining art approximations.
+
+Approach an animal as the explorer and press **F** twice to offer berries. Hearts mark trust. At full trust, press **G** (or contextual **F**) to send a friendship orb during the 12-second opportunity. **T** becomes the current caught animal and returns to explorer. Gamepad uses **X** for context, **RB** for orb and **Y** for form; touch buttons are provided. Springaroo double-jumps, Tidefox swims faster and uses **F** to dive/surface, Moonwing has four wingbeats between landings, and Flintfist uses **F** to push a ruin boulder or punch a cracked seal. Try the high garden landing and optional ruin passages. Read [the playable rules](docs/CREATURE_FRIENDSHIP.md) for recovery and limits.
+
+Extract the new runtime ZIP at the repository root and commit its binaries on PR #27's branch before source play/build. Code, manifests and text reviews are already committed separately. The play ZIP contains a standalone offline HTML with all assets embedded. All nine new conversions await user art review; the floor remains an authored surface guided by its reference.
 
 ## Checks and boundaries
 
@@ -122,7 +130,7 @@ It also checks buffered/late jumps, grace expiry, the complete watchtower climb,
 pause/resume, analog controller input/disconnects and conservative view culling.
 Python checks both PLY encodings, exposed-face meshing, deterministic GLB export,
 weights, bind pose, winding, animation structure and static export at game scale. The tests require NumPy.
-They do not establish visual quality, contact quality or actual GPU rendering.
+The new checks also exercise all four friendship encounters, safe form changes, limited abilities, obstacle collision changes, real character motion cycles and exact-color static face merging. These deterministic checks do not establish visual quality, contact quality or actual GPU rendering.
 
 The previous project is preserved byte-for-byte under
 [`../old/Adventure Town/`](<../old/Adventure Town/>). Its GIF/multiview compiler and
@@ -134,6 +142,6 @@ For optional real browser checks, install Playwright separately and run
 Chromium; `ADVENTURE_CHROMIUM` can select an explicit executable. It exercises
 both the HTTP source and offline file, tours the three interior types, swims
 bank-to-bank, previews a candidate static GLB, and checks mobile touch controls,
-and writes temporary review captures under ignored `dist/review/`.
+exercises keyboard/touch friendship and the garden double jump, and writes temporary review captures under ignored `dist/review/`.
 The browser checks also verify pause focus and actual WebGL silhouette pixels,
 so a visible player keeps its original colors while an occluded player is marked.

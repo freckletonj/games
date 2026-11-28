@@ -115,5 +115,14 @@ with tempfile.TemporaryDirectory() as temp:
     # Two adjacent cells omit their shared face.
     p,n,c,idx=surface_mesh(np.ones((2,1,1),bool),np.ones((2,1,1,3)))
     assert len(idx)==60
+    # Merging preserves the actual surface area and colors while removing only
+    # redundant coplanar cube faces. Different colors may never be merged.
+    occupied=np.ones((2,2,2),bool);colors=np.ones((2,2,2,3))
+    p,n,c,idx=surface_mesh(occupied,colors,merge_faces=True)
+    assert len(p)==24 and len(idx)==36
+    mixed=np.ones((2,1,1,3));mixed[1]=[1,0,0]
+    p,n,c,idx=surface_mesh(np.ones((2,1,1),bool),mixed,merge_faces=True)
+    assert len(idx)==60 and len(np.unique(c,axis=0))==2
+    merged=temp/'merged.glb';write_glb(merged,p,n,c,idx);validate(merged)
 validate(root/'assets/emberbrook-adventurer/runtime/asset.glb')
 print('Pipeline checks passed: PLY encodings, deterministic export, skin weights, bind pose, clips, surface winding, hidden faces, imported GLB.')

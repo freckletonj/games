@@ -229,6 +229,13 @@ kbd {
 [hidden] {
   display: none !important;
 }
+#friend-state{margin-top:6px;max-width:310px;font-size:12px;color:#ffe1b0;}
+#friend-buttons{position:absolute;right:16px;bottom:110px;display:flex;flex-direction:column;gap:7px;max-width:180px;}
+#friend-buttons button{font-size:12px;background:#36594c;border-color:#e1c17b;}
+@media(pointer:coarse),(max-width:650px){
+  #friend-state{max-width:210px;font-size:10px;}
+  #friend-buttons{bottom:145px;max-width:145px;}
+}
 #interact {
   position: absolute;
   left: 50%;

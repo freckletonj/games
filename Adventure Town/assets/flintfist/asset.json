@@ -1,11 +1,11 @@
 {
   "id": "flintfist",
   "kind": "humanoid",
-  "status": "candidate-needs-visual-review",
+  "status": "ready-for-test-drive",
   "reference": "source/reference.png",
   "reference_sha256": "a239aa9f717db353c07a546722040b07d345052749b42550c0a3d2d095612d00",
-  "runtime": null,
-  "notes": "Original standard 3DGS PLY and reference verified at 1f0bb0122c7e606722175a37d9edf7ad4c1cfa52. Conversion and rig fitting in progress; runtime is not promoted.",
+  "runtime": "runtime/asset.glb",
+  "notes": "Befriendable rock bear and playable push/punch form for the optional ruin obstacles. Reviewed actual source composites, fitted mesh views and gameplay. Broad shoulders and short legs have individually fitted soft weights. Push and punch are modest procedural gestures, not authored contact animation; object contact timing is controlled by gameplay. Small voxel creases and foot drift remain.",
   "splat": "incoming/model.ply",
   "target_height": 0.85,
   "conversion": {

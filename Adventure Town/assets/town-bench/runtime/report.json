@@ -1,0 +1,52 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 55546,
+  "grid": [
+    48,
+    27,
+    24
+  ],
+  "occupied_voxels": 4935,
+  "asset": "town-bench",
+  "source_sha256": "ba5f75dda38298ed3c064414b8f8cc137b18f38f5fcd2561c438304db6936c37",
+  "config_sha256": "18cc4889ffbc7dc4ed9ecff377e7cbc498396e19a2e91fadb76c612920d1aaa1",
+  "rig_sha256": null,
+  "vertices": 13224,
+  "triangles": 6612,
+  "clips": [],
+  "status": "ready-for-test-drive",
+  "method": "alpha_union Gaussian occupancy; exposed voxel faces; density-weighted DC colors; world-space scale",
+  "kind": "static",
+  "bounds": {
+    "min": [
+      -0.75,
+      0.0,
+      -0.35000000000000003
+    ],
+    "max": [
+      0.75,
+      0.8,
+      0.35000000000000003
+    ]
+  },
+  "conversion_config_sha256": "5b22b6002580ea3b90cfd703232506d56bf8e8ddc46b87e8b648357285bb4b85",
+  "reference_sha256": "b359c1b91623bcc05b6f4d5c83f87d2d546aad04c4e0b0165e9c87dc06afcf59",
+  "runtime_sha256": "a3a882bc3cdfc513e3cccec2bec27b8274448aa63051dc9a551494a85de8edf4",
+  "review_date": "2026-11-27",
+  "compiler_sha256": {
+    "convert_splat.py": "9d19248902f50bbee5b377b6b8c73be79b2171ed70cb7592b50603a5854cb25d",
+    "creature_rig.py": "ccc35ceafd541fd929ca080f73c719096b33bec0a118d37e305e4018a22443de"
+  },
+  "review": {
+    "mesh_views": [
+      "front",
+      "side",
+      "back",
+      "oblique"
+    ],
+    "original_ply_composite": true,
+    "webgl_errors": 0,
+    "motion_frames_per_clip": 0,
+    "user_art_approval": false
+  }
+}

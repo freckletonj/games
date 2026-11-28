@@ -1,7 +1,17 @@
-# Shop surfaces and creature friendship: reference batch 03
+# Shop surfaces and creature friendship: batch 03
 
 Generated 2026-11-27 against PR #27 head `7c6d812236a30a9ba5edc02cfaca309018f001c1`.
-Read [CREATURE_FRIENDSHIP.md](CREATURE_FRIENDSHIP.md) for the proposed gameplay and rig work.
+The reference handoff below is historical. The nine original PLYs have now returned and been converted. Read [CREATURE_FRIENDSHIP.md](CREATURE_FRIENDSHIP.md) for the implemented gameplay.
+
+## Runtime delivery · 2026-11-27
+
+Nine reviewed GLBs are enabled: four static objects and five individually fitted characters, including two quadrupeds, a bird and a bipedal rock bear. The gardener idles outdoors; four animals can be fed, caught and played. Shops use repeated low wall-panel decoration and authored oak/lilac floors. Floor planes, door triggers, wall backing and collision remain authored. The imported player and original source files are unchanged.
+
+Extract `adventure-town-b03-runtime-20261127-r1.zip` at the repository root on PR #27's branch, then commit the new binary files under `Adventure Town/assets/*/runtime/`. The ZIP contains GLBs, comparison PNGs, motion sheets and full-cycle GIFs; code, manifests, reports and review notes are committed directly. No originals or code patches are included in the ZIP. The separate play ZIP contains one standalone offline HTML with all assets embedded.
+
+Each runtime report records source, reference, configuration, rig (where applicable), compiler and GLB SHA-256 values. All nine are `ready-for-test-drive`, not final art acceptance. Springaroo's inferred rear remains rough and the orb's rear remains dark. Review notes identify further approximations.
+
+## Historical reference handoff
 
 ## Reviewed starting point
 

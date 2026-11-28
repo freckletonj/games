@@ -1,11 +1,11 @@
 {
   "id": "shop-wall-panel",
   "kind": "static",
-  "status": "candidate-needs-visual-review",
+  "status": "ready-for-test-drive",
   "reference": "source/reference.png",
   "reference_sha256": "4b46c72b8aedd15551a812839a0699e5034fe2ecf8b0c78c924f309efe238807",
-  "runtime": null,
-  "notes": "Original standard 3DGS PLY and reference verified at 1f0bb0122c7e606722175a37d9edf7ad4c1cfa52. Conversion and rig fitting in progress; runtime is not promoted.",
+  "runtime": "runtime/asset.glb",
+  "notes": "Repeated low plaster/timber panels in the grocery and potion shop. Reviewed actual source composites, fitted mesh views and gameplay. Low-resolution decoration on an authored wall backing; joints and timber trim are authored. No room geometry or collision is inferred from the splat.",
   "splat": "incoming/model.ply",
   "target_height": 0.48,
   "conversion": {

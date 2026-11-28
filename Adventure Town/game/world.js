@@ -340,7 +340,8 @@ for (let side of [-1, 1])
       let greens = ["#819d59", "#7c9855", "#829e5b", "#779452", "#85a05d"];
       tile(x, z, 1.002, 1.002, greens[Math.floor(rand() * greens.length)]);
     }
-box(0, -0.72, 0, 3.4, 0.1, 24, "#617d72", true);
+// A deeper riverbed leaves room for the Tidefox's authored dive depth.
+box(0, -1.25, 0, 3.4, 0.1, 24, "#617d72", true);
 for (let j = 0; j < 24; j++)
   tile(
     0,
@@ -502,6 +503,32 @@ fence(-10.3, 5.7, "x", 4);
 lamp(-6.7, 0.85);
 lamp(-9.8, -0.85);
 lamp(-5.3, 5.7);
+for (const [x, z, angle] of [[-8.7, 8.7, .2], [6, 8.8, -.3]]) {
+  assetShape("town-bench", [x, 0, z], () => {
+    box(x, 0, z, 1.5, .8, .7, "#976637", true);
+  }, angle);
+}
+for (const [x, z] of [[-5.3, 2.4], [-3.5, 8.3], [3.3, -6.2], [9.6, 8.0]])
+  assetShape("blushberry-bush", [x, 0, z], () => bush(x, z));
+// A small optional garden overlook rewards Springaroo's second jump.
+ledge(-7.2, 8.7, 1.6, 1.4, 1.35);
+for (const [x,z] of [[-7.65,8.6],[-6.75,8.8]]) {
+  const start=dest.length;flower(x,z,"#e5b8b9");
+  for(let i=start+1;i<dest.length;i+=6)dest[i]+=1.35;
+}
+export const friendPuzzles = {
+  boulder: { a: 8.1, b: 8.9, l: 6.4, r: 7.2, bottom: 0, top: 1.15, progress: 0, travel: 1.8 },
+  seal: { a: 11.3, b: 12.5, l: 6.5, r: 6.8, bottom: 0, top: 1.1, disabled: false },
+};
+solids.push(friendPuzzles.boulder, friendPuzzles.seal);
+// Short optional ruin passages give the stone actions a physical purpose.
+for(const z of [6,7.6])box(8.3,0,z,1.3,1.5,.22,"#8c9786",true);
+for(const x of [11.15,12.65])box(x,0,6.5,.25,1.4,1.4,"#929c89",true);
+box(11.9,0,6.15,1.2,.4,.6,"#a2ac91",true);
+for(const actor of townCharacters.filter(actor=>actor.scene==="outdoors"&&!actor.friend)){
+  const [x,y,z]=actor.position;
+  solids.push({a:x-.2,b:x+.2,l:z-.2,r:z+.2,bottom:y,top:y+1});
+}
 // East bank: old watchtower, garden and climbable ruins.
 box(7.7, 0, -4.7, 2.05, 2.6, 2.05, "#879188", true);
 box(7.7, 2.53, -4.7, 2.28, 0.18, 2.28, "#abb0a0", true);
@@ -639,7 +666,19 @@ function interior(kind) {
     savedSolids = solids.splice(0);
   dest = [];
   box(0, -0.18, 0, 6.4, 0.18, 6.4, "#6c513c", true);
-  for (let x = -3; x < 3; x += 0.5)
+  if(kind==="grocery") {
+    // Authored oak boards follow the floor reference; their top stays flat.
+    for(let row=0;row<18;row++){
+      const z=-3+(row+.5)/3;
+      for(let board=-1;board<7;board++){
+        const left=Math.max(-3,-3+board+row%2*.5),right=Math.min(3,-2+board+row%2*.5);
+        if(right<=left)continue;
+        const x=(left+right)/2, width=right-left;
+        tile(x,z,width-.012,.32,["#b98a50","#c2965a","#b1844d"][(row+board+3)%3],.003);
+        if(width>.4)tile(x+.08,z+.065,width*.42,.012,"#a87945",.004);
+      }
+    }
+  } else for (let x = -3; x < 3; x += 0.5)
     for (let z = -3; z < 3; z += 0.5)
       tile(
         x + 0.25,
@@ -647,7 +686,7 @@ function interior(kind) {
         0.49,
         0.49,
         kind === "potions"
-          ? "#8a8091"
+          ? ((Math.round(x*2)+Math.round(z*2))%2 ? "#b1a6b5" : "#91869c")
           : kind === "grocery"
             ? "#b3a580"
             : "#b99c74",
@@ -657,6 +696,17 @@ function interior(kind) {
   for (const side of [-1, 1]) {
     box(side * 3.1, 0, 0, 0.2, 0.48, 6.2, "#dfcba6", true);
     box(0, 0, side * 3.1, 6.2, 0.48, 0.2, "#dfcba6", true);
+  }
+  if(kind==="grocery"||kind==="potions"){
+    // Splat panels decorate the authored cutaway boundary; collision stays put.
+    for(const x of [-2.4,-.8,.8,2.4])
+      assetShape("shop-wall-panel",[x,0,-3.175],()=>{});
+    for(const side of [-1,1])for(const z of [-1.6,1.6])
+      assetShape("shop-wall-panel",[side*3.175,0,z],()=>{},side*Math.PI/2);
+    for(const side of [-1,1]){
+      box(side*3,.48,0,.055,.045,6.1,"#9c703d");
+      box(0,.48,side*3,6.1,.045,.055,"#9c703d");
+    }
   }
   tile(0, 2.65, 0.95, 0.65, "#7daca1", 0.012);
   tile(0, 0, 1.5, 1.4, kind === "potions" ? "#6d8c91" : "#96725b", 0.009);

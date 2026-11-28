@@ -1,11 +1,11 @@
 {
   "id": "town-bench",
   "kind": "static",
-  "status": "candidate-needs-visual-review",
+  "status": "ready-for-test-drive",
   "reference": "source/reference.png",
   "reference_sha256": "b359c1b91623bcc05b6f4d5c83f87d2d546aad04c4e0b0165e9c87dc06afcf59",
-  "runtime": null,
-  "notes": "Original standard 3DGS PLY and reference verified at 1f0bb0122c7e606722175a37d9edf7ad4c1cfa52. Conversion and rig fitting in progress; runtime is not promoted.",
+  "runtime": "runtime/asset.glb",
+  "notes": "Two public benches with separate authored collision. Reviewed actual source composites, fitted mesh views and gameplay. Back and seat edges are reconstructed approximately. The separate authored collision is deliberately simple. No seating animation is implemented.",
   "splat": "incoming/model.ply",
   "target_height": 0.58,
   "conversion": {

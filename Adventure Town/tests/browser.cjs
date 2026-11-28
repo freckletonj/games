@@ -117,7 +117,7 @@ const server = createServer((request, response) => {
     await page.waitForFunction(() => window.gameState?.().fps > 0);
     const start = await page.evaluate(() => gameState());
     assert.equal(start.renderer, "WebGL");
-    assert.equal(start.scenery.length, 12, "all converted town assets loaded");
+    assert.equal(start.scenery.length, 16, "all converted town assets loaded");
     await page.keyboard.press("Escape");
     assert.equal((await page.evaluate(() => gameState())).paused, true);
     await page.keyboard.down("s");
@@ -255,7 +255,7 @@ const server = createServer((request, response) => {
   );
   await page.waitForFunction(() => window.gameState?.().fps > 0);
   const scenery = (await page.evaluate(() => gameState())).scenery;
-  assert.equal(scenery.length, 12);
+  assert.equal(scenery.length, 16);
   assert.ok(scenery.includes("produce-shelf"));
   await walkTo(-4.1, 0);
   await walkTo(-10.6, 0);
@@ -292,11 +292,48 @@ const server = createServer((request, response) => {
     .getByRole("button", { name: "F · Return to town", exact: true })
     .tap();
   assert.equal((await mobile.evaluate(() => gameState())).scene, "outdoors");
+  // Exercise the actual friendship controls in the offline build, then on touch.
+  const friendshipPage=await browser.newPage({viewport:{width:1280,height:800}});
+  friendshipPage.on("pageerror",error=>errors.push(error.message));
+  await friendshipPage.goto(pathToFileURL(root+"/dist/adventure-town.html").href);
+  await friendshipPage.waitForFunction(()=>window.gameState?.().fps>0);
+  await walkTo(-5.7,1.8,friendshipPage);
+  await friendshipPage.keyboard.press("f");
+  await friendshipPage.waitForFunction(()=>gameState().friends[0].trust===60);
+  await friendshipPage.keyboard.press("f");
+  await friendshipPage.waitForFunction(()=>gameState().friends[0].trust===100);
+  await friendshipPage.keyboard.press("g");
+  await friendshipPage.waitForFunction(()=>gameState().caught==="springaroo");
+  await friendshipPage.keyboard.press("t");
+  await friendshipPage.waitForFunction(()=>gameState().form==="springaroo");
+  await friendshipPage.screenshot({path:root+"/dist/review/springaroo.png"});
+  await walkTo(-5.7,6.4,friendshipPage);
+  await walkTo(-7.2,7.5,friendshipPage);
+  await friendshipPage.keyboard.down("a");await friendshipPage.keyboard.down("s");
+  await friendshipPage.keyboard.press("Space");
+  await friendshipPage.waitForFunction(()=>gameState().y>.6);
+  await friendshipPage.keyboard.press("Space");
+  await friendshipPage.waitForFunction(()=>gameState().z>8.3);
+  await friendshipPage.keyboard.up("a");await friendshipPage.keyboard.up("s");
+  await friendshipPage.waitForFunction(()=>gameState().grounded&&gameState().y>1.3);
+  await friendshipPage.screenshot({path:root+"/dist/review/garden-overlook.png"});
+  await mobile.bringToFront();
+  if((await mobile.evaluate(()=>gameState())).paused)await mobile.getByRole("button",{name:"Back to exploring"}).click();
+  await walkTo(-5.7,1.8,mobile);
+  await mobile.locator("#interact").tap();
+  await mobile.waitForFunction(()=>gameState().friends[0].trust===60);
+  await mobile.locator("#interact").tap();
+  await mobile.waitForFunction(()=>gameState().friends[0].trust===100);
+  await mobile.locator("#orb").tap();
+  await mobile.waitForFunction(()=>gameState().caught==="springaroo");
+  await mobile.locator("#form").tap();
+  await mobile.waitForFunction(()=>gameState().form==="springaroo");
+  await mobile.screenshot({path:root+"/dist/review/mobile-friendship.png"});
   assert.deepEqual(errors, []);
   await browser.close();
   server.close();
   console.log(
-    "Browser checks passed: HTTP and offline/no network, real WebGL silhouette pixels, pause/resume/focus, keyboard movement, camera, mobile touch/doors, all interior types, shop interactions, bank-to-bank swimming, candidate scenery, no page errors.",
+    "Browser checks passed: HTTP and offline/no network, real WebGL silhouette pixels, pause/resume/focus, keyboard movement, camera, mobile touch/doors, shops, swimming, candidate scenery, keyboard/touch berry-orb-form loop, high garden landing, no page errors.",
   );
 })().catch((error) => {
   console.error(error);

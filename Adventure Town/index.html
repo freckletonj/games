@@ -17,6 +17,7 @@
       <div class="eyebrow">Emberbrook · riverside rambles</div>
       <h1>Adventure Town</h1>
       <div id="area">Willowbank village</div>
+      <div id="friend-state"></div>
     </div>
     <div id="top">
       <button id="orbit">Rotate view</button><button id="zoom">Zoom out</button
@@ -33,6 +34,10 @@
     <canvas id="map" width="264" height="192" aria-label="Village map, north up. H: homes. G: grocery. P: potions. T: watchtower. R: moss ruins." title="North up · H: homes · G: grocery · P: potions · T: watchtower · R: moss ruins"></canvas>
     <div id="message" role="status" aria-live="polite"></div>
     <button id="interact" hidden>Enter</button>
+    <div id="friend-buttons" hidden>
+      <button id="orb" hidden>Send orb</button>
+      <button id="form" hidden>Change form</button>
+    </div>
     <div id="pause-panel" role="dialog" aria-modal="true" aria-labelledby="pause-title" hidden>
       <div class="pause-card">
         <div class="eyebrow">Take your time</div>
@@ -41,10 +46,12 @@
         <dl>
           <dt>Move / run</dt><dd>WASD or arrows / hold Shift</dd>
           <dt>Jump / use</dt><dd>Space / F near doors and furniture</dd>
+          <dt>Make friends</dt><dd>F offers berries · G sends an orb · T changes form</dd>
+          <dt>Animal powers</dt><dd>Springaroo: jump twice · Moonwing: tap Jump for four wingbeats · Tidefox: F to dive/surface · Flintfist: F beside marked stones</dd>
           <dt>Camera</dt><dd>Drag or Q / E to turn · scroll to zoom</dd>
           <dt>Pause</dt><dd>Escape</dd>
         </dl>
-        <p id="pad-help" hidden>Controller: left stick or D-pad to move · B or RT to run · A to jump · X to use · right stick for camera · Start to pause.</p>
+        <p id="pad-help" hidden>Controller: left stick or D-pad to move · B or RT to run · A to jump/flap · X to use/feed/ability · RB sends an orb · Y changes form · right stick for camera · Start to pause.</p>
         <p class="touch-help">On a touchscreen, hold the arrows to move, hold Run for speed, and tap Jump. Drag the world to look around.</p>
         <button id="resume">Back to exploring</button>
       </div>

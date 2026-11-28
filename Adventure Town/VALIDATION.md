@@ -1,5 +1,56 @@
 # Validation log
 
+## Batch 03 and creature friendship · 2026-11-27
+
+All nine actual PLYs from user commit `1f0bb0122c7e606722175a37d9edf7ad4c1cfa52`
+were verified as standard 3DGS, 65,536 vertices each, with reference/generation
+hashes matching. Source PNG/PLY bytes remain unchanged. Springaroo uses an explicit
+crop and fitted facing; Tidefox and Moonwing have fitted facing. The other new
+inputs retain their complete source bounds. See `docs/ASSET_BATCH_03_INTAKE.md`.
+
+Four static conversions and five individually fitted rigs are enabled. Static
+same-color coplanar merging preserves the voxel surface while reducing repeated
+wall/prop cost. Final triangle counts are panel 4,848, bench 6,612, bush 9,206,
+orb 7,202, gardener 13,256, Springaroo 14,800, Tidefox 15,216, Moonwing 13,288 and
+Flintfist 19,476. All nine pass structural validation; rebuilding all nine from the unchanged original PLYs and final settings reproduces the reviewed GLBs byte-for-byte. Dedicated quadruped/bird
+rigs use explicit anatomy fits, soft weight regions and per-asset smoothing;
+there is no automatic rigging or claimed topology recovery.
+
+Actual Gaussian composites and mesh front/side/back/oblique views were inspected.
+The five characters have 12 actual software-WebGL renders per clip, full-cycle
+GIFs and motion sheets. Full-cycle finite skinning and edge-strain checks include
+the existing two shopkeepers and all five new rigs. Remaining approximations
+include source lighting, small joint creases and procedural foot drift;
+Springaroo's inferred rear is coarse/asymmetric and the orb's rear is dark.
+These are `ready-for-test-drive`, pending user art approval.
+
+`npm test` covers the complete real controller, all four two-berry/orb/form
+encounters, wall-blocked orbs, opportunity expiry and pause, simulated gamepad
+X/RB/Y, clearance-safe form switching, the double-jump garden landing, no third
+jump or airborne form reset, four finite wingbeats, dive/surface and under-bridge
+clearance, physical pushing and seal removal, room persistence and respawn.
+Real character skinning, static merging, synthetic PLY conversion and the
+TripoSplat generation CLI are also exercised. No physical pad was available.
+
+Chromium exercises HTTP modules and standalone offline play, existing controls,
+WebGL silhouette pixels, focus/pause, all interior types, shop actions, swimming,
+candidate scenery and narrow mobile doors. Additional checks feed/catch/transform
+with keyboard and touch and reach the garden landing by double jump. No page
+errors occurred; offline play makes no network requests. Shop, outdoor, transformed,
+garden and touch renders were inspected. Software WebGL is functional evidence,
+not a target-device performance benchmark.
+
+The grocery/potion floors and backing walls remain authored; low converted
+panels decorate the cutaways without blocking doors. Garden/ruin obstacles are
+optional prototypes with authored geometry/collision, not generated obstacle art
+or a mandatory progression campaign. The current caught slot replaces its prior
+form when another animal is caught; no collection inventory was introduced.
+
+Small code/config/reports/reviews are committed directly. The separate runtime
+ZIP carries only the nine GLBs and binary review material, at repository-relative
+paths, for user extraction and commit. The play ZIP embeds the exact same GLBs.
+Original assets, imported player and `old/` remain unchanged.
+
 ## Exploration and controls polish · 2026-11-26
 
 The six northern ledges now connect to the watchtower viewing deck. A deterministic

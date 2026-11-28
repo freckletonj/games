@@ -7,16 +7,14 @@ rules and compiler are historical, not the workflow for this project.
 
 ## Scope and style
 
-The next user-requested expansion includes shop surfaces, more town residents,
-and Wonderwood-style creature friendship: berries → orb capture → transformation
+The requested expansion now includes implemented shop surfaces, a gardener and
+Wonderwood-style creature friendship: berries → orb capture → transformation
 → traversal/puzzle abilities. See `docs/ASSET_BATCH_03.md` and
-`docs/CREATURE_FRIENDSHIP.md`. Batch 03 is reference/intake work only; its
-`creature-reference` manifests are not supported converter/runtime kinds.
-Fit conversion settings and rigs to actual returned PLYs. Quadruped and bird rigs
-need deliberate implementation before promotion; do not use humanoid or static
-surrogates. Shop floors, wall dimensions, doors and collision remain authored.
-This requested creature scope supersedes the older other-rigs exclusion below
-only for this expansion. It does not authorize unrelated game systems.
+`docs/CREATURE_FRIENDSHIP.md`. Nine actual splats are converted and reviewed for
+a test drive. Dedicated `quadruped` and `bird` kinds are supported with explicit
+per-asset rigs; never substitute humanoid or static proxies. `creature-reference`
+is only an old intake label. Shop floors, wall backing, doors and collision remain
+authored. This expansion does not authorize unrelated game systems.
 
 The current milestone is an explorable town: enterable cottages/grocery/potion
 shop, furnished cutaway interiors, swimming and stepping-stone jumping, plus
@@ -37,7 +35,7 @@ assets follow the image/splat workflow below.
 | --- | --- | --- |
 | Reference | Agent | Create `assets/<id>/source/reference.png`, real RGBA transparency, one isolated object; deliver a repository-path ZIP for the user to commit the PNGs; save the actual prompt in `source/PROMPT.md` and describe silhouette/pose in the asset README. |
 | Splat | User | Unzip the reference-image handoff at the repository root, run each accepted image through TripoSplat and commit `assets/<id>/incoming/model.ply`, retaining the original Gaussian properties. Record export settings if available. |
-| Conversion | Agent | Inspect the actual PLY, fit `asset.json` (and `rig.json` for humanoids), build into a new `experiments/<id>-<attempt>/`, and audit the candidate GLB. |
+| Conversion | Agent | Inspect the actual PLY, fit `asset.json` (and `rig.json` for characters), build into a new `experiments/<id>-<attempt>/`, and audit the candidate GLB. |
 | Review | Agent and user | Compare image, splat, voxel mesh, and animation. Inspect multiple angles, then move/run/jump in the real game. Record what was tested and what remains wrong. |
 | Promotion | Agent, then user | Stage the reviewed GLB in `runtime/asset.glb`; commit small code/config/reports and select its runtime path. Deliver GLBs and binary review images in a uniquely named ZIP with repository-relative paths. The user extracts and commits those blobs. Also deliver a standalone offline HTML for immediate play. |
 
@@ -53,7 +51,7 @@ The second batch adds four static assets (grocery counter, apothecary cabinet,
 lantern and well) plus two fitted humanoid shopkeepers. They are
 `ready-for-test-drive`; the user commits their runtime binaries from the ZIP.
 See `docs/ASSET_BATCH_02.md`. `game/town-characters.js` owns NPC placements;
-`game/characters.js` shares the humanoid parser/skinner with the player and
+`game/characters.js` shares the character parser/skinner with the player and
 updates slow NPC Idle poses at 10 Hz. The offline build embeds those GLBs.
 New rigs may specify a relaxed `arm_rest_angle`, an interpolated lower-arm gate,
 a tapered `shoulder_blend` and `hip_blend_height`; fit these to each actual mesh.
@@ -72,6 +70,27 @@ runtime output, and review notes. Do not overwrite another asset to add one.
 Keep source images and original PLY bytes unchanged. Do not manufacture a
 turntable, reconstruct from guessed multiview sheets, hand-sculpt a replacement
 character, or quietly import the archived pipeline as the new workflow.
+
+## Batch 03 implementation boundaries
+
+`game/creatures.js` owns trust/lure/capture timers. `town-characters.js` owns
+placements and form dimensions; `characters.js` shares GLB parsing and skinning
+between NPCs and transformed players. `main.js` owns input, form clearance,
+physics and ability contact. `world.js` declares optional puzzle colliders and
+shop surfaces. Keep these functions small and per-asset settings explicit.
+
+`tools/creature_rig.py` fits explicit skeletal segments and soft influence boxes
+to returned meshes. Optional smoothing diffuses weights across adjacent voxel
+corners before packing four normalized byte influences; it does not infer
+anatomy. Existing humanoids keep their existing fits. `merge_faces` is static-only
+and merges coplanar faces with identical quantized colors, retaining the sampled
+surface. Do not merge skinned surfaces or reduce animal detail by proxy meshes.
+
+Review all original/view/final comparisons and full motion loops. Record rough
+inferred backs, creases, foot drift and source lighting. `ready-for-test-drive`
+means agent visual/game review passed, with user art acceptance pending. Runtime
+binaries still go through the user's ZIP/commit round trip. Check provenance
+hashes after their next upload before claiming the binaries are committed.
 
 ## Reference image requirements
 
@@ -127,7 +146,7 @@ Inspect bounds, outliers, orientation, and limb gaps first. Set `source_to_game`
 (an orthonormal 3×3 matrix), optional source-space `crop` bounds, voxel resolution,
 opacity floor, density threshold, sigma extent, optional `voxel_filter_sigma`
 (in voxel units), color quantization and grid limit
-in **that asset's** `asset.json`. For humanoids only, fit every joint and region gate in `rig.json` to
+in **that asset's** `asset.json`. For each character kind, fit every joint and region gate in `rig.json` to
 the actual voxel geometry. Joint positions are in normalized game coordinates.
 L/R labels in this first rig refer to negative/positive model X respectively.
 Keep parent joints before children; the runtime requires contiguous joint node
@@ -136,7 +155,7 @@ indices beginning at zero. No universal rig fit is promised.
 The recipe samples oriented Gaussian density, optionally low-passes it at voxel
 scale to reduce pinholes, takes the maximum density for occupancy, blends DC
 colors using density weights, quantizes colors, emits only exposed cube faces,
-normalizes height and, for humanoids, fits four normalized segment weights. Static assets use
+normalizes height and, for characters, fits four normalized segment weights. Static assets use
 `world_height` in their manifest and export in game units with no rig. The
 recipe discards higher spherical harmonics
 and does not reproduce Gaussian alpha compositing. It is a stylization recipe,
@@ -144,8 +163,9 @@ not a faithful Gaussian renderer or recovered topology. Fine features, cavities,
 shadows baked into source colors and noisy floaters may need iteration.
 
 Humanoids export `Idle`, `Walk`, `Run`, `Jump` (case sensitive), generated as
-in-place procedural tests. The game owns motion/gravity. Other character rigs
-and trained motion remain out of scope. Town assets use
+in-place procedural tests. The game owns motion/gravity. The fitted rabbit/fox and bird also export those four clips. Tidefox adds `Swim`,
+Moonwing `Fly`, and Flintfist `Push`/`Punch`; gameplay owns translation and contact.
+Trained motion and additional asset families remain outside this scope. Town assets use
 `kind: "static"`; their reviewed runtime paths are configured in
 `game/town-assets.js` and loaded by `game/scenery.js`. A null path is an explicit
 unconverted placeholder. A configured but broken path is an error. The offline
@@ -161,7 +181,7 @@ compressed geometry, textures, strided/sparse data or arbitrary node transforms.
 
 Passing the audit is structural evidence only. Before promotion, inspect front,
 back, sides and obliques; compare silhouette, face, palette and proportions to the
-reference. For humanoids, watch complete idle/walk/run/jump cycles for detached limbs, stretching,
+reference. For all characters, watch complete idle/walk/run/jump and species ability cycles for detached limbs, stretching,
 wrong attachments, foot drift and intersections. Verify scale, facing, landing,
 swimming/shore exits, room entrances/exits and frame rate in the game. For static
 scenery check visual/collision agreement, door alignment and room clearance.

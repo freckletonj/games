@@ -436,6 +436,67 @@ assert.equal(culling.count, 6, "batching preserves every triangle");
 element("#reset").onclick();
 advance(.1);
 assert.ok(state().visibleTriangles < state().triangles, "offscreen scenery is culled in the real world");
+if(!process.argv[2] && vm.runInContext("Object.keys(creatureForms).length",sandbox)){
+  const act=code=>vm.runInContext(code,sandbox);
+  const simulate=seconds=>act(`for(let tick=0;tick<${Math.ceil(seconds*120)};tick++)step(1/120)`);
+  const press=code=>{key(code,true);key(code,false);};
+  const encounters=[['springaroo',-5.7,1.8],['tidefox',-2.9,9],['moonwing',4.5,-5.4],['flintfist',11.5,8.4]];
+  for(const [id,x,z]of encounters){
+    act(`{reset(false);Object.assign(player,{x:${x},z:${z}});const encounter=friends.find(f=>f.id===${JSON.stringify(id)});encounter.captured=0;encounter.trust=encounter.friendship=0;encounter.lure=null;[encounter.x,encounter.y,encounter.z]=creatureForms[encounter.id].position;}`);
+    press('KeyF');simulate(1.3);
+    assert.equal(state().friends.find(f=>f.id===id).trust,60,id+' eats the first berry');
+    press('KeyF');simulate(1.3);
+    assert.equal(state().friends.find(f=>f.id===id).trust,100,id+' likes two berries');
+    press('KeyG');simulate(.7);assert.equal(state().caught,id,'actual orb collision catches '+id);
+    press('KeyT');assert.equal(state().form,id);simulate(.1);
+    assert.ok(act('skinCharacter().every(Number.isFinite)'),'finite playable '+id);
+    press('KeyT');assert.equal(state().form,null);
+  }
+  // The standard pad uses the same feed, projectile and form actions as keys.
+  act("reset(false);Object.assign(player,{x:-5.7,z:1.8,caught:null});Object.assign(friends[0],{x:-6.3,y:0,z:2.4,captured:0,trust:0,friendship:0,lure:null});");
+  controller.buttons.forEach(button=>button.pressed=false);
+  controller.connected=true;tick();
+  const padPress=index=>{controller.buttons[index].pressed=true;tick();controller.buttons[index].pressed=false;tick();};
+  padPress(2);simulate(1.3);assert.equal(state().friends[0].trust,60);
+  padPress(2);simulate(1.3);assert.equal(state().friends[0].trust,100);
+  padPress(5);simulate(.7);assert.equal(state().caught,'springaroo');
+  padPress(3);assert.equal(state().form,'springaroo');
+  padPress(3);assert.equal(state().form,null);
+  controller.connected=false;tick();
+  // Capture opportunities and projectiles use simulation time; a wall stops an orb.
+  act(`reset(false);Object.assign(player,{x:-5.7,z:1.8,caught:null,angle:-Math.PI/4});const rabbit=friends[0];Object.assign(rabbit,{x:-6.3,y:0,z:2.4,captured:0,trust:100,friendship:12,lure:null});const testWall={a:-6.12,b:-5.88,l:1.98,r:2.22,bottom:0,top:2};solids.push(testWall);`);
+  press('KeyG');simulate(1);assert.equal(state().caught,null);assert.equal(state().orbCount,0);
+  act('solids.splice(solids.indexOf(testWall),1);friends[0].friendship=.2;');
+  press('Escape');advance(.4);assert.ok(state().friends[0].friendship>0,'pause freezes friendship');press('Escape');simulate(.3);assert.equal(state().friends[0].trust,0);
+  // The second jump reaches the optional 1.35-unit garden landing.
+  act("reset(false);Object.assign(player,{x:-7.2,z:7.5,caught:'springaroo'});yaw=0;toggleForm();");
+  key('KeyS',true);press('Space');simulate(.3);press('Space');simulate(.4);key('KeyS',false);simulate(.8);
+  assert.ok(Math.abs(state().y-1.35)<.02&&state().grounded,'Springaroo lands on the high garden rock');
+  act("reset(false);player.caught='springaroo';toggleForm();");press('Space');simulate(.15);press('Space');simulate(.1);
+  assert.equal(act('player.jumps'),2);const beforeThird=act('player.vy');press('Space');simulate(.01);assert.ok(act('player.vy')<beforeThird,'no third air jump');
+  press('KeyT');assert.equal(state().form,'springaroo','airborne form switching cannot replenish jumps');
+  // Four wingbeats are exhausted in the air and refreshed only by landing.
+  act("reset(false);player.caught='moonwing';toggleForm();");press('Space');simulate(.1);
+  for(let i=0;i<4;i++){press('Space');simulate(.1);}
+  assert.equal(state().wingbeats,0);const beforeFlap=act('player.vy');press('Space');simulate(.01);assert.ok(act('player.vy')<beforeFlap);
+  // Tidefox fits below the water and cannot turn into a human under the bridge.
+  act("reset(false);Object.assign(player,{x:0,z:8,y:-.58,grounded:false,swimming:true,caught:'tidefox'});setForm('tidefox');");simulate(.05);press('KeyF');simulate(.05);
+  assert.equal(state().diving,true);assert.equal(state().y,-1.02);assert.equal(state().clip,'Swim');
+  press('KeyF');simulate(.05);assert.equal(state().diving,false);assert.equal(state().y,-.58);
+  act('player.z=0');assert.equal(act('setForm(null)'),false);assert.equal(state().form,'tidefox');
+  // Changing form is rejected if the larger form would intersect a ceiling.
+  act("reset(false);player.caught='springaroo';setForm('springaroo');const ceiling={a:player.x-.5,b:player.x+.5,l:player.z-.5,r:player.z+.5,bottom:.8,top:1.2};solids.push(ceiling);");
+  assert.equal(act('setForm(null)'),false);act('solids.splice(solids.indexOf(ceiling),1)');
+  // Physical obstacle states change their real colliders, including after a room visit.
+  act("reset(false);Object.assign(player,{x:friendPuzzles.boulder.a-.49,z:6.8,caught:'flintfist'});setForm('flintfist');");
+  const pushStart=state().x;press('KeyF');simulate(1.4);
+  assert.ok(Math.abs(state().puzzles.boulder-1.8)<1e-5);assert.ok(state().x>pushStart+1.7,'pusher follows the boulder');
+  act('Object.assign(player,{x:11.9,z:7.3,y:0,grounded:true});');press('KeyF');simulate(1.1);
+  assert.equal(state().puzzles.sealOpen,true);const sealStart=state().z;act("moveAxis('z',-.3)");assert.ok(state().z<sealStart-.25,'opened seal no longer blocks the body');
+  act("changeScene('grocery');changeScene('outdoors');");assert.equal(act('friendPuzzles.seal.disabled'),true);
+  element('#reset').onclick();assert.equal(state().form,null);assert.equal(state().caught,'flintfist','respawn retains the caught form');
+  console.log('Friendship checks passed: all four real encounters, berries, orb collision/walls, pause/expiry, safe transformations, second-jump landing, finite wingbeats, diving, and physical push/punch colliders.');
+}
 console.log(`Spawn view submits ${state().visibleTriangles} of ${state().triangles} scene/player triangles.`);
 console.log(
   "Runtime checks passed: movement, buffered/late jumps, grace expiry, pause/focus release, analog gamepad/disconnect, collisions, swimming, all interiors, stepping stones, complete watchtower climb, skinning, finite buffers and conservative view culling.",

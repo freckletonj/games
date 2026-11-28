@@ -1,0 +1,59 @@
+{
+  "input_splats": 65536,
+  "retained_splats": 65517,
+  "grid": [
+    51,
+    51,
+    23
+  ],
+  "occupied_voxels": 9595,
+  "asset": "flintfist",
+  "source_sha256": "2e90d6a0d476d4d122b448aac57a58a9e2853062954b8021a36e991d6c4ae307",
+  "config_sha256": "18baccbc943a59258e2cf6eb87c5fbd587a984bdf621dea194206ee906fa1b45",
+  "rig_sha256": "f2407bd60171dfba9b1068b780515e385b057b42b9457ec54660f13b970ea6d9",
+  "vertices": 38952,
+  "triangles": 19476,
+  "clips": [
+    "Idle",
+    "Walk",
+    "Run",
+    "Jump",
+    "Push",
+    "Punch"
+  ],
+  "status": "ready-for-test-drive",
+  "kind": "humanoid",
+  "bounds": {
+    "min": [
+      -0.5104166666666666,
+      0.0,
+      -0.20833333333333334
+    ],
+    "max": [
+      0.5104166666666666,
+      1.0,
+      0.20833333333333334
+    ]
+  },
+  "method": "alpha_union Gaussian occupancy; exposed voxel faces; fitted segment weights; procedural motion",
+  "conversion_config_sha256": "bee4ca7fb72b0a32112071b838b2112f519b44d23541be3ff4ef5bf492835089",
+  "reference_sha256": "a239aa9f717db353c07a546722040b07d345052749b42550c0a3d2d095612d00",
+  "runtime_sha256": "dc5f0ace4917e4717a8aa5d607b27840cf17eee9c08213d6e7431c09a64d9127",
+  "review_date": "2026-11-27",
+  "compiler_sha256": {
+    "convert_splat.py": "9d19248902f50bbee5b377b6b8c73be79b2171ed70cb7592b50603a5854cb25d",
+    "creature_rig.py": "ccc35ceafd541fd929ca080f73c719096b33bec0a118d37e305e4018a22443de"
+  },
+  "review": {
+    "mesh_views": [
+      "front",
+      "side",
+      "back",
+      "oblique"
+    ],
+    "original_ply_composite": true,
+    "webgl_errors": 0,
+    "motion_frames_per_clip": 12,
+    "user_art_approval": false
+  }
+}

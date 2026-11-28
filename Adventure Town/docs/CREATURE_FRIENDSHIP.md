@@ -1,83 +1,30 @@
 # Creature friendship for Adventure Town
 
-The user has requested the Wonderwood dynamic in Adventure Town: cute animals
-solve puzzles; offer berries, catch a befriended animal with an orb, then turn
-into it. This authorizes the creature asset family and the design work below.
-The current batch supplies source references only. No creature AI, collection,
-form switching, inventory, quest, trading or combat code has been added.
+The first playable Wonderwood-style loop is implemented using the actual batch 03 splats: offer berries, catch a willing animal with a friendship orb, then become it. This is a small optional traversal loop within the existing town, with one current caught form. There is no multi-form inventory, shopping, combat or quest progression.
 
-## What transfers from Wonderwood
+## Friendship and controls
 
-The current Phaser game is the reference, rather than only the older Canvas
-catalog. `Wonderwood/phaser/src/creatures.js` implements trust and a 12-second
-capture opportunity: favorite food adds 60 trust, other food 36, capped at 100.
-`phaser/src/game.js` feeds creatures, permits an orb to catch a distracted
-creature, stores its kind in the player's single `caught` slot and switches
-between explorer and that form. The captured creature has a respawn timer.
-`phaser/src/puzzle-objects.js` connects friendship to actual traversal and
-physical changes: pushing boulders, tipping bridges and punching cracked seals.
+Approach an animal as the explorer and press **F** twice to offer two berries. Each eaten berry adds 60 trust, capped at 100; the animal walks toward reachable offered food and shows pink hearts. Full trust opens a 12-second friendship opportunity. **G** throws the actual heart-marked orb toward a nearby ready animal; **F** also offers capture when ready. A missed or wall-blocked orb does not catch it. A caught animal returns to town after 17 seconds. Expiry resets full trust so feeding can be retried. Berries/orbs are freely available in this introductory loop; the bushes signal encounters, rather than implementing a harvest inventory.
 
-Use these rules as a design reference; Phaser's 2D physics, pixels and scene
-objects cannot be pasted into Adventure Town's 3D controller. Retain its warmth:
-pink/red affection, visible hearts and a willing friendship response. The orb
-should look inviting. Avoid replacing this loop with decorative NPC animals.
+**T** switches between explorer and the current caught form. Standard gamepad controls are **X** for context/feed/ability, **RB** for the orb and **Y** for form. Touch has the contextual button plus explicit orb/form controls. **Space / A / Jump** triggers jumps or wingbeats. Pause freezes trust opportunities and effects. Respawn returns to explorer while retaining the caught form. Room entry returns to explorer; animal encounters remain outdoors.
 
-Wonderwood currently gives Tidefox nectar and Moonwing stardrops. For Adventure
-Town, begin with the user's requested berry feeding across these four forms.
-Two berries to trust and a 12-second catch opportunity are proposed starting
-tuning, derived from the existing favorite-food rule, not implemented behavior.
+| Local form | Implemented ability | Where to try it | Motion |
+| --- | --- | --- | --- |
+| Springaroo | One additional air jump | Optional high garden landing west of the river | Fitted 18-joint quadruped, Idle/Walk/Run/Jump |
+| Tidefox | Faster swimming; F toggles dive/surface in water | River between the safe shores | Fitted 19-joint quadruped, core clips plus Swim |
+| Moonwing | Four limited airborne wingbeats, refreshed by landing | Existing tower ledges and short ascents | Fitted 12-joint bird, core clips plus Fly |
+| Flintfist | F pushes a nearby boulder or punches a cracked seal | Two optional ruin passages east of the river | Individually fitted 15-joint biped, core clips plus Push/Punch |
 
-## First four forms
+The player's dimensions and rendered GLB change together. Form switches require ground or water support and enough clearance; switching in midair cannot refill jumps or wingbeats. Under-bridge collision rejects a larger explorer if it does not fit. The riverbed is deeper to accommodate Tidefox's submerged pose. Its dedicated paddle clip replaces the humanoid swim tilt.
 
-| Local asset | Wonderwood form key | Proposed ability | First puzzle opportunity | Required art/motion |
-| --- | --- | --- | --- | --- |
-| springaroo | springaroo | High/double jump | A garden ledge with a clearly visible landing | Four-leg idle, hop, airborne and landing; ears remain attached |
-| tidefox | tideling | Swim/dive | A short river route between safe shore exits | Four-leg walk, paddle, dive and shore transition; tail stays clear |
-| moonwing | skyling | Limited wingbeats | A short ascent with rest ledges beside the tower route | Bird idle, flap, glide and landing; wings clear the body |
-| flintfist | flintfist | Push a marked obstacle; punch cracked stone | Ruin obstacle that reveals a walkable route | Biped idle/walk, braced push and punch with readable contact |
+Pushing moves the actual obstacle collider and carries the pusher along; punching removes the seal collider at the gesture's contact time. Those changes persist across room visits during the current run. These are deliberately authored practice obstacles, not a progression campaign or generated puzzle art. The garden landing can also be approached creatively using nearby scenery. There is no claim that every route is exclusively gated by one form. Misses leave the original town routes and respawn available.
 
-The two names with different runtime keys reflect Wonderwood's existing code;
-Adventure Town has no form registry yet. The proposed rock bear may combine
-Wonderwood's Gravelback push and Flintfist punch to keep the first set small.
-Its biped design is intentional so the existing humanoid rig path can be fitted
-after intake. The rabbit/fox and bird need deliberately implemented rig families.
-Do not make them humanoid proxies or export them as static stand-ins and call
-them animated.
+## Relationship to Wonderwood
 
-## Small playable loop
+The reference is the repository's current Phaser version: `Wonderwood/phaser/src/creatures.js`, `game.js` and `puzzle-objects.js`. Favorite-food trust (+60), the 12-second opportunity, a single caught slot, animal respawn and physical ability interactions inform this implementation. Adventure Town uses berries across all four animals as requested, rather than copying Tidefox's nectar or Moonwing's stardrops. Its local keys are `tidefox` and `moonwing`; Wonderwood calls those forms `tideling` and `skyling`. Its 2D physics and scene objects were not imported.
 
-A berry source, a nearby creature and one visible ability obstacle should teach
-the complete loop before adding more encounters. Keep the initial garden puzzle
-optional to the existing town entrances and route. An explorer offers a berry;
-the animal approaches reachable food, eats, and displays growing affection.
-At full trust it shows a clear catch opportunity. An orb reaching that creature
-stores its form and plays a brief heart/spark capture response. A form control
-switches into the caught creature and back into the explorer. Keep one current
-caught form initially, as in Wonderwood; a multi-form inventory is a separate
-product decision.
+## Evidence and remaining art work
 
-Feeding must respect paths, height differences and walls. The controller needs
-one explicit state for explorer versus form, an ability action and dimensions
-that match the visible animal. Attach berry/orb effects to authored positions,
-not to baked details in the bush or orb splat. The visible berries in this source
-are a design cue; replenishment and detached pickup shapes must be authored.
+The real controller tests exercise all four encounters through feed → trust → orb → caught → transform → return. They cover opportunity expiry, wall-blocked orbs, pause, respawn, safe form dimensions, the garden landing, wingbeat limits, underwater clearance and real push/punch collision changes. Standard-pad X/RB/Y actions are simulated; a physical controller has not been tested. Chromium checks exercise keyboard and touch friendship and the second-jump garden landing, alongside existing doors, water, shops and offline play.
 
-Author obstacles, their states, pivots, surfaces and recovery first. Export a
-geometry guide before generating obstacle art, following Wonderwood's declared
-layout workflow. A tipped bridge must connect actual banks and settle into a
-walkable collider; a punched wall must remove the corresponding collision.
-Flying needs limits and rest points so it cannot skip every puzzle. Transforming
-in a doorway, under a low ceiling, in water or against a wall must have defined
-placement behavior and be tested against each form's dimensions. A missed jump
-or spent berry must leave a clear route to retry.
-
-## Acceptance before calling it playable
-
-Exercise feed → trust → orb hit → caught form → transform → ability → return in
-the actual 3D game, on keyboard, touch and gamepad with visible controls. Verify
-missed orbs, expired friendship opportunities, pause, respawn, room transitions,
-waterline/shore exits, ability contacts and safe form changes. Test that collision
-matches opened routes and that alternate forms cannot bypass required puzzle
-states. Inspect animations and readability at gameplay distance, then provide
-the offline HTML. Reference PNGs or structurally valid GLBs alone do not satisfy
-this acceptance.
+The actual skinned GLBs were rendered over full clip cycles and checked for finite skinning, loop closure and stretched edges. Motion is procedural and in place, with remaining foot drift and small voxel creases. Springaroo's inferred rear remains rough; the orb retains a dark inferred back. See each asset's `runtime/REVIEW.md`. These are test-drive assets awaiting user art acceptance.
